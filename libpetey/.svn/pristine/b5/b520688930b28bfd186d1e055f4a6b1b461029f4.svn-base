@@ -1,0 +1,52 @@
+#include "stdlib.h"
+#include "stdio.h"
+#include "time_class.h"
+
+#define MAXLL 200
+
+using namespace std;
+using namespace libpetey;
+
+int main() {
+  char line[MAXLL];
+
+  time_class t1;
+  time_class t2;
+  char *tstr;
+  char *tstr1, *tstr2;
+  char tstr3[50];
+
+  char day[7][10]={"Monday", "Tuesday", "Wednesday", "Thursday", 
+		"Friday", "Saturday", "Sunday"};
+
+//  t2="   1999/01/31-03";
+
+  printf("Enter the first date:\n");
+  fgets(line, MAXLL, stdin);
+  t1=line;
+  printf("Enter the second date:\n");
+  fgets(line, MAXLL, stdin);
+  t2=line;
+
+  tstr1=(char *) t1;
+
+  tstr2=(char *) t2;
+
+  //printf("Fields for %s: %d %f\n", tstr2, t2.year(), t2.doy());
+  //printf("Day: %d\n", t2.day());
+  //printf("Month: %d\n", t2.month());
+
+  printf("Days between %s and %s = %f\n", tstr1, tstr2, t2.diff(t1));
+  printf("%s was a %s\n", tstr1, day[t1.dow()-1]);
+  printf("%s was a %s\n", tstr2, day[t2.dow()-1]);
+
+  tstr=(char *) (t2-t1);
+
+  printf("%s\n", tstr);
+
+  delete [] tstr;
+
+  delete [] tstr1;
+  delete [] tstr2;
+
+}

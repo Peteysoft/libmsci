@@ -1,0 +1,161 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "quicksort.h"
+#include "peteys_tmpl_lib.h"
+#include "parse_command_opts.h"
+#include "tree_lg.h"
+#include "randomize.h"
+
+#define MAXN 100000
+
+using namespace std;
+using namespace libpetey;
+
+//part of the test suite
+
+//simple executable that takes a list of numbers and spits out 
+//a sorted list or the k least 
+
+int main(int argc, char **argv) {
+  //tree_lg<float> sorter;
+  float *data;
+  long n;
+  int32_t k;
+  FILE *fs;
+
+  //parse the arguments:
+  void *opt[20];
+  int flag[20];
+  opt[0]=&k;
+
+  argc=parse_command_opts(argc, argv, "k?qhtri", "%d%%%%%%", opt, flag, 1);
+  if (argc<0) {
+    fprintf(stderr, "sorter: error parsing command line\n");
+    //no second chances:
+    exit(FATAL_COMMAND_OPTION_PARSE_ERROR);
+  }
+
+  if (flag[1]) {
+    printf("Usage: sorter [-k k] [-q] [-h] [-t] [file]\n");
+    printf("  where:\n");
+    printf("k      select k nearest neighbours\n");
+    printf("file   optional input file (or take data from stdin)\n");
+    printf("-q     quicksort\n");
+    printf("-h     heapsort\n");
+    printf("-t     treesort\n);
+    printf("-r     randomize the list instead of sorting it\n);
+    printf("-i     output indices\n");
+    exit(0);
+  }
+
+  if (argc > 1) fs=fopen(argv[1], "r"); else fs=stdin;
+
+  line=read_ascii_all(fs, &n);
+  date=new float[n];
+  for (long i=0; i<n; i++) {
+    if (sscanf(line[i], "%g", data+i)!=1) {
+      n=i;
+      break;
+    }
+  }
+  fclose(fs);
+
+  if (flag[5]) {  
+    long *result;
+    long nres;
+    if (flag[0]) { 
+      kiselect_base *selector;
+      float *dum;
+
+      if (flag[2]) {
+        selector=new kiselect_quick(k);
+      } else if (flag[3]) {
+        selector=new kiselect_heap(k);
+      } else if (flag[4]) {
+        selector=new kiselect_tree(k);
+      } else {
+        selector=new kiselect_quick(k);
+      }
+
+      for (long i=0; i<n; i++) selector->add(data[i]);
+      dum=new float[k];
+      result=new long[k];
+      selector->get(dum, result);
+      nres=k;
+
+      delete selector;
+      delete [] dum;
+    } else if (flag[5]) {
+      result=randomize(n);
+      nres=n;
+    } else {
+      result=new long[n];
+
+      if (flag[2]) {
+        quicksort(data, result, n);
+      } else if (flag[3]) {
+        heapsort_inplace(data, result, n);
+      } else if (flag[4]) {
+        treesort(data, result, n);
+      } else {
+        quicksort(data, result, n);
+      }
+      nres=n;
+    }
+
+    for (long i=0; i<nres; i++) printf("%d\n", result[i]);
+
+    if (flag[0] || flag[5]) delete [] result;
+  } else {
+    float *result;
+    long nres;
+    if (flag[0]) { 
+      kselect_base *selector;
+
+      if (flag[2]) {
+        selector=new kselect_quick(k);
+      } else if (flag[3]) {
+        selector=new kselect_heap(k);
+      } else if (flag[4]) {
+        selector=new kselect_tree(k);
+      } else {
+        selector=new kselect_quick(k);
+      }
+
+      for (long i=0; i<n; i++) selector->add(data[i]);
+      result=new float[k];
+      selector->get(result);
+      nres=k;
+
+      delete selector;
+    } else if (flag[5]) {
+      long *ind=randomize(n);
+      result=map_vector(data, ind, n);
+      delete [] ind;
+      nres=n;
+    } else {
+
+      if (flag[2]) {
+        quicksort(data, n);
+      } else if (flag[3]) {
+        heapsort_inplace(data, n);
+      } else if (flag[4]) {
+        treesort(data, n);
+      } else {
+        quicksort(data, n);
+      }
+      result=data;
+      nres=n;
+    }
+
+    for (long i=0; i<nres; i++) printf("%g\n", result[i]);
+
+    if (flag[0] || flag[5]) delete [] result;
+  }
+
+  delete [] data;
+
+}
+
+

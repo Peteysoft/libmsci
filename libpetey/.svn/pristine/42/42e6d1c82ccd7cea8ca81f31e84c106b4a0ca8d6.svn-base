@@ -1,0 +1,41 @@
+#include "vector_s.h"
+
+namespace libpetey {
+  namespace libsparse {
+
+    //perform a vector multiplication:
+    template <class index_t, class data_t, class vector_t>
+    void sc_sparse_t<index_t, data_t, vector_t>::vect_mult2(vector_t &cand, vector_t &result) {
+      for (index_t i=0; i<m; i++) result[i]=0;
+      for (long i=0; i<nel; i++) {
+        result[matrix[i].i]+=matrix[i].value*cand[matrix[i].j];
+      }
+    }
+
+    //perform left vector multiplication:
+    template <class index_t, class data_t, class vector_t>
+    void sparse<index_t, data_t, vector_t>::left_mult2(vector_t &cor, vector_t &result) {
+      for (index_t i=0; i<m; i++) result[i]=0;
+      for (long i=0; i<nel; i++) {
+        result[matrix[i].j]+=matrix[i].value*cor[matrix[i].i];
+      }
+    }
+
+    template <class index_t, class data_t, class vector_t>
+    vector_t *sparse<index_t, data_t, vector_t>::vect_mult2(vector_t *cand) {
+      vector_t *result;
+      result=new vector_t(m);
+      vect_mult2(*cand, *result);
+      return result;
+    }
+
+    template <class index_t, class data_t, class vector_t>
+    vector_t * sparse<index_t, data_t, vector_t>::left_mult2(vector_t *cor) {
+      vector_t *result;
+      result=new vector_t(n);
+      left_mult2(*cor, *result);
+      return result;
+    }
+
+
+

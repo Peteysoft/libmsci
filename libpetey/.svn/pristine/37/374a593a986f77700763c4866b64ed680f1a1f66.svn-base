@@ -1,0 +1,58 @@
+#include <stdio.h>
+
+#include <vector_s.cc>
+
+
+struct parse_tree {
+  expr_t *expr;			//tree is an instance of this expression
+  int ver;			//which version of the expression
+  parse_tree **sub;		//sub-trees
+  int loc;			//location in file/string where expression starts
+  int len;			//total length of the expression
+};
+
+class expr_t {
+  public:
+    virtual expr_t();
+    virtual ~expr_t();
+
+    virtual nver()=0;
+
+};
+
+class primitive: public expr_t {
+  public:
+    char val;
+    virtual primitive(char v1);
+    virtual ~primitive();
+
+    virtual nver();
+
+};
+
+class compound: public expr_t {
+  public:
+    vector_s<expr_t **> sub;	//list of sub-expressions
+    vector_s<int> nsub;		//number of sub-expressions per version
+    int ntyp;			//number of versions
+
+    virtual compound(expr_t **neex, int n);
+    virtual ~compound();
+
+    int add(expr_t *neex, int n);
+    virtual nver();
+
+};
+
+class grammar_t {
+  protected:
+    symbol_table name;
+    vector_s<expr_t *> exprlist;
+  public:
+    grammar_t();
+    ~grammar_t();
+
+    int add(char *line);
+    parse_tree * parse(char *expr_name, char *string);
+};
+

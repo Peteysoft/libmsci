@@ -1,0 +1,99 @@
+
+#include <stl/vector>
+#include "quicksort.h"
+#include "vector_s.h"
+
+template <class type>
+class kselect_base {
+  protected:
+    long k;
+  public:
+    virtual kselect_base(long k1);
+    virtual int add(type val);
+    virtual void get(type * kleast);
+}
+    
+template <class type>
+class kselect_tree:public kselect_base<type> {
+  protected:
+    tree_lg data;
+  public:
+    virtual kselect_tree(long k1);
+    ~kselect_tree();
+    virtual long add(type val);
+    virtual void get(type * kleast);
+}
+
+template <class type>
+class kselect_heap:public kselect_base<type> {
+  protected:
+    vector<type> *data;
+  public:
+    virtual kselect_heap(int k1);
+    ~kselect_heap();
+    virtual long add(type val);
+    virtual void get(type * kleast);
+}
+
+template <class type>
+class kselect_quick:public kselect_base<type> {
+  protected:
+    vector_s<type> *data;
+  public:
+    virtual kselect_quick(int k1);
+    virtual kselect_quick(int k1, long n);
+    ~kselect_quick();
+    virtual long add(type val);
+    virtual void get(type * kleast);
+}
+
+template <class type>
+class kiselect_base {
+  protected:
+    long k;
+  public:
+    virtual kselect_base(long k1);
+    virtual int add(type val);
+    virtual int add(type val, long ind);
+    virtual void get(type * kleast, long *ind);
+}
+    
+template <class type>
+class kiselect_tree:public kiselect_base<type> {
+  protected:
+    tree_lgi data;
+  public:
+    virtual kiselect_tree(long k1);
+    ~kselect_tree();
+    virtual long add(type val);
+    virtual long add(type val, long ind);
+    virtual void get(type * kleast, long *ind);
+}
+
+template <class type>
+class kiselect_heap:public kiselect_base<type> {
+  protected:
+    vector<type> *data;
+  public:
+    virtual kiselect_heap(long k1);
+    ~kselect_heap();
+    virtual long add(type val);
+    virtual long add(type val, long ind);
+    virtual void get(type * kleast, long *ind);
+}
+
+template <class type>
+class kselect_quick:public kiselect_base<type> {
+  protected:
+    vector_s<type> *data;
+    vector_s<long> *ind;
+  public:
+    virtual kiselect_quick(long k1);
+    virtual kiselect_quick(long k1, long n);
+    ~kselect_quick();
+    virtual long add(type val);
+    virtual long add(type val, long ind2);
+    virtual void get(type * kleast, long *ind2);
+}
+
+

@@ -1,0 +1,57 @@
+#include <stdio.h>
+
+#define MAXNEXPR 10000
+
+struct parse_tree {
+  expr_t *expr;			//tree is an instance of this expression
+  int ver;			//which version of the expression
+  parse_tree **sub;		//sub-trees
+  int loc;			//location in file/string where expression starts
+  int len;			//total length of the expression
+};
+
+class expr_t {
+  public:
+    expr_t();
+    ~expr_t();
+
+    virtual nver()=0;
+
+};
+
+class primitive: public expr_t {
+  public:
+    char val;
+    primitive(char v1);
+    ~primitive();
+
+    virtual nver();
+
+};
+
+class compound: public expr_t {
+  public:
+    expr_t **expr;
+    int *nexp;
+    int ntyp;
+
+    compound(expr_t *neex, int n);
+    ~compound();
+
+    int add(expr_t *neex, int n);
+    virtual nver();
+
+};
+
+class grammar_t {
+  protected:
+    static symbol_table *name;
+    static expr_t *exprlist[MAXNEXPR];
+  public:
+    grammar_t();
+    ~grammar_t();
+
+    int add(char *line);
+    int parse(FILE *fs, parse_tree *result);
+};
+

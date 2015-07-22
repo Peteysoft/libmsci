@@ -1,0 +1,85 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <unistd.h>
+#include <sys/resource.h>
+#include <wait.h>
+
+#include "tree_lg.h"
+
+#define MAXN 100000
+
+using namespace std;
+using namespace libpetey;
+
+//simple executable that takes a list of numbers and spits out the
+//k least
+
+int main(int argc, char **argv) {
+  tree_lg<float> sorter;
+  float * data, *x;
+  long k;
+  long n;
+  float *result;
+  FILE *fs;
+
+  pid_t pid;
+  rusage r_usage;
+  int stat_loc;
+
+  if (argc < 2) {
+    printf("Usage: kleast k [file]\n");
+    exit(1);
+  }
+
+  sscanf(argv[1], "%d", &k);
+
+  if (argc > 2) fs=fopen(argv[2], "r"); else fs=stdin;
+
+  result=new float[k];
+  data=new float[MAXN];
+
+  n=0;
+  while(feof(fs) == 0) {
+    fscanf(fs, "%g", data+n);
+    //printf("%f\n", data[n]);
+    n++;
+  }
+  fclose(fs);
+
+  x=new float[n];
+
+  for (long i=0; i<n; i++) x[i]=data[i];
+  delete [] data;
+
+  pid=fork();
+
+  if (pid==0) {
+    for (long i=0; i<k; i++) {
+      sorter.add(x[i]);
+      //printf("%f\n", x[i]);
+    }
+
+    for (long i=k; i<n; i++) {
+      sorter.add(x[i]);
+      sorter.delete_greatest();
+      //printf("%f\n", x[i]);
+    }
+
+    sorter.decompose(result, k);
+  } else {
+    printf("%d\n", pid);
+    //wait4(pid, &stat_loc, WUNTRACED, &r_usage);
+    wait3(&stat_loc, WUNTRACED, &r_usage);
+
+    fprintf(stderr, "%fs %fs\n", 1.*r_usage.ru_utime.tv_sec+r_usage.ru_utime.tv_usec/1000000., 
+		1.*r_usage.ru_stime.tv_sec+r_usage.ru_stime.tv_usec/1000000.);
+  }
+
+  printf("%d\n", pid);
+  delete [] result;
+  delete [] x;
+
+}
+
+

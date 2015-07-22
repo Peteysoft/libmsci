@@ -1,0 +1,128 @@
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_sf_erf.h>
+#include "peteys_tmpl_lib.h"
+#include "supernewton.h"
+
+using namespace libpetey;
+
+#define ERFINV_XTOL 1e-10
+//#define ERFINV_XTOL 1e-6
+#define ERFINV_YTOL 1e-15
+//#define ERFINV_YTOL 0.
+#define ERFINV_MAXITER 1000
+
+#define ERFINV_NTABLE 8
+double erfinv_ytable[ERFINV_NTABLE+1]={0.1000000000000000055511151,     2.704865449790269771312978,     4.159675982375273584068509,     4.972183855244742822776516,     5.425967374602302939479159,     5.679404281882109550849691,     5.820948130945836851424247,     5.900000000000000355271368};
+double erfinv_xtable[ERFINV_NTABLE]={0.1124629160182848974791625,    0.9998693644789686807428097,    0.9999999959630012646982777,    0.9999999999979600762145537,    0.9999999999999832356323282,    0.9999999999999990007992778,    0.9999999999999997779553951,    0.9999999999999998889776975};
+double erfinv_tol[ERFINV_NTABLE]={1e-12, 1e-12, 1e-12, 1e-13, 1e-15, 1e-18,
+		1e-20, 1e-22};
+
+void erf_plus_deriv(double x, void *param, double *y, double *dydx) {
+
+  *y=gsl_sf_erf(x)-*(double *) param; 
+  *dydx=M_2_SQRTPI*exp(-x*x);
+}
+void erfc_plus_deriv(double x, void *param, double *y, double *dydx) {
+
+  *y=gsl_sf_erfc(x)-*(double *) param; 
+  *dydx=-M_2_SQRTPI*exp(-x*x);
+}
+
+double erfinv_basic2(double x) {
+  double absx;
+  double x1, y;
+  double y1=0, y2=25;
+  long err;
+  long ind;
+  double sgnx;
+  double ytol=0;
+
+  gsl_error_handler_t *old_handler;
+  old_handler=gsl_set_error_handler_off();
+
+  absx=fabs(x);
+  sgnx=x/absx;
+  if (absx>=1) return INFINITY;
+
+  if (x>0.4930488525) {
+  //if (absx>0.9) {
+    x1=1-x;
+    void *param=&x1;
+    y1=0.469230;
+    //y1=gsl_sf_erf(0.9);
+    y2=6;
+
+    y=supernewton(&erfc_plus_deriv, param, y1, y2, ERFINV_XTOL, ytol, ERFINV_MAXITER, err);
+  } else {
+    y1=-0.001;
+    y2=0.469231;
+    //y2=gsl_sf_erf(0.9);
+    void *param=&x;
+
+    y=supernewton(&erf_plus_deriv, param, y1, y2, ERFINV_XTOL, ytol, ERFINV_MAXITER, err);
+  }
+
+  printf("erfinv iterations=%ld\n", err);
+  gsl_set_error_handler(old_handler);
+  return y;
+
+  if (err < 0) {
+    return sgnx*INFINITY;
+  }
+
+  return y;
+
+}
+
+double erfinv(double x) {
+  double absx;
+  double y;
+  double y1, y2;
+  long err;
+  long ind;
+  double sgnx;
+  double ytol;
+
+  gsl_error_handler_t *old_handler;
+
+  if (x==0.) return 0.;
+  
+  absx=fabs(x);
+  sgnx=x/absx;
+
+  void *param=&x;
+
+  ind=bin_search(erfinv_xtable, ERFINV_NTABLE, absx);
+  if (ind < 0) {
+    y1=-erfinv_ytable[0];
+    y2=erfinv_ytable[0];
+    ytol=erfinv_tol[ind];
+  } else if (ind==ERFINV_NTABLE) {
+    return sgnx*INFINITY;
+  } else {
+    y1=erfinv_ytable[ind]*sgnx;
+    y2=erfinv_ytable[ind+1]*sgnx;
+    ytol=1e-12;
+  }
+
+  //y1=-100.;
+  //y2=100.;
+
+  old_handler=gsl_set_error_handler_off();
+
+  y=supernewton(&erf_plus_deriv, param, y1, y2, ERFINV_XTOL, ytol, ERFINV_MAXITER, err);
+
+  gsl_set_error_handler(old_handler);
+
+  printf("erfinv iterations=%ld\n", err);
+  if (err < 0) {
+    return sgnx*INFINITY;
+  }
+
+  return y;
+
+}
+

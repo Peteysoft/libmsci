@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "quicksort.h"
+#include "peteys_tmpl_lib.h"
+#include "tree_lg.h"
+
+#define MAXN 100000
+
+using namespace std;
+using namespace libpetey;
+
+//simple executable that takes a list of numbers and spits out the
+//k least
+
+int main(int argc, char **argv) {
+  tree_lg<float> sorter;
+  float * data, *x;
+  long k;
+  long n;
+  float *result;
+  FILE *fs;
+
+  if (argc < 2) {
+    printf("Usage: kleast k [file]\n");
+    exit(1);
+  }
+
+  sscanf(argv[1], "%d", &k);
+
+  if (argc > 2) fs=fopen(argv[2], "r"); else fs=stdin;
+
+  //result=new float[k];
+  data=new float[MAXN];
+
+  n=0;
+  while(feof(fs) == 0) {
+    fscanf(fs, "%g", data+n);
+    //printf("%f\n", data[n]);
+    n++;
+  }
+  fclose(fs);
+
+  switch (k) {
+    case(0): quicksort(data, n);
+       break;
+    case(1): heapsort_inplace(data, n);
+       break;
+    case(2): for (long i=0; i<n; i++) sorter.add(data[i]);
+       sorter.decompose(data, n);
+       break;
+    case(3): treesort(data, n);
+       break;
+  }
+
+  for (long i=0; i<n; i++) printf("%g\n", data[i]);
+
+  //delete [] result;
+  delete [] data;
+
+}
+
+

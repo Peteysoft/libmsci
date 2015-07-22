@@ -1,0 +1,120 @@
+#include "grammar_t.h"
+
+expr_t::expr_t() {}
+
+expr_t::~expr_t() {}
+
+primitive::primitive(char v1) {
+  val=v1;
+}
+
+primitive::nver() {
+  return 1;
+}
+
+compound::compound(expr_t *neex, int n) {
+  expr=new expr_t *[1];
+  nexp=new int [1];
+  expr[0]=neex;
+  nexp[0]=n;
+  
+}
+
+int compound::add(expr_t *neex, int n) {
+  expr_t **expr2;
+  int *nexp2;
+
+  expr2=new expr_t *[ntyp+1];
+  nexp2=new int[ntyp+1];
+  for (int i=0; i<ntyp; i++) {
+    expr2[i]=expr[i];
+    nexp2[i]=nexp[i];
+  }
+  delete [] expr;
+  delete [] nexp;
+  expr=expr2;
+  nexp=nexp2;
+  expr[ntyp]=neex;
+  nexp[ntyp]=n;
+  ntyp++;
+
+  return ntyp;
+}
+
+int compound::nver() {
+  return ntyp;
+}
+
+grammar_t::grammar_t() {
+  name=new symbol_table();
+  for (int i=0; i<MAXNEXPR; i++) exprlist[i]=NULL;
+}
+
+int grammar_t::add(char *line) {
+  int ptr;
+  int len;			//length of name
+  char *name2;			//expression name
+  char *name3;
+  int id;			//id of expression name
+  int nsub;			//number of sub-expressions
+  expr_t neex[100];		//fuck it
+
+  for (; line[0]==' ' || line[0]=='\t'; line++);
+  for (len=0; line[len]!=' ' && line[len]!=':' &&line[len]!='\t'; len++);
+
+  name2=new char[len+1];
+
+  strncpy(name2, line, len);
+  name2[len]='\0';
+  line+=len;
+
+  for (; line[0]!=':'; line++);
+  for (; line[0]==' ' || line[0]=='\t'; line++);
+
+  //if there is a quote, then we have a 'primitive' (character):
+  if (line[0]==''') {
+    id=name->add(name2);
+    if (exprlist[id]!=NULL) {
+      fprintf(stderr, "grammar_t: warning, overwriting expression, %s\n", name2);
+      delete exprlist[id];
+    }
+    exprlist[id]=new primitive(line[1]);
+    return 0;
+  } 
+
+  nsub=0;
+  name3=strtok(line, " \t");
+  if (name3==NULL) {
+    fprintf(stderr, "grammar_t: syntax error, definition section for %s missing\n", name2);
+    return -1;
+  }
+  id=name->lookup(name3);
+  if (id==-1) {
+    fprintf(stderr, "grammar_t: No expression named, %s, found\n", line);
+    return -1;
+  }
+  neex[nsub]=exprlist[id];
+  nsub++;
+
+  for (int i=0; i<100; i++) {
+    name3=strtok(line, " \t");
+    if (name3==NULL) break;
+    id=name->lookup(name3);
+    if (id==-1) {
+      fprintf(stderr, "grammar_t: No expression named, %s, found\n", line);
+      return -1;
+    }
+    neex[nsub]=exprlist[id];
+    nsub++;
+  }
+
+  id=name->add(name2);
+  if (exprlist[id]!=NULL) {
+    fprintf("grammar_t: warning, overwriting expression, %s\n", name2);
+    delete exprlist[id];
+  }
+  exprlist[id]=new compound(neex, nsub);
+
+  return 0;
+} 
+

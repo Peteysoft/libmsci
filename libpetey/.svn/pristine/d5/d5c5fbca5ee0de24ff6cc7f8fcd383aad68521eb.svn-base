@@ -1,0 +1,11 @@
+#include "vector_s.cc"
+#include "symbol_table.h"
+
+symbol_table symtab;
+vector_s<int> vartyp;
+
+symbol_table funtab;
+vector_s<sc_fun_t*> funs;
+
+vector_s<long> code;
+

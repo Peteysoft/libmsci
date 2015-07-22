@@ -1,0 +1,1378 @@
+------------------------------------------------------------------------
+r353 | peteysoft | 2014-09-28 18:14:23 -0400 (Sun, 28 Sep 2014) | 1 line
+
+Changed x-tolerance in supernewton to relative tol.; added O(nk) efficient k-selector class
+------------------------------------------------------------------------
+r352 | peteysoft | 2014-09-09 01:28:12 -0400 (Tue, 09 Sep 2014) | 1 line
+
+Better random number seed generator
+------------------------------------------------------------------------
+r348 | peteysoft | 2014-08-09 02:21:54 -0400 (Sat, 09 Aug 2014) | 1 line
+
+Continuing clean up
+------------------------------------------------------------------------
+r347 | peteysoft | 2014-08-08 14:20:18 -0400 (Fri, 08 Aug 2014) | 1 line
+
+kselect class hierarchy and test program
+------------------------------------------------------------------------
+r346 | peteysoft | 2014-08-08 03:26:32 -0400 (Fri, 08 Aug 2014) | 1 line
+
+Test program for select, sort and randomize
+------------------------------------------------------------------------
+r345 | peteysoft | 2014-08-08 01:30:32 -0400 (Fri, 08 Aug 2014) | 1 line
+
+Updated makefile
+------------------------------------------------------------------------
+r344 | peteysoft | 2014-08-08 01:18:16 -0400 (Fri, 08 Aug 2014) | 1 line
+
+Clean up: all but one or two .cc and .h files are being used
+------------------------------------------------------------------------
+r343 | peteysoft | 2014-08-07 20:46:18 -0400 (Thu, 07 Aug 2014) | 1 line
+
+Cleaning up, designing test suites, updating makefile
+------------------------------------------------------------------------
+r342 | peteysoft | 2014-08-07 00:59:49 -0400 (Thu, 07 Aug 2014) | 1 line
+
+Inverse error function and in the process improving supernewton; finally building unit tests
+------------------------------------------------------------------------
+r341 | peteysoft | 2014-08-06 02:25:23 -0400 (Wed, 06 Aug 2014) | 1 line
+
+Inverse error function and by implication, supernewton
+------------------------------------------------------------------------
+r340 | peteysoft | 2014-08-04 19:53:43 -0400 (Mon, 04 Aug 2014) | 1 line
+
+Need working version to test ctraj compilation
+------------------------------------------------------------------------
+r339 | peteysoft | 2014-07-16 02:57:22 -0400 (Wed, 16 Jul 2014) | 1 line
+
+sparse calculator: new and improved
+------------------------------------------------------------------------
+r338 | peteysoft | 2014-06-30 00:44:24 -0400 (Mon, 30 Jun 2014) | 1 line
+
+Sparse calculator version +0
+------------------------------------------------------------------------
+r337 | peteysoft | 2014-06-28 22:04:12 -0400 (Sat, 28 Jun 2014) | 1 line
+
+Sparse calculator
+------------------------------------------------------------------------
+r336 | peteysoft | 2014-06-28 17:51:19 -0400 (Sat, 28 Jun 2014) | 1 line
+
+New tack: stick new vector multiplication methods inside child classes
+------------------------------------------------------------------------
+r335 | peteysoft | 2014-06-28 03:31:21 -0400 (Sat, 28 Jun 2014) | 1 line
+
+Compiles.  sparse_calc runs
+------------------------------------------------------------------------
+r334 | peteysoft | 2014-06-28 01:58:07 -0400 (Sat, 28 Jun 2014) | 1 line
+
+Compiles but doesn't link
+------------------------------------------------------------------------
+r333 | peteysoft | 2014-06-28 00:36:05 -0400 (Sat, 28 Jun 2014) | 1 line
+
+Stupid doubled-up versions of vector multiplication
+------------------------------------------------------------------------
+r332 | peteysoft | 2014-06-27 23:30:53 -0400 (Fri, 27 Jun 2014) | 1 line
+
+stupid matrix family
+------------------------------------------------------------------------
+r330 | peteysoft | 2014-06-19 04:01:24 -0400 (Thu, 19 Jun 2014) | 1 line
+
+...
+------------------------------------------------------------------------
+r329 | peteysoft | 2014-06-17 02:21:02 -0400 (Tue, 17 Jun 2014) | 1 line
+
+I can't believe I'm still working on this
+------------------------------------------------------------------------
+r328 | peteysoft | 2014-06-16 23:07:21 -0400 (Mon, 16 Jun 2014) | 1 line
+
+This starting to look even uglier than the original...
+------------------------------------------------------------------------
+r327 | peteysoft | 2014-06-16 01:15:52 -0400 (Mon, 16 Jun 2014) | 1 line
+
+might be done sometime...
+------------------------------------------------------------------------
+r326 | peteysoft | 2014-06-15 22:31:18 -0400 (Sun, 15 Jun 2014) | 1 line
+
+sparse_calc w/ user-defined functions and compiled byte-code
+------------------------------------------------------------------------
+r325 | peteysoft | 2014-06-15 01:41:55 -0400 (Sun, 15 Jun 2014) | 1 line
+
+Starting new sparse_calc utility
+------------------------------------------------------------------------
+r324 | peteysoft | 2014-06-10 01:59:07 -0400 (Tue, 10 Jun 2014) | 1 line
+
+Almost working
+------------------------------------------------------------------------
+r323 | peteysoft | 2014-06-10 00:10:41 -0400 (Tue, 10 Jun 2014) | 1 line
+
+Added test grammar
+------------------------------------------------------------------------
+r322 | peteysoft | 2014-06-09 21:30:04 -0400 (Mon, 09 Jun 2014) | 1 line
+
+Working on grammar parser
+------------------------------------------------------------------------
+r321 | peteysoft | 2014-05-23 23:32:00 -0400 (Fri, 23 May 2014) | 1 line
+
+Working on k-select interface
+------------------------------------------------------------------------
+r320 | peteysoft | 2014-05-23 10:41:10 -0400 (Fri, 23 May 2014) | 1 line
+
+More general interface for kleast algorithms
+------------------------------------------------------------------------
+r319 | peteysoft | 2014-05-15 00:21:36 -0400 (Thu, 15 May 2014) | 1 line
+
+Working on parser
+------------------------------------------------------------------------
+r318 | peteysoft | 2014-05-14 20:35:10 -0400 (Wed, 14 May 2014) | 1 line
+
+Finally implementing the context-free grammar
+------------------------------------------------------------------------
+r317 | peteysoft | 2014-05-07 02:16:28 -0400 (Wed, 07 May 2014) | 1 line
+
+Porting to new computer
+------------------------------------------------------------------------
+r316 | peteysoft | 2014-04-23 02:30:22 -0400 (Wed, 23 Apr 2014) | 2 lines
+
+Ramping up to make sparse_calc more complete
+
+------------------------------------------------------------------------
+r312 | peteysoft | 2014-04-14 18:01:17 -0400 (Mon, 14 Apr 2014) | 2 lines
+
+Added variable declaration options to sparse_calc and other small changes
+
+------------------------------------------------------------------------
+r311 | peteysoft | 2014-04-13 02:34:47 -0400 (Sun, 13 Apr 2014) | 2 lines
+
+Bogus bug from valgrind: I just used the wrong file name
+
+------------------------------------------------------------------------
+r310 | peteysoft | 2014-04-12 23:41:53 -0400 (Sat, 12 Apr 2014) | 4 lines
+
+Finally got rid of some of those format conversion errors--just need to try it 
+on a 32-bit machine
+Prepping library for new release
+
+------------------------------------------------------------------------
+r309 | peteysoft | 2014-04-12 20:53:11 -0400 (Sat, 12 Apr 2014) | 2 lines
+
+ramping up for new release
+
+------------------------------------------------------------------------
+r308 | peteysoft | 2014-03-31 18:01:40 -0400 (Mon, 31 Mar 2014) | 2 lines
+
+Minor bugs in sparse_calc
+
+------------------------------------------------------------------------
+r307 | peteysoft | 2014-03-29 23:30:58 -0400 (Sat, 29 Mar 2014) | 2 lines
+
+More efficient randomize function
+
+------------------------------------------------------------------------
+r306 | peteysoft | 2014-03-29 23:19:34 -0400 (Sat, 29 Mar 2014) | 2 lines
+
+Bugs in sparse calc
+
+------------------------------------------------------------------------
+r305 | peteysoft | 2014-03-26 20:36:28 -0400 (Wed, 26 Mar 2014) | 2 lines
+
+Randomize doesn't print out random numbers any more!
+
+------------------------------------------------------------------------
+r304 | peteysoft | 2014-03-26 20:15:36 -0400 (Wed, 26 Mar 2014) | 2 lines
+
+Improving make files and README
+
+------------------------------------------------------------------------
+r303 | peteysoft | 2014-03-15 22:16:10 -0400 (Sat, 15 Mar 2014) | 2 lines
+
+ascii I/O routines
+
+------------------------------------------------------------------------
+r302 | peteysoft | 2014-03-09 03:19:49 -0400 (Sun, 09 Mar 2014) | 3 lines
+
+Sparse calc printed an error after reading in an ascii data file
+even though no error occurred
+
+------------------------------------------------------------------------
+r301 | peteysoft | 2014-03-08 21:03:29 -0500 (Sat, 08 Mar 2014) | 3 lines
+
+Finished adding namespaces
+Still need to test ascii I/O routines
+
+------------------------------------------------------------------------
+r300 | peteysoft | 2014-03-08 20:06:03 -0500 (Sat, 08 Mar 2014) | 3 lines
+
+New and improved utilities for reading ascii files
+Namespaces
+
+------------------------------------------------------------------------
+r299 | peteysoft | 2014-03-08 02:16:48 -0500 (Sat, 08 Mar 2014) | 3 lines
+
+Un-inlined full_util and moved it down to libpetey
+Trying to add namespaces
+
+------------------------------------------------------------------------
+r298 | peteysoft | 2014-03-02 20:03:30 -0500 (Sun, 02 Mar 2014) | 2 lines
+
+Sparse calculator deletes un-"save"d variables
+
+------------------------------------------------------------------------
+r297 | peteysoft | 2014-02-02 15:25:24 -0500 (Sun, 02 Feb 2014) | 2 lines
+
+Debugging to work cleanly with libagf
+
+------------------------------------------------------------------------
+r296 | peteysoft | 2013-12-27 03:58:51 -0500 (Fri, 27 Dec 2013) | 2 lines
+
+Porting back to my laptop which is now running "Cinnamon" "Mint" Linux
+
+------------------------------------------------------------------------
+r295 | peteysoft | 2013-12-11 22:19:57 -0500 (Wed, 11 Dec 2013) | 3 lines
+
+Made supernewton more efficient by solving for the cubic coefficients
+with an analytic expression rather than a matrix solver.
+
+------------------------------------------------------------------------
+r294 | peteysoft | 2013-12-09 22:47:37 -0500 (Mon, 09 Dec 2013) | 4 lines
+
+Porting to Steve's machine
+Error in sparse matrix calculator (modulo operator)
+Change randomize_vec in randomize.cc to randomize
+
+------------------------------------------------------------------------
+r293 | peteysoft | 2013-11-11 22:28:41 -0500 (Mon, 11 Nov 2013) | 2 lines
+
+Finally trying to create a context-free grammar parser.
+
+------------------------------------------------------------------------
+r292 | peteysoft | 2013-09-10 13:58:05 -0400 (Tue, 10 Sep 2013) | 3 lines
+
+Added modulo operator in sparse calculator
+Added files for dataset language interpreter
+
+------------------------------------------------------------------------
+r291 | peteysoft | 2013-09-05 22:40:47 -0400 (Thu, 05 Sep 2013) | 3 lines
+
+- read_ascii_all now accepts a file stream in addition to a name
+- delimiters can be specified when converting to and from dates in string format
+
+------------------------------------------------------------------------
+r290 | peteysoft | 2013-08-05 00:47:23 -0400 (Mon, 05 Aug 2013) | 2 lines
+
+Clean wasn't clean enough
+
+------------------------------------------------------------------------
+r289 | peteysoft | 2013-08-01 01:16:39 -0400 (Thu, 01 Aug 2013) | 2 lines
+
+Minor improvements to date_calc help 
+
+------------------------------------------------------------------------
+r288 | peteysoft | 2013-08-01 00:56:17 -0400 (Thu, 01 Aug 2013) | 2 lines
+
+Help screen/man page for date_calc program
+
+------------------------------------------------------------------------
+r287 | peteysoft | 2013-07-31 16:02:16 -0400 (Wed, 31 Jul 2013) | 2 lines
+
+NEWS file
+
+------------------------------------------------------------------------
+r286 | peteysoft | 2013-07-30 03:37:12 -0400 (Tue, 30 Jul 2013) | 2 lines
+
+duh, wrong way to fix the problem...
+
+------------------------------------------------------------------------
+r285 | peteysoft | 2013-07-30 03:35:03 -0400 (Tue, 30 Jul 2013) | 2 lines
+
+Oops, '-f'
+
+------------------------------------------------------------------------
+r284 | peteysoft | 2013-07-30 03:33:53 -0400 (Tue, 30 Jul 2013) | 2 lines
+
+added '-r' option to copy command for executables
+
+------------------------------------------------------------------------
+r283 | peteysoft | 2013-07-30 02:36:47 -0400 (Tue, 30 Jul 2013) | 2 lines
+
+stuff
+
+------------------------------------------------------------------------
+r282 | peteysoft | 2013-07-06 18:11:21 -0400 (Sat, 06 Jul 2013) | 3 lines
+
+Finally corrected problem with supernewton and tested it on inverse error
+function.
+
+------------------------------------------------------------------------
+r281 | peteysoft | 2013-07-03 20:37:13 -0400 (Wed, 03 Jul 2013) | 3 lines
+
+Fixed error in dependent_swap dataset class
+Error in bug-reporting in date_calc
+
+------------------------------------------------------------------------
+r280 | peteysoft | 2013-06-28 14:03:40 -0400 (Fri, 28 Jun 2013) | 2 lines
+
+Added output formats to date_calc.
+
+------------------------------------------------------------------------
+r279 | peteysoft | 2013-06-28 00:40:33 -0400 (Fri, 28 Jun 2013) | 2 lines
+
+Added date_calc to makefile and install list.
+
+------------------------------------------------------------------------
+r278 | peteysoft | 2013-06-16 01:21:45 -0400 (Sun, 16 Jun 2013) | 2 lines
+
+Removed all the extra line-breaks from the sparse_calc man pages source
+
+------------------------------------------------------------------------
+r277 | peteysoft | 2013-06-16 01:14:44 -0400 (Sun, 16 Jun 2013) | 2 lines
+
+Missing paragraph break in sparse_calc documentation.
+
+------------------------------------------------------------------------
+r276 | peteysoft | 2013-06-16 00:02:17 -0400 (Sun, 16 Jun 2013) | 2 lines
+
+Fixed a bug in dependent_swap dataset
+
+------------------------------------------------------------------------
+r275 | peteysoft | 2013-06-15 21:29:26 -0400 (Sat, 15 Jun 2013) | 2 lines
+
+Does this work?
+
+------------------------------------------------------------------------
+r274 | peteysoft | 2013-05-08 02:28:27 -0400 (Wed, 08 May 2013) | 2 lines
+
+Adding math functions to the sparse calculator
+
+------------------------------------------------------------------------
+r273 | peteysoft | 2013-04-27 01:02:33 -0400 (Sat, 27 Apr 2013) | 3 lines
+
+Undid a bunch of stuff related to "make-like" feature.  This will be 
+complicated to add.  I'd like to release an initial version before then...
+
+------------------------------------------------------------------------
+r272 | peteysoft | 2013-04-24 01:03:48 -0400 (Wed, 24 Apr 2013) | 2 lines
+
+Cleaning up the matrix class hierarchy a bit...
+
+------------------------------------------------------------------------
+r271 | peteysoft | 2013-04-19 00:44:58 -0400 (Fri, 19 Apr 2013) | 2 lines
+
+Working to add make-style dependencies to sparse calculator
+
+------------------------------------------------------------------------
+r270 | peteysoft | 2013-04-18 23:56:30 -0400 (Thu, 18 Apr 2013) | 2 lines
+
+Trying to make-style dependencies to sparse calculator
+
+------------------------------------------------------------------------
+r269 | peteysoft | 2013-04-18 18:18:57 -0400 (Thu, 18 Apr 2013) | 4 lines
+
+Disastrouse attempt to add sc_test directory plus Makefile to repository
+Now it's time to start all over again
+Jesus SVN sucks...
+
+------------------------------------------------------------------------
+r268 | peteysoft | 2013-04-17 22:36:46 -0400 (Wed, 17 Apr 2013) | 2 lines
+
+Option to calculate low as well as high eigenvalues
+
+------------------------------------------------------------------------
+r267 | peteysoft | 2013-04-16 01:10:37 -0400 (Tue, 16 Apr 2013) | 3 lines
+
+Expanded the number of options that can be passed to the ARPACK "glue" 
+routines.
+
+------------------------------------------------------------------------
+r266 | peteysoft | 2013-04-11 17:15:22 -0400 (Thu, 11 Apr 2013) | 2 lines
+
+Added bugs/desired features section to manpage
+
+------------------------------------------------------------------------
+r265 | peteysoft | 2013-04-09 22:22:44 -0400 (Tue, 09 Apr 2013) | 2 lines
+
+Sparse_calc man page; eigenvalue invert procedures
+
+------------------------------------------------------------------------
+r264 | peteysoft | 2013-04-07 22:29:40 -0400 (Sun, 07 Apr 2013) | 2 lines
+
+Working on the documentation.  Added a man page.
+
+------------------------------------------------------------------------
+r263 | peteysoft | 2013-03-26 00:28:23 -0400 (Tue, 26 Mar 2013) | 2 lines
+
+Bug fixes and efficiency improvements
+
+------------------------------------------------------------------------
+r262 | peteysoft | 2013-03-24 23:30:09 -0400 (Sun, 24 Mar 2013) | 3 lines
+
+Still bug hunting
+More efficient versions of matrix multiplication for sparse arrays
+
+------------------------------------------------------------------------
+r260 | peteysoft | 2013-03-23 00:34:33 -0400 (Sat, 23 Mar 2013) | 2 lines
+
+Debugging sparse matrix calculator
+
+------------------------------------------------------------------------
+r259 | peteysoft | 2013-03-20 00:48:09 -0400 (Wed, 20 Mar 2013) | 2 lines
+
+Debugging sparse calculator, and of course adding extra features...
+
+------------------------------------------------------------------------
+r258 | peteysoft | 2013-03-18 02:07:18 -0400 (Mon, 18 Mar 2013) | 2 lines
+
+Revising Arpack solver routines
+
+------------------------------------------------------------------------
+r257 | peteysoft | 2013-03-17 00:28:51 -0400 (Sun, 17 Mar 2013) | 7 lines
+
+Debugging the solver routines in sparse_calc
+conj_grad seems to work
+biconj_grad was completely wrong--seems that it might be working now
+but needs higher precision
+->need methods to up the precision of matrix objects
+...either that or just change the default precision to double...
+
+------------------------------------------------------------------------
+r256 | peteysoft | 2013-03-11 22:54:59 -0400 (Mon, 11 Mar 2013) | 3 lines
+
+Debugging sparse calculator
+Adding subscript l-values, vector subscripts
+
+------------------------------------------------------------------------
+r255 | peteysoft | 2013-03-05 10:22:26 -0500 (Tue, 05 Mar 2013) | 3 lines
+
+Debugging the sparse matrix calculator.  Still a long way to go.
+Bug in rk_dumb_ts that was affecting ctraj
+
+------------------------------------------------------------------------
+r254 | peteysoft | 2013-03-01 23:02:54 -0500 (Fri, 01 Mar 2013) | 2 lines
+
+sparse calculator
+
+------------------------------------------------------------------------
+r253 | peteysoft | 2013-03-01 22:38:17 -0500 (Fri, 01 Mar 2013) | 3 lines
+
+Working on help screen for sparse calculator (not really sure why, but it's now extremely
+comprehensive...)
+
+------------------------------------------------------------------------
+r252 | peteysoft | 2013-03-01 21:03:07 -0500 (Fri, 01 Mar 2013) | 2 lines
+
+Trying to work out all the bugs...
+
+------------------------------------------------------------------------
+r251 | peteysoft | 2013-03-01 19:48:49 -0500 (Fri, 01 Mar 2013) | 2 lines
+
+It's actually working quite well...
+
+------------------------------------------------------------------------
+r250 | peteysoft | 2013-03-01 00:35:55 -0500 (Fri, 01 Mar 2013) | 4 lines
+
+Slowly pounding out the bugs in matrix multiplication
+Soon hope to address solve routines
+Still wondering how to do multiple subscripting
+
+------------------------------------------------------------------------
+r249 | peteysoft | 2013-02-28 00:34:30 -0500 (Thu, 28 Feb 2013) | 2 lines
+
+Even if the solve routines don't work, this beast is becoming quite refined...
+
+------------------------------------------------------------------------
+r248 | peteysoft | 2013-02-27 00:59:15 -0500 (Wed, 27 Feb 2013) | 2 lines
+
+It might actually work properly one of these days...
+
+------------------------------------------------------------------------
+r247 | peteysoft | 2013-02-26 21:00:49 -0500 (Tue, 26 Feb 2013) | 2 lines
+
+The solve routines don't work at all, but I added a snazzy help function...
+
+------------------------------------------------------------------------
+r246 | peteysoft | 2013-02-26 03:05:40 -0500 (Tue, 26 Feb 2013) | 2 lines
+
+This sparse calculator is turning into quite a beast...
+
+------------------------------------------------------------------------
+r245 | peteysoft | 2013-02-24 00:51:50 -0500 (Sun, 24 Feb 2013) | 2 lines
+
+Working on sparse calculator
+
+------------------------------------------------------------------------
+r244 | peteysoft | 2013-02-22 01:45:24 -0500 (Fri, 22 Feb 2013) | 2 lines
+
+Working on sparse matrix calculator
+
+------------------------------------------------------------------------
+r243 | peteysoft | 2013-02-18 00:10:38 -0500 (Mon, 18 Feb 2013) | 2 lines
+
+Working on sparse calculator and sparse solve routines
+
+------------------------------------------------------------------------
+r242 | peteysoft | 2013-02-17 16:43:10 -0500 (Sun, 17 Feb 2013) | 2 lines
+
+Working on sparse calculator
+
+------------------------------------------------------------------------
+r241 | peteysoft | 2013-02-13 00:33:27 -0500 (Wed, 13 Feb 2013) | 3 lines
+
+Couple of bugs in parse_command_opts
+Minor bug in dependent_intc
+
+------------------------------------------------------------------------
+r240 | peteysoft | 2013-02-12 02:10:10 -0500 (Tue, 12 Feb 2013) | 2 lines
+
+Optional compile for dependent_intc.h to prevent duplicate inclusion.
+
+------------------------------------------------------------------------
+r238 | peteysoft | 2012-12-11 19:36:39 -0500 (Tue, 11 Dec 2012) | 2 lines
+
+Updated NEWS and README files.  Add LIBLEX macro to sparse makefile.
+
+------------------------------------------------------------------------
+r237 | peteysoft | 2012-12-11 16:44:14 -0500 (Tue, 11 Dec 2012) | 3 lines
+
+Non-fatal error codes return 0 to command line when passed to exit procedure
+
+
+------------------------------------------------------------------------
+r236 | peteysoft | 2012-12-10 12:50:12 -0500 (Mon, 10 Dec 2012) | 2 lines
+
+Forgot to add sparse_calc_defs to repository
+
+------------------------------------------------------------------------
+r235 | peteysoft | 2012-12-04 16:41:09 -0500 (Tue, 04 Dec 2012) | 2 lines
+
+sparse_calc help screen; changes to makefile
+
+------------------------------------------------------------------------
+r234 | peteysoft | 2012-12-03 19:22:43 -0500 (Mon, 03 Dec 2012) | 2 lines
+
+Added help screen to sparse_calc, added it to standard distro...
+
+------------------------------------------------------------------------
+r233 | peteysoft | 2012-12-01 10:35:46 -0500 (Sat, 01 Dec 2012) | 2 lines
+
+matrix_base.cc was missing from the distru
+
+------------------------------------------------------------------------
+r232 | peteysoft | 2012-11-26 00:32:08 -0500 (Mon, 26 Nov 2012) | 2 lines
+
+Bug in the debug code..  huh..
+
+------------------------------------------------------------------------
+r231 | peteysoft | 2012-11-26 00:25:48 -0500 (Mon, 26 Nov 2012) | 2 lines
+
+Working on sparse calculator
+
+------------------------------------------------------------------------
+r230 | peteysoft | 2012-11-25 20:06:50 -0500 (Sun, 25 Nov 2012) | 3 lines
+
+Revising type conversions between different matrix flavours
+Working on lex/yacc based sparse calculator
+
+------------------------------------------------------------------------
+r229 | peteysoft | 2012-11-16 21:36:52 -0500 (Fri, 16 Nov 2012) | 2 lines
+
+Working on sparse calculator.  Switched back to lex/yacc...
+
+------------------------------------------------------------------------
+r228 | peteysoft | 2012-10-03 09:30:03 -0400 (Wed, 03 Oct 2012) | 2 lines
+
+Just the makefile...
+
+------------------------------------------------------------------------
+r225 | peteysoft | 2012-09-26 13:13:23 -0400 (Wed, 26 Sep 2012) | 2 lines
+
+Errors in template declarations
+
+------------------------------------------------------------------------
+r223 | peteysoft | 2012-09-21 20:41:36 -0400 (Fri, 21 Sep 2012) | 2 lines
+
+Still struggling with integer typing issues.
+
+------------------------------------------------------------------------
+r222 | peteysoft | 2012-09-20 22:33:55 -0400 (Thu, 20 Sep 2012) | 2 lines
+
+Added #if macros for fortran-style function macro
+
+------------------------------------------------------------------------
+r221 | peteysoft | 2012-09-14 15:17:45 -0400 (Fri, 14 Sep 2012) | 2 lines
+
+Forgot to add rk_dumb_ts.cc
+
+------------------------------------------------------------------------
+r220 | peteysoft | 2012-09-14 14:58:18 -0400 (Fri, 14 Sep 2012) | 3 lines
+
+- NEWS file detailing changes
+- Fortran underscoring set in makefile
+
+------------------------------------------------------------------------
+r212 | peteysoft | 2012-09-05 21:19:03 -0400 (Wed, 05 Sep 2012) | 3 lines
+
+Keep the attempts at an inverse error function, even though they are not
+working yet
+
+------------------------------------------------------------------------
+r208 | peteysoft | 2012-09-01 10:58:17 -0400 (Sat, 01 Sep 2012) | 3 lines
+
+Problems with bit_array
+Still working on convergence criteria for supernewton
+
+------------------------------------------------------------------------
+r206 | peteysoft | 2012-08-27 23:39:13 -0400 (Mon, 27 Aug 2012) | 6 lines
+
+A lot of changes:
+- added thread-save version of rk algorithm
+- debugged kleast_quick algorithm
+- better fix for fortran function symbols
+- testing an inverse error function
+
+------------------------------------------------------------------------
+r205 | peteysoft | 2012-08-20 18:46:56 -0400 (Mon, 20 Aug 2012) | 2 lines
+
+Not much new here...
+
+------------------------------------------------------------------------
+r204 | peteysoft | 2012-08-15 12:02:22 -0400 (Wed, 15 Aug 2012) | 2 lines
+
+k-extreme based on quicksort
+
+------------------------------------------------------------------------
+r203 | peteysoft | 2012-08-14 17:05:46 -0400 (Tue, 14 Aug 2012) | 2 lines
+
+Continuuing to work on refinements: kleast, agf_calc_w
+
+------------------------------------------------------------------------
+r202 | peteysoft | 2012-08-12 23:17:27 -0400 (Sun, 12 Aug 2012) | 3 lines
+
+Completing k-extreme routines based on quicksort
+Updated documentation
+
+------------------------------------------------------------------------
+r201 | peteysoft | 2012-08-05 14:03:00 -0400 (Sun, 05 Aug 2012) | 3 lines
+
+Bug in linked list.  Why did I have to do a complete rebuild for the
+changes to take effect??
+
+------------------------------------------------------------------------
+r200 | peteysoft | 2012-08-01 02:35:35 -0400 (Wed, 01 Aug 2012) | 2 lines
+
+Still messing about with the "row-reducing" code...
+
+------------------------------------------------------------------------
+r199 | peteysoft | 2012-07-24 22:21:20 -0400 (Tue, 24 Jul 2012) | 2 lines
+
+Symbol table utility
+
+------------------------------------------------------------------------
+r198 | peteysoft | 2012-07-24 22:20:33 -0400 (Tue, 24 Jul 2012) | 2 lines
+
+Row reduction utility/sparse calculator
+
+------------------------------------------------------------------------
+r197 | peteysoft | 2012-07-22 03:25:48 -0400 (Sun, 22 Jul 2012) | 2 lines
+
+Symbol table for all my parsing needs.
+
+------------------------------------------------------------------------
+r196 | peteysoft | 2012-07-21 04:47:27 -0400 (Sat, 21 Jul 2012) | 2 lines
+
+Writing a sparse calculator by hand in c++
+
+------------------------------------------------------------------------
+r195 | peteysoft | 2012-07-16 10:50:22 -0400 (Mon, 16 Jul 2012) | 2 lines
+
+Error in linked.cc, tree_tmp.cpp (wrong template argument)
+
+------------------------------------------------------------------------
+r194 | peteysoft | 2012-07-05 22:11:41 -0400 (Thu, 05 Jul 2012) | 2 lines
+
+Errors in peteys_tmpl_lib and linked
+
+------------------------------------------------------------------------
+r193 | peteysoft | 2012-07-05 00:02:13 -0400 (Thu, 05 Jul 2012) | 2 lines
+
+Moved global_binning sub-module to ctraj.
+
+------------------------------------------------------------------------
+r192 | peteysoft | 2012-07-04 20:44:08 -0400 (Wed, 04 Jul 2012) | 2 lines
+
+Simplified and generalized the global_binning routines...
+
+------------------------------------------------------------------------
+r191 | peteysoft | 2012-07-01 17:33:20 -0400 (Sun, 01 Jul 2012) | 2 lines
+
+Routines for binning longitude and latitude coords...
+
+------------------------------------------------------------------------
+r190 | peteysoft | 2012-04-29 23:40:12 -0400 (Sun, 29 Apr 2012) | 2 lines
+
+Fixing help screens
+
+------------------------------------------------------------------------
+r189 | peteysoft | 2012-04-22 00:32:27 -0400 (Sun, 22 Apr 2012) | 3 lines
+
+Debugging: fixing a lot of stupid errors (mostly parameters not being 
+set and other missing stuff...)
+
+------------------------------------------------------------------------
+r188 | peteysoft | 2012-04-21 01:47:43 -0400 (Sat, 21 Apr 2012) | 2 lines
+
+Missing parameters in copy matrix
+
+------------------------------------------------------------------------
+r187 | peteysoft | 2012-04-21 01:38:49 -0400 (Sat, 21 Apr 2012) | 2 lines
+
+Fixed memory bugs in sparse_array; removed debug codes in av
+
+------------------------------------------------------------------------
+r186 | peteysoft | 2012-04-19 23:47:29 -0400 (Thu, 19 Apr 2012) | 2 lines
+
+Debugging sparse_array
+
+------------------------------------------------------------------------
+r185 | peteysoft | 2012-04-19 20:23:07 -0400 (Thu, 19 Apr 2012) | 2 lines
+
+Error in petey_pointer.h (binding of dereference vs. increment operators)
+
+------------------------------------------------------------------------
+r184 | peteysoft | 2012-04-19 19:29:20 -0400 (Thu, 19 Apr 2012) | 2 lines
+
+Errors in petey_pointer, Errors in makefile
+
+------------------------------------------------------------------------
+r183 | peteysoft | 2012-04-18 01:21:57 -0400 (Wed, 18 Apr 2012) | 2 lines
+
+Error in makefile
+
+------------------------------------------------------------------------
+r180 | peteysoft | 2012-04-01 15:36:58 -0400 (Sun, 01 Apr 2012) | 2 lines
+
+Holy Fuck!  It compiles.  Now to begin the tedious process of testing...
+
+------------------------------------------------------------------------
+r179 | peteysoft | 2012-03-30 21:39:48 -0400 (Fri, 30 Mar 2012) | 2 lines
+
+Jesus, I've really created a monster here...
+
+------------------------------------------------------------------------
+r178 | peteysoft | 2012-03-25 11:03:49 -0400 (Sun, 25 Mar 2012) | 2 lines
+
+Trying to get this rather ambitious project off the ground...
+
+------------------------------------------------------------------------
+r176 | peteysoft | 2012-02-24 20:29:00 -0500 (Fri, 24 Feb 2012) | 3 lines
+
+Someday my cretaceous family of matrix types might actually work
+...before the meteor strike wipes them all out...
+
+------------------------------------------------------------------------
+r175 | peteysoft | 2012-02-23 02:10:14 -0500 (Thu, 23 Feb 2012) | 2 lines
+
+Need to simplify this makefile...
+
+------------------------------------------------------------------------
+r174 | peteysoft | 2012-02-22 23:52:20 -0500 (Wed, 22 Feb 2012) | 2 lines
+
+Getting closer...
+
+------------------------------------------------------------------------
+r173 | peteysoft | 2012-02-22 23:32:24 -0500 (Wed, 22 Feb 2012) | 2 lines
+
+Someday I might clean up this mess...
+
+------------------------------------------------------------------------
+r172 | peteysoft | 2012-02-22 23:04:24 -0500 (Wed, 22 Feb 2012) | 2 lines
+
+Added sparse_array.h
+
+------------------------------------------------------------------------
+r166 | peteysoft | 2012-02-02 22:11:30 -0500 (Thu, 02 Feb 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r165 | peteysoft | 2012-02-02 12:25:39 -0500 (Thu, 02 Feb 2012) | 3 lines
+
+Adding all the elements needed for the "sparse calculator..."
+Need smart pointers for sparse arrays...
+
+------------------------------------------------------------------------
+r164 | peteysoft | 2012-01-31 02:26:42 -0500 (Tue, 31 Jan 2012) | 4 lines
+
+matrix_base: base class for sparse, sparse array and full matrices
+sparse_calc: calculator for large matrices
+Adding 
+
+------------------------------------------------------------------------
+r163 | peteysoft | 2012-01-29 01:23:34 -0500 (Sun, 29 Jan 2012) | 2 lines
+
+Creating a matrix calculator to test sparse routines...
+
+------------------------------------------------------------------------
+r162 | peteysoft | 2012-01-29 00:23:19 -0500 (Sun, 29 Jan 2012) | 2 lines
+
+bug in time class; working (albeit basic) time calculator
+
+------------------------------------------------------------------------
+r161 | peteysoft | 2012-01-28 21:33:25 -0500 (Sat, 28 Jan 2012) | 2 lines
+
+Unsuccessful attempt at a date calculator using lex and yacc
+
+------------------------------------------------------------------------
+r158 | peteysoft | 2012-01-15 11:47:03 -0500 (Sun, 15 Jan 2012) | 2 lines
+
+Added lex file for parsing dates.  Couple of bug fixes.
+
+------------------------------------------------------------------------
+r157 | peteysoft | 2012-01-08 01:34:15 -0500 (Sun, 08 Jan 2012) | 2 lines
+
+Adding some sparse inverse methods here.
+
+------------------------------------------------------------------------
+r156 | peteysoft | 2012-01-06 03:27:51 -0500 (Fri, 06 Jan 2012) | 2 lines
+
+conj_grad and biconj_grad functions instantiated with sparse_array,
+
+------------------------------------------------------------------------
+r155 | peteysoft | 2012-01-06 02:49:05 -0500 (Fri, 06 Jan 2012) | 2 lines
+
+Another piece of code that compiles, but hasn't been tested...
+
+------------------------------------------------------------------------
+r154 | peteysoft | 2012-01-06 02:31:53 -0500 (Fri, 06 Jan 2012) | 2 lines
+
+...
+
+------------------------------------------------------------------------
+r153 | peteysoft | 2012-01-05 22:13:15 -0500 (Thu, 05 Jan 2012) | 2 lines
+
+Conjugate gradient and biconjugate gradient methods, copied from Wikipedia
+
+------------------------------------------------------------------------
+r152 | peteysoft | 2012-01-05 01:53:13 -0500 (Thu, 05 Jan 2012) | 3 lines
+
+Added biconj gradient solver
+want to add a bunch of methods for inverting matrices
+
+------------------------------------------------------------------------
+r150 | peteysoft | 2012-01-03 00:29:55 -0500 (Tue, 03 Jan 2012) | 2 lines
+
+Sparse array additions/changes compile.
+
+------------------------------------------------------------------------
+r149 | peteysoft | 2012-01-02 23:29:11 -0500 (Mon, 02 Jan 2012) | 3 lines
+
+Added sparse array class, changed SVD and EV decomposition programs
+to use it...
+
+------------------------------------------------------------------------
+r148 | peteysoft | 2011-12-20 23:19:59 -0500 (Tue, 20 Dec 2011) | 2 lines
+
+Correcting some memory errors...
+
+------------------------------------------------------------------------
+r147 | peteysoft | 2011-12-20 21:42:45 -0500 (Tue, 20 Dec 2011) | 2 lines
+
+Not much new here...
+
+------------------------------------------------------------------------
+r141 | peteysoft | 2011-11-06 19:42:47 -0500 (Sun, 06 Nov 2011) | 2 lines
+
+Bug in read_ascii_all
+
+------------------------------------------------------------------------
+r140 | peteysoft | 2011-11-06 01:04:02 -0400 (Sun, 06 Nov 2011) | 2 lines
+
+read_ascii_all was returning file backwards...
+
+------------------------------------------------------------------------
+r139 | peteysoft | 2011-11-05 21:45:07 -0400 (Sat, 05 Nov 2011) | 2 lines
+
+Forgot to allocate lines in read_ascii_all
+
+------------------------------------------------------------------------
+r138 | peteysoft | 2011-11-05 21:05:37 -0400 (Sat, 05 Nov 2011) | 2 lines
+
+...
+
+------------------------------------------------------------------------
+r137 | peteysoft | 2011-11-01 23:32:54 -0400 (Tue, 01 Nov 2011) | 3 lines
+
+Compatibility with libagf
+read_ascii_all utility
+
+------------------------------------------------------------------------
+r136 | peteysoft | 2011-11-01 14:40:59 -0400 (Tue, 01 Nov 2011) | 2 lines
+
+Forgot two double instantiations for kextreme...
+
+------------------------------------------------------------------------
+r135 | peteysoft | 2011-11-01 14:21:13 -0400 (Tue, 01 Nov 2011) | 2 lines
+
+In tree_lg, tree_lgi and kextreme, instantiations for double
+
+------------------------------------------------------------------------
+r134 | peteysoft | 2011-11-01 13:47:19 -0400 (Tue, 01 Nov 2011) | 2 lines
+
+Deleted line from makefile
+
+------------------------------------------------------------------------
+r133 | peteysoft | 2011-10-31 23:44:43 -0400 (Mon, 31 Oct 2011) | 5 lines
+
+Better linking between the makefiles
+Templated supernewton
+Changed headers for vector files from int32_t to long
+-> soon this won't be necessary, as libagf will use int32_t as well
+
+------------------------------------------------------------------------
+r132 | peteysoft | 2011-10-13 16:51:50 -0400 (Thu, 13 Oct 2011) | 2 lines
+
+Ignore numbers option in parse_command_opts--for negative number in main arguments
+
+------------------------------------------------------------------------
+r131 | peteysoft | 2011-10-05 23:33:44 -0400 (Wed, 05 Oct 2011) | 2 lines
+
+Want to use "ignore_code" utility in makefile for ctraj
+
+------------------------------------------------------------------------
+r127 | peteysoft | 2011-10-04 14:30:27 -0400 (Tue, 04 Oct 2011) | 2 lines
+
+Simple utility to ignore certain exit codes (for make...)
+
+------------------------------------------------------------------------
+r126 | peteysoft | 2011-10-03 23:50:48 -0400 (Mon, 03 Oct 2011) | 2 lines
+
+Integer typing
+
+------------------------------------------------------------------------
+r125 | peteysoft | 2011-10-03 23:50:18 -0400 (Mon, 03 Oct 2011) | 2 lines
+
+sparse: integer typing
+
+------------------------------------------------------------------------
+r124 | peteysoft | 2011-10-03 23:21:30 -0400 (Mon, 03 Oct 2011) | 2 lines
+
+makefile
+
+------------------------------------------------------------------------
+r123 | peteysoft | 2011-10-03 22:52:23 -0400 (Mon, 03 Oct 2011) | 4 lines
+
+Cleaning up typing:
+- all integer parameters read from command line use int32_t
+- changed index type to "ind_t" (=int32_t) to avoid conflict with dataset lib.
+
+------------------------------------------------------------------------
+r122 | peteysoft | 2011-10-02 19:03:23 -0400 (Sun, 02 Oct 2011) | 3 lines
+
+- Added ran_end routine to randomize library
+- comments in parse_command_opts
+
+------------------------------------------------------------------------
+r121 | peteysoft | 2011-10-02 11:49:28 -0400 (Sun, 02 Oct 2011) | 2 lines
+
+sparse_vect_prod: Vectors not deleted
+
+------------------------------------------------------------------------
+r120 | peteysoft | 2011-10-01 22:53:04 -0400 (Sat, 01 Oct 2011) | 3 lines
+
+dependent_swap.cpp: page_start variable in page-swapping algorithm is used before
+                    begin initialized--found with valgrind
+
+------------------------------------------------------------------------
+r119 | peteysoft | 2011-10-01 02:12:05 -0400 (Sat, 01 Oct 2011) | 2 lines
+
+sparse.cc: check for end-of-file before reading in matrix
+
+------------------------------------------------------------------------
+r118 | Peteysoft | 2011-09-30 20:41:03 -0400 (Fri, 30 Sep 2011) | 3 lines
+
+Gosh, don't know what I did with supernewton--hope it still works...
+makefile -- for proxy at job on pharos
+
+------------------------------------------------------------------------
+r117 | peteysoft | 2011-09-30 00:02:02 -0400 (Fri, 30 Sep 2011) | 2 lines
+
+Return correct number of sparse matrices 
+
+------------------------------------------------------------------------
+r116 | peteysoft | 2011-09-29 22:11:07 -0400 (Thu, 29 Sep 2011) | 2 lines
+
+small error in sparse_mat_prod query option
+
+------------------------------------------------------------------------
+r115 | peteysoft | 2011-09-29 17:07:17 -0400 (Thu, 29 Sep 2011) | 2 lines
+
+Remove optimize version from installed executable
+
+------------------------------------------------------------------------
+r114 | peteysoft | 2011-09-29 00:34:40 -0400 (Thu, 29 Sep 2011) | 2 lines
+
+File headers for sparse matrix routines that output vectors...
+
+------------------------------------------------------------------------
+r113 | peteysoft | 2011-09-27 22:57:05 -0400 (Tue, 27 Sep 2011) | 2 lines
+
+- forgot to add randomize.cc to repository...
+
+------------------------------------------------------------------------
+r112 | peteysoft | 2011-09-18 21:18:22 -0400 (Sun, 18 Sep 2011) | 2 lines
+
+- erase command option by replacing it with a space...
+
+------------------------------------------------------------------------
+r111 | peteysoft | 2011-09-18 10:28:00 -0400 (Sun, 18 Sep 2011) | 2 lines
+
+Converted sparse_vect_prod to use in-house command option parser...
+
+------------------------------------------------------------------------
+r110 | peteysoft | 2011-09-18 10:12:50 -0400 (Sun, 18 Sep 2011) | 5 lines
+
+- cleaning up randomize library
+- for compatibility with libagf and greater transparency, vector files
+  now have a size header
+- not sure what I did with simple_temp.cpp...
+
+------------------------------------------------------------------------
+r105 | peteysoft | 2011-08-27 13:44:57 -0400 (Sat, 27 Aug 2011) | 2 lines
+
+Simple random number generator interface
+
+------------------------------------------------------------------------
+r104 | peteysoft | 2011-08-27 13:19:10 -0400 (Sat, 27 Aug 2011) | 2 lines
+
+Added random number generator interface...
+
+------------------------------------------------------------------------
+r102 | peteysoft | 2011-08-25 10:45:13 -0400 (Thu, 25 Aug 2011) | 4 lines
+
+Extra options to parse_command_opts function:
+- accept whitespace
+- ignore unrecognized options...
+
+------------------------------------------------------------------------
+r101 | peteysoft | 2011-08-25 00:54:21 -0400 (Thu, 25 Aug 2011) | 2 lines
+
+Silly fix, really...
+
+------------------------------------------------------------------------
+r100 | peteysoft | 2011-08-25 00:52:55 -0400 (Thu, 25 Aug 2011) | 2 lines
+
+Command option parser works perfectly...
+
+------------------------------------------------------------------------
+r99 | peteysoft | 2011-08-24 23:55:08 -0400 (Wed, 24 Aug 2011) | 2 lines
+
+Option parser works...
+
+------------------------------------------------------------------------
+r91 | peteysoft | 2011-08-01 20:58:05 -0400 (Mon, 01 Aug 2011) | 2 lines
+
+Got rid of underscoring
+
+------------------------------------------------------------------------
+r90 | peteysoft | 2011-07-27 23:55:04 -0400 (Wed, 27 Jul 2011) | 2 lines
+
+Eigenvalue decomposition
+
+------------------------------------------------------------------------
+r85 | peteysoft | 2011-07-26 00:26:49 -0400 (Tue, 26 Jul 2011) | 2 lines
+
+Eigenvalue decomposition using ARNoldi PACKage...
+
+------------------------------------------------------------------------
+r83 | peteysoft | 2011-06-21 12:59:07 -0400 (Tue, 21 Jun 2011) | 2 lines
+
+Eigenvalue decomposition (doesn't work...)
+
+------------------------------------------------------------------------
+r82 | peteysoft | 2011-06-21 12:58:20 -0400 (Tue, 21 Jun 2011) | 2 lines
+
+Should I add parameters to RK4 routines??
+
+------------------------------------------------------------------------
+r81 | peteysoft | 2011-06-12 01:00:48 -0400 (Sun, 12 Jun 2011) | 2 lines
+
+Eigenvalue decomposition...
+
+------------------------------------------------------------------------
+r80 | peteysoft | 2011-06-11 21:40:17 -0400 (Sat, 11 Jun 2011) | 2 lines
+
+Eigenvalue decomposition
+
+------------------------------------------------------------------------
+r79 | peteysoft | 2011-06-11 21:12:26 -0400 (Sat, 11 Jun 2011) | 2 lines
+
+Eigenvalue decomposition
+
+------------------------------------------------------------------------
+r78 | peteysoft | 2011-06-03 17:15:12 -0400 (Fri, 03 Jun 2011) | 2 lines
+
+Trying to get this to work on brown...
+
+------------------------------------------------------------------------
+r77 | peteysoft | 2011-06-03 14:42:01 -0400 (Fri, 03 Jun 2011) | 2 lines
+
+blah blah
+
+------------------------------------------------------------------------
+r76 | peteysoft | 2011-06-03 09:57:31 -0400 (Fri, 03 Jun 2011) | 2 lines
+
+Trying to get this running on brown...
+
+------------------------------------------------------------------------
+r75 | peteysoft | 2011-05-17 09:24:43 -0400 (Tue, 17 May 2011) | 2 lines
+
+...
+
+------------------------------------------------------------------------
+r74 | peteysoft | 2011-05-16 16:08:56 -0400 (Mon, 16 May 2011) | 2 lines
+
+Porting to Ubuntu...
+
+------------------------------------------------------------------------
+r73 | peteysoft | 2011-05-13 05:13:14 -0400 (Fri, 13 May 2011) | 2 lines
+
+SVD
+
+------------------------------------------------------------------------
+r72 | peteysoft | 2011-05-13 05:01:32 -0400 (Fri, 13 May 2011) | 2 lines
+
+Adding SVD to sparse library
+
+------------------------------------------------------------------------
+r71 | peteysoft | 2011-05-13 01:10:52 -0400 (Fri, 13 May 2011) | 2 lines
+
+SVD
+
+------------------------------------------------------------------------
+r70 | peteysoft | 2011-05-13 00:52:13 -0400 (Fri, 13 May 2011) | 2 lines
+
+Singular value decomposition using ARPACK...
+
+------------------------------------------------------------------------
+r69 | peteysoft | 2011-05-02 01:29:42 -0400 (Mon, 02 May 2011) | 2 lines
+
+it compiles
+
+------------------------------------------------------------------------
+r68 | peteysoft | 2011-05-02 01:26:39 -0400 (Mon, 02 May 2011) | 2 lines
+
+oops...
+
+------------------------------------------------------------------------
+r67 | peteysoft | 2011-05-02 00:15:12 -0400 (Mon, 02 May 2011) | 2 lines
+
+cleaning up dependencies
+
+------------------------------------------------------------------------
+r66 | peteysoft | 2011-05-01 23:57:57 -0400 (Sun, 01 May 2011) | 2 lines
+
+adding error codes...
+
+------------------------------------------------------------------------
+r65 | peteysoft | 2011-05-01 23:57:07 -0400 (Sun, 01 May 2011) | 2 lines
+
+...
+
+------------------------------------------------------------------------
+r64 | peteysoft | 2011-04-29 19:38:21 -0400 (Fri, 29 Apr 2011) | 2 lines
+
+...
+
+------------------------------------------------------------------------
+r63 | peteysoft | 2011-04-29 13:24:33 -0400 (Fri, 29 Apr 2011) | 2 lines
+
+Query files containing spare matrices...
+
+------------------------------------------------------------------------
+r62 | peteysoft | 2011-04-28 17:23:34 -0400 (Thu, 28 Apr 2011) | 2 lines
+
+Cleaning up debug info...
+
+------------------------------------------------------------------------
+r61 | peteysoft | 2011-04-28 17:04:50 -0400 (Thu, 28 Apr 2011) | 2 lines
+
+Logfile stream must be in main body rather than header file...
+
+------------------------------------------------------------------------
+r60 | peteysoft | 2011-04-28 17:02:27 -0400 (Thu, 28 Apr 2011) | 2 lines
+
+Cleaning up debug information...
+
+------------------------------------------------------------------------
+r59 | peteysoft | 2011-04-15 19:47:20 -0400 (Fri, 15 Apr 2011) | 2 lines
+
+It works...
+
+------------------------------------------------------------------------
+r58 | peteysoft | 2011-04-11 14:11:31 -0400 (Mon, 11 Apr 2011) | 2 lines
+
+debugging--it works, yay!
+
+------------------------------------------------------------------------
+r57 | peteysoft | 2011-04-09 23:45:15 -0400 (Sat, 09 Apr 2011) | 2 lines
+
+fuck
+
+------------------------------------------------------------------------
+r56 | peteysoft | 2011-04-09 23:15:55 -0400 (Sat, 09 Apr 2011) | 2 lines
+
+fuck, fuck
+
+------------------------------------------------------------------------
+r55 | peteysoft | 2011-04-09 23:07:31 -0400 (Sat, 09 Apr 2011) | 2 lines
+
+fuck
+
+------------------------------------------------------------------------
+r54 | peteysoft | 2011-04-09 22:55:59 -0400 (Sat, 09 Apr 2011) | 2 lines
+
+***
+
+------------------------------------------------------------------------
+r53 | peteysoft | 2011-04-09 22:37:07 -0400 (Sat, 09 Apr 2011) | 2 lines
+
+Adding debugging code...
+
+------------------------------------------------------------------------
+r52 | peteysoft | 2011-04-08 17:27:49 -0400 (Fri, 08 Apr 2011) | 2 lines
+
+...
+
+------------------------------------------------------------------------
+r51 | peteysoft | 2011-04-07 22:44:23 -0400 (Thu, 07 Apr 2011) | 2 lines
+
+Can I fix it just by changing the type defs??
+
+------------------------------------------------------------------------
+r50 | peteysoft | 2011-04-07 22:43:36 -0400 (Thu, 07 Apr 2011) | 2 lines
+
+...
+
+------------------------------------------------------------------------
+r49 | peteysoft | 2011-04-05 23:26:41 -0400 (Tue, 05 Apr 2011) | 2 lines
+
+Finally made all these compile together...
+
+------------------------------------------------------------------------
+r48 | Peteysoft | 2011-04-05 18:58:53 -0400 (Tue, 05 Apr 2011) | 2 lines
+
+Trying to unify three libraries...
+
+------------------------------------------------------------------------
+r47 | peteysoft | 2011-04-05 17:55:43 -0400 (Tue, 05 Apr 2011) | 2 lines
+
+Bug hunting...
+
+------------------------------------------------------------------------
+r46 | peteysoft | 2011-04-05 17:07:01 -0400 (Tue, 05 Apr 2011) | 2 lines
+
+Bug hunting...
+
+------------------------------------------------------------------------
+r45 | peteysoft | 2011-04-04 22:38:20 -0400 (Mon, 04 Apr 2011) | 2 lines
+
+Simple change to instatiated versions...
+
+------------------------------------------------------------------------
+r44 | peteysoft | 2011-04-04 22:32:46 -0400 (Mon, 04 Apr 2011) | 2 lines
+
+Trying to get this damn thing working again...
+
+------------------------------------------------------------------------
+r43 | peteysoft | 2011-04-03 19:48:54 -0400 (Sun, 03 Apr 2011) | 2 lines
+
+Trying to get this %$*# command option parser working ...
+
+------------------------------------------------------------------------
+r42 | peteysoft | 2011-04-03 16:13:53 -0400 (Sun, 03 Apr 2011) | 2 lines
+
+Mistakes in last commit...
+
+------------------------------------------------------------------------
+r41 | peteysoft | 2011-04-03 16:13:07 -0400 (Sun, 03 Apr 2011) | 2 lines
+
+Binary tree for standard strings, function for parsing command options...
+
+------------------------------------------------------------------------
+r40 | peteysoft | 2011-04-03 02:45:09 -0400 (Sun, 03 Apr 2011) | 2 lines
+
+...
+
+------------------------------------------------------------------------
+r38 | peteysoft | 2011-03-25 21:14:32 -0400 (Fri, 25 Mar 2011) | 2 lines
+
+Dammit I need a cigarette...
+
+------------------------------------------------------------------------
+r37 | peteysoft | 2011-03-24 20:00:17 -0400 (Thu, 24 Mar 2011) | 2 lines
+
+Adding interpolation methods...
+
+------------------------------------------------------------------------
+r36 | peteysoft | 2011-03-24 09:40:38 -0400 (Thu, 24 Mar 2011) | 2 lines
+
+Adding methods for general linear interpolation...
+
+------------------------------------------------------------------------
+r35 | peteysoft | 2011-03-22 19:26:50 -0400 (Tue, 22 Mar 2011) | 2 lines
+
+...
+
+------------------------------------------------------------------------
+r34 | peteysoft | 2011-03-19 14:24:52 -0400 (Sat, 19 Mar 2011) | 2 lines
+
+Fixing typing
+
+------------------------------------------------------------------------
+r33 | peteysoft | 2011-03-18 15:47:18 -0400 (Fri, 18 Mar 2011) | 2 lines
+
+...
+
+------------------------------------------------------------------------
+r32 | peteysoft | 2011-03-10 13:04:45 -0500 (Thu, 10 Mar 2011) | 2 lines
+
+Trying to clean up data typing...
+
+------------------------------------------------------------------------
+r31 | peteysoft | 2011-03-08 14:32:09 -0500 (Tue, 08 Mar 2011) | 2 lines
+
+Trying to unify the types
+
+------------------------------------------------------------------------
+r30 | peteysoft | 2011-03-07 11:45:43 -0500 (Mon, 07 Mar 2011) | 2 lines
+
+Trying to make the code, in as much as it is possible, device-independent...
+
+------------------------------------------------------------------------
+r29 | peteysoft | 2011-03-06 16:12:43 -0500 (Sun, 06 Mar 2011) | 2 lines
+
+Beginning the odious task of converting to machine-independent types
+
+------------------------------------------------------------------------
+r28 | peteysoft | 2011-02-11 22:28:04 -0500 (Fri, 11 Feb 2011) | 2 lines
+
+Adapting to brown...
+
+------------------------------------------------------------------------
+r27 | peteysoft | 2011-02-11 21:35:21 -0500 (Fri, 11 Feb 2011) | 2 lines
+
+Need this file...
+
+------------------------------------------------------------------------
+r26 | peteysoft | 2011-02-11 21:29:01 -0500 (Fri, 11 Feb 2011) | 2 lines
+
+Include files, which are C++ templates...
+
+------------------------------------------------------------------------
+r25 | peteysoft | 2011-02-11 21:16:43 -0500 (Fri, 11 Feb 2011) | 2 lines
+
+Makefiles pass their parameters to one another...
+
+------------------------------------------------------------------------
+r24 | peteysoft | 2011-02-10 11:07:44 -0500 (Thu, 10 Feb 2011) | 2 lines
+
+Started new version of this scientific library using subversion, under a different SF project...
+
+------------------------------------------------------------------------

@@ -1,0 +1,84 @@
+#include "sc_glob.h"
+#include "sc_op.h"
+
+sc_t *sc_neg(int narg, sc_t **v) {
+  int t;
+  sc_t *result=NULL;
+
+  if (narg != 1) return NULL;
+
+  int t=sc_type_of(v[0]);
+
+  if (t==SC_SCALAR_T || t==SC_VECTOR_T || t==SC_FULL_T || t==SC_SPARSE_T 
+		  || t==SC_SPARSE_ARRAY || t==SC_STR_T) {
+    result=v[0]->copy();
+    result->neg();
+  } else {
+    fprintf(stderr, "Type mismatch\n");
+  } 
+  return result;
+}
+
+sc_t *sc_prod(int narg, sc_t **v) {
+  sc_t *result=NULL;
+
+  if (narg != 2) return NULL;
+
+  result=v[0]->mult(v[1]);
+  if (result==NULL) {
+    fprintf(stderr, "Type mismatch\n");
+  }
+
+  return result;
+}
+
+sc_t *sc_add(int narg, sc_t **v) {
+  sc_t *result=NULL;
+  int t1, t2;		//types of each argument
+
+  if (narg != 2) return NULL;
+
+  result=v[0]->add(v[1]);
+  if (result==NULL) {
+    fprintf(stderr, "Type mismatch\n");
+  }
+
+  return result;
+}
+
+sc_t *sc_minus(int narg, sc_t **v) {
+  sc_t *result=NULL;
+
+  if (narg != 2) return NULL;
+
+  v[1].neg();
+  result=v[0]->add(v[1]);
+  if (result==NULL) {
+    fprintf(stderr, "Type mismatch\n");
+  }
+
+  return result;
+}
+
+sc_t *sc_div(int narg, sc_t **v) {
+  sc_t *result=NULL;
+  int t1, t2;
+
+  if (narg!=2) return NULL;
+
+  t1=sc_type_of(v[0]);
+  t2=sc_type_of(v[1]);
+
+  if (t1==SC_SCALAR_T && t2==SC_SCALAR_T) {
+    sc_vec_t *r1;
+    sc_vec_t *v1=(sc_scal_t *) v[0];
+    sc_scal_t *v2=(sc_scal_t *) v[1];
+    r1=new sc_scal_t(v1->val/v2->val);
+    result=r1;
+  } else {
+    fprintf(stderr, "Type mismatch\n");
+  }
+
+  return result;
+}
+  

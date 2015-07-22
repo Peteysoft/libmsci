@@ -1,0 +1,106 @@
+#include <stdio.h>
+
+#include <math.h>
+
+#include "error_codes.h"
+#include "roots_mins.h"
+
+namespace libpetey {
+
+//minimization function which brackets the root
+//and interpolates between the brackets
+
+template <class real>
+real root_false_position(void (*funcd) (real, void *, real *),
+		void *params,	//fucntion parameters
+		real x1,	//first bracket
+		real x2,	//second bracket
+		real xtol,	//desired tolerance in x direction
+		real ytol,	//desired tolerance in y direction
+		long maxiter,	//maximum number of iterations
+		int &err,	//error code and number of iterations
+		real &y1,	//to avoid re-calculating
+		real y2)
+{
+
+  real x0;		//solution
+  real y0;		//solution value for y
+
+  //x and y error:
+  real xerr, yerr;
+
+  if (y1*y2>0) {
+    fprintf(stderr, "supernewton: ordinates must have opposite sign\n");
+    err=-1;
+    return (x1+x2)/2;
+  }
+
+  do {
+/*
+    printf("Brackets: x: [%g, %g] dx=%g\n", x1, x2, xerr);
+    printf("          [%g, %g]\n", y1, y2);
+    printf("          [%g, %g]\n", dydx1, dydx2);
+*/
+
+    x0=x1+y1*(x2-x1)/(y2-y1);
+    (*funcd) (params, &y0);
+
+    //test for convergence:
+    yerr=fabs(y0);
+    if (yerr < ytol) break;
+
+    //printf("Brackets: [%f, %f]\n", x1, x2);
+    //rebracket the "true" root:
+    if (y0*y1 > 0) {
+      x1=x0;
+      y1=y0;
+    } else {
+      x2=x0;
+      y2=y0;
+    }
+
+    //test for convergence:
+    xerr=fabs(2*(x1-x2)/(x1+x2));
+    if (xerr< xtol) break;
+
+    err++;
+    if (err > maxiter) {
+      fprintf(stderr, "root_false_position: Maximum number of iterations exceeded (%d)\n", maxiter);
+      break;
+      printf("Brackets: [%f, %f]\n", x1, x2);
+    }
+  } while(1);
+
+  //place the function value in the second last parameter:
+  y1=y0;
+
+  //printf("root_false_position: %d iterations required to reach convergence\n", i);
+
+  return x0;
+
+}
+
+template float root_false_position<float>(void (*funcd) (float, void *, float *),
+		void *params,
+		float x1,
+		float x2,
+		float xtol,
+		float ytol,
+		long maxiter,
+		int &err,
+		float &y1,
+		float y2);
+
+template double root_false_position<double>(void (*funcd) (double, void *, double *),
+		void *params,
+		double x1,
+		double x2,
+		double xtol,
+		double ytol,
+		long maxiter,
+		int &err,
+		double &y1,
+		double y2);
+
+} //end namespace libpetey
+

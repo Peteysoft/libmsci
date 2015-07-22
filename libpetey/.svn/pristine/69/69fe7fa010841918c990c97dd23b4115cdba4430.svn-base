@@ -1,0 +1,178 @@
+
+namespace libpetey {
+
+void heapsort_inplace(void **data, long n, void *func) {
+
+//***********************************************************************
+//
+// purpose:	Performs a heap-sort on an array of variables.  Can be used
+//		to sort user defined data types by passing the comparison
+//              function in the third argument.
+//
+//		This version performs an in-place sort, requiring no extra
+//		storage.
+//
+// usage:	heapsort_inplace(data, n, )
+//
+// input/output:	data: an array of variables. 
+//
+//		n: the number of elements in the array.
+//
+//		func: comparison function; should be of the form, 
+//			int comp(type *el1, type *el2);
+//			- returns -1 for lt, 0 for eq and 1 for gt
+//
+// written by:	Peter Mills (peteymills@hotmail.com)
+//
+// history:	Created 2003-2-23 based on a heapsort function in IDL which
+//		in turn was loosely based on that in Numerical Recipes.
+//
+//************************************************************************
+
+  long i, j, jold, k;
+  void *temp;
+
+  int (*comp) (void *, void *)=(int (*) (void *, void *)) func;
+
+  k=n/2;
+  
+  //build the heap:
+  for (i=k; i>=0; i--) {
+    jold=i;
+    j=i*2+1;
+    
+    while (j < n) {
+      if (j < n-1) {
+        if ((*comp)(data[j], data[j+1])<0) j=j+1;
+      }
+      if ((*comp)(data[jold], data[j])<1) {;
+        temp=data[jold];
+        data[jold]=data[j];
+        data[j]=temp;
+      } else {
+        break;
+      }
+      jold=j;
+      j=j*2+1;
+    }
+  }
+  
+  //pull each element off the heap in turn:
+  for (i=n-1; i>=1; i--) {
+    temp=data[i];
+    data[i]=data[0];
+    data[0]=temp;
+    
+    jold=0;
+    j=1;
+    while (j < i) {
+      if (j < i-1) {
+        if ((*comp)(data[j], data[j+1])<0) j=j+1;
+      }
+      if ((*comp)(data[jold], data[j]) < 1) {
+        temp=data[jold];
+        data[jold]=data[j];
+        data[j]=temp;
+      } else {
+        break;
+      }
+      jold=j;
+      j=j*2+1;
+    }
+  }
+  
+}
+  
+void heapsort(void **data, long *ind, long n, void *func) {
+
+//***********************************************************************
+//
+// purpose:	Performs a heap-sort on an array of variables.  Can be used
+//		to sort user defined data types by passing the comparison
+//              function in the third argument.
+//
+//		This version an array of longword integers giving the indices
+//		of the sorted array, while leaving the original array untouched.
+//
+// usage:	ind=heapsort(data, n)
+//
+// input/output:	data: an array of variables.
+//
+//		n: the number of elements in the array.
+//
+//		func: comparison function; should be of the form, 
+//			int comp(type *el1, type *el2);
+//			- returns -1 for lt, 0 for eq and 1 for gt
+//
+// written by:	Peter Mills (peteymills@hotmail.com)
+//
+// history:	Created 2003-2-25 based on a heapsort function in IDL which
+//		in turn was loosely based on that in Numerical Recipes.
+//
+//************************************************************************
+
+  long i, j, jold, k;
+  long temp;
+
+  int (*comp) (void *, void *)=(int (*) (void *, void *)) func;
+
+  for (i=0;i<n;i++) ind[i]=i;
+
+  k=n/2;
+
+  //build the heap:
+  for (i=k; i>=0; i--) {
+    jold=i;
+    j=i*2+1;
+
+    while (j < n) {
+      if (j < n-1) {
+        if ((*comp)(data[ind[j]], data[ind[j+1]]) < 0) j=j+1;
+      }
+      if ((*comp) (data[ind[jold]], data[ind[j]]) < 0) {
+        temp=ind[jold];
+        ind[jold]=ind[j];
+        ind[j]=temp;
+      } else {
+        break;
+      }
+      jold=j;
+      j=j*2+1;
+    }
+  }
+
+  //pull each element off the heap in turn:
+  for (i=n-1; i>=1; i--) {
+    temp=ind[i];
+    ind[i]=ind[0];
+    ind[0]=temp;
+
+    jold=0;
+    j=1;
+    while (j < i) {
+      if (j < i-1) {
+        if ((*comp) (data[ind[j]], data[ind[j+1]]) < 0) j=j+1;
+      }
+      if ((* comp) (data[ind[jold]], data[ind[j]]) < 0) {
+        temp=ind[jold];
+        ind[jold]=ind[j];
+        ind[j]=temp;
+      } else {
+        break;
+      }
+      jold=j;
+      j=j*2+1;
+    }
+  }
+
+}
+
+long * heapsort(void **data, long n, void *func) {
+  long * ind;
+  ind=new long[n];
+  heapsort(data, ind, n, func);
+  return ind;
+}
+
+} //end namespace libpetey
+

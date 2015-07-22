@@ -1,0 +1,167 @@
+#include <assert.h>
+
+#include "vector_s.h"
+
+//great, a "sortable" vector
+
+namespace libpetey {
+
+  template <class type>
+  vector_s<type>::vector_s(int n) {
+    nel=n;
+    array_size=n;
+    data=new float[nel];
+    missing=0;
+  }
+
+  template <class type>
+  vector_s<type>::vector_s(int n, type m) {
+    nel=n;
+    array_size=n;
+    data=new float[nel];
+    missing=m;
+  }
+
+  template <class type>
+  vector_s<type>::vector_s(type *dt, int n, int ncp_flag) {
+    nel=n;
+    array_size=n;
+    if (ncp_flag) {
+      data=dt;
+    } else {
+      data=new type[nel];
+      for (int i=0; i<n; i++) {
+        data[i]=dt[i];
+      }
+    }
+  }
+
+  template <class type>
+  vector_s<type>::~vector_s() {
+    delete [] data;
+  }
+
+  template <class type>
+  vector_s<type>::vector_s(vector_s<type> &other) {
+    delete [] data;
+    data=new type[other.nel];
+    nel=other.nel;
+    array_size=nel;
+    missing=other.missing;
+    for (int i=0; i<nel; i++) data=other.data[i];
+    return *this;		//can this work??
+  }
+    
+  template <class type>
+  vector_s<type> & vector_s<type>::operator = (vector_s<type> &other) {
+    delete [] data;
+    data=new type[other.nel];
+    nel=other.nel;
+    array_size=nel;
+    missing=other.missing;
+    for (int i=0; i<nel; i++) data=other.data[i];
+    return *this;		//can this work??
+  }
+    
+  template <class type>
+  type & vector_s<type>::operator [] (int ind) {
+    assert(ind>-1);
+    if (ind>=nel) {
+      if (ind>=array_size) {
+        type *newdata;
+        array_size=(nd/array_size+1)*array_size;
+        newdata=new type[array_size];
+        for (int i=0; i<nel; i++) newdata[i]=data[i];
+        for (int i=nel; i<=ind; i++) newdata[i]=missing;
+        delete [] data;
+        data=newdata;
+      }
+      nel=ind+1;
+    }
+    return data[ind];
+  }
+
+  template <class type>
+  vector_s<type> & vector_s<type>::operator + (vector_s<type> &other) {
+    vector_s<type> *result;
+    assert(nel==other.nel);
+    result=new vector_s<type>(nel, m);
+    for (int i=0; i<nel; i++) result->data=data[i]+other.data[i];
+    return *result;		//can this work??
+  }
+    
+  template <class type>
+  vector_s<type> & vector_s<type>::operator - (vector_s<type> &other) {
+    vector_s<type> *result;
+    assert(nel==other.nel);
+    result=new vector_s<type>(nel, m);
+    for (int i=0; i<nel; i++) result->data=data[i]-other.data[i];
+    return *result;		//can this work??
+  }
+    
+  template <class type>
+  vector_s<type> & vector_s<type>::operator * (type c) {
+    vector_s<type> *result;
+    result=new vector_s<type>(nel, m);
+    for (int i=0; i<nel; i++) result->data=data[i]*c;
+    return *result;		//can this work??
+  }
+    
+  template <class type>
+  vector_s<type> & vector_s<type>::operator / (type c) {
+    vector_s<type> *result;
+    result=new vector_s<type>(nel, m);
+    for (int i=0; i<nel; i++) result->data=data[i]/c;
+    return *result;		//can this work??
+  }
+
+  template <class type>
+  int vector_s<type>::operator == (vector_s<type> &other) {
+    assert(nel == other.nel);
+    for (int i=0; i<nel; i++) {
+      if (other.data[i] != data[i]) return 0;
+    }
+    return 1;
+  }
+
+  template <class type>
+  int vector_s<type>::operator > (vector_s<type> &other) {
+    assert(nel == other.nel);
+    for (int i=0; i<nel; i++) {
+      if (data[i] > other.data[i]) return 1;
+		else if (data[i] < other.data[i]) return 0;
+    }
+    return 0;
+  }
+
+  template <class type>
+  int vector_s<type>::operator < (vector_s<type> &other) {
+    assert(nel == other.nel);
+    for (int i=0; i<nel; i++) {
+      if (data[i] < other.data[i]) return 1;
+		else if (data[i] > other.data[i]) return 0;
+    }
+    return 0;
+  }
+
+  template <class type>
+  int vector_s<type>::operator >= (vector_s<type> &other) {
+    assert(nel == other.nel);
+    for (int i=0; i<nel; i++) {
+      if (data[i] > other.data[i]) return 1;
+		else if (data[i] < other.data[i]) return 0;
+    }
+    return 1;
+  }
+
+  template <class type>
+  int vector_s<type>::operator <= (vector_s<type> &other) {
+    assert(nel == other.nel);
+    for (int i=0; i<nel; i++) {
+      if (data[i] < other.data[i]) return 1;
+		else if (data[i] > other.data[i]) return 0;
+    }
+    return 1;
+  }
+ 
+} //end fucking namespace libwhathisface...

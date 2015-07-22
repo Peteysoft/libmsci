@@ -1,0 +1,69 @@
+#include <stdlib.h>
+
+#include "stdio.h"
+#include "parse_command_opts.h"
+
+using namespace std;
+using namespace libpetey;
+
+int main(int argc, char **argv) {
+
+  float g=0;
+  int i=0;
+  char c;
+  int64_t l;
+  double d;
+
+  void *optarg[5];
+  int flags[5];
+  int nopts;
+  int err;
+  int opts=0;
+
+  char *s;
+
+  err=parse_command_opts(argc, argv, "b", "%", optarg, flags, 2);
+  for (int i=0; i<argc; i++) printf("%s ", argv[i]);
+  printf("\n");
+  if (flags[0]==1) opts=1;
+
+  optarg[0]=(void *) &g;
+  optarg[1]=(void *) &i;
+  optarg[2]=NULL;
+  optarg[3]=(void *) &c;
+  optarg[5]=(void *) &d;
+  optarg[6]=(void *) &l;
+
+  err=parse_command_opts(abs(err), argv, "gischdl", "%g%d%s%c%%lg%ld", optarg, flags, opts);
+  if (flags[4]) {
+    printf("test_parse_opts [-g<number>] [-i<integer>] [-s<string>] [-c<char>] \n");
+    printf("                [-d<double>] [-l<long>] [-h] [-b] [args]\n");
+    printf("-g read a floating point number and print it out\n");
+    printf("-i read an integer and print it out\n");
+    printf("-s read a string and print it out\n");
+    printf("-c read a character and print it out\n");
+    printf("-d read a double-precision floating point number and print it out\n");
+    printf("-l read a longword integer and print it out\n");
+    printf("-h print this help screen\n");
+    printf("-b accept whitespace between option and argument\n");
+  }
+
+  s=(char *) optarg[2];
+  
+  if (flags[0]) printf("number=%g\n", g);
+  if (flags[1]) printf("integer=%d\n", i);
+  if (flags[2]) printf("string=%s\n", s);
+  if (flags[3]) printf("char=%c\n", c);
+  if (flags[5]) printf("double=%lg\n", d);
+  if (flags[6]) printf("long=%ld\n", l);
+  
+  //printf("%d%d%d%d\n", flags[0], flags[1], flags[2], flags[3]);
+
+  printf("Arguments: ");
+  for (int i=0; i<abs(err); i++) printf("%s ", argv[i]);
+  printf("\n");
+
+  return err;
+
+}
+

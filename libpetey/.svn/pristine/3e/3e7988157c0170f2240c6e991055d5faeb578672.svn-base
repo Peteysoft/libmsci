@@ -1,0 +1,5 @@
+double erfinv_basic(double x);
+double erfinv_basic2(double x);
+double erfinv(double x);
+double erfcinv(double x);
+

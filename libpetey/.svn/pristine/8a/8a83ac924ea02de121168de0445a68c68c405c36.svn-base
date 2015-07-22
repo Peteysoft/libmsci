@@ -1,0 +1,87 @@
+#include <stdio.h>
+
+#include <vector_s.cc>
+
+class grammar_t;
+
+class expr_t {
+  public:
+    virtual expr_t();
+    virtual ~expr_t();
+
+    virtual parse_tree * parse(char *string, int ver);
+
+    virtual int nver()=0;
+    virtual int ns(int v)=0;
+    virtual char *nameof()=0;
+};
+
+class primitive: public expr_t {
+  protected:
+    char val;
+  public:
+    virtual primitive(char v1);
+    virtual ~primitive();
+
+    virtual parse_tree * parse(char *string, int ver);
+
+    virtual int nver();
+    virtual int ns(int v);
+
+    virtual char *nameof();
+
+};
+
+class compound: public expr_t {
+  protected:
+    grammar_t *grammar;		//each expression knows it's own identity
+    long id;
+    vector_s<expr_t **> sub;	//list of sub-expressions 
+    vector_s<int> nsub;		//number of sub-expressions per version
+    int ntyp;			//number of versions
+
+  public:
+    virtual compound(grammar_t *g, long i);
+    virtual ~compound();
+
+    int add(expr_t *neex, int n);
+    virtual int nver();
+    virtual int ns(int v);
+
+    virtual char *nameof();
+
+    virtual parse_tree * parse(char *string, int ver);
+};
+
+class parse_tree {
+  friend class compound;
+  protected:
+    expr_t *expr;
+    int ver;			//which version of the expression
+    parse_tree **sub;		//sub-trees
+    char *loc;			//location where expression starts
+    int len;			//total length of the expression
+  public:
+    parse_tree(expr_t *e, int v, char * l, int n, expr_t **s) {
+    ~parse_tree();
+
+    void print(int depth=0);
+    char * value();
+
+};
+
+class grammar_t {
+  protected:
+    symbol_table name;
+    vector_s<expr_t *> exprlist;
+  public:
+    grammar_t();
+    ~grammar_t();
+
+    int add(char *nm, char *def);	//add a new expression
+    int load(FILE *fs);		//load a complete grammar
+    parse_tree * parse(char *expr_name, char *string);
+
+    parse_tree *parse(char *string);
+};
+
