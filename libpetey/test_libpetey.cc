@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "libpetey_unit_tests.h"
+#include "errinv.h"
 
 using namespace libpetey;
 

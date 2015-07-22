@@ -1,6 +1,8 @@
 %{
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+
 #include "time_class.h"
 
 #define DATESTR_LEN 100
@@ -125,6 +127,7 @@ statement: date_exp '\n' {
       cptm.tm_mon--;
       cptm.tm_wday=$1->dow();
       cptm.tm_yday=$1->doy();
+      cptm.tm_sec=sec;
       cptm.tm_isdst=0;
       strftime (datestr, DATESTR_LEN, dateformat, &cptm);
       printf("%s\n", datestr);

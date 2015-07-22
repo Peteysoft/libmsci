@@ -54,39 +54,7 @@ LIBLEX=fl
 # linker options for interactive utilities sparse_calc and date_calc:
 INT_UTIL_LDF = -L$(READLINE_LIB) -l$(LIBLEX) -lreadline -lncurses
 
-
-#----------------------------------------------------------------#
-########### The following macros are for libsparse: ##############
-#----------------------------------------------------------------#
-
-# Fortran compiler (for libsparse):
-F77 = gfortran
-#F77 = g77
-FORTRAN_RUNTIME=gfortran
-#FORTRAN_RUNTIME=g2c
-
-# ARPACK library (for libsparse):
-ARPATH = /usr/local/lib
-#ARPATH = $(LIB_PATH)
-LIBARPACK=arpack_x86
-
-# extension for executables (for libsparse):
-EXE_EXT=.exe
-
-FFLAGS = -I$(INCLUDE_PATH) $(OPT) #-fno-underscoring
-
-# leading and trailing underscores:
-FLEADING_UNDERSCORES =
-FTRAILING_UNDERSCORES=_
-
-#####################################################################
-################   End modifiable macros.     #######################
-#####################################################################
-
-
-VPATH = datasets/ sparse/
-
-all: libpetey$(OPT).a libdataset$(OPT).a libsparse$(OPT).a $(EXE) date_calc 
+all: libpetey$(OPT).a $(EXE) date_calc 
 
 petey: libpetey$(OPT).a
 
@@ -155,21 +123,6 @@ TEST = sorter \
 		test_parse_opts \
 		lp_test_suite
 		
-
-libdataset$(OPT).a: install_petey
-	make -C datasets LIB_DIR=$(LIB_PATH) INCLUDE_DIR=$(INCLUDE_PATH) \
-		OPT_VER=$(OPT) CC=$(CPP) CFLAGS="$(CFLAGS)"
-
-libsparse$(OPT).a: install_petey
-	make -C sparse LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
-		BIN_PATH=$(BIN_PATH) MANPATH=$(MANPATH) \
-		OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT) OPT_VER=$(OPT) CC=$(CPP) \
-		LEX=$(LEX) YY=$(YY) INT_UTIL_LDF="$(INT_UTIL_LDF)" \
-		CFLAGS="$(CFLAGS) -DFLEADING_UNDERSCORES=$(FLEADING_UNDERSCORES) -DFTRAILING_UNDERSCORES=$(FTRAILING_UNDERSCORES)" \
-		ARPATH=$(ARPATH) LIBARPACK=$(LIBARPACK) \
-		F77=$(F77) FFLAGS="$(FFLAGS)" FORTRAN_RUNTIME=$(FORTRAN_RUNTIME) \
-		GSL_LIB=$(GSL_LIB)
-
 allopt:
 	make OPT=-g all
 	make OPT=-pg all
@@ -184,48 +137,27 @@ clean:
 	rm -f date_calc.tab.*
 	rm -f date_calc
 	rm -f lex.yy.c
-	make -C sparse OPT_VER=$(OPT) clean
-	make -C datasets OPT_VER=$(OPT) clean
 
 clean_all:
 	make OPT=-g clean
 	make OPT=-pg clean
 	make OPT=-O2 clean
 
-install_petey: libpetey$(OPT).a ignore_code date_calc
+install: libpetey$(OPT).a ignore_code date_calc
 	install libpetey$(OPT).a $(LIB_PATH)
 	install $(INCLUDE) $(INCLUDE_PATH)
 	install $(EXE) $(BIN_PATH)
 	install date_calc $(BIN_PATH)
 	install date_calc.1 $(MANPATH)/man1
 
-install: install_petey
-	make install -C datasets LIB_DIR=$(LIB_PATH) INCLUDE_DIR=$(INCLUDE_PATH) \
-			OPT_VER=$(OPT)
-	make install -C sparse LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
-			BIN_PATH=$(BIN_PATH) MANPATH=$(MANPATH) \
-			OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT)
-	cp ignore_code $(BIN_PATH)
-
 install_allopt: libpetey-g.a libpetey-O2.a libpetey-pg.a
 	make install_petey OPT=-g
 	make install_petey OPT=-pg
 	make install_petey OPT=-O2
-	make install -C datasets LIB_DIR=$(LIB_PATH) INCLUDE_DIR=$(INCLUDE_PATH) OPT_VER=-g
-	make install -C sparse LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
-			BIN_PATH=$(BIN_PATH) MANPATH=$(MANPATH) \
-			EXE_EXT=$(EXE_EXT) OPT_VER=-g
-	make install -C datasets LIB_DIR=$(LIB_PATH) INCLUDE_DIR=$(INCLUDE_PATH) OPT_VER=-O2
-	make install -C sparse LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
-			BIN_PATH=$(BIN_PATH) MANPATH=$(MANPATH) \
-			EXE_EXT=$(EXE_EXT) OPT_VER=-O2
-	make install -C datasets LIB_DIR=$(LIB_PATH) INCLUDE_DIR=$(INCLUDE_PATH) OPT_VER=-pg
-	make install -C sparse LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
-			BIN_PATH=$(BIN_PATH) MANPATH=$(MANPATH) \
-			EXE_EXT=$(EXE_EXT) OPT_VER=-pg
 
 test: test_libpetey $(TEST)
 	./test_libpetey
+	./lp_testsuite
 
 # build the static library:
 libpetey$(OPT).a:	$(OBJECT)
@@ -263,6 +195,6 @@ date_calc.tab.c date_calc.tab.h: date_calc.y time_class.h
 #unit tests:
 TEST2=$(addsuffix $(EXE_EXT), $(TEST))
 
-$(TEST): %: %.cc libpetey$(OPT).a libpetey_unit_tests.h
+$(TEST): %: %.cc libpetey$(OPT).a 
 	$(CPP) $(CFLAGS) -o $@ $< libpetey$(OPT).a $(LDFLAGS)
 

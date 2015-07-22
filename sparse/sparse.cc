@@ -10,8 +10,8 @@
     
 #include "error_codes.h"
     
-#include "../heapsort_tmpl.cc"
-#include "../bin_search.cc"
+#include "../libpetey/heapsort_tmpl.cc"
+#include "../libpetey/bin_search.cc"
     
 #include "sparse_array.h"
 #include "full_matrix.h"

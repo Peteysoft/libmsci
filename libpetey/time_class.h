@@ -7,7 +7,7 @@
 #ifndef TIME_INCLUDED
 #define TIME_INCLUDED
 
-#include <iostream>
+//#include <iostream>
 
 //port of "time_lib.pro" to C++
 
@@ -40,6 +40,9 @@ class time_class {
     time_class(const char *t);
     time_class(const double t);
     time_class(const time_class &t);		//copy constructor
+
+    //todays date:
+    void now();
 
     //assignment operators:
     time_class & operator = (const time_class &t);
@@ -250,8 +253,8 @@ inline int time_class::read_string(const char *t, const char *sep) {
 }
 
 //io operators:
-std::ostream &operator << (std::ostream &outfile, time_class &t);
-std::istream &operator << (std::istream &infile, const time_class &t);
+//std::ostream &operator << (std::ostream &outfile, time_class &t);
+//std::istream &operator << (std::istream &infile, const time_class &t);
 
 }
 

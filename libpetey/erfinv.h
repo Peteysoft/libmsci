@@ -13,5 +13,7 @@ namespace libpetey {
 
   double erfcinv(double x);
 
+  int test_erfinv(double miny, double maxy, int nx, int complementary);
+
 } //end namespace libpetey
 

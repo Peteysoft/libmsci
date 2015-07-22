@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
+#include <time.h>
 
 #include "peteys_tmpl_lib.h"
 #include "time_class.h"
@@ -40,10 +41,23 @@ time_class ref_date(1900, 1, 1, 0, 0, 0);
 
 #define MAXFIELDSIZE 100
 
+//current time:
+void time_class::now() {
+  time_t timer;
+  struct tm *t2;
+
+  time(&timer);
+
+  t2=localtime(&timer);
+
+  init(t2->tm_year+1900, t2->tm_mon+1, t2->tm_mday, t2->tm_hour, t2->tm_min, t2->tm_sec);
+
+  free(t2);
+}
+
 //Converts a date from a string.  Must be in the following format:
 //	year/month/day-hour:minute:second
 //Whitespace is allowed.
-
 
 int time_class::read_string(const char *t, long &i, const char *sep) {
   //char *sep=SEPARATORS;			//list of separators

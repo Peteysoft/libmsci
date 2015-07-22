@@ -6,7 +6,7 @@
 #include "full_util.h"
 #include "sparse_array.h"
 
-#include "../linked.cc"
+#include "../libpetey/linked.cc"
 
 using namespace std;
 
