@@ -1,0 +1,10 @@
+Thanks to the National Center for Environmental Prediction (NCEP) for
+reanalysis data and to my former colleagues at the 
+Naval Research Laboratory for POAM data.
+Thanks also to the World Ozone Data Centre (WODC) for radiosonde ozone
+data.
+
+The author would also like to thank John Lin of the University of Waterloo
+for partially supporting this work and the Institute of Environmental Physics,
+University of Bremen for the use of their computers.
+

@@ -1,0 +1,86 @@
+List of deprecated or soon-to-be deprecated files:
+
+* coeffs.h
+* model1.cc			-- replaced by ctraj_model
+* model2.cc
+* model2L.cc
+* contour1.cc			-- replaced by ctraj_contour
+* contour2.cc
+* contour3.cc			-- replaced by "space-filling experiment"
+* tracer3_step1.cc		-- replaced by ctraj_tracer
+* tracer4_matout.cc
+* tracer5.cc
+* tracerLL.cc
+traj_int_obj.h			-- replaced by ctraj_vfield_*
+traj_int_obj.cc
+* traj_int_global_obj.h
+* traj_int_global_obj.cc
+tcoord_defs.h			-- replaced by az_eq_t, but still used by a couple of programs
+tcoord_defs.cc
+* boundary_list.h			-- replaced by ctraj_boundary_list
+* boundary_list.cc
+* boundary_list_g.h		-- replaced by ctraj_boundary_list
+* boundary_list_g.cc
+boundary_swap.h			-- "swapped" contour: might be useful for contour with surgery
+boundary_swap.cc
+* bev2bev2.cc			-- goes with contour3: junk
+ncep_surf_to_vfield.cc		-- what exactly was this meant for? really should move beyond such crude garbage
+* t4_matout_step2.pro		-- don't have access to IDL anymore :-(
+* tcoord_vector.h			-- attempt to add pointless abstraction...
+* write_latitude_contour.cc	-- does the same thing as c0, but different file format
+
+* starred files have been removed: others are kept either because the are used by other projects (isoline retrieval) or they may be useful for future projects
+
+   -----
+
+* UNFINISHED PROJECT *
+
+These files are attempts to update old files to conform to the new, more general re-factor:
+
+ctraj_tracer_anal.h		-- replaces tracer_anal
+ctraj_tracer_anal.cc
+fieldtran.h			-- updates lla2aeb and extract_field
+fieldtran.cc
+generate_tracer_map.cc		-- encapsulates generalized tracer advection
+
+They should either be finished promptly or discarded...
+
+   -----
+
+* UNFINISHED PROJECT *
+
+Binning experiment (I can make this work, I know I can!!):
+
+gbin_base.h
+gbin_base.cc
+gbin_ll.h
+gbin_ll.cc
+gbin_s.h
+gbin_s.cc
+lonlat_binsub.h
+lonlat_binsub.cc
+test_global_binning.cc		-- (doesn't speed things up in the slightest!)
+
+   -----
+
+* UNFINISHED PROJECT *
+
+Contour surgery (one of these days I'll finish it...):
+
+surgery_element.h
+surgery_element.cc
+surgery_obj.h
+surgery_obj.cc
+
+   -----
+
+I am flagging potentially problematic code that should be updated
+with the following comment:
+
+//*FLAG*
+
+This will include:
+- constants or enumerates define using the #define macro
+- fixed-length arrays and other data structures
+
+

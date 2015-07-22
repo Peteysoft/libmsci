@@ -1,5 +1,6 @@
 #include <math.h>
 #include <gsl/gsl_linalg.h>
+#include "time_class.h"
 #include "solve_lode.h"
 #include "randomize.h"
 #include "gsl_util.h"
@@ -286,6 +287,28 @@ namespace libpetey {
 
     return exit_code;
   }
+
+  template float **rk_dumb(float, float *, long, float, long, void *,
+		 int (*) (float, float *, float *, void *) );
+  template float **rk_dumb(double, float *, long, double, long, void *,
+		 int (*) (double, float *, float *, void *) );
+  template double **rk_dumb(double, double *, long, double, long, void *,
+		 int (*) (double, double *, double *, void *) );
+  template float **rk_dumb(time_class, float *, long, time_class, long, void *,
+		 int (*) (time_class, float *, float *, void *) );
+  template double **rk_dumb(time_class, double *, long, time_class, long, void *,
+		 int (*) (time_class, double *, double *, void *) );
+
+  template void rk_dumb(float, float *, long, float, long, float **, void *,
+		 int (*) (float, float *, float *, void *) );
+  template void rk_dumb(double, float *, long, double, long, float **, void *,
+		 int (*) (double, float *, float *, void *) );
+  template void rk_dumb(double, double *, long, double, long, double **, void *,
+		 int (*) (double, double *, double *, void *) );
+  template void rk_dumb(time_class, float *, long, time_class, long, float **, void *,
+		 int (*) (time_class, float *, float *, void *) );
+  template void rk_dumb(time_class, double *, long, time_class, long, double **, void *,
+		 int (*) (time_class, double *, double *, void *) );
 
   template int test_rk_ts<float>(int, float, float, float);
   template int test_rk_ts<double>(int, double, double, double);

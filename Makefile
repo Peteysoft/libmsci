@@ -85,11 +85,12 @@ FTRAILING_UNDERSCORES=_
 
 VPATH = datasets/ sparse/ libpetey/ libagf/
 
+LIBPETEY = libpetey
 INSTALL_PETEY = $(LIB_PATH)/libpetey$(OPT).a
 
 all: libpetey$(OPT).a libdataset$(OPT).a libsparse$(OPT).a libagf$(OPT).a
 
-libpetey$(OPT).a:
+$(LIBPETEY):
 	make -C libpetey LIB_DIR=$(LIB_PATH) INCLUDE_DIR=$(INCLUDE_PATH) \
 		OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT) \
 		CC=$(CPP) CFLAGS="$(CFLAGS)" \
@@ -133,7 +134,7 @@ clean_all:
 	make OPT=-pg clean
 	make OPT=-O2 clean
 
-$(INSTALL_PETEY): libpetey$(OPT).a ignore_code$(EXE_EXT) date_calc$(OPT_VER)$(EXE_EXT)
+$(INSTALL_PETEY): $(LIBPETEY)
 	make install -C libpetey LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
 			BIN_PATH=$(BIN_PATH) MANPATH=$(MANPATH) \
 			OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT)

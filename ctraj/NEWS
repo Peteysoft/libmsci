@@ -1,0 +1,48 @@
+Changes between r187 and r252
+
+- Runge-Kutta integration routines are now threadsafe
+
+- added file conversion utility that downloads ECMWF data directly from the
+  ECMWF website and writes it to .ds ("dataset") files.  Like the author of 
+  this software, it isn't working yet.
+
+- help screens now print to stdout instead of stderr if you use the -? switch
+
+- experimented with binning routines to improve the efficiency of some codes
+  (it didn't work)
+
+- added executables for estimating the box-counting dimension of an advected
+  contour in three different ways and for calculating the contour length
+
+- ridiculous "space-filling" experiment designed to eat your computer 
+
+- plotting utilities have been refined and are now copied to the 'bin' 
+  directory during installation
+
+- proper underscoring in Fortran subroutine names
+
+Changes between revisions 252 and 305
+
+- the three main programs for trajectory integration, contour advection and
+  tracer advection, have been completely refactored to make them 
+  general as well as extensible.  They have been renamed to: ctraj_model, 
+  ctraj_contour and ctraj_tracer.
+
+- the new advection models now support analytic velocity fields.  These must
+  be compiled separately and then dynamically linked.
+
+- vdata2ds: a utility for converting velocity fields in ASCII format to the 
+  native binary format has been added.  It has been validated with two scripts
+  that convert NCEP (ncep2ds.sh) and ECMWF data (see below).
+
+- ecmwf2ds.sh: a script for downloading and converting ECMWF data has also 
+  been added.  It has been tested and appears to work.
+
+- extract_ncep_field is a utility for extracting a single (2D) NCEP field and
+  printing it to standard out
+
+
+Changes between revision 305 (285) and ???
+
+- namespaces
+

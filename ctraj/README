@@ -1,0 +1,344 @@
+Welcome to ctraj!  The purpose of these codes is to perform generalized Lagrangian advection.  Input to the codes can be any source of wind data or pre-generated velocity fields, since the velocity vectors are first converted to an intermediate file format for easy data-abstraction.  As such, the codes require two subsidiary libraries, one for the data structures containing the wind fields and, since the semi-Lagrangian tracer simulations generate a matrix as intermediate output, a sparse matrix library.  These libraries are available with the "libpetey" numerical library, available from the sourceforge project, "msci".
+
+
+DEPENDENCIES
+
+Before proceeding with the installation, make sure you have the following dependencies installed in your system.  These are listed in descending order of importance along with the applications that need them.
+
+Tool					Application
+
+- C++ (g++)				general
+- GNU make				general
+- libpetey				general
+- GNU Scientific Library (GSL)		general
+- NetCDF 				reading NCEP data
+- NetCDF C++ ver 4.2			reading NCEP data
+- Python				downloading ECMWF data
+- wgrib					reading ECMWF data
+- ARPACK				PC proxy tracer analysis
+- Fortran (gfortran)			link ARPACK libraries
+- Generic Mapping Tools (GMT)		plotting and animation
+- Ghostview (gv)			plotting
+- Imagemagick				animation
+- bash					testing and analysis
+
+
+INSTALLATION
+
+1. Download the files.  They can be obtained either from the sourceforge download page as a gzipped tarball or more directly from the Subversion repository.  If you want the very latest version or want to be a developer, take the latter option.  Four external libraries are required: the Gnu Scientific Libary (GSL), NetCDF (available from UCAR), ARPACK (Arnoldi package for sparse eigensystems) and a smaller scientific library called libpetey.  The latter can be downloaded from the Sourceforge page.  For plotting you will also need the Generic Mapping Tools (GMT) as well as a postscript viewer, eg, ghostview.  See DEPENDENCIES, above.
+
+2. Modify the makefiles for your system.  Important macros include:
+
+CC: C++ compiler
+CFLAGS: options to pass to the compiler
+LD_OPTIONS: options to pass to the linker
+
+LIB_PATH: Directory to store library files
+BIN_PATH: Directory for binary executables
+INCLUDE_PATH: Directory for include files
+
+GSL_LIB: Location of the GSL libraries
+GSL_INCLUDE: Location of the GSL include files
+
+NCDF_LIB: Location of the NetCDF libraries
+NCDF_INCLUDE: Location of the NetCDF include files
+
+ARPATH: Location of the ARPACK library
+LIBARPACK: Name of the ARPACK library
+
+FORTRAN_RUNTIME: Name of the Fortran runtime library--for linking in ARPACK eigen-system codes.
+
+Take particular note of the OPT_VER macro.  This macro defines the level of optimization for each library.  In the libpetey library, the flag is appended to all the object files, including the libraries and executables.  This allows you to store multiple versions with different levels of optimization, which is particularly handy for debugging purposes.  This is not the case for the ctraj library which simply uses the flag to decide which version of the external libraries to link in.
+
+There is no configure script.  See the the Peteysoft coding standards for details (http://peteysoft.org/coding_standards.txt) under "Machine independence".
+
+3. Compile the programs.  Type "make" in the base directory.  Executables are copied automatically to your executable directory.
+
+QUICKSTART
+
+All programs are run directly from the command line.  For a command synopsis, including the format of the initialization file, type the command with no arguments.  If the command takes no arguments, use the "-?" switch.
+
+The following programs are included with the software bundle:
+
+ctraj_model:	General trajectory model.  Currently supports 2-D trajectories
+		on a global surface, 2-D trajectories on a Cartesian surface
+		and trajectories driven by analytic wind fields in a Cartesian 
+		space.
+
+ctraj_tracer:	General tracer model.  Outputs a series of sparse matrices
+		representing the tracer dynamics.
+
+ctraj_contour:	General contour advection model.
+
+contour_dimension:	Calculates the fractal dimension of an advected contour.
+contour_length:	Calculates the length of an advected contour.
+
+lla2aeb:	Converts ASCII tracer fields to the native binary format.
+extract_field:	Converts binary tracer fields to ASCII.
+
+xy2bev:		Converts ASCII contours to binary.
+bev2xy:		Converts binary contours to ASCII.
+bev2bev2:	Converts binary ".bev" files to a link-chained, paging file 
+                compatible with contour3.
+
+zonally_symmetric_tracer:	Generates a zonally symmetric tracer field.
+C0:		Generates a circularly symmetric contour along a single line of latitude.
+
+nc2ds:		Converts NCEP files to "dataset" files.  Converts
+		a single vertical level.
+vdata2ds:	Converts velocity fields in ASCII format to dataset files.
+ecmwf2ds.sh:	Downloads ECMWF data from the data server and converts it to
+		a dataset.  Must have wgrib installed and an account with the 
+		ECMWF.
+
+pc_proxy:	For "principal-component proxy" tracer analysis.
+		PC-proxy is a new method for dynamical reconstruction of
+		long-lived tracers such as ozone.  For an explanation, please
+		see the paper, "Principal component proxy tracer analysis,"
+		arxiv:1202.1999.
+		Please reference this paper if you use PC-proxy in
+		your work.  A peer-reviewed article is currently in the works.
+pc_proxy_predict:	PC-proxy reconstruction of multiple fields.
+proxy_tracer:	More traditional proxy tracer reconstruction (doesn't work).
+
+random_global:  Generates a series of random points, evenly distributed around
+		the globe.
+select_meas:	Selects a subset of sparse measurements from a file.
+tracer_interpolate:	Interpolates points within a tracer.
+
+Executables accept some subset of the following options.  These can also be found in the file "ctraj_optargs.cc".  Square brackets denote defaults.
+
+  --   restrict to Southern hemisphere
+  -+   restrict to Northern hemisphere (default)
+  -0   initial time index [0]
+  -1   index of record in first file [0]
+  -2   index of record in second file [0]
+  -a   missing/fill value
+  -A   number of Arnoldi vectors [20]
+  -B   data file page size in bytes
+  -c   maximum degrees of arc between pairs of points [1.]
+  -C   count the number of measurements in PC proxy
+  -d   width of date field [23]
+  -D   calculate fractal dimension of type:
+         u=uncertainty exponent
+         0=box-counting dimension
+         l=box-counting dimension using line segments
+         (multiple types are supported, e.g. -D u0l)
+  -e   number of values of dependent variable (epsilon) [20]
+  -E   generate meridionally symmetric field
+  -f   final date [last available]
+  -F   final value for dependent variable (epsilon/z) (1000.)
+  -g   use geometric progression
+  -h   non-dimensional 'coarse' time step [1.]
+  -H   print header information
+  -i   initial date [first available]
+  -I   initial value for dependent variable (epsilon/z) [1.]
+  -k   number of R-K 'fine' time steps per coarse step [6]
+  -K   apply constant term in PC proxy
+  -l   lead time for the measurement window [default is the same as for the tracer]
+  -m   minimum change in path in km [10.]
+  -M   maximum number of points in advected contour
+  -n   grid-points per side [120/100]
+  -N   number of time-grids/time-steps [to end of file]
+  -o   wrap off
+  -O   write interval [1]
+  -p   data path [./]
+  -P   calculate Pearson correlation coefficient
+  -q   sidelengths of tracer field in the form: d1xd2xd3...
+  -Q   query time grids (write to stdout)
+  -r   sidelength/2 [12000/10000]
+  -R   (return) record size
+  -s   maximum change in path in km [100/20]
+  -S   sort measurement data by date
+  -T   use theta (potential temperature) levels
+  -u   epsilon-uncertain: minimum number [100]
+  -U   epsilon-uncertain: maximum trials [10000]
+  -v   number of singular vectors [5]
+  -V   type of velocity field [0]
+         0=2-D global, azimuthal equidistant projection
+         1=2-D, date-based time grid
+         2=analytical
+  -w   convert vertical velocities
+  -W   output all (interpolated) tracer fields
+  -x   number of x/longitude grids [360]
+  -X   length of tracer field in x-direction [20000]
+  -y   number of y/latitude grids [181]
+  -Y   length of tracer field in y-direction [20000]
+  -z   number of contours [20]
+  -Z   run jobs in background
+  -?   print help screen
+
+SCRIPTS
+
+There are several directories under scripts/.  All of these contain makefiles
+and shell scripts for higher-level processing of the compiled command-line
+executables.  Most of the shell scripts accept the same options as the 
+program they are calling or wrapping.  To access the help screen, use -H 
+instead of -? since the latter is not supported by the default command option
+processor for bash.  Here is a breakdown of what's in the different directories:
+
+scripts/test/
+Contains a makefile for running and plotting both an advected contour and a 
+passive tracer simulation.  This can either be studied to pick up how to use
+the codes or can simply be modified for use in your own research.
+"make contour" generates an animation of an advected contour;
+"make tracer" generates an animation of a passive tracer;
+"make both" (the default) animates both in the same gif.
+To produce the animations you will need both the Generic Mapping Tools (GMT)
+and Imagemagick (convert).
+
+scripts/plotting/
+plot_frame.sh:	plots a single frame from either a contour advection simulation
+		or a tracer simulation
+animate_ctraj.sh:	Animates an advected contour or a tracer simulation.
+animate_both.sh:	Animates a contour advection simulation AND a tracer 
+		simulation on the same set of frames.
+gen_zgrid:	Generates a set of contour levels for plotting a tracer.
+
+scripts/pc_proxy/
+Tests the PC Proxy algorithm on both a simulated dataset and on actual ozone
+measurements from the Polar Ozone and Aerosol Measurement (POAM) III instrument.
+Compares results from the latter with a series of sonde measurements.
+See the paper, "Principal component proxy tracer analysis." arxiv:1202.1999v1.
+
+scripts/space_filling/
+Fills up a lot of space on your hard-drive.  Eats a lot of CPU cycles as well.
+
+TECHNICAL NOTES
+
+Most of what the codes do is integrate the differential equation:
+
+dx/dt = v(x, t)
+
+where x is position (a vector), t is unitless time (normalized to the time grid-spacing) and v is assumed to be known at all desired positions and is contained as a gridded dataset in the specified input file (note: analytical wind fields are now supported).  In order to make this work for a curved Earth, both the gridding of the velocity fields and the velocity fields themselves must be suitably transformed.  All codes designed for global simulations take two velocity fields as input: one for the Northern hemisphere and one for the Southern hemisphere, both of which must be gridded in an azimuthal equidistant coordinate system with the velocities suitably transformed.
+
+The utility, nc2ds, converts NCEP data in NetCDF format to a format recognizable by the trajectory codes.  Both pressure levels and potential temperature (theta) levels may be extracted.  You will need files containing one year of either daily or 4-times daily wind data: uwnd.yyyy.nc and vwnd.yyyy.nc, where yyyy is the year and also temperature data, air.yyyy.nc, for converting theta levels.  The utilities take as arguments the start and end dates, the desired level and the name of the two output files: one for the Southern hemisphere and one for the Southern.  These are typically assigned a ".ds" extension.  Optional arguments are the side-length and the number of grid points per side.
+
+Since trajectories are integrated on one of two hemispheres and the hemisphere is corrected only once per large time-step, there must be some overlap between the two hemispheres.  A side-length of 20000 will produce a grid whose boundaries only just reach the equator at the middle of the side edge, while extending well across the equator at the corners.
+
+A note on the time-stepping: except for the trajectory model which works differently, output is done once per large time step.  There can be any number of Runge-Kutta steps in between.  In the contour advection simulation, points are "fixed" (both for the hemisphere and to patch the advected contour) once per large time step.  In the tracer simulation, back-trajectories are performed and interpolation coefficients calculated for each large time step.
+
+The tracer simulations output a series of sparse matrices that define a mapping from the initial tracer distribution to all subsequent time steps.  There are two versions: one excludes all redundant points, while the other does not.  The version that excludes the redundant points will output a mapping from each grid point to the position in the vector--values of -1 are excluded.  Once the initial tracer state has been converted into a vector, it can be multiplied through with one of the utilities in the sparse matrix libary.  Vectors are stored as simple binary files with a 4-byte header denoting their size--this is the same format as that used for the libagf library.
+
+STEP-BY-STEP
+
+The codes can be run by hand or for an automated version, see the Makefile under scripts/.
+
+Step 1: Download wind data
+
+The trajectory codes are driven by wind fields from GCMs or assimilation models.  These data need to be converted to the native binary format.  Currently there are three conversion utilities: one for converting NCEP data in NetCDF format, one for converting ECMWF data in Grib format and one for converting general ASCII data streamed to stdin. We will be using National Center for Environmental Prediction (NCEP) reanalyis data which can be obtained free of charge from the National Center for Atmospheric Research (NCAR) website.  You will need daily or 4x daily air temperature data ("air.YYYY.nc"), zonal wind data ("uwind.YYYY.nc") and meridional wind data ("vwind.YYYY.nc") on pressure levels for every year for which you plan on integrating the models.  Store all years in the same directory.
+
+Step 2: Convert the wind data
+
+Suppose you have stored the data in the directory, "/home/joe/data", and you want to integrate the models between November 13, 2001 and March 3, 2002 on a 700 K isentropic level.  The following command will convert data for the Northern hemisphere and store it in the files, "vfield_S.ds" and "vfield_N.ds":
+
+> nc2ds -T -p /home/joe/data -i 2001/11/13 -f 2002/3/3 700 vfield_S.ds vfield_N.ds
+
+The "-T" option specifies isentropic (potential temperature) levels (default is pressure).  These files can be used both for contour advection and two-dimensional tracer simulations.  Multiple files on different levels will also be used for three-dimensional tracer simulations, however this has not been implemented yet.
+
+	- FOR 2-D PASSIVE TRACER MODELS
+
+Step 3: Generate the tracer mapping
+
+We want to integrate the velocity data created above over their entire date range (assuming 6hr NCEP data) with a resolution of 100 grid points per side per hemisphere and place the data in the file "mat.dat".
+This file can be used for fast integration of any tracer field within the specified time span.   
+
+The simulation outputs one matrix per velocity field time grid (-h option) with 4 Runge-Kutta steps for each back-trajectory (-k option):
+
+> ctraj_tracer -i 2001/11/13 -f 2002/3/3 -h 1 -k 4 -n 100 vfield_N.ds vfield_S.ds mat.dat
+
+Step 4: Create the initial tracer field
+
+The command "lla2aeb" transforms tracer fields in ASCII format, longitude-latitude coordinates to a binary vector in azimuthal equidistant coordinates.  The command takes takes a list of each tracer value from STDIN.  Input tracer values are arranged to cycle over longitude grids first, then latitude grids.  Use the "-x" and "-y" options to specify the resolution (default is 360 x 181).
+
+> lla2aeb -n 100 output.dat < tracer_in.txt
+
+To start with a zonally symmetric tracer:
+
+> zonally_symmetric_tracer | lla2aeb -n 100 output.dat
+
+Note that the tracer resolution for the azimuthally equidistant coordinate system (the working coordinates) must match that of the tracer mapping.  Here we have placed the initial tracer field in the file, "output.dat".
+
+Step 5: Perform the matrix multiplication
+
+Use the executable from the "libsparse" library which multiplies a vector with an array of sparse matrices:
+
+> sparse_vect_mult mat.dat output.dat
+
+The results are appended to the file "output.dat".  You can also use the sparse matrix calculator, "sparse_calc".
+
+Step 6: Extract the desired field
+
+To extract the 100th field and print it to STDOUT:
+
+> extract_field output.dat 100
+
+To get the number of fields, omit the index:
+
+> extract_field output.dat
+
+For a list of dates, use "tracer4_matout" with the "-Q" option:
+
+> tracer4_matout -Q tracer.init
+
+	- FOR 2-D CONTOUR ADVECTION
+
+Step 3: Create the initial contour
+
+To convert lon-lat pairs to the native binary format, use the command xy2bev:
+
+> xy2bev contour_in.bev < contour_in.txt
+
+For a single line of latitude, use the "C0" command:
+
+> C0 45 | xy2bev
+
+which generates a contour along 45 degrees North.
+
+Step 4: Run the contour advection simulation
+
+We need to specify the maximum fraction of arc traced out by each pair of points, as well as the minimum and maximum spacing using the -c, -m and -s options, respectively.
+All parameters are input using command line switches and arguments, with -h onceagain specifying the 'coarse' time-step, in this case the frequency with which the contour is re-interpolated.  At the same time the contour is written to disc, unless -O is specified.  The first interval is specified in a normalized time coordinate based on velocity field grid spacing; the second is specified in terms of the first. Meanwhile -k gives the number of Runge-Kutta steps between each re-interpolation or coarse time step.
+
+> cp contour_in.bev output.dat
+> ctraj_contour -i 2001/11/13 -N 90 -h 1 -k 4 -c 1 -m 10 -s 100 vfield_N.ds vfield_S.ds output.dat
+
+Because it lacks surgery, the ctraj_contour program is limited in how long it can advect the contours.  To run longer contours, have a look at the "space_filling" directory under scripts--here you will find scripts that recursively split the contour to help it run longer.  To cut off integration once a contour has reach a certain size (measured by number of points) use the -M option.
+
+Step 5: Extract the desired contour
+
+To print out the 50th contour:
+
+> bev2xy output.dat 50
+
+To print out a list of records, omit the index:
+
+> bev2xy output.dat
+
+Step 6/7: Plotting
+
+To plot the 50th field:
+
+> plot_frame.sh output.dat 50
+
+To animate the entire tracer integration:
+
+> animate_ctraj.sh output.dat output.gif
+
+Plotting scripts are currently contained in the "scripts" directory.
+
+
+REFERENCES
+
+D. G. Dritschel (1988), "Contour surgery: a topological reconnection scheme for extended integrations using contour dynamics."  Journal of Computational Physics77 (1): 240-266.
+
+Peter Mills (2009), "Isoline retrieval: An optimal sounding method for validation of advected contours." Computers & Geosciences 35 (11): 2020-2031.
+
+Peter Mills (2011), "Principal component proxy tracer analysis." arxiv:1202.1999.
+
+William H. Press and Saul A. Teukolsky and William T. Vetterling and Brian P. Flannery (1992), Numerical Recipies in C, 2nd ed. Cambridge University Press.
+
+		--------------
+
+Developer: Peter Mills (petey@peteysoft.org)
+

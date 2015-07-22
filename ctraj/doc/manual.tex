@@ -1,0 +1,38 @@
+\documentclass[12pt,letterpaper]{article}
+
+\usepackage{amsmath}
+\usepackage[dvips]{graphicx}
+
+\begin{document}
+
+\tableofcontents
+
+\section{Description}
+
+\input{description.tex}
+
+\section{Overview}
+
+\subsection{Data flow}
+
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{data_flow_general.eps}
+\caption{General data flow diagram for running ctraj.  
+Ellipses are data, rectangles are processes.}
+\label{data_flow_general}
+\end{figure}
+
+Figure \ref{data_flow_general} shows the data-flow dependencies for a single
+run of one of the scripts--either trajectories, contour advection or passive
+tracer modelling.
+The first and most important step is to convert the input velocity fields 
+from their native format into a format compatible with the ctraj codes.
+The output files can drive any one of the simulations.
+In the diagram this step is contained in the right-hand box of the 
+"pre-processing" stage.
+A coordinate transformation is applied to produce velocity fields for
+a two-dimensional Cartesian grid and the resulting data is stored in
+a binary format compatible with the "dataset" libary module.
+
+\end{document}
+
