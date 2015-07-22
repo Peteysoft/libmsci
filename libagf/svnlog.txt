@@ -1,0 +1,720 @@
+------------------------------------------------------------------------
+r148 | peteysoft | 2014-11-28 00:49:17 -0500 (Fri, 28 Nov 2014) | 1 line
+
+Gearing up for a new release
+------------------------------------------------------------------------
+r147 | peteysoft | 2014-11-27 13:35:43 -0500 (Thu, 27 Nov 2014) | 1 line
+
+Separating out multi-borders components; (last commit: added better support for double-precision
+------------------------------------------------------------------------
+r146 | peteysoft | 2014-11-26 23:59:19 -0500 (Wed, 26 Nov 2014) | 1 line
+
+Testing multi-borders external; added experiments with LIBSVM to humidity data
+------------------------------------------------------------------------
+r145 | peteysoft | 2014-11-26 03:02:24 -0500 (Wed, 26 Nov 2014) | 1 line
+
+Debugging multi-borders stuff; switching to double precision really fucks everything up...
+------------------------------------------------------------------------
+r144 | peteysoft | 2014-11-25 03:14:45 -0500 (Tue, 25 Nov 2014) | 1 line
+
+Bug hunting
+------------------------------------------------------------------------
+r143 | peteysoft | 2014-11-19 01:05:49 -0500 (Wed, 19 Nov 2014) | 1 line
+
+various
+------------------------------------------------------------------------
+r142 | peteysoft | 2014-10-17 23:28:44 -0400 (Fri, 17 Oct 2014) | 1 line
+
+AGF optimal actually works, but results are less accurate than regular agf (and knn)
+------------------------------------------------------------------------
+r141 | peteysoft | 2014-10-11 01:48:50 -0400 (Sat, 11 Oct 2014) | 1 line
+
+agf optimal with multiple trials
+------------------------------------------------------------------------
+r140 | peteysoft | 2014-10-10 01:55:20 -0400 (Fri, 10 Oct 2014) | 1 line
+
+Finally got a version of optimal agf working
+------------------------------------------------------------------------
+r139 | peteysoft | 2014-10-08 02:55:02 -0400 (Wed, 08 Oct 2014) | 1 line
+
+Finally implemented binning method; multi class stuff
+------------------------------------------------------------------------
+r138 | peteysoft | 2014-10-05 23:29:30 -0400 (Sun, 05 Oct 2014) | 1 line
+
+Random numbers resolve a tie when selecting a class based on probabilities; classify methods in multi-class hier. return list of raw binary probabilities for use in discretized continuum retrievals
+------------------------------------------------------------------------
+r137 | peteysoft | 2014-10-05 16:17:41 -0400 (Sun, 05 Oct 2014) | 1 line
+
+Special multi-class classification methods which return raw probabilities from binary classifiers.  These will be folded into regular methods in next revision
+------------------------------------------------------------------------
+r136 | peteysoft | 2014-10-01 12:01:42 -0400 (Wed, 01 Oct 2014) | 1 line
+
+Found some bugs: accelerator code seems to be working quite well now
+------------------------------------------------------------------------
+r135 | peteysoft | 2014-09-29 02:16:06 -0400 (Mon, 29 Sep 2014) | 1 line
+
+Fixed bug in batch_borders
+------------------------------------------------------------------------
+r134 | peteysoft | 2014-09-29 00:12:54 -0400 (Mon, 29 Sep 2014) | 1 line
+
+Accelerator functions are a complete disaster...
+------------------------------------------------------------------------
+r133 | peteysoft | 2014-09-28 02:00:58 -0400 (Sun, 28 Sep 2014) | 1 line
+
+Accelerator mode for multiclass training
+------------------------------------------------------------------------
+r132 | peteysoft | 2014-09-27 03:38:42 -0400 (Sat, 27 Sep 2014) | 1 line
+
+"Accelerator" for libsvm etc.
+------------------------------------------------------------------------
+r131 | peteysoft | 2014-09-19 21:56:38 -0400 (Fri, 19 Sep 2014) | 1 line
+
+EXE_EXT macro not set for install target in bottom makefile
+------------------------------------------------------------------------
+r130 | peteysoft | 2014-09-16 01:53:31 -0400 (Tue, 16 Sep 2014) | 1 line
+
+Documentation for new multi-class options
+------------------------------------------------------------------------
+r129 | peteysoft | 2014-09-15 14:49:55 -0400 (Mon, 15 Sep 2014) | 1 line
+
+batch_borders compiled; minor errors in sample_class_borders
+------------------------------------------------------------------------
+r128 | peteysoft | 2014-09-15 00:20:40 -0400 (Mon, 15 Sep 2014) | 1 line
+
+Finished typing sub-routines for 'batch' borders sampling
+------------------------------------------------------------------------
+r127 | peteysoft | 2014-09-14 03:31:50 -0400 (Sun, 14 Sep 2014) | 1 line
+
+Starting work on 'borders accelerator'...
+------------------------------------------------------------------------
+r126 | peteysoft | 2014-09-11 23:37:58 -0400 (Thu, 11 Sep 2014) | 1 line
+
+multi-class with external software tested on LIBSVM
+------------------------------------------------------------------------
+r125 | peteysoft | 2014-09-10 20:44:28 -0400 (Wed, 10 Sep 2014) | 1 line
+
+Multiclass calls external classifier in a batch fashion
+------------------------------------------------------------------------
+r124 | peteysoft | 2014-09-09 01:29:59 -0400 (Tue, 09 Sep 2014) | 1 line
+
+multi_borders compatibility with other binary classification programs
+------------------------------------------------------------------------
+r123 | peteysoft | 2014-09-08 00:28:16 -0400 (Mon, 08 Sep 2014) | 1 line
+
+Preprocessing routines to handle ascii files; multi-class to handle alternate formats
+------------------------------------------------------------------------
+r122 | peteysoft | 2014-09-07 02:34:49 -0400 (Sun, 07 Sep 2014) | 1 line
+
+Multi-class using other binary schemes (may not be all that easy)
+------------------------------------------------------------------------
+r121 | peteysoft | 2014-09-06 21:53:52 -0400 (Sat, 06 Sep 2014) | 1 line
+
+Eliminated brain-dead binary-classifier template specialization
+------------------------------------------------------------------------
+r120 | peteysoft | 2014-09-06 21:18:19 -0400 (Sat, 06 Sep 2014) | 1 line
+
+Making multi-class easier to adapt to other binary classifiers
+------------------------------------------------------------------------
+r119 | peteysoft | 2014-09-06 02:35:17 -0400 (Sat, 06 Sep 2014) | 1 line
+
+Set constraint weight from command line; changed option letter for multi-class alg. & agf opt. alg.
+------------------------------------------------------------------------
+r118 | peteysoft | 2014-09-05 15:47:21 -0400 (Fri, 05 Sep 2014) | 1 line
+
+Hacked solution to multi-class problem
+------------------------------------------------------------------------
+r117 | peteysoft | 2014-09-04 23:52:01 -0400 (Thu, 04 Sep 2014) | 1 line
+
+Splitting up multi-class classes; adding more options to non-hier
+------------------------------------------------------------------------
+r116 | peteysoft | 2014-09-03 03:19:55 -0400 (Wed, 03 Sep 2014) | 1 line
+
+Hacked together multi-class scheme that combines voting and inversion and preserves accuracy as well as cond. prob est.
+------------------------------------------------------------------------
+r115 | peteysoft | 2014-09-02 02:15:06 -0400 (Tue, 02 Sep 2014) | 1 line
+
+multi-class: made sum of cond. p=1 hard constraint by substition of one variable.  Didn't work: need symmetric transformation.
+------------------------------------------------------------------------
+r114 | peteysoft | 2014-08-11 01:46:13 -0400 (Mon, 11 Aug 2014) | 1 line
+
+Constrained solution for multi-class conditional probabilities
+------------------------------------------------------------------------
+r113 | peteysoft | 2014-08-10 01:08:46 -0400 (Sun, 10 Aug 2014) | 1 line
+
+Evaluation routines
+------------------------------------------------------------------------
+r112 | peteysoft | 2014-08-10 00:18:45 -0400 (Sun, 10 Aug 2014) | 1 line
+
+Improving evaluation functions
+------------------------------------------------------------------------
+r111 | peteysoft | 2014-08-09 23:29:11 -0400 (Sat, 09 Aug 2014) | 1 line
+
+Improving evaluation functions--new module
+------------------------------------------------------------------------
+r110 | peteysoft | 2014-08-09 13:24:21 -0400 (Sat, 09 Aug 2014) | 1 line
+
+Cleanup: deleted program that separates multi-class labels in SVM formats
+------------------------------------------------------------------------
+r109 | peteysoft | 2014-08-08 00:19:14 -0400 (Fri, 08 Aug 2014) | 1 line
+
+Added size ratio parameter in sc_borders
+------------------------------------------------------------------------
+r108 | peteysoft | 2014-08-07 23:00:48 -0400 (Thu, 07 Aug 2014) | 1 line
+
+Converting #define's into const's
+------------------------------------------------------------------------
+r107 | peteysoft | 2014-08-07 01:58:52 -0400 (Thu, 07 Aug 2014) | 1 line
+
+New interface for supernewton
+------------------------------------------------------------------------
+r106 | peteysoft | 2014-07-11 15:34:49 -0400 (Fri, 11 Jul 2014) | 1 line
+
+why the fuck do I keep working on this shit?
+------------------------------------------------------------------------
+r105 | peteysoft | 2014-06-02 01:14:58 -0400 (Mon, 02 Jun 2014) | 1 line
+
+Control file with non-strict non-hier model; use result when voting differs from matrix inversion
+------------------------------------------------------------------------
+r104 | peteysoft | 2014-06-01 13:42:19 -0400 (Sun, 01 Jun 2014) | 1 line
+
+Experimenting with voting instead of matrix inversion in non-hier multi-class
+------------------------------------------------------------------------
+r103 | peteysoft | 2014-05-29 02:20:37 -0400 (Thu, 29 May 2014) | 1 line
+
+Class labels don't have to go from 0 to nclass-1 for multi-class
+------------------------------------------------------------------------
+r102 | peteysoft | 2014-05-28 23:36:23 -0400 (Wed, 28 May 2014) | 1 line
+
+Set missing values & rearranging classes optional in svm2agf
+------------------------------------------------------------------------
+r101 | peteysoft | 2014-05-28 20:51:07 -0400 (Wed, 28 May 2014) | 2 lines
+
+Fixed svm2agf
+
+------------------------------------------------------------------------
+r100 | peteysoft | 2014-05-25 18:52:50 -0400 (Sun, 25 May 2014) | 1 line
+
+SVM file converter was a bit crude
+------------------------------------------------------------------------
+r99 | peteysoft | 2014-05-16 23:13:55 -0400 (Fri, 16 May 2014) | 1 line
+
+Corrected figure in multi-borders paper to match equations
+------------------------------------------------------------------------
+r98 | peteysoft | 2014-05-16 21:33:02 -0400 (Fri, 16 May 2014) | 1 line
+
+Experimenting with different control files for humidity data
+------------------------------------------------------------------------
+r97 | peteysoft | 2014-05-16 19:09:14 -0400 (Fri, 16 May 2014) | 1 line
+
+Removed redundant equations in non-hierarchical multi-borders
+------------------------------------------------------------------------
+r96 | peteysoft | 2014-05-16 15:40:44 -0400 (Fri, 16 May 2014) | 1 line
+
+Correcting bugs from minor fixes
+------------------------------------------------------------------------
+r95 | peteysoft | 2014-05-16 15:36:34 -0400 (Fri, 16 May 2014) | 1 line
+
+Revising internal documention
+------------------------------------------------------------------------
+r94 | peteysoft | 2014-05-09 12:51:16 -0400 (Fri, 09 May 2014) | 1 line
+
+Bugs in doc makefile
+------------------------------------------------------------------------
+r93 | peteysoft | 2014-05-07 18:55:28 -0400 (Wed, 07 May 2014) | 1 line
+
+Doesn't work well under cygwin...
+------------------------------------------------------------------------
+r92 | peteysoft | 2014-04-23 02:31:14 -0400 (Wed, 23 Apr 2014) | 2 lines
+
+Added new data to Landsat test case
+
+------------------------------------------------------------------------
+r91 | peteysoft | 2014-04-16 22:16:49 -0400 (Wed, 16 Apr 2014) | 2 lines
+
+Working on articles
+
+------------------------------------------------------------------------
+r90 | peteysoft | 2014-04-14 21:11:20 -0400 (Mon, 14 Apr 2014) | 2 lines
+
+Minor new item
+
+------------------------------------------------------------------------
+r89 | peteysoft | 2014-04-14 21:07:26 -0400 (Mon, 14 Apr 2014) | 2 lines
+
+Added "class_to_float" ironing out minor issues
+
+------------------------------------------------------------------------
+r88 | peteysoft | 2014-04-14 20:08:04 -0400 (Mon, 14 Apr 2014) | 2 lines
+
+Found and fixed major bug in multi_class
+
+------------------------------------------------------------------------
+r87 | peteysoft | 2014-04-13 02:26:50 -0400 (Sun, 13 Apr 2014) | 2 lines
+
+Debugging using valgrind
+
+------------------------------------------------------------------------
+r86 | peteysoft | 2014-04-13 00:40:20 -0400 (Sun, 13 Apr 2014) | 2 lines
+
+Forgot to copy ordinates to file with same base name as coordinates
+
+------------------------------------------------------------------------
+r85 | peteysoft | 2014-04-12 20:51:37 -0400 (Sat, 12 Apr 2014) | 2 lines
+
+agf2ascii return value; bug in test program; install validate_pdf
+
+------------------------------------------------------------------------
+r84 | peteysoft | 2014-04-12 15:22:46 -0400 (Sat, 12 Apr 2014) | 2 lines
+
+binary to ascii conversion of continuum data
+
+------------------------------------------------------------------------
+r83 | peteysoft | 2014-04-07 02:47:35 -0400 (Mon, 07 Apr 2014) | 2 lines
+
+agf_preprocess: sort by classes or floating point ordinates
+
+------------------------------------------------------------------------
+r82 | peteysoft | 2014-04-06 01:54:07 -0400 (Sun, 06 Apr 2014) | 2 lines
+
+Bug in agf_preprocess
+
+------------------------------------------------------------------------
+r81 | peteysoft | 2014-04-06 00:34:49 -0400 (Sun, 06 Apr 2014) | 2 lines
+
+agf_preprocess to work with floating point data
+
+------------------------------------------------------------------------
+r80 | peteysoft | 2014-04-03 21:40:33 -0400 (Thu, 03 Apr 2014) | 3 lines
+
+Bug in -u option -- transformations that reduce dimensionality still
+not working with switch
+
+------------------------------------------------------------------------
+r79 | peteysoft | 2014-04-03 03:05:28 -0400 (Thu, 03 Apr 2014) | 4 lines
+
+Had to put back constant term in coord transformations otherwise
+normalization doesn't work in conjunction with SVD
+(plus SVD is more efficient)
+
+------------------------------------------------------------------------
+r78 | peteysoft | 2014-04-02 15:51:04 -0400 (Wed, 02 Apr 2014) | 2 lines
+
+Notes on test cases
+
+------------------------------------------------------------------------
+r77 | peteysoft | 2014-04-01 17:26:26 -0400 (Tue, 01 Apr 2014) | 2 lines
+
+Dendrogram browsing test case--added log file to dendrogram utility
+
+------------------------------------------------------------------------
+r76 | peteysoft | 2014-03-31 23:09:44 -0400 (Mon, 31 Mar 2014) | 2 lines
+
+Creating a bunch of test cases; bug hunting
+
+------------------------------------------------------------------------
+r75 | peteysoft | 2014-03-31 21:08:24 -0400 (Mon, 31 Mar 2014) | 2 lines
+
+Bug hunting
+
+------------------------------------------------------------------------
+r74 | peteysoft | 2014-03-31 21:02:09 -0400 (Mon, 31 Mar 2014) | 2 lines
+
+Adding some test cases for multi-borders
+
+------------------------------------------------------------------------
+r73 | peteysoft | 2014-03-30 16:20:19 -0400 (Sun, 30 Mar 2014) | 2 lines
+
+Eliminated extra code in pdf_sim
+
+------------------------------------------------------------------------
+r72 | peteysoft | 2014-03-29 23:18:14 -0400 (Sat, 29 Mar 2014) | 2 lines
+
+Debugging metric correction in pdf estimation
+
+------------------------------------------------------------------------
+r71 | peteysoft | 2014-03-29 02:17:46 -0400 (Sat, 29 Mar 2014) | 2 lines
+
+Minor fixes
+
+------------------------------------------------------------------------
+r70 | peteysoft | 2014-03-29 01:29:35 -0400 (Sat, 29 Mar 2014) | 4 lines
+
+Messing about with pdf estimation routines
+- options on "optimal" agf (which still doesn't work)
+- corrections for transformed coordinates
+
+------------------------------------------------------------------------
+r69 | peteysoft | 2014-03-28 18:07:10 -0400 (Fri, 28 Mar 2014) | 2 lines
+
+Refining, testing, debugging
+
+------------------------------------------------------------------------
+r68 | peteysoft | 2014-03-28 01:57:55 -0400 (Fri, 28 Mar 2014) | 2 lines
+
+Validation routines badly in need of updating
+
+------------------------------------------------------------------------
+r67 | peteysoft | 2014-03-27 15:40:14 -0400 (Thu, 27 Mar 2014) | 2 lines
+
+Output control file is indented
+
+------------------------------------------------------------------------
+r66 | peteysoft | 2014-03-27 01:44:41 -0400 (Thu, 27 Mar 2014) | 2 lines
+
+Options working properly I hope
+
+------------------------------------------------------------------------
+r65 | peteysoft | 2014-03-27 01:17:56 -0400 (Thu, 27 Mar 2014) | 2 lines
+
+Improving options "carry-over" in multi_borders
+
+------------------------------------------------------------------------
+r64 | peteysoft | 2014-03-26 23:55:13 -0400 (Wed, 26 Mar 2014) | 2 lines
+
+Improved default options in multi_borders
+
+------------------------------------------------------------------------
+r63 | peteysoft | 2014-03-26 23:12:17 -0400 (Wed, 26 Mar 2014) | 3 lines
+
+Testing on Steve's machine; trying to improve default options in
+multi_parse
+
+------------------------------------------------------------------------
+r62 | peteysoft | 2014-03-26 17:27:12 -0400 (Wed, 26 Mar 2014) | 2 lines
+
+Updated and added multi-borders control files to Landsat test case
+
+------------------------------------------------------------------------
+r61 | peteysoft | 2014-03-26 16:14:49 -0400 (Wed, 26 Mar 2014) | 2 lines
+
+Improving internal documentation
+
+------------------------------------------------------------------------
+r60 | peteysoft | 2014-03-26 01:15:10 -0400 (Wed, 26 Mar 2014) | 2 lines
+
+Updating and verifying sample class codes
+
+------------------------------------------------------------------------
+r59 | peteysoft | 2014-03-25 21:02:43 -0400 (Tue, 25 Mar 2014) | 2 lines
+
+I still can't 'fin believe how well this stuff is working...
+
+------------------------------------------------------------------------
+r58 | peteysoft | 2014-03-25 00:42:46 -0400 (Tue, 25 Mar 2014) | 2 lines
+
+agf_precondition added to command name macros
+
+------------------------------------------------------------------------
+r57 | peteysoft | 2014-03-25 00:25:38 -0400 (Tue, 25 Mar 2014) | 2 lines
+
+Add -u option to nfold, correcting it's operation in class_borders
+
+------------------------------------------------------------------------
+r56 | peteysoft | 2014-03-23 22:58:29 -0400 (Sun, 23 Mar 2014) | 3 lines
+
+Confidence rating not calculated correctly from joint probabilities
+Updating NEWS file
+
+------------------------------------------------------------------------
+r55 | peteysoft | 2014-03-23 03:00:00 -0400 (Sun, 23 Mar 2014) | 2 lines
+
+Documenation, debugging
+
+------------------------------------------------------------------------
+r54 | peteysoft | 2014-03-22 23:12:59 -0400 (Sat, 22 Mar 2014) | 5 lines
+
+Starting to move out obsolete code
+Changed agf_preprocess so it doesn't need a class file
+(validate_pdf.sh can now use it)
+--need to make it work with floating point ordinates
+
+------------------------------------------------------------------------
+r53 | peteysoft | 2014-03-22 03:33:05 -0400 (Sat, 22 Mar 2014) | 2 lines
+
+Ramping up for new release!
+
+------------------------------------------------------------------------
+r52 | peteysoft | 2014-03-22 00:10:49 -0400 (Sat, 22 Mar 2014) | 3 lines
+
+Debugging all the changes and additions; it's a bit rough
+  -- a lot of this code should probably be cleaned up...
+
+------------------------------------------------------------------------
+r51 | peteysoft | 2014-03-20 22:33:43 -0400 (Thu, 20 Mar 2014) | 2 lines
+
+Pre-processing routines
+
+------------------------------------------------------------------------
+r50 | peteysoft | 2014-03-20 01:33:45 -0400 (Thu, 20 Mar 2014) | 2 lines
+
+Updated direct classification routines to ignore class values of -1
+
+------------------------------------------------------------------------
+r49 | peteysoft | 2014-03-19 23:21:47 -0400 (Wed, 19 Mar 2014) | 3 lines
+
+Improved "partitioning" routine for insertion into agf_preproces
+Improved humidity multi-borders results by massaging parameters
+
+------------------------------------------------------------------------
+r48 | peteysoft | 2014-03-19 02:19:01 -0400 (Wed, 19 Mar 2014) | 2 lines
+
+Pre-processing routines
+
+------------------------------------------------------------------------
+r47 | peteysoft | 2014-03-18 02:41:11 -0400 (Tue, 18 Mar 2014) | 3 lines
+
+pdf_agf_opt documentation
+pre-processing routines and n-fold
+
+------------------------------------------------------------------------
+r46 | peteysoft | 2014-03-15 22:14:22 -0400 (Sat, 15 Mar 2014) | 2 lines
+
+Trying to get things ready for next release
+
+------------------------------------------------------------------------
+r45 | peteysoft | 2014-03-14 02:48:52 -0400 (Fri, 14 Mar 2014) | 3 lines
+
+Small changes to program initialization;
+Improving nfold program
+
+------------------------------------------------------------------------
+r44 | peteysoft | 2014-03-12 02:56:56 -0400 (Wed, 12 Mar 2014) | 2 lines
+
+Pleased with how well everything is working so far
+
+------------------------------------------------------------------------
+r43 | peteysoft | 2014-03-12 01:31:46 -0400 (Wed, 12 Mar 2014) | 2 lines
+
+Error reporting and I/O, debugging
+
+------------------------------------------------------------------------
+r42 | peteysoft | 2014-03-10 02:20:54 -0400 (Mon, 10 Mar 2014) | 2 lines
+
+Namespaces
+
+------------------------------------------------------------------------
+r41 | peteysoft | 2014-03-09 00:30:35 -0500 (Sun, 09 Mar 2014) | 2 lines
+
+libpetey namespace
+
+------------------------------------------------------------------------
+r40 | peteysoft | 2014-03-08 02:46:48 -0500 (Sat, 08 Mar 2014) | 2 lines
+
+Working on documentation and I/O routines
+
+------------------------------------------------------------------------
+r39 | peteysoft | 2014-03-06 21:05:37 -0500 (Thu, 06 Mar 2014) | 2 lines
+
+Added multi-borders paper to distribution
+
+------------------------------------------------------------------------
+r38 | peteysoft | 2014-03-06 19:54:30 -0500 (Thu, 06 Mar 2014) | 2 lines
+
+Tested mixed hierarchical/non-hierarchical control file for humidity data
+
+------------------------------------------------------------------------
+r37 | peteysoft | 2014-03-05 12:04:24 -0500 (Wed, 05 Mar 2014) | 3 lines
+
+Did some re-arrangement of borders-sampling routines
+Should probably convert them to a more O-O framework
+
+------------------------------------------------------------------------
+r36 | peteysoft | 2014-03-03 02:09:52 -0500 (Mon, 03 Mar 2014) | 2 lines
+
+Waffling on initialization routines for multi-borders training
+
+------------------------------------------------------------------------
+r35 | peteysoft | 2014-03-02 00:33:58 -0500 (Sun, 02 Mar 2014) | 3 lines
+
+Still plugging away at this.  Does it make sense to have an initialization 
+routine for multi-borders training?
+
+------------------------------------------------------------------------
+r34 | peteysoft | 2014-03-01 19:33:53 -0500 (Sat, 01 Mar 2014) | 3 lines
+
+Created two "all-in-one" utilities: knn for KNN operations (classify,
+interplate, pdf estimate) and agf for AGF operations
+
+------------------------------------------------------------------------
+r33 | peteysoft | 2014-03-01 12:26:05 -0500 (Sat, 01 Mar 2014) | 5 lines
+
+Still refining multi-class classification as well as the test suite
+(it works quite well already...)
+Added simpler executable for 'direct' AGF (no pre-trained model)
+that does it all: classification, interpolation and pdf estimation
+
+------------------------------------------------------------------------
+r32 | peteysoft | 2014-02-26 01:38:17 -0500 (Wed, 26 Feb 2014) | 3 lines
+
+- changed 'partition' symbol again this time to forward slash
+- added more documentation: NEWS file, multi-class module, new class borders
+
+------------------------------------------------------------------------
+r31 | peteysoft | 2014-02-25 19:27:44 -0500 (Tue, 25 Feb 2014) | 3 lines
+
+Moved contents of 'validation' and 'applications' to a single directory
+called 'examples'
+
+------------------------------------------------------------------------
+r30 | peteysoft | 2014-02-25 19:26:05 -0500 (Tue, 25 Feb 2014) | 2 lines
+
+...
+
+------------------------------------------------------------------------
+r29 | peteysoft | 2014-02-25 19:23:02 -0500 (Tue, 25 Feb 2014) | 2 lines
+
+Second try failed
+
+------------------------------------------------------------------------
+r28 | peteysoft | 2014-02-25 19:16:45 -0500 (Tue, 25 Feb 2014) | 2 lines
+
+Quite pleased with how well the hierarchical multi-class classification works.
+
+------------------------------------------------------------------------
+r27 | peteysoft | 2014-02-25 10:48:41 -0500 (Tue, 25 Feb 2014) | 2 lines
+
+Non-hierarchical multi-class is working (mostly...)
+
+------------------------------------------------------------------------
+r26 | peteysoft | 2014-02-24 03:35:37 -0500 (Mon, 24 Feb 2014) | 2 lines
+
+Finally starting to debug classification (as opposed to training) routines
+
+------------------------------------------------------------------------
+r25 | peteysoft | 2014-02-24 00:54:10 -0500 (Mon, 24 Feb 2014) | 2 lines
+
+Still plugging away at this thing
+
+------------------------------------------------------------------------
+r24 | peteysoft | 2014-02-23 17:30:38 -0500 (Sun, 23 Feb 2014) | 3 lines
+
+Added control files to multi-borders testing unit
+Improved documentation of multi-borders programs
+
+------------------------------------------------------------------------
+r23 | peteysoft | 2014-02-22 02:52:29 -0500 (Sat, 22 Feb 2014) | 2 lines
+
+classify_m compiles.  Now for the hard part.
+
+------------------------------------------------------------------------
+r22 | peteysoft | 2014-02-22 00:38:26 -0500 (Sat, 22 Feb 2014) | 2 lines
+
+Still trying to polish this fucking turd
+
+------------------------------------------------------------------------
+r21 | peteysoft | 2014-02-20 20:37:11 -0500 (Thu, 20 Feb 2014) | 2 lines
+
+Trying to finish multi-borders stuff
+
+------------------------------------------------------------------------
+r20 | peteysoft | 2014-02-18 02:49:57 -0500 (Tue, 18 Feb 2014) | 2 lines
+
+Starting to make a test suite for the multi-class codes
+
+------------------------------------------------------------------------
+r19 | peteysoft | 2014-02-17 01:13:39 -0500 (Mon, 17 Feb 2014) | 2 lines
+
+Sample class borders exe has been update to new borders sampling formulation
+
+------------------------------------------------------------------------
+r18 | peteysoft | 2014-02-16 23:29:21 -0500 (Sun, 16 Feb 2014) | 3 lines
+
+Pointless refactor of class borders algorithm to make it completely general
+is now working.
+
+------------------------------------------------------------------------
+r17 | peteysoft | 2014-02-16 17:59:02 -0500 (Sun, 16 Feb 2014) | 3 lines
+
+Making multi-borders parsing routines once again functional
+General class border sampling routines (not tied to AGF)
+
+------------------------------------------------------------------------
+r16 | peteysoft | 2014-02-14 17:48:10 -0500 (Fri, 14 Feb 2014) | 3 lines
+
+Multi borders training is working: at least the parsing part.  With addition of re-using option lists
+Because we've added global variables (a stack), codes are no longer purely functional :(
+
+------------------------------------------------------------------------
+r15 | peteysoft | 2014-02-14 02:23:57 -0500 (Fri, 14 Feb 2014) | 2 lines
+
+Sometime around 2025 this might be finished...
+
+------------------------------------------------------------------------
+r14 | peteysoft | 2014-02-10 22:51:20 -0500 (Mon, 10 Feb 2014) | 2 lines
+
+Transferring matrix "normalization" to mult-class
+
+------------------------------------------------------------------------
+r13 | peteysoft | 2014-02-10 18:44:47 -0500 (Mon, 10 Feb 2014) | 2 lines
+
+Still working on this shit
+
+------------------------------------------------------------------------
+r12 | peteysoft | 2014-02-04 13:49:55 -0500 (Tue, 04 Feb 2014) | 2 lines
+
+debugging
+
+------------------------------------------------------------------------
+r11 | peteysoft | 2014-02-02 21:38:12 -0500 (Sun, 02 Feb 2014) | 3 lines
+
+Got the pre-processing program linked in with the class_borders program
+working.
+
+------------------------------------------------------------------------
+r10 | peteysoft | 2014-02-02 15:24:01 -0500 (Sun, 02 Feb 2014) | 2 lines
+
+Pre-processing command linked in to classification command
+
+------------------------------------------------------------------------
+r9 | peteysoft | 2014-01-31 13:42:07 -0500 (Fri, 31 Jan 2014) | 2 lines
+
+...
+
+------------------------------------------------------------------------
+r8 | peteysoft | 2014-01-30 01:27:55 -0500 (Thu, 30 Jan 2014) | 3 lines
+
+Things are progressing like molasses in January.  These codes are a mess, especially I/O and 
+error handling, but there's a lot of duplicate code in the "work" routines as well...
+
+------------------------------------------------------------------------
+r7 | peteysoft | 2014-01-29 01:04:40 -0500 (Wed, 29 Jan 2014) | 2 lines
+
+Still trying to clean up this beast--some major refactoring is probably in order
+
+------------------------------------------------------------------------
+r6 | peteysoft | 2014-01-28 11:00:06 -0500 (Tue, 28 Jan 2014) | 3 lines
+
+Working in multi-class stuff and more general pre-processing/normalization
+routines
+
+------------------------------------------------------------------------
+r5 | peteysoft | 2014-01-02 23:14:12 -0500 (Thu, 02 Jan 2014) | 6 lines
+
+agf_precondition: more logical pre-processing routine since it occurs to me that 1. all of the
+features-only pre-processing operations in the previous routine were linear and therefore 
+could be implemented with a matrix multiplication and 2. the test data need to be pre-conditioned
+ with the same matrix multiplication anyway
+= a pretty big shift in how things are going to be done...
+
+------------------------------------------------------------------------
+r4 | peteysoft | 2013-12-31 02:43:22 -0500 (Tue, 31 Dec 2013) | 2 lines
+
+Working on stuff
+
+------------------------------------------------------------------------
+r3 | peteysoft | 2013-12-27 03:10:38 -0500 (Fri, 27 Dec 2013) | 2 lines
+
+More and better clean up
+
+------------------------------------------------------------------------
+r2 | peteysoft | 2013-12-27 01:36:28 -0500 (Fri, 27 Dec 2013) | 3 lines
+
+Removing line breaks from makefiles;
+cleaning up the file structure a bit
+
+------------------------------------------------------------------------
+r1 | peteysoft | 2013-12-26 22:00:32 -0500 (Thu, 26 Dec 2013) | 2 lines
+
+Starting libagf subversion repo
+
+------------------------------------------------------------------------

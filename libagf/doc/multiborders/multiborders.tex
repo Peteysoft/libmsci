@@ -1,0 +1,73 @@
+\documentclass[twoside,11pt]{article}
+
+% Any additional packages needed should be included after jmlr2e.
+% Note that jmlr2e.sty includes epsfig, amssymb, natbib and graphicx,
+% and defines many common macros, such as 'proof' and 'example'.
+%
+% It also sets the bibliographystyle to plainnat; for more information on
+% natbib citation styles, see the natbib documentation, a copy of which
+% is archived at http://www.jmlr.org/format/natbib.pdf
+
+\usepackage{jmlr2e}
+\usepackage{amsmath}
+\usepackage{url}
+
+% Definitions of handy macros can go here
+
+\newcommand{\dataset}{{\cal D}}
+\newcommand{\fracpartial}[2]{\frac{\partial #1}{\partial  #2}}
+
+% Heading arguments are {volume}{year}{pages}{submitted}{published}{author-full-names}
+
+\jmlrheading{1}{2014}{1-4}{4/14}{12/25}{Peter Mills}
+
+% Short headings should be running head and authors last names
+
+\ShortHeadings{Multi-borders classification}{Mills}
+\firstpageno{1}
+
+\begin{document}
+
+\title{Multi-borders classification}
+
+\author{\name Peter Mills \email petey@peteysoft.org \\
+       \addr Peteysoft Foundation\\
+       1159 Meadowlane, Cumberland ON, K4C 1C3 Canada}
+
+\editor{}
+
+\maketitle
+
+\begin{abstract}%   <- trailing '%' for backward compatibility of .sty file
+\input{multiborders_abstract.tex}
+\end{abstract}
+
+\begin{keywords}
+multi-class classification, Bayesian borders, Adaptive Gaussian Filtering
+\end{keywords}
+
+\input{multiborders_body.tex}
+
+% Acknowledgements should go at the end, before appendices and references
+
+%\acks{}
+
+
+% Manual newpage inserted to improve layout of sample file - not
+% needed in general before appendices/bibliography.
+
+%\newpage
+
+%\appendix
+%\section*{Appendix A.}
+%\label{app:theorem}
+
+% Note: in this sample, the section number is hard-coded in. Following
+% proper LaTeX conventions, it should properly be coded as a reference:
+
+%In this appendix we prove the following theorem from
+%Section~\ref{sec:textree-generalization}:
+
+\bibliography{../agf_bib}
+
+\end{document}

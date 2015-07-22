@@ -1,0 +1,17 @@
+CASE8: UC =~ 0.39
+
+Contingency table in CASE13:
+
+        retrieval
+truth   0   1   2   3   4   5   6   7   8   tot
+  0    17 101  30  23  60  25  42  21   2   321
+  1     5   1  65   0   0   0   1   0   0    72
+  2     6   6  22   3   5   1  19  37  21   120
+
+total  28 108 117  26  65  26  62  58  23 
+
+U C (reverse): 0.169472
+U C (total): 0.234092
+Uncertainty coefficient: 0.378361
+Accuracy: 0.077973
+

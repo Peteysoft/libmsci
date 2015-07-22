@@ -1,0 +1,177 @@
+#
+# Copyright 2007 Peter Mills.  All rights reserved.
+#
+
+OPT_VER = 
+
+CC = g++
+
+BASE_PATH = /home/username
+LIB_PATH = $(BASE_PATH)/lib
+BIN_PATH = $(BASE_PATH)/bin
+INCLUDE_PATH = $(BASE_PATH)/include
+
+PETEY_PATH = $(BASE_PATH)/libpetey
+
+#GSL_LIB = $(LIB_PATH)
+#GSL_INCLUDE = $(INCLUDE_PATH)
+
+GSL_LIB = /usr/lib
+GSL_INCLUDE = /usr/include
+
+LIBNAME = libagf$(OPT_VER).a
+
+LD_OPTIONS = $(LIBNAME) -static -L$(GSL_LIB) -L$(PETEY_PATH) -L. \
+		-lpetey$(OPT_VER) -lgsl -lgslcblas #-lnr-g
+
+CFLAGS = $(OPT_VER) -I$(GSL_INCLUDE) -I$(PETEY_PATH) -Wno-deprecated -O2
+
+VPATH = $(PETEY_PATH):$(GSL_LIB):$(GSL_INCLUDE)
+
+all:		classify_a$(OPT_VER) \
+		class_borders$(OPT_VER) \
+		classify_b$(OPT_VER) \
+		classify_knn$(OPT_VER) \
+		int_agf$(OPT_VER) \
+		test_classify$(OPT_VER) \
+		test_classify_b$(OPT_VER) \
+		test_knn$(OPT_VER) \
+		int_knn$(OPT_VER) \
+		cls_comp_stats \
+		pdf_agf$(OPT_VER) \
+		pdf_knn$(OPT_VER) 
+
+install: all
+	cp classify_a$(OPT_VER) $(BIN_PATH)
+	cp class_borders$(OPT_VER) $(BIN_PATH)
+	cp classify_b$(OPT_VER) $(BIN_PATH)
+	cp classify_knn$(OPT_VER) $(BIN_PATH)
+	cp int_agf$(OPT_VER) $(BIN_PATH)
+	cp test_classify$(OPT_VER) $(BIN_PATH)
+	cp test_classify_b$(OPT_VER) $(BIN_PATH)
+	cp test_knn$(OPT_VER) $(BIN_PATH)
+	cp int_knn$(OPT_VER) $(BIN_PATH)
+	cp $(LIBNAME) $(LIB_PATH)
+	cp cls_comp_stats $(BIN_PATH)
+	cp pdf_agf$(OPT_VER) $(BIN_PATH)
+	cp pdf_knn$(OPT_VER) $(BIN_PATH)
+	cp agf_lib.h $(INCLUDE_PATH)
+	cp agf_util.h $(INCLUDE_PATH)
+	cp cb_cbc_obj.h $(INCLUDE_PATH)
+	cp agf_metric2.h $(INCLUDE_PATH)
+	cp knn_lib.h $(INCLUDE_PATH)
+	cp agf_engine.h $(INCLUDE_PATH)
+
+classify_a$(OPT_VER): classify_a.cc agf_lib.h $(LIBNAME)
+	$(CC) $(CFLAGS) -o $@ classify_a.cc $(LD_OPTIONS)
+
+clean:
+	rm -f *.o
+	rm -f cls_comp_stats
+	rm -f test_kleast
+	rm -f classify_a$(OPT_VER)
+	rm -f class_borders$(OPT_VER)
+	rm -f classify_b$(OPT_VER)
+	rm -f classify_knn$(OPT_VER)
+	rm -f int_agf$(OPT_VER)
+	rm -f test_classify$(OPT_VER)
+	rm -f test_classify_b$(OPT_VER)
+	rm -f test_knn$(OPT_VER)
+	rm -f int_knn$(OPT_VER)
+	rm -f $(LIBNAME)
+	rm -f pdf_agf$(OPT_VER)
+	rm -f pdf_knn$(OPT_VER)
+	rm -f libagf$(OPT_VER).a
+
+classify_knn$(OPT_VER): classify_knn.cc agf_lib.h $(LIBNAME)
+	$(CC) $(CFLAGS) -o $@ classify_knn.cc $(LD_OPTIONS)
+
+pdf_agf$(OPT_VER): pdf_agf.cc agf_lib.h $(LIBNAME)
+	$(CC) $(CFLAGS) -o $@ pdf_agf.cc $(LD_OPTIONS)
+
+pdf_knn$(OPT_VER): pdf_knn.cc agf_lib.h $(LIBNAME)
+	$(CC) $(CFLAGS) -o $@ pdf_knn.cc $(LD_OPTIONS) 
+
+cls_comp_stats: cls_comp_stats.cc agf_util.h $(LIBNAME)
+	$(CC) $(CFLAGS) -o $@ cls_comp_stats.cc $(LD_OPTIONS)
+
+test_classify_b$(OPT_VER): test_classify_b.cc agf_util.h $(LIBNAME) \
+		class_borders$(OPT_VER) classify_b$(OPT_VER) 
+	$(CC) $(CFLAGS) -o $@ test_classify_b.cc \
+			$(LD_OPTIONS) -D OPT_VER=\"$(OPT_VER)\"
+
+classify_b$(OPT_VER): classify_b.cc agf_lib.h $(LIBNAME)
+	$(CC) $(CFLAGS) -o $@ classify_b.cc $(LD_OPTIONS) 
+
+class_borders$(OPT_VER): class_borders.cc agf_lib.h $(LIBNAME)
+	$(CC) $(CFLAGS) -o $@ class_borders.cc $(LD_OPTIONS) 
+
+test_classify$(OPT_VER): test_classify.cc $(LIBNAME) agf_lib.h
+	$(CC) $(CFLAGS) -o $@ test_classify.cc $(LD_OPTIONS)
+
+test_knn$(OPT_VER): test_knn.cc $(LIBNAME) agf_lib.h 
+	$(CC) $(CFLAGS) -o $@ test_knn.cc $(LD_OPTIONS)
+
+int_agf$(OPT_VER): int_agf.cc agf_lib.h $(LIBNAME) 
+	$(CC) $(CFLAGS) -o $@ int_agf.cc $(LD_OPTIONS)
+
+int_knn$(OPT_VER): int_knn.cc agf_lib.h $(LIBNAME)
+	$(CC) $(CFLAGS) -o $@ int_knn.cc $(LD_OPTIONS)
+
+$(LIBNAME): \
+		agf_metric2$(OPT_VER).o \
+		agf_engine$(OPT_VER).o \
+		agf_calc_pdf$(OPT_VER).o \
+		agf_classify$(OPT_VER).o \
+		adgaf$(OPT_VER).o \
+		find_class_borders$(OPT_VER).o \
+		agf_two_class$(OPT_VER).o \
+		agf_util$(OPT_VER).o \
+		knn_lib$(OPT_VER).o \
+		libdataset$(OPT_VER).a
+	ar -rs $(LIBNAME) \
+		find_class_borders$(OPT_VER).o \
+		agf_util$(OPT_VER).o \
+		agf_two_class$(OPT_VER).o \
+		agf_classify$(OPT_VER).o \
+		agf_calc_pdf$(OPT_VER).o \
+		adgaf$(OPT_VER).o \
+		knn_lib$(OPT_VER).o \
+		agf_engine$(OPT_VER).o \
+		agf_metric2$(OPT_VER).o 
+
+agf_metric2$(OPT_VER).o: agf_metric2.cc
+	$(CC) $(CFLAGS) -c agf_metric2.cc -o $@
+
+agf_engine$(OPT_VER).o: agf_engine.cc
+	$(CC) $(CFLAGS) -c agf_engine.cc -o $@
+
+agf_util$(OPT_VER).o: agf_util.cc agf_util.h
+	$(CC) $(CFLAGS) -c agf_util.cc -o $@
+
+agf_calc_pdf$(OPT_VER).o: agf_calc_pdf.cc agf_lib.h
+	$(CC) $(CFLAGS) -c agf_calc_pdf.cc -o $@
+
+agf_classify$(OPT_VER).o: agf_classify.cc agf_lib.h
+	$(CC) $(CFLAGS) -c agf_classify.cc -o $@
+
+adgaf$(OPT_VER).o: adgaf.cc agf_lib.h
+	$(CC) $(CFLAGS) -c adgaf.cc -o $@
+
+find_class_borders$(OPT_VER).o: find_class_borders.cc agf_lib.h
+	$(CC) $(CFLAGS) -c find_class_borders.cc -o $@
+
+agf_two_class$(OPT_VER).o: agf_two_class.cc agf_lib.h
+	$(CC) $(CFLAGS) -c agf_two_class.cc -o $@
+
+knn_lib$(OPT_VER).o: knn_lib.cc agf_lib.h
+	$(CC) $(CFLAGS) -c knn_lib.cc -o $@
+
+agf_lib.h: agf_engine.h agf_metric2.h knn_lib.h agf_util.h
+	touch agf_lib.h
+
+libpetey$(OPT_VER).a:
+	make -C $(PETEY_PATH) 
+
+#nr.h libnr.a:
+#	make -C $(NR_PATH)

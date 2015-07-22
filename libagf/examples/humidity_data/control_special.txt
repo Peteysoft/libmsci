@@ -1,0 +1,22 @@
+borders3-03 {
+  borders3-00 {
+    borders3-01 {
+      0
+      1
+    }
+    borders3-02 {
+      2
+      3
+    }
+  }
+  borders3-05 {
+    borders3-04 {
+      4
+      5
+    }
+    borders3-06 {
+      6
+      7
+    }
+  }
+}

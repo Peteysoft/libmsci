@@ -1,0 +1,38 @@
+%\documentclass[doublespacing]{elsart}
+\pdfoutput=1
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{natbib}
+\bibliographystyle{apa}
+\usepackage{url}
+\usepackage{color}
+
+\pagestyle{myheadings}
+
+\begin{document}
+
+\renewcommand{\mathbf} \vec
+
+\markright{Multi-borders classification}
+
+\title{Multi-borders classification}
+
+\author{Peter Mills\\
+Peteysoft Foundation\\
+\textit{petey@peteysoft.org}
+}
+
+\maketitle
+
+\begin{abstract}
+\input{multiborders_abstract.tex}
+\end{abstract}
+
+%\tableofcontents
+
+\input{multiborders_body.tex}
+
+\bibliography{../agf_bib}
+
+\end{document}

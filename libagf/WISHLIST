@@ -1,0 +1,100 @@
+1. Typing
+
+I only realized after trying to compile these codes on 64-bit machines that the longword integer type is neither platform nor operating-system independent.  I would like the data types to be operating system-independent.  It would also be nice to compile the libraries for either single-precision or double-precision (at the moment, almost everything is single-precision--I have rarely found an application where double precision was an absolute requirement...)  This could be done by either typedef-ing the floating point type or turning everything into a template.  I quite like templates as they are very flexible--most of the functions and classes in libpetey are templates--but either way it will be a lot of work.
+
+** Implemented in Release 0.9.4.
+
+2. Data files
+
+On a closely related notes, while the data storage is fast and simple, it might be nice if the files were also interchangeable between different platforms and operating systems.  This would mean that all reads and writes would have to go through a set of library routines--no more direct reads/writes.  This is considered kosher in structured programming anyway, but on the other hand, it was nice to have file conversion routines that could be compiled independent of any libraries.  Earlier versions of the codes had the read routines inlined in the header files so that they could be used without linking the whole library.
+
+The file conversion routines need to be cleaned up and made more accessible and more user-friendly.
+
+2014-11-16 PM: File conversion routines have been greatly improved.  The new "multi-borders" routines, when working with external classification programs, operate on ASCII files.  Pre-processing programs can also use ASCII files.  All the command-line executables need this capability.  Set-up in addition to I/O needs a pretty thorough clean-up.
+
+3. Weights
+
+Very early on I started writing versions of the libraries that allowed each training sample to be weighted but discarded them thinking that you could get the same effect by adding extra training samples.  But as a Harvard postdoc pointed out, this can introduce its own problems.  It is also less efficient.
+
+4. Optimal AGF
+
+PDF estimation in which the bandwidth is varied to produce an optimal error
+rate.  This is currently being tested, with mixed results.
+
+5. Multi-class borders classification
+
+We hope to have this ready in release 0.9.5.  The spec has already been 
+decided.
+
+!*** This has now been implemented. ***! (0.9.7)
+
+- 4 & 5 have been indefinitely postponed, however, other, minor improvements
+need to be taken care of:
+
+6. Weights for classification and pdf estimation.  These can be implemented in
+two ways:
+(a) so that they affect the filter width and are implemented only in 
+    the agf_engine routines
+(b) so that they do not affect the filter width and are implemented in the
+    individual classification and pdf calculation routines
+(a) is good mainly for saving space if there are many duplicates
+while (b) will address instabilities produced by an excessive number of
+duplicates.  Note that weights can also be useful for other purposes than just
+removing duplicate samples, e.g. a hybrid balloon/pointwise estimator.
+
+7. The weights calculation will likely be implemented as an extra control flow
+path within existing routines to minimize the amount of duplicate code.  In
+addition, AGF routines are duplicated with one version using all the data
+while the other version uses only a set of k-nearest-neighbours.  These
+overloaded functions will also likely be eliminated with the option existing
+as an extra flow path within each function.
+
+8. While we're at it, the library functions have become burdened by an 
+excessive number of arguments.  These could be tamed by converting the
+subroutines into a class hierarchy.  Conversion to OO style would require a
+essentially a complete rewrite so may not happen for a while--maybe version
+2.0.
+
+9. A very basic tool is missing: conversion of binary scalar data into ASCII
+and vice versa.  There is also the issue of converting scalar floating-point
+data into class data.  This can be used for generating ROC curves.
+
+10. nfold program works by calling other command line executables.  roc_curve
+calls nfold.  Both could be sped up on multi-procesor machines by running 
+processes in the background and using a "wait" or similar command.  Both will 
+probably be converted to shell scripts using the pre-processing routines to 
+split the data.
+
+11. Improving the multi-class routines: using "multi-borders" produces a 
+considerable hit in the accuracy, especially the "non-hierarchical" method.
+This uses a matrix inversion (least squares, actually) to solve for the 
+conditional probabilites based on the "raw" probabilities from each of the
+binary classifiers.  That is, if P are the conditional probabilities for
+each of the classes and R are the raw probabilies then there will be a mapping,
+A, from one to the other and we solve the following equation in a least
+squares sense:
+
+(1) A*P=R
+
+On the other hand, you can also solve for the class through "voting" which
+is how most other multi-class methods work.  Arithmetically, this can be
+expressed by multiplying the transpose of the mapping with the "raw" classes
+of each of the binary classifiers, where the class is expressed as one of
+{-1, 1}.  This method is more accurate, even when we use the difference in
+conditional probabilities in place of the class.  That is, we have:
+
+(2) c=arg max A^T*R
+
+where c is the class of the test point.  Unfortunately, this provide poor 
+knowledge of the final conditional probabilies,
+which in the first method are very accurate.  What I propose is to constrain
+(1) so that it always agrees with (2).  The least squares should probably
+be constrained anyway to keep the each element of P between 0 and 1 and to
+ensure that the sum is always 1.  In the latter case, it is easy to re-
+normalize the final results and a constrained least squares is not trivial,
+so the results from (1) have so far been left untouched.
+
+
+2014-11-16 PM: Multi-borders parsing routines need to be folded in to multi-
+borders classification object hierarchy as much of the functionality is
+duplicated.

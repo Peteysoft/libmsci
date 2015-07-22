@@ -1,0 +1,205 @@
+%\documentclass{article}
+
+%\usepackage{amsmath}
+%\usepackage[dvips]{graphicx}
+
+%\usepackage{natbib}
+
+%\bibliographystyle{apa}
+
+%\begin{document}
+
+\section{Optimal bandwidth balloon estimators}
+
+\subsection{Outline}
+
+Kernel density estimation is method of estimating density from a set of samples,
+$\lbrace \vec x_i \rbrace$, that works like a linear filter:
+\begin{eqnarray}
+f(\vec r) & = & \frac{1}{n} \sum_{i=1}^{n} w_i(\vec r) \label{kernel_estimate}\\
+w_i & = & K\left(\frac{|\vec r - \vec x_i|}{h}\right)
+\end{eqnarray}
+where $f$ is the estimated density, $\vec r$ is the {\it test point},
+$h$ is the {\it bandwidth},
+and $K$ is the {\it kernel function} which has the following properties:
+\begin{eqnarray}
+\lim_{r \rightarrow \infty} K(r) & = & 0 \\
+\int_V K(|\vec r|) \mathrm d \vec r & = & 1 \\
+%\int_V K(|\vec r|) |\vec r| \mathrm d \vec r & = & 0 \\
+\int_V K(|\vec r|) |\vec r|^2 \mathrm d \vec r & = & 1 
+\end{eqnarray}
+
+\citet{Terrell_Scott1992} provide two sources of error for the estimate
+of $f$ in (\ref{kernel_estimate}). A {\it variance term}:
+\begin{equation}
+e_1 = \frac{P^2}{n h^D}
+\end{equation}
+and a {\it bias term}:
+\begin{equation}
+e_2 = \frac{h^2}{n} \left ( \nabla^2 P \right )^2
+\end{equation}
+where $P$ is the true density.
+Combining the two:
+\begin{equation}
+e^2 = (f - P)^2 = \frac{P^2}{n^2 h^{2 D}} + \frac{h^4}{n^2} \left ( \nabla^2 P \right )^2
+\end{equation}
+Expanding the left-side-side (LHS) and bringing together common terms produces 
+the following:
+\begin{equation}
+f^2 - 2 f P + \left (1 - \frac{1}{n^2 h^{2 D}} \right ) P^2 - \frac{h^4}{n^2} 
+	\left ( \nabla^2 P \right )^2 = 0
+\label{basic_equation}
+\end{equation}
+
+\subsection{Reduction to a linear system}
+
+From a general standpoint, we can imagine an estimate, $f$, for a quantity,
+$P$, having a series of known sources of error, $\lbrace e_i \rbrace$,
+dependent upon one or more parameters and governed by a series of 
+unknown coefficients, $\lbrace x_i \rbrace$.  
+We have $m$ realizations of the estimate using different parameters, 
+such that:
+\begin{equation}
+(f_j - P)^2 = \sum_{i=1}^m x_i e_{ij}
+\end{equation}
+Expanding the LHS and subtracting pairs of realizations produces  
+a linear system:
+\begin{equation}
+\sum_{i=1}^m (e_{ij} - e_{ik}) x_i + (f_j - f_k) P = f_j^2 - f_k^2
+\end{equation}
+Note that we can eliminate either the squared term, $P^2$, or, 
+by dividing by $f_j$,
+the linear term, $2 f_j P$:
+\begin{equation}
+\sum_{i=1}^m \left ( \frac{e_{ij}}{f_j} - \frac{e_{ik}}{f_k} \right ) x_i 
++ \left ( \frac{2}{f_k} - \frac{2}{f_j} \right ) =  f_j - f_k
+\end{equation}
+This solution has a few problems associated with it: 
+for instance, how to determine
+which pairs of realizations to use?
+
+\subsection{Reduction to a quadratic}
+
+Since the problem discussed above for kernel density estimation contains
+only two error terms, one of which contains the true quantity as an
+unknown parameter, we can
+actually solve for the two unknowns using only two realizations.
+We summarize the system of equations using 
+a set of realized coefficients, 
+$\lbrace a_1, b_1, c_1, d_1, a_2, b_2, c_2, d_2 \rbrace$,
+the values of which are defined in the next section,
+and a pair of unknown coefficients or variables, $x_1=P$ 
+and $x_2=(\nabla^2 P)^2$:
+\begin{eqnarray}
+a_1 x_1 + b_1 x_1^2 + c_1 x_2 + d_1 = 0\\
+a_2 x_1 + b_2 x_1^2 + c_2 x_2 + d_2 = 0
+\end{eqnarray}
+which can be row-reduced to the following quadradic:
+\begin{equation}
+\left (\frac{b_1}{c_1} - \frac{b_2}{c_2} \right ) x_1^2 +
+\left (\frac{a_1}{c_1} - \frac{a_2}{c_2} \right ) x_1 +
+\left (\frac{d_1}{c_1} - \frac{d_2}{c_2} \right ) = 0
+\end{equation}
+We won't write out the final expression as it will take up quite a lot of space.
+In any case, the solution isn't worth much since the error estimate, 
+especially in the case of the variance term, is only accurate in a 
+least-squares sense, as the use of a sum-of-squares for the total, 
+squared error implies.
+
+\subsection{Iterative least squares}
+
+Suppose we want to fit (\ref{basic_equation}) in terms of the parameters,
+$P$ and $\nabla^2 P$, using least-squares fitting.
+Let the function $g(\vec x, \vec k)$ represent the LHS, with
+$\vec x$ being the fixed (unknown) parameters 
+(i.e. $\vec x=\lbrace P, ~ \nabla^2 P \rbrace$)
+while $\vec k$ are the adjustable parameters 
+(in this case $vec k=\lbrace h \rbrace$).  
+The cost function is:
+\begin{equation}
+C(\vec x) = \sum_{i=1}^m \left [g(\vec x, ~ \vec k_i)\right ]^2
+\end{equation}
+which we shorten as:
+\begin{equation}
+C(\vec x) = \sum_i g_i^2(\vec x)
+\end{equation}
+The gradient of $C$ with respect to (wrt) $\vec x$ is:
+\begin{equation}
+\nabla C = 2 \sum_i g_i \nabla g |_{\vec k=\vec k_i}
+\end{equation}
+To find an extremum of $C$, we need to set this to zero.
+The Hessian is:
+\begin{equation}
+\nabla \nabla C = 2 \sum_i \nabla g_i \otimes \nabla g_i
+		+2 \sum_i g_i \nabla \nabla g_i
+\end{equation}
+where $\otimes$ is the outer product.
+
+Since $P$ is always positive, rather than constraining the solution, we 
+replace it with a transformed version, $\ln P$.  The Laplacian of $P$ is
+left unsquared for the same reason.  Thus,
+\begin{equation}
+\vec x= \lbrace \ln P, ~ \nabla^2 P \rbrace
+\end{equation}
+and,
+\begin{equation}
+g_i \left (\lbrace x_1, ~ x_2 \rbrace \right ) = a_i \exp(x_1) + b_i \exp(2 x_1) + c_i x_2^2 + d
+\end{equation}
+where:
+\begin{eqnarray}
+a_i & = & - 2 f_i \\
+b_i & = & 1 - \frac{1}{n^2 h_i^{2 D}} \\
+c_i & = & - \frac{h_i^4}{n^2} \\
+d_i & = & f_i^2
+\end{eqnarray}
+
+The gradient of $g$ is:
+\begin{equation}
+\nabla g_i = \lbrace a_i \exp(x_1) + 2 b_i \exp(2 x_1), ~ 2 c_i x_2 \rbrace
+\end{equation}
+while the Hessian is:
+\begin{equation}
+\nabla \nabla g_i = 
+\begin{bmatrix}
+a_i \exp(x_1) + 4 b_i \exp(2 x_1) & 0 \\
+0 & 2 c_i
+\end{bmatrix}
+\end{equation}
+
+With both the gradient and Hessian on hand, 
+iterative inverse methods such
+as Levenberg-Marquardt can now be brought to bear to find a solution.
+Since the problem is not strongly non-linear, a simple Newton's method
+could suffice:
+\begin{equation}
+\vec x_{i+1} = \vec x_i - \left ( \nabla \nabla C |_{\vec x=\vec x_i} \right )^{-1}
+		\nabla C |_{\vec x=\vec x_i}
+\end{equation}
+
+The problem we run into here is that the system of equations 
+tends to be extremely ill-conditioned.  Here is an example of a set of 
+coefficients encountered while solving for a density in the distribution
+of the second synthetic test class in \citet{Mills2011}:
+\begin{equation}
+\vec g = \frac{1}{n^2}
+\begin{bmatrix}
+-7.57\times10^7 & 1.25\times10^8 & -1.00\times10^{-8} & 6.36\times10^6 \\
+-5.51\times10^7 & 2.17\times10^8 & -1.29\times10^{-7} & 3.371\times10^6 \\
+-6.02\times10^7 & 2.24\times10^8 & -1.66\times10^{-6} & 4.02\times10^6 \\
+-7.62\times10^7 & 2.25\times10^8 & -2.15\times10^{-5} & 6.45\times10^6 \\
+-1.18\times10^8 & 2.25\times10^8 & -0.000278 & 1.55\times10^7 \\
+-1.59e\times10^8 & 2.25\times10^8 & -0.00359 & 2.81\times10^7 \\
+-1.48e\times10^8 & 2.25\times10^8 & -0.0464 & 2.45\times10^7 \\
+-7.18\times10^7 & 2.25\times10^8 & -0.599 & 5.73\times10^6 \\
+-2.39\times10^7 & 2.25\times10^8 & -7.74 & 636299 \\
+-7.02\times10^6 & 2.25\times10^8 & -100 & 54707.5
+\end{bmatrix}
+\begin{bmatrix}
+P \\ P^2 \\ (\nabla^2 P)^2 \\ 1
+\end{bmatrix}
+\end{equation}
+
+%\bibliography{../libagf/doc/multiborders_bib}
+
+%\end{document}
+

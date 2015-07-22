@@ -1,0 +1,76 @@
+%here we wish to summarize everything related to "adaptive Gaussian filters"
+%in one .tex file
+%we take as much as we can directly from the master's thesis...
+
+%\pagestyle{myheadings}
+
+\documentclass[11pt]{article}
+
+\usepackage{amsmath}
+\usepackage[dvips]{graphicx}
+%\bibliographystyle{elsart-harv}
+\usepackage{url}
+
+\bibliographystyle{plain}
+
+
+\begin{document}
+
+\begin{center}
+
+{\LARGE Adaptive Gaussian filters: a powerful new method for supervised learning}
+\vspace{5mm}
+
+{\large Peter Mills\footnote
+{Correspondence should be sent to: \newline
+Peter Mills \newline
+(peteymills@hotmail.com) \newline
+49-421-218-7045 (phone) \newline
+49-421-218-4555 (fax)}\newline
+}
+\textit{
+Institute for Environmental Physics, \newline
+University of Bremen, \newline
+PO Box 330440, \newline
+28334 Bremen, \newline
+Germany}\newline
+
+\end{center}
+
+\begin{flushleft}
+
+\section*{Abstract}
+\input{adgaf_abstract.tex}
+\vspace{3mm}
+
+\emph{Keywords:}\newline
+Monte Carlo methods \newline
+statistical classification \newline
+supervised learning \newline
+PDF estimation
+
+\pagebreak
+
+%\input{agf_symbols.tex}
+
+\tableofcontents
+
+\parindent=5mm
+\input{agf_class_comp_body.tex}
+
+\section*{Acknowledgements}
+Thank you very much to my colleaques from the IUP, University of
+Bremen for their continued support and encouragement of this work,
+in particular Stefan Buehler, Georg Heygster and Oliver Lemke.  
+Thanks to Christian Melsheimer for his very valued comments on the first draft.
+Thanks especially to the former PEP (Postgraduate program in
+Environmental Physics) team, Stefanie Buehler, Prof. Jörn
+Bleck-Neuhaus, Christine Schiwek and Barbara Kosak, without whom
+I would not have been able to complete my master's degree, from
+which this paper is derived.
+
+\bibliography{../agf_bib}
+
+\end{flushleft}
+\end{document}
+

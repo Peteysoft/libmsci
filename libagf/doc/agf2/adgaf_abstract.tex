@@ -1,0 +1,20 @@
+Adaptive Gaussian filtering (AGF) is a new method for estimating
+probability densities and performing statistical classification.
+Its justification is a generalization of a $k$-nearest-neighbours
+whereby the training samples are weighted by distance
+using a symmetric filter function and the total of the weights 
+is constrained to a constant value by varying the width of the
+filter.  A Gaussian is chosen 
+because of its mathematical properties--it is easy to solve
+for the filter width, for instance.  
+Probability estimates 
+can be used directly or they can be used to search for a 
+class border from which estimates of both the
+class and the conditional probabilities are easy to extrapolate.
+The method is validated on a pair of two-dimensional synthetic
+test classes and compared
+to three of the most popular existing methods.  
+As applied to the test case it is shown
+to be over twenty-five (25) times as fast as the equivalent
+analysis using a support vector machine (SVM), with no loss of
+accuracy, while being easier to apply and understand.

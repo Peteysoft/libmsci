@@ -1,0 +1,213 @@
+New in version 0.92:
+
+- In the direct classification routines (classify_a, classify_knn), there is now
+  an option (-j) to print out joint probabilities instead of conditional 
+  probabilities.  Of course this can be done by calculating the total
+  probability and multiplying by the conditional probability, but this means
+  redundant calculation.
+
+- In class_borders, added the option (-r) to solve for a class border 
+  other than at R=0.  This is useful if your classes are of significantly 
+  different size, especially when the training data does not reflect this.
+
+- There is now a simple clustering analysis program (cluster_knn) based on a 
+  threshold density.  It works by first finding a point in which the density 
+  is greater than this threshold.  Using the k-nearest neighbours to this point, 
+  it recursively finds all other points above this threshold and assigns them 
+  the same class number.
+
+- The option to use a metric other than Cartesian now exists.  Since many
+  of the calculations are specifically based on a Cartesian space, especially
+  the PDF estimation, this should be applied with some caution.
+
+- Option for different names for files containing normalization data.  It's a
+  pretty minor point, so it's only been implemented in two or three programs,
+  chiefly the class_borders and classify_b modules.  I'm too lazy to do them all...
+
+- Added an n-fold cross-validation program that works with all the classification 
+  algorithms.
+
+- Added a small utility that just normalizes the data and thats it.  Also
+  cleaned up and properly renamed a utility (vecfile2lvq) to convert the binary 
+  files to Kohonen's LVQ format.
+
+New in Version 0.9.3:
+
+- The libpetey library is no longer part of the libagf distribution
+
+- The class borders codes can no longer generate duplicate samples.
+  There are two versions: one for large training datasets, and one for small.
+  If all combinations of pairs of training samples have been used up, 
+  the codes will generate no more training samples.
+
+New in Version 0.9.4:
+
+- Most importantly, everything, except the IO routines, has been templated.
+  This means you can do your work in single or double precision and you can
+  represent your classes as bytes, 8-bit integers, 16-bit integers,
+  32 bit integers, etc. -- whatever size you want.
+
+- With the exception of those used in external routines, variable types 
+  in the main routines are now controlled with global typedefs, with each 
+  class of variable having a different type.  This means you can tightly
+  control the typing for optimal use of space or CPU cycles.  Classes have
+  a default type of 32-bit integers while floating point operations are done
+  in single precision by default.
+
+- Different metrics are now only supported in the routines where they make
+  sense: KNN classification and KNN interpolation.  The functions now 
+  require a pointer to the desired metric.
+
+- nfold routine now supports interpolation.  Note that this is still not well
+  tested (if at all).
+
+- File conversion utilities as well as the test class routines have now been 
+  integrated into the main distribution simply by more linking the 
+  two makefiles more closely, thus allowing easier testing and more user-
+  friendly files.
+
+- A routine that performs AGF PDF estimation with an optimal error rate 
+  is currently being tested but is not ready yet.  We hope to have it ready 
+  in a new release very shortly.
+
+- Also in the next release: multi-class classification using the class-borders
+  method.  Stay tuned!
+ 
+New in Version 0.9.5:
+
+Sadly, neither the multi-class classifier using the "borders" method, nor
+the optimal AGF routine have been perfected yet.  However, there are quite
+a few other good improvements to sweeten the mix...
+
+- The routine for finding the k-nearest-neighbours has been changed from one
+  based on a binary tree to one based on a quicksort algorithm.  Speed 
+  improvements are expected to be on the order of 25%.  To change
+  back to the old version, use the macro, KLEAST_FUNC, in the agf_defs.h
+  include file.
+
+- The routine for calculating the weights for the AGF algorithm now matches
+  the filter variance to the W parameter using the supernewton root-finding
+  algorithm instead of by squaring the initial weights.  This means that
+  there are now two bounds for the filter variance.  They are set by the
+  -v and -V options for the lower and upper bounds respectively.  Since it
+  is trivial to push the bounds outward if they do not bracket the root
+  and since these changes are "sticky" it does not matter if the high bound
+  is too low or the low bound too high.  Rather the user should try to avoid
+  the opposite extreme as this will mean a larger number of iterations to reach
+  the root.  Default bounds are [sigma^2/n^(2/D), sigma^2] where sigma^2
+  is the total variance of the data.
+
+- The new weight-calculating routine is more accurate and should be more 
+  robust as well, although at the cost of a slight speed penalty.  As with 
+  the kleast subroutine, however, the old version can be re-instated by 
+  changing the AGF_CALC_W_FUNC macro.  The intial filter variance, since it is 
+  an upper bound, is now set with the -V option instead of the -v option.
+
+- For maximum control of the weight-calculating routine, several new options
+  have been added.  To change the maximum number of iterations in the 
+  supernewton root-finding algorithm, use the -I option.  This changes it
+  for both calculation of weights and for searching for the class borders.
+  To change it for one or the other, use -i for the weight calculation routine
+  and -h for the class borders routine.  The default number of iterations for
+  both is 100 which may not be sufficient for some problems.  
+
+- To change the tolerance of W, or the total of the weights, use the -l option.
+  Default is 0.005 which should be more than sufficient.  Since the accuracy of
+  W is not that critical, the tolerance can be degraded, probably as high as 1, 
+  for a slight speed savings.
+
+- The parameter W is now set with the -W option (uppercase double-u) instead of
+  the -w option (lowercase double-u).
+
+- The optimal AGF may not work yet, but it's a lot more user friendly!
+  Check the documentation...
+
+New in Version 0.9.6:
+
+- New Bash script to validate probability density function (PDF) calculations:
+  validate_pdf.sh
+
+- New command for generating a simulated data set with approximately the
+  same PDF as the training data: pdf_sim .  Used by validate_pdf.sh
+
+- New file utility that randomly splits up a dataset into two or more divisions:
+  agf_split_data .  Also used by validate_pdf.sh
+
+- New command generates the Relative Operating Characteristic (ROC) curve:
+  roc_curve
+
+New in Version 0.9.7:
+
+- Command to generate and browse dendrogram (hierarchical cluster) called
+  browse_cluster_tree, as well as associated libraries
+
+- Multi-class classification based on class borders!  Two executables:
+  - multi_borders trains the model based on a control file
+  - classify_m performs classifications using the output from multi_borders
+  - libaries can be generalized (with some effort) for any binary classification
+    method
+
+- Normalization has been generalized to a linear transformation and moved
+  to a stand-alone executable (agf_precondition) for pre-processing.  This 
+  executable includes Singular Value Decomposition (SVD) as an option as well 
+  as feature selection.
+
+- Also for pre-processing: agf_preprocess.  The command performs operations
+  on both features and classes: splitting the dataset for validation purposes,
+  selecting, re-labelling and partitioning classes.
+
+- Namespace added
+
+- Reorganized the directory structure.
+
+- Added an 'examples' directory for test suites and applications.
+
+- Routine to sample the class borders has been made completely general in that
+  it can use any algorithm that provides continuous, differentiable
+  estimates of the conditional probabilities.
+
+- All operations--classification, pdf-estimation and interpolation--have been
+  grouped together under two executables: on for AGF called agf and one for
+  KNN called knn.
+
+- Classification programs that output conditional/joint probabilities for all
+  classes (agf, knn and classify_m--for some cases) now print them in an 
+  LVQ-compatible format.
+
+- Temporary files from nfold and roc_curve are now deleted on exit rather than
+  cluttering the directory.
+
+New in Version 0.9.8 (Subversion revision 151):
+
+- bug fixes: svm file conversion works properly and is more general
+
+- non-hierarchical multi-borders has 3 options for solving for the conditional
+  probabilities: matrix inversion, voting, and matrix inversion over-ridden
+  by voting, with re-normalization
+
+- multi-borders now works with external binary classifiers
+
+- random numbers resolve a tie when selecting classes based on probabilities
+
+- pair of routines, sort_discrete_vectors and search_discrete_vectors,
+  for classification based on n-d binning (still experimental)
+
+- command options have been changed with many new additions.  Some important
+  changes:
+  -h now refers the relative displacement when performing numerical
+     differentiation in class_borders using an external classifier
+  -q number of iterations when performing numerical differentiation in 
+     class_borders
+  -N maximum number of iterations in supernewton root-finder (used to be -h)
+  -- pass an external command for class training in multi_borders
+  -+ pass "default" command line options in multi_borders
+  -O pass an external command for binary classification in multi_borders
+     and classify_m
+  -A operate on ASCII files (currently only for pre-processing routines)
+  -M ASCII files are LIBSVM format (only pre-processing and externally
+     interfaced routines)
+  -0 read from STDIN (pre-processing)
+  -1 write to stdout (pre-processing)
+  see QUICKSTART file or run the relevant commands for more details.
+
+
