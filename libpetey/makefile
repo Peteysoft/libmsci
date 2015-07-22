@@ -151,9 +151,9 @@ install: libpetey$(OPT).a ignore_code date_calc
 	install date_calc.1 $(MANPATH)/man1
 
 install_allopt: libpetey-g.a libpetey-O2.a libpetey-pg.a
-	make install_petey OPT=-g
-	make install_petey OPT=-pg
-	make install_petey OPT=-O2
+	make install OPT=-g
+	make install OPT=-pg
+	make install OPT=-O2
 
 test: test_libpetey $(TEST)
 	./test_libpetey

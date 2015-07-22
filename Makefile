@@ -147,7 +147,6 @@ install: $(INSTALL_PETEY)
 	make install -C libagf LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
 			BIN_PATH=$(BIN_PATH) \
 			OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT)
-	cp ignore_code $(BIN_PATH)
 
 install_allopt: libpetey-g.a libpetey-O2.a libpetey-pg.a
 	make install OPT=-g
