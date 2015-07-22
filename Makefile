@@ -83,8 +83,9 @@ FTRAILING_UNDERSCORES=_
 ################   End modifiable macros.     #######################
 #####################################################################
 
-
 VPATH = datasets/ sparse/ libpetey/ libagf/
+
+INSTALL_PETEY = $(LIB_PATH)/libpetey$(OPT).a
 
 all: libpetey$(OPT).a libdataset$(OPT).a libsparse$(OPT).a libagf$(OPT).a
 
@@ -92,13 +93,14 @@ libpetey$(OPT).a:
 	make -C libpetey LIB_DIR=$(LIB_PATH) INCLUDE_DIR=$(INCLUDE_PATH) \
 		OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT) \
 		CC=$(CPP) CFLAGS="$(CFLAGS)" \
+		GSL_INCLUDE=$(GSL_INCLUDE) GSL_LIB=$(GSL_LIB) \
 		LEX=$(LEX) YY=$(YY) INT_UTIL_LDF="$(INT_UTIL_LDF)"
 
-libdataset$(OPT).a: install_petey
+libdataset$(OPT).a: $(INSTALL_PETEY)
 	make -C datasets LIB_DIR=$(LIB_PATH) INCLUDE_DIR=$(INCLUDE_PATH) \
 		OPT_VER=$(OPT) CC=$(CPP) CFLAGS="$(CFLAGS)"
 
-libsparse$(OPT).a: install_petey
+libsparse$(OPT).a: $(INSTALL_PETEY)
 	make -C sparse LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
 		BIN_PATH=$(BIN_PATH) MANPATH=$(MANPATH) \
 		EXE_EXT=$(EXE_EXT) OPT_VER=$(OPT) \
@@ -109,6 +111,12 @@ libsparse$(OPT).a: install_petey
 		ARPATH=$(ARPATH) LIBARPACK=$(LIBARPACK) \
 		F77=$(F77) FFLAGS="$(FFLAGS)" FORTRAN_RUNTIME=$(FORTRAN_RUNTIME) \
 		GSL_LIB=$(GSL_LIB)
+
+libagf$(OPT).a: $(INSTALL_PETEY)
+	make -C libagf LIB_DIR=$(LIB_PATH) INCLUDE_DIR=$(INCLUDE_PATH) \
+		OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT) \
+		CC=$(CPP) CFLAGS="$(CFLAGS)" \
+		GSL_INCLUDE=$(GSL_INCLUDE) GSL_LIB=$(GSL_LIB)
 
 allopt:
 	make OPT=-g all
@@ -125,16 +133,19 @@ clean_all:
 	make OPT=-pg clean
 	make OPT=-O2 clean
 
-install_petey: libpetey$(OPT).a ignore_code date_calc$(OPT_VER)$(EXE_EXT)
+$(INSTALL_PETEY): libpetey$(OPT).a ignore_code$(EXE_EXT) date_calc$(OPT_VER)$(EXE_EXT)
 	make install -C libpetey LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
 			BIN_PATH=$(BIN_PATH) MANPATH=$(MANPATH) \
 			OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT)
 
-install: install_petey
+install: $(INSTALL_PETEY)
 	make install -C datasets LIB_DIR=$(LIB_PATH) INCLUDE_DIR=$(INCLUDE_PATH) \
 			OPT_VER=$(OPT)
 	make install -C sparse LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
 			BIN_PATH=$(BIN_PATH) MANPATH=$(MANPATH) \
+			OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT)
+	make install -C libagf LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
+			BIN_PATH=$(BIN_PATH) \
 			OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT)
 	cp ignore_code $(BIN_PATH)
 
