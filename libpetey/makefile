@@ -105,6 +105,7 @@ OBJECT =	symbol_table$(OPT).o \
 		string_petey$(OPT).o \
 		full_util$(OPT).o \
 		kselect$(OPT).o \
+		vector_e$(OPT).o \
 		vector_s$(OPT).o \
 		grammar_t$(OPT).o \
 		erfinv$(OPT).o \

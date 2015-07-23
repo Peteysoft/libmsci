@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "time_class.h"
+#include "vector_e.h"
+
 namespace libpetey {
 
   template <class type>
@@ -49,7 +52,7 @@ namespace libpetey {
   }
 
   template <class type>
-  vector_e<type>::vector_e(vector_s<type> &other) {
+  vector_e<type>::vector_e(vector_e<type> &other) {
     data=new type[other.nel];
     nel=other.nel;
     array_size=nel;
@@ -58,7 +61,7 @@ namespace libpetey {
   }
     
   template <class type>
-  vector_e<type> & vector_e<type>::operator = (vector_s<type> &other) {
+  vector_e<type> & vector_e<type>::operator = (vector_e<type> &other) {
     delete [] data;
     data=new type[other.nel];
     nel=other.nel;
@@ -114,6 +117,51 @@ namespace libpetey {
   vector_e<type>::operator type * () {
     return data;
   }
- 
-} //end fucking namespace libwhathisface...
+
+  template <>
+  void vector_e<double>::print (FILE *fs) {
+    for (int i=0; i<nel; i++) {
+      printf("%lg ", data[i]);
+    }
+    printf("\n");
+  }
+
+  template <>
+  void vector_e<float>::set_default_missing () {
+    missing=NAN;
+  }
+
+  template <>
+  void vector_e<double>::set_default_missing () {
+    missing=NAN;
+  }
+
+  template <>
+  void vector_e<long>::set_default_missing () {
+    missing=missing_val_signed_int<long>();
+  }
+
+  template <>
+  void vector_e<int64_t>::set_default_missing () {
+    missing=missing_val_signed_int<int64_t>();
+  }
+
+  template <>
+  void vector_e<int32_t>::set_default_missing () {
+    missing=missing_val_signed_int<int32_t>();
+  }
+
+  template <>
+  void vector_e<time_class>::set_default_missing () {
+    missing.init(-1000, 1, 1, 0, 0, 0);
+  }
+
+  template class vector_e<int32_t>;
+  template class vector_e<long>;
+  template class vector_e<int64_t>;
+  template class vector_e<float>;
+  template class vector_e<double>;
+  template class vector_e<time_class>;
+
+} //end namespace libpetey
 

@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 
+#include "vector_e.h"
 #include "petey_pointer.h"
 
 namespace libpetey {
@@ -12,11 +13,14 @@ namespace libpetey {
   //a vector class, designed for (at the moment) removing duplicates
   //within a list through sorting...
   template <class type>
+  //class vector_s:public vector_e<type> {
   class vector_s {
     protected:
       int nel;
       int array_size;
       type * data;
+
+      void set_default_missing();
 
     public:
       type missing;
@@ -27,8 +31,6 @@ namespace libpetey {
       vector_s(type *dt, int n, int ncp_flag=0);
       vector_s(type **dt, int n);
       ~vector_s();
-
-      void set_default_missing();
 
       void resize (int n);
       void resize (int n, type m);

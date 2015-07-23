@@ -18,7 +18,7 @@ namespace libpetey {
     nel=0;
     array_size=1;
     data=new type[array_size];
-    set_default_missing();
+    this->set_default_missing();
     //missing=(type) 0.;
   }
 
@@ -27,7 +27,7 @@ namespace libpetey {
     nel=n;
     array_size=n;
     data=new type[nel];
-    set_default_missing();
+    this->set_default_missing();
   }
 
   template <class type>
@@ -54,7 +54,7 @@ namespace libpetey {
 
   template <class type>
   vector_s<type>::~vector_s() {
-    delete [] data;
+    //delete [] data;
   }
 
   template <class type>
@@ -65,7 +65,7 @@ namespace libpetey {
     missing=other.missing;
     for (int i=0; i<nel; i++) data[i]=other.data[i];
   }
-    
+
   template <class type>
   vector_s<type> & vector_s<type>::operator = (vector_s<type> &other) {
     delete [] data;
@@ -283,14 +283,6 @@ namespace libpetey {
   }
 
   template <>
-  void vector_s<double>::print (FILE *fs) {
-    for (int i=0; i<nel; i++) {
-      printf("%lg ", data[i]);
-    }
-    printf("\n");
-  }
-
-  template <>
   void vector_s<float>::set_default_missing () {
     missing=NAN;
   }
@@ -302,31 +294,23 @@ namespace libpetey {
 
   template <>
   void vector_s<long>::set_default_missing () {
-    missing=1;
-    for (int i=1; i<sizeof(long); i++) missing=missing*256;
-    missing*=128;
+    missing=missing_val_signed_int<long>();
   }
 
   template <>
   void vector_s<int64_t>::set_default_missing () {
-    missing=1;
-    for (int i=1; i<sizeof(int64_t); i++) missing=missing*256;
-    missing*=128;
+    missing=missing_val_signed_int<int64_t>();
   }
 
   template <>
   void vector_s<int32_t>::set_default_missing () {
-    missing=2147483648;
-    missing=1;
-    for (int i=1; i<sizeof(int32_t); i++) missing=missing*256;
-    missing*=128;
+    missing=missing_val_signed_int<int32_t>();
   }
 
   template <>
   void vector_s<time_class>::set_default_missing () {
     missing.init(-1000, 1, 1, 0, 0, 0);
   }
-
 
   template class vector_s<int32_t>;
   template class vector_s<long>;
@@ -360,4 +344,4 @@ namespace libpetey {
   }
 #endif
  
-} //end fucking namespace libwhathisface...
+} //end namespace libpetey
