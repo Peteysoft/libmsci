@@ -282,14 +282,15 @@ where $V$ here represents the total volume.
 In the absence of diffusion or source terms, this map can be calculated in
 at least two ways, by a differential equation: 
 \begin{eqnarray}
-\frac{\partial}{\partial t} Q & = & (\vec v \cdot \nabla) Q 
+	\frac{\partial}{\partial t} Q & = & (\vec v \cdot \nabla) Q 
 \label{tracer_map_continuous1}\\
 Q(\vec x_0,~\vec x,~t_0,~0) & = & \delta(\vec x-\vec x_0) 
 \label{tracer_map_continuous2}
 \end{eqnarray}
 where $\delta$ is the Dirac delta function, and using the trajectory function:
 \begin{equation}
-Q(\vec x_0,~\vec x,~t_0,~\Delta t) = \delta[\Phi(\vec x_0,~t_0,~\Delta t)-x_0]
+Q(\vec x_0,~\vec x,~t_0,~\Delta t) = \delta[\Phi(\vec x_0,~t_0,~\Delta t)-\vec x]
+\label{tracer_map_continuous3}
 \end{equation}
 In the latter case, combination with (\ref{tracer_map_continuous}) produces the
 Frobenius-Perron equation. \citep{Ott1993}
@@ -713,6 +714,77 @@ s^2 & \le & 1 \label{SV_inequality}
 This further shows that the Lyapunov exponents are all
 either zero or negative with the largest equal to 0.  This has been shown
 numerically in \citet{Mills2012}.
+
+\section{Volume deformation versus the transport map}
+
+Since the volume deformation matrices,
+$H$ and $H^\prime$, and the transport map, $Q$, are all derived from the
+transport equations, and their time evolution has the same mathematical form,
+we would expect them to be closely related. 
+The $H$ matrices describe the local deformation of Lagrangian space 
+while $Q$ describes the global deformation.
+Since $\delta \left [\Phi(\vec x_0) - \vec x \right ]=\delta \left [\vec x_0 - \Phi^{-1}(\vec x) \right ]$,
+we can derive (\ref{inverse_deformation_matrix}) from
+(\ref{tracer_map_continuous}) and (\ref{tracer_map_continuous3}) by taking 
+the gradient of $q$:
+\begin{eqnarray}
+	\nabla_{\vec x} q & = & \nabla_{\vec x} \Phi^{-1} \int_V 
+	\delta^\prime \left [\vec x_0 - \Phi^{-1}(\vec x) \right ] q_0 (\vec x_0)
+	\mathrm d \vec x_0 \\
+	& = & H^\prime \cdot \nabla_{\vec x_0} q_0
+\end{eqnarray}
+
+Once we admit diffusion, the final tracer gradient is no longer locally 
+dependent on the gradient at the starting point, but rather depends on the
+whole initial tracer configuration:
+\begin{equation}
+	\nabla_{\vec x} q = \int_V \nabla_{\vec x} Q(\vec x_0, \vec x) q_0 (\vec x_0) \mathrm d \vec x_0
+\end{equation}
+
+As with $\Phi$ and $\Phi^\prime$, 
+there will be an inverse transport map, $Q^{-1}$, from which we can derive
+$H$. In the absence of diffusion, the mathematics will be identical whether
+we move forward or backward in time.
+
+Of particular interest is what happens to these maps in the limit as time
+goes to infinity, $\Delta t \rightarrow \infty$.
+By SVD:
+\begin{equation}
+	\lim_{\Delta \rightarrow \infty} H^\prime = 
+	s_{h^\prime1} \vec h_f^\prime \otimes \vec h_0^\prime
+\end{equation}
+where $\otimes$ is the outer product and $s_{h^\prime1}$ is the largest 
+singular value. The tracer gradient becomes:
+\begin{equation}
+	\nabla_{\vec x} q = s_{h^\prime1} \vec h_f^\prime
+	\nabla_{\vec x_0} q_0 \cdot \vec h_0^\prime
+\end{equation}
+
+Once we generalize SVD to continuous distributions, a similar thing will
+be seen to happen with the transport map:
+\begin{equation}
+	\lim_{\Delta \rightarrow \infty} Q(\vec x_0, \vec x) =
+	Q_f (\vec x) Q_0 (\vec x_0)
+\end{equation}
+In other words, it has become separable and:
+\begin{equation}
+	\nabla_{\vec x} q = \nabla_{\vec x} Q_f \int_V Q_0 (\vec x_0) q_0 (\vec x_0) \mathrm d \vec x_0
+\end{equation}
+Note that no singular value has been included since we saw from
+(\ref{SV_inequality}) that it should be close to unity.
+
+In other words:
+\begin{equation}
+	\vec h_f^\prime = k \nabla_{\vec x} Q_f
+\end{equation}
+where
+\begin{equation}
+	k = \frac{\int_V Q_0 (\vec x^\prime) q(\vec x^\prime) \mathrm d \vec x^\prime}
+	{s_{h^\prime1} \nabla_{\vec x_0} q_0 \cdot \vec h_0^\prime}
+\end{equation}
+is a constant of proportionality.
+If diffusion is present, this relationship will only be approximate and will
+grow weaker with time.
 
 \section{Practical considerations}
 
