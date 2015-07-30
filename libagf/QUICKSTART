@@ -251,6 +251,8 @@ Option		Function
 		  testing.
 -F		Select features.
 -g		Use lograthmic progression.
+-G		Allow unused ("non-strict" partitioning) classes in non-
+		  hierarchical multi-class
 -h		Relative difference for calculating numerical derivatives. 
 -H		Omit header data.
 -i		Class borders: maximum number of iterations in supernewton.
@@ -266,7 +268,7 @@ Option		Function
 		  normalizes both the training and test data.
 -N		Maximum number of iterations in supernewton.
 -o		Name of log file.
--O		Command to make a single classification prediction.
+-O		Command (e.g. svm-predict) to make classification predictions.
 -p		Threshold density in clustering algorithm.
 -P		Calculate correlation/covariance matrix.
 -q		Number of trials/divisions.

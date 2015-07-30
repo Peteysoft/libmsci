@@ -222,11 +222,11 @@ we can derive a set of corresponding equations for the evolution of the tracer
 gradient.  Taking the gradient of Equation (\ref{advection_eqn}):
 \begin{equation}
 \frac{\partial}{\partial t} \nabla q = -\nabla q \cdot \nabla \vec v -
-		\vec v \cdot \nabla \nabla q 
+		\vec v \cdot \nabla \nabla q
 \end{equation}
 Meanwhile, using the total derivative:
 \begin{equation}
-\frac{\mathrm d}{\mathrm d t} \nabla q = \vec v \cdot \nabla \nabla q + 
+\frac{\mathrm d}{\mathrm d t} \nabla q = \vec v \cdot \nabla \nabla q \cdot + 
 		\frac{\partial}{\partial t} \nabla q
 \end{equation}
 and combining the two:
@@ -295,7 +295,7 @@ Q(\vec x_0,~\vec x,~t_0,~\Delta t) = \delta[\Phi(\vec x_0,~t_0,~\Delta t)-\vec x
 In the latter case, combination with (\ref{tracer_map_continuous}) produces the
 Frobenius-Perron equation. \citep{Ott1993}
 
-The tracer map can be approximated by a matrix:
+The transport map can be approximated by a matrix:
 \begin{equation}
 \vec q(t) = R \cdot \vec q(t_0)
 \end{equation}
@@ -325,7 +325,7 @@ scheme, quite close.
 For simplicity, we will analysize both this system and the pair of systems
 discussed in the previous section using matrix algebra.  A more thorough
 treatment would use abstract algebra and operator theory, especially for
-the tracer map.
+the transport map.
 
 \section{Matrix solution of systems of linear ODEs} 
 
@@ -728,11 +728,12 @@ we can derive (\ref{inverse_deformation_matrix}) from
 (\ref{tracer_map_continuous}) and (\ref{tracer_map_continuous3}) by taking 
 the gradient of $q$:
 \begin{eqnarray}
-	\nabla_{\vec x} q & = & \nabla_{\vec x} \Phi^{-1} \int_V 
-	\delta^\prime \left [\vec x_0 - \Phi^{-1}(\vec x) \right ] q_0 (\vec x_0)
-	\mathrm d \vec x_0 \\
-	& = & H^\prime \cdot \nabla_{\vec x_0} q_0
+	\nabla_{\vec x} q & = & - \int_V \vec \delta^\prime \left [\vec x_0 - \Phi^{-1}(\vec x) \right ] q_0 (\vec x_0) 
+	\mathrm d \vec x_0 \cdot \nabla_{\vec x} \Phi^{-1} \\
+	& = & - \nabla_{\vec x_0} q_0 \cdot H^\prime
 \end{eqnarray}
+where $\vec \delta^\prime$ is the generalized vector derivative of the 
+delta function.
 
 Once we admit diffusion, the final tracer gradient is no longer locally 
 dependent on the gradient at the starting point, but rather depends on the
@@ -742,9 +743,28 @@ whole initial tracer configuration:
 \end{equation}
 
 As with $\Phi$ and $\Phi^\prime$, 
-there will be an inverse transport map, $Q^{-1}$, from which we can derive
+there will exist an inverse transport map, $Q^{-1}$, from which we can derive
 $H$. In the absence of diffusion, the mathematics will be identical whether
 we move forward or backward in time.
+That is, for every $q_0$:
+\begin{equation}
+	\int_V Q^{-1}(\vec x, \vec x_0, t_0+\Delta t, \Delta t) 
+	\int_V Q(\vec x_0^\prime, \vec x, t_0, \Delta t) 
+	q_0(\vec x_0^\prime, t_0) 
+	\mathrm d \vec x_0^\prime \mathrm d \vec x = q_0(\vec x_0, t_0)
+\end{equation}
+or:
+\begin{eqnarray}
+	& & \int_V  Q^{-1}(\vec x^\prime, \vec x_1, t_0+\Delta t, \Delta t)
+	Q(\vec x_2, \vec x^\prime, t_0, \Delta t) \mathrm d \vec x^\prime \\
+	& & = \int_V  Q^{-1}(\vec x^\prime, \vec x_1, t_0+\Delta t, \Delta t)
+	Q(\vec x_2, \vec x^\prime, t_0, \Delta t) \mathrm d \vec x^\prime \\ 
+	& & = \delta(\vec x_1 - \vec x_2)
+\end{eqnarray}
+For the non-diffusive case, $Q$ is a rotation and therefore orthogonal.
+We construct the inverse by simply reversing the roles of the variables:
+$Q^{-1}(\vec x, \vec x_0) = Q(\vec x_0, \vec x)$, 
+the equivalent of the matrix transpose in the discrete case.
 
 Of particular interest is what happens to these maps in the limit as time
 goes to infinity, $\Delta t \rightarrow \infty$.
@@ -765,6 +785,7 @@ be seen to happen with the transport map:
 \begin{equation}
 	\lim_{\Delta \rightarrow \infty} Q(\vec x_0, \vec x) =
 	Q_f (\vec x) Q_0 (\vec x_0)
+	\label{transport_map_separable}
 \end{equation}
 In other words, it has become separable and:
 \begin{equation}
@@ -775,16 +796,16 @@ Note that no singular value has been included since we saw from
 
 In other words:
 \begin{equation}
-	\vec h_f^\prime = k \nabla_{\vec x} Q_f
+	\vec h_f^\prime \approx \frac{k}{s_{h^\prime1}} \nabla_{\vec x} Q_f
 \end{equation}
 where
 \begin{equation}
-	k = \frac{\int_V Q_0 (\vec x^\prime) q(\vec x^\prime) \mathrm d \vec x^\prime}
-	{s_{h^\prime1} \nabla_{\vec x_0} q_0 \cdot \vec h_0^\prime}
+	k \approx \frac{\int_V Q_0 (\vec x^\prime) q(\vec x^\prime) \mathrm d \vec x^\prime}
+	{\nabla_{\vec x_0} q_0 \cdot \vec h_0^\prime}
 \end{equation}
 is a constant of proportionality.
-If diffusion is present, this relationship will only be approximate and will
-grow weaker with time.
+Because (\ref{transport_map_separable}) is only true when diffusion is present,
+the relationships will only be approximate.
 
 \section{Practical considerations}
 
@@ -875,7 +896,7 @@ we arrive at a pair of criteria for the evolution matrix:
 a_{ii} & \le & 0 \\
 a_{ij}+a_{ji} & \le & 0
 \end{eqnarray}
-in agreement with our definition of a strictly diffusive tracer map in
+in agreement with our definition of a strictly diffusive transport map in
 (\ref{tracer_map_inequality}).
 
 

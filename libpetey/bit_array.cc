@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <assert.h>
 
 #include "bit_array.h"
 
@@ -34,6 +35,14 @@ bit_array::bit_array(char *d, long n) {
   for (long i=0; i<n; i++) {
     if (d[i] > 0) on(i); else off(i);
   }
+}
+
+bit_array::bit_array(word *d, long nw, long nb) {
+  assert(nb<=sizeof(word)*8);
+  nwords=nw;
+  nbits=nb;
+  data=new word[nw];
+  for (long i=0; i<nw; i++) data[i]=d[nw-i-1];
 }
 
 bit_array::~bit_array() {

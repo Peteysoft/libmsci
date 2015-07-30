@@ -51,6 +51,7 @@ namespace libagf {
     flag_a errflag;	//-e return error estimates for interpolation
     flag_a fflag;	//-f
     flag_a selectflag;	//-F select features
+    flag_a Gflag;	//-G "non-strict" partitioning in non-hier multi-class
     flag_a Hflag;	//-H no header/strip header
     flag_a jointflag;	//-j return joint probabilities (instead of cond.) to sdout
     flag_a Kflag;	//-K keep temporary files

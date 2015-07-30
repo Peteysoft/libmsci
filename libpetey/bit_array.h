@@ -19,6 +19,7 @@ namespace libpetey {
       bit_array(long n);
       bit_array(long n, char value);
       bit_array(char *d, long n);
+      bit_array(word *d, long nw, long nb);
 
       //copy constructor:
       bit_array(const bit_array &other);

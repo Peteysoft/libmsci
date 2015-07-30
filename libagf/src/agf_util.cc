@@ -64,6 +64,7 @@ int agf_parse_command_opts(int &argc, char **&argv, const char *optlist, agf_com
   opt_args->Bflag=0;		//-B
   opt_args->Cflag=0;		//-C
   opt_args->errflag=0;		//-e
+  opt_args->Gflag=0;		//-G
   opt_args->Hflag=0;		//-H
   opt_args->jointflag=0;	//-j
   opt_args->Kflag=0;		//-K
@@ -179,6 +180,9 @@ int agf_parse_command_opts(int &argc, char **&argv, const char *optlist, agf_com
       case ('F'):
              opt_args->selectflag=1;
 	     break;
+      case ('G'):
+             opt_args->Gflag=1;
+             break;
       case ('h'):
              ncon=sscanf(optarg, "%g", &opt_args->hrel);
              if (ncon != 1) {

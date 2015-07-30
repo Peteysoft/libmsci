@@ -69,12 +69,13 @@ EXECUTABLES =	class_borders \
 		svm2agf \
 		agf \
 		knn \
+		print_control \
+		agf_testsuite \
 		sort_discrete_vectors \
 		search_discrete_vectors \
 		optimize_r0 calibrate_p2 calc_joint_entropy \
 		calibrate_p3 \
-		print_control \
-		agf_testsuite
+		ortho_coding_matrix_brute_force
 
 OLD = 		classify_a \
 		classify_knn \

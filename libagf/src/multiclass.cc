@@ -49,6 +49,53 @@ namespace libagf {
     }
   }
 
+  void random_coding_matrix(FILE *fs, int ncls, int ntrial, int strictflag) {
+    tree_lg<int64_t> used;
+    int row[ncls];
+    int64_t cur, curi;
+    int mult;
+    int list1[ncls];
+    int list2[ncls];
+    int n1, n2;
+
+    for (int i=0; i<ntrial; i++) {
+      do {
+        n1=0;
+        n2=0;
+        mult=1;
+	cur=0;
+	curi=0;
+        for (int j=0; j<ncls; j++) {
+          if (strictflag) {
+            row[j]=2*ranu();
+            cur+=mult*row[j];
+            curi+=mult*(1-row[j]);
+            row[j]=2*row[j]-1;
+            mult*=2;
+          } else {
+            row[j]=3*ranu();
+            cur+=mult*row[j];
+            curi+=mult*(2-row[j]);
+            row[j]=row[j]-1;
+            mult*=3;
+	  }
+          if (row[j]<0) {
+            list1[n1]=j;
+            n1++;
+          } else if (row[j]>0) {
+            list2[n2]=j;
+            n2++;
+          }
+	}
+      } while(used.add_member(cur)<0 || used.add_member(curi)<0 || n1<1 || n2<1);
+      fprintf(fs, "\"\"");
+      for (int j=0; j<n1; j++) fprintf(fs, " %d", list1[j]);
+      fprintf(fs, " %c", PARTITION_SYMBOL);
+      for (int j=0; j<n2; j++) fprintf(fs, " %d", list2[j]);
+      fprintf(fs, ";\n");
+    }
+  }
+
   template <class real, class cls_t>
   multiclass<real, cls_t>::multiclass() {
     constraint_weight=1;

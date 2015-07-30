@@ -46,6 +46,13 @@ namespace libagf {
     fprintf(fs, "}\n");
   }
 
+  void print_control_random(FILE *fs, int ncls, int nrow, int strictflag) {
+    random_coding_matrix(fs, ncls, nrow, strictflag);
+    fprintf(fs, "{");
+    for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
+    fprintf(fs, "}\n");
+  }
+
   template <class real, class cls_t>
   multiclass_hier<real, cls_t>::multiclass_hier() {
     classifier=NULL;

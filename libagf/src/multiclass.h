@@ -12,6 +12,7 @@ namespace libagf {
   //write the most common kinds of control files:
   void one_against_all(FILE *fs, int ncls, const char *options=NULL);
   void partition_adjacent(FILE *fs, int ncls, const char *options=NULL);
+  void random_coding_matrix(FILE *fs, int ncls, int ntrial, int strictflag=0);
 
   //non-hierarchical multi-class classification:
   template <class real, class cls_t>
