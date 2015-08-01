@@ -22,6 +22,10 @@ namespace libpetey {
   const double ERFCINV_XTRAN=gsl_sf_erfc(ERFCINV_YTRAN);
   const double ERFCINV_MAXY=27.5;         //value at which erfc returns exactly 0
 
+  int erfinv_niter;		//evil global variable: number of iterations
+  				//taken by root-finder
+  int erfinv_nbis;		//number of bisection steps taken
+
   void erf_plus_deriv(double x, void *param, double *y, double *dydx) {
     *y=gsl_sf_erf(x)-*(double *) param; 
     *dydx=M_2_SQRTPI*exp(-x*x);

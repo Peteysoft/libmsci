@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "errinv.h"
+#include "erfinv.h"
 
 using namespace libpetey;
 

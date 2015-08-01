@@ -13,6 +13,7 @@ namespace libagf {
   void one_against_all(FILE *fs, int ncls, const char *options=NULL);
   void partition_adjacent(FILE *fs, int ncls, const char *options=NULL);
   void random_coding_matrix(FILE *fs, int ncls, int ntrial, int strictflag=0);
+  void exhaustive_coding_matrix(FILE *fs, int ncls);
 
   //non-hierarchical multi-class classification:
   template <class real, class cls_t>
@@ -38,6 +39,9 @@ namespace libagf {
       cls_t classify_map(gsl_vector *b, real *p);
       cls_t classify_scratch(gsl_vector *b, real *p);
       cls_t classify_special(gsl_vector *b, real *p);
+
+      //prepare SVD of coding matrix:
+      int code_svd();
 
       //type of classification:
       int type;
@@ -113,4 +117,5 @@ namespace libagf {
 }
 
 #endif
+
 

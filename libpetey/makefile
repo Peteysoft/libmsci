@@ -122,7 +122,8 @@ EXE = ignore_code
 TEST = sorter \
 		random \
 		test_parse_opts \
-		lp_test_suite
+		lp_test_suite \
+		test_libpetey
 		
 allopt:
 	make OPT=-g all
@@ -158,7 +159,7 @@ install_allopt: libpetey-g.a libpetey-O2.a libpetey-pg.a
 
 test: test_libpetey $(TEST)
 	./test_libpetey
-	./lp_testsuite
+	./lp_test_suite
 
 # build the static library:
 libpetey$(OPT).a:	$(OBJECT)
@@ -196,6 +197,6 @@ date_calc.tab.c date_calc.tab.h: date_calc.y time_class.h
 #unit tests:
 TEST2=$(addsuffix $(EXE_EXT), $(TEST))
 
-$(TEST): %: %.cc libpetey$(OPT).a 
+$(TEST2): %: %.cc libpetey$(OPT).a 
 	$(CPP) $(CFLAGS) -o $@ $< libpetey$(OPT).a $(LDFLAGS)
 

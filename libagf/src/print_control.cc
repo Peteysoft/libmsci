@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
     fprintf(docfs, "         1 one against all\n");
     fprintf(docfs, "         2 partition adjacent classes\n");
     fprintf(docfs, "         3 random coding matrix\n");
+    fprintf(docfs, "         4 \"exhaustive\" coding matrix\n");
     fprintf(docfs, "  n    = number of classes\n");
     fprintf(docfs, "  nrow = number of rows\n");
     exit(0);
@@ -48,6 +49,9 @@ int main(int argc, char **argv) {
     case(3):
       nrow=atoi(argv[1]);
       print_control_random(stdout, n, nrow, opt_args.Gflag);
+      break;
+    case(4):
+      print_control_exhaustive(stdout, n);
       break;
     default:
       print_control_hier(stdout, n);

@@ -10,6 +10,7 @@
 #include <gsl/gsl_linalg.h>
 
 #include "full_util.h"
+#include "bit_array.h"
 #include "gsl_util.h"
 //#include "peteys_tmpl_lib.h"
 
@@ -93,6 +94,26 @@ namespace libagf {
       fprintf(fs, " %c", PARTITION_SYMBOL);
       for (int j=0; j<n2; j++) fprintf(fs, " %d", list2[j]);
       fprintf(fs, ";\n");
+    }
+  }
+
+  void exhaustive_coding_matrix(FILE *fs, int ncls) {
+    int64_t nrow;
+
+    nrow=pow(2, ncls-1)-1;
+
+    for (int64_t i=0; i<nrow; i++) {
+      bit_array *tobits=new bit_array((word *) &i, (sizeof(long)+1)/sizeof(word), ncls-1);
+      fprintf(fs, "\"\" ");
+      for (long j=0; j<ncls-1; j++) {
+        if ((*tobits)[j]==0) fprintf(fs, "%d ", j+1);
+      }
+      fprintf(fs, "%c ", PARTITION_SYMBOL);
+      for (long j=0; j<ncls-1; j++) {
+        if ((*tobits)[j]) fprintf(fs, "%d ", j+1);
+      }
+      fprintf(fs, "0;\n");
+      delete tobits;
     }
   }
 
@@ -227,8 +248,6 @@ namespace libagf {
   template <class real, class cls_t>
   int multiclass<real, cls_t>::init(char **fname, cls_t **part, int npart, 
 		int tflag, char *com, int Mflag, int Kflag) {
-    gsl_vector *work;
-
     nmodel=npart;
     this->ncls=0;
     for (int i=0; i<nmodel; i++) {
@@ -268,27 +287,10 @@ namespace libagf {
       for (int j=0; part[i][j]>=0; j++) gsl_matrix_set(map, i/2, part[i][j], sgn);
     }
 
-    //now we find the inverse of this matrix:
-    u=gsl_matrix_alloc(nmodel+1, this->ncls);
-    gsl_matrix_memcpy(u, map);
-
-    //print_gsl_matrix(stdout, u);
-    vt=gsl_matrix_alloc(this->ncls, this->ncls);
-    s=gsl_vector_alloc(this->ncls);
-    work=gsl_vector_alloc(this->ncls);
-    gsl_linalg_SV_decomp(u, vt, s, work);
-    //gsl_linalg_SV_decomp_jacobi(u, vt, s);
-
-    /*
-    printf("U:\n");
-    print_gsl_matrix(stdout, u);
-    printf("S:\n");
-    for (int i=0; i<s->size; i++) printf("%10.5g ", gsl_vector_get(s, i));
-    printf("\nV^T:\n");
-    print_gsl_matrix(stdout, vt);
-    */
-
-    gsl_vector_free(work);
+    //find the inverse of this matrix when we need it (we don't yet):
+    u=NULL;
+    vt=NULL;
+    s=NULL;
 
     return 0;
 
@@ -312,6 +314,38 @@ namespace libagf {
     }
   }
 
+  template <class real, class cls_t>
+  int multiclass<real, cls_t>::code_svd() {
+    gsl_vector *work;
+    int err;
+
+    if (u!=NULL) return 0;
+
+    //now we find the inverse of this matrix:
+    u=gsl_matrix_alloc(nmodel+1, this->ncls);
+    gsl_matrix_memcpy(u, map);
+
+    //print_gsl_matrix(stdout, u);
+    vt=gsl_matrix_alloc(this->ncls, this->ncls);
+    s=gsl_vector_alloc(this->ncls);
+    work=gsl_vector_alloc(this->ncls);
+    err=gsl_linalg_SV_decomp(u, vt, s, work);
+    //gsl_linalg_SV_decomp_jacobi(u, vt, s);
+
+    /*
+    printf("U:\n");
+    print_gsl_matrix(stdout, u);
+    printf("S:\n");
+    for (int i=0; i<s->size; i++) printf("%10.5g ", gsl_vector_get(s, i));
+    printf("\nV^T:\n");
+    print_gsl_matrix(stdout, vt);
+    */
+
+    gsl_vector_free(work);
+
+    return err;
+
+  }
   //train mapping with actual data:
   template <class real, class cls_t>
   int multiclass<real, cls_t>::train_map(real **train, cls_t *cls, nel_ta n) {
@@ -454,6 +488,7 @@ namespace libagf {
     return cls;
   }
 
+  //gets results from all the binary models:
   template <class real, class cls_t>
   void multiclass<real, cls_t>::raw_classify(real *x, gsl_vector *b) {
     //printf("multiclass raw pdfs: ");
@@ -464,10 +499,13 @@ namespace libagf {
     gsl_vector_set(b, nmodel, constraint_weight);
   }
 
+  //classification from pseudo-inverse (linear least squares via SVD):
   template <class real, class cls_t>
   cls_t multiclass<real, cls_t>::classify_basic(gsl_vector *b, real *p) {
     cls_t cls;
     gsl_vector *p1=gsl_vector_alloc(this->ncls);
+
+    code_svd();
 
     gsl_linalg_SV_solve(u, vt, s, b, p1);
     for (cls_t i=0; i<this->ncls; i++) p[i]=gsl_vector_get(p1, i);
@@ -531,6 +569,7 @@ namespace libagf {
     return cls;
   }
 
+  //"constrained" version (not completely rigorous, but works quite well):
   int solve_cond_prob(gsl_matrix *, gsl_vector *, gsl_vector *);
 
   template <class real, class cls_t>
