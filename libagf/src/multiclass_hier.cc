@@ -18,47 +18,6 @@ using namespace std;
 using namespace libpetey;
 
 namespace libagf {
-  void print_control_hier(FILE *fs, int ncls, int c0, int depth) {
-    for (int i=0; i<depth; i++) fprintf(fs, "  ");
-    if (ncls==1) {
-      fprintf(fs, "%d\n", c0);
-    } else if (ncls>1) {
-      fprintf(fs, "\"\" {\n");
-      print_control_hier(fs, ncls/2, c0, depth+1);
-      print_control_hier(fs, ncls-ncls/2, c0+ncls/2, depth+1);
-      fprintf(fs, "\n");
-      for (int i=0; i<depth; i++) fprintf(fs, "  ");
-      fprintf(fs, "}\n");
-    }
-  }
-
-  void print_control_1vsall(FILE *fs, int ncls, const char *opt) {
-    one_against_all(fs, ncls, opt);
-    fprintf(fs, "{");
-    for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
-    fprintf(fs, "}\n");
-  }
-
-  void print_control_adj(FILE *fs, int ncls, const char *opt) {
-    partition_adjacent(fs, ncls, opt);
-    fprintf(fs, "{");
-    for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
-    fprintf(fs, "}\n");
-  }
-
-  void print_control_random(FILE *fs, int ncls, int nrow, int strictflag) {
-    random_coding_matrix(fs, ncls, nrow, strictflag);
-    fprintf(fs, "{");
-    for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
-    fprintf(fs, "}\n");
-  }
-
-  void print_control_exhaustive(FILE *fs, int ncls) {
-    exhaustive_coding_matrix(fs, ncls);
-    fprintf(fs, "{");
-    for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
-    fprintf(fs, "}\n");
-  }
 
   template <class real, class cls_t>
   multiclass_hier<real, cls_t>::multiclass_hier() {

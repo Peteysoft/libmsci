@@ -10,12 +10,6 @@
 #include "multiclass.h"
 
 namespace libagf {
-  //generate common control files:
-  void print_control_hier(FILE *fs, int ncls, int c0=0, int depth=0);
-  void print_control_1vsall(FILE *fs, int ncls, const char *opt=NULL);
-  void print_control_adj(FILE *fs, int ncls, const char *opt=NULL);
-  void print_control_random(FILE *fs, int ncls, int nrow, int strictflag=0);
-  void print_control_exhaustive(FILE *fs, int ncls);
 
   //hierarchical multi-class classification:
   template <class real, class cls_t>

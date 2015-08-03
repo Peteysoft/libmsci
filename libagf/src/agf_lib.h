@@ -25,6 +25,7 @@
 #include "multiclass.h"
 #include "multiclass_hier.h"
 #include "multiclass_c.h"
+#include "multi_control.h"
 #include "batch_borders.h"
 
 #endif

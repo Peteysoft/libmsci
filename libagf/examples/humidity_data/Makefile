@@ -41,6 +41,7 @@ OPTIONS7a = -s 100 -W 40 -k 450
 OPTIONS8 = -s 100 -W 40 -k 450
 OPTIONS9 = -s 100 -W 5 -k 250
 OPTIONS10 = -W 10 -k 400
+OPTIONS11 = -s 100 -W 20 -k 450
 SCRIPT = $(BASE)script$(VER).sh
 OUTPUT = $(BASE)borders$(VER)
 CLS_CONTR = $(BASE)cls_control$(VER).txt

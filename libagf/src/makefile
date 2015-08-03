@@ -103,6 +103,7 @@ OBJECT_FILES = 	agf_metric2$(OPT_VER).o \
 		multiclass_hier$(OPT_VER).o \
 		multiclass$(OPT_VER).o \
 		multiclass_c$(OPT_VER).o \
+		multi_control$(OPT_VER).o \
 		classifier_obj$(OPT_VER).o \
 		binaryclassifier$(OPT_VER).o \
 		direct_classifier$(OPT_VER).o \
@@ -129,6 +130,7 @@ INCLUDE_FILES = agf_util.h \
 		multiclass.h \
 		multiclass_c.h \
 		multiclass_hier.h \
+		multi_control.h \
 		agf_classify.h \
 		batch_borders.h
 

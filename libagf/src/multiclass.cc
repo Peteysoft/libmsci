@@ -10,7 +10,6 @@
 #include <gsl/gsl_linalg.h>
 
 #include "full_util.h"
-#include "bit_array.h"
 #include "gsl_util.h"
 //#include "peteys_tmpl_lib.h"
 
@@ -20,102 +19,6 @@ using namespace std;
 using namespace libpetey;
 
 namespace libagf {
-
-  //print out common control files:
-  void one_against_all(FILE *fs, int ncls, const char *options) {
-    for (int i=0; i<ncls; i++) {
-      if (options!=NULL) {
-        if (i==0) fprintf(fs, "\"%s\"", options); else fprintf(fs, "\".\"");
-      } else {
-        fprintf(fs, "\"\"");
-      }
-      fprintf(fs, " %d %c", i, PARTITION_SYMBOL);
-      for (int j=0; j<i; j++) fprintf(fs, " %d", j);
-      for (int j=i+1; j<ncls; j++) fprintf(fs, " %d", j);
-      fprintf(fs, ";\n");
-    }
-  }
-
-  void partition_adjacent(FILE *fs, int ncls, const char *options) {
-    for (int i=1; i<ncls; i++) {
-      if (options!=NULL) {
-        if (i==0) fprintf(fs, "\"%s\"", options); else fprintf(fs, "\".\"");
-      } else {
-        fprintf(fs, "\"\"");
-      }
-      for (int j=0; j<i; j++) fprintf(fs, " %d", j);
-      fprintf(fs, " %c", PARTITION_SYMBOL);
-      for (int j=i; j<ncls; j++) fprintf(fs, " %d", j);
-      fprintf(fs, ";\n");
-    }
-  }
-
-  void random_coding_matrix(FILE *fs, int ncls, int ntrial, int strictflag) {
-    tree_lg<int64_t> used;
-    int row[ncls];
-    int64_t cur, curi;
-    int mult;
-    int list1[ncls];
-    int list2[ncls];
-    int n1, n2;
-
-    for (int i=0; i<ntrial; i++) {
-      do {
-        n1=0;
-        n2=0;
-        mult=1;
-	cur=0;
-	curi=0;
-        for (int j=0; j<ncls; j++) {
-          if (strictflag) {
-            row[j]=2*ranu();
-            cur+=mult*row[j];
-            curi+=mult*(1-row[j]);
-            row[j]=2*row[j]-1;
-            mult*=2;
-          } else {
-            row[j]=3*ranu();
-            cur+=mult*row[j];
-            curi+=mult*(2-row[j]);
-            row[j]=row[j]-1;
-            mult*=3;
-	  }
-          if (row[j]<0) {
-            list1[n1]=j;
-            n1++;
-          } else if (row[j]>0) {
-            list2[n2]=j;
-            n2++;
-          }
-	}
-      } while(used.add_member(cur)<0 || used.add_member(curi)<0 || n1<1 || n2<1);
-      fprintf(fs, "\"\"");
-      for (int j=0; j<n1; j++) fprintf(fs, " %d", list1[j]);
-      fprintf(fs, " %c", PARTITION_SYMBOL);
-      for (int j=0; j<n2; j++) fprintf(fs, " %d", list2[j]);
-      fprintf(fs, ";\n");
-    }
-  }
-
-  void exhaustive_coding_matrix(FILE *fs, int ncls) {
-    int64_t nrow;
-
-    nrow=pow(2, ncls-1)-1;
-
-    for (int64_t i=0; i<nrow; i++) {
-      bit_array *tobits=new bit_array((word *) &i, (sizeof(long)+1)/sizeof(word), ncls-1);
-      fprintf(fs, "\"\" ");
-      for (long j=0; j<ncls-1; j++) {
-        if ((*tobits)[j]==0) fprintf(fs, "%d ", j+1);
-      }
-      fprintf(fs, "%c ", PARTITION_SYMBOL);
-      for (long j=0; j<ncls-1; j++) {
-        if ((*tobits)[j]) fprintf(fs, "%d ", j+1);
-      }
-      fprintf(fs, "0;\n");
-      delete tobits;
-    }
-  }
 
   template <class real, class cls_t>
   multiclass<real, cls_t>::multiclass() {

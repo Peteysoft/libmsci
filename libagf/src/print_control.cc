@@ -21,8 +21,9 @@ int main(int argc, char **argv) {
     fprintf(docfs, "  type = 0 hierarchical (default)\n");
     fprintf(docfs, "         1 one against all\n");
     fprintf(docfs, "         2 partition adjacent classes\n");
-    fprintf(docfs, "         3 random coding matrix\n");
-    fprintf(docfs, "         4 \"exhaustive\" coding matrix\n");
+    fprintf(docfs, "         3 random coding matrix (n<65)\n");
+    fprintf(docfs, "         4 \"exhaustive\" coding matrix (n<34)\n");
+    fprintf(docfs, "         5 orthogonal coding matrix (n<25; n%%4==0)\n");
     fprintf(docfs, "  n    = number of classes\n");
     fprintf(docfs, "  nrow = number of rows\n");
     exit(0);
@@ -52,6 +53,9 @@ int main(int argc, char **argv) {
       break;
     case(4):
       print_control_exhaustive(stdout, n);
+      break;
+    case(5):
+      print_control_ortho(stdout, n);
       break;
     default:
       print_control_hier(stdout, n);

@@ -28,10 +28,14 @@ r_i=\sum_{j=1}^{n_c}a_{ij} p(j|\vec x)
 \end{equation}
 or $\vec r=A \vec p$, where $\vec p=\lbrace p(i|\vec x) \rbrace$ are the conditional probabilities
 of the multi-class problem.
-The elements of $A$ will be, $a_{ij} \in \lbrace -1, ~0, ~1 \rbrace$.
-We can also forbid $A$ from having any zeroes, in which case all the
+The elements of $A$ will be, $a_{ij} \in \lbrace -1, ~1 \rbrace$,
+We forbid $A$ from having any zeroes so that all the partitions
 partitions divide the whole set of classes, not just a subset--contrast, e.g.,
-one-vs.-one and one-vs.-all.
+one-vs.-all and one-vs.-one.
+The more complicated case in which zeroes are
+allowed will not be considered here since it requires more than a simple
+linear mapping from the multiple class probabilities to the 
+estimated binary probabilities.
 
 This looks like a straight-forward linear inverse problem, but with two
 caveats.  First, it is frequently over-determined.  Second, it ought to
@@ -83,8 +87,7 @@ probabilities.
 Why do both forms return accurate estimates of the final class (with tests
 suggesting that the second is more accurate), despite the fact that the
 role of the variables in the matrix equations are reversed?
-First, note that the expression $A^T A$ is always diagonally dominant in
-the more strict version of coding matrix that contains no zeroes.  
+First, note that the expression $A^T A$ is always diagonally dominant.
 Second, note that it
 is quite easy to construct an orthogonal $A$.
 For instance, with four classes:
@@ -244,19 +247,38 @@ n_c-2|i-j|
 \end{equation}
 This type of partitioning is appropriate for discretized continuous ordinates.
 
-Finally, consider the general case of the orthogonal coding matrix in 
-(\ref{ortho3}).
-[This next bit is bullshit.  What is a general algorithm for finding an
-orthogonal matrix composed solely of 1's and -1's?]
-  We can use either periodic functions or modulo operators.
+Finally, consider the general case of an orthogonal coding matrix in 
+as in (\ref{ortho3}),
+which has the property $A^T A = A A^T = n_c I$,
+the distance between pairs of both rows and columns will be maximized.
+This, according to \citep{Dietterich_Bakiri1995} and
+\citep{Allwein_etal2000}, will minimize classification errors. 
+An orthogonal matrix, is not trivial to
+derive and will not exist for all values of $n_c$.
+
+We can also consider the case of a non-square matrix with $n_p > n_c$,
+that nonetheless has the property, $A^T A = n_p I$, where the
+identity, $I$, is $n_c \times n_c$. Consider for instance, 
+the following matrix for $n_c=5$, 
+similar, though not identical, to the ``exhaustive''
+matrix described in \citep{Dietterich_Bakiri1995}:
 \begin{equation}
-a_{2i,j} = \mathrm{sgn}(j \mod (2i))-i)
-a_{2i+1,j} = \mathrm{sgn}((j+i) \mod (2i) - i)
+  A = 
+  \begin{bmatrix}
+    1 & -1 & -1 & -1 & -1 \\
+    1 &  1 & -1 & -1 & -1 \\
+    1 & -1 &  1 & -1 &  1 \\
+    1 &  1 &  1 & -1 &  1 \\
+    1 & -1 & -1 &  1 &  1 \\
+    1 &  1 & -1 &  1 &  1 \\
+    1 & -1 &  1 &  1 & -1 \\
+    1 &  1 &  1 &  1 & -1 \\
+  \end{bmatrix}
 \end{equation}
-\begin{equation}
-a_{2i,j} = \mathrm{sgn}()
-a_{2i+1,j} = \mathrm{sgn}((j+i) \mod (2i) - i)
-\end{equation}
+The columns are periodic and thus similar to a set of harmonic functions.
+In such case the least-squares ``pseudo''-inverse will equal the voting result
+since $(A^T A)^{-1} A^T \cdot \vec r = n_p A^T \vec r$ and the voting method
+can return accurate estimates of the conditional probabilities.
 
 \section{Re-calibration}
 
