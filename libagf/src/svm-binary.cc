@@ -111,6 +111,7 @@ double svm_distance2(const svm_node *x, const svm_node *y, svm_node *deriv) {
 		++deriv;
 		++y;
 	}
+	deriv->index=-1;
 
 	return sum;
 }
@@ -188,7 +189,7 @@ double svm_predict_deriv(const svm_model *model, const svm_node *x, svm_node *de
 {
 	int i;
 	int nr_class = model->nr_class;
-	double result;
+
 	if(model->param.svm_type == ONE_CLASS ||
 	   model->param.svm_type == EPSILON_SVR ||
 	   model->param.svm_type == NU_SVR ||
@@ -201,6 +202,7 @@ double svm_predict_deriv(const svm_model *model, const svm_node *x, svm_node *de
 	{
 		int l = model->l;
 		double sum=0;
+		int max_index=0;
 		//yes, we will actually initialize the derivative vector to zero for all indices all
 		//the way up to the max allowed--that's how brain-dead this system is...:
 		for (i=0; i<max_nr_attr; i++) {
@@ -222,7 +224,9 @@ double svm_predict_deriv(const svm_model *model, const svm_node *x, svm_node *de
 					for (;deriv[k].index<deriv1[k].index; k++);
 				}
 			}
+			if (deriv1[j-1].index>max_index) max_index=deriv1[j-1].index;
 		}
+		deriv[max_index+1].index=-1;
 		sum-=model->rho[p];
 
 		return sum;
@@ -237,7 +241,7 @@ static double sigmoid_predict(double decision_value, double A, double B, double 
 }
 
 double svm_predict_binary(
-	const svm_model *model, const svm_node *x, double *prob_estimates)
+	const svm_model *model, const svm_node *x, svm_node *drdx)
 {
 	int nr_class = model->nr_class;
 	assert(nr_class==2);
@@ -246,36 +250,27 @@ double svm_predict_binary(
 	    model->probA!=NULL && model->probB!=NULL)
 	{
 		int i;
+		double f;
+		double result;
+		svm_node *deriv1=Malloc(svm_node, max_nr_attr);
 
-		double *dec_values = Malloc(double, nr_class*(nr_class-1)/2);
-		svm_predict_values(model, x, dec_values);
+		f=svm_predict_deriv(model, x, deriv1);
 
-		double min_prob=1e-7;
-		double **pairwise_prob=Malloc(double *,nr_class);
-		for(i=0;i<nr_class;i++)
-			pairwise_prob[i]=Malloc(double,nr_class);
-		int k=0;
-		for(i=0;i<nr_class;i++)
-			for(int j=i+1;j<nr_class;j++)
-			{
-				pairwise_prob[i][j]=min(max(sigmoid_predict(dec_values[k],model->probA[k],model->probB[k]),min_prob),1-min_prob);
-				pairwise_prob[j][i]=1-pairwise_prob[i][j];
-				k++;
-			}
-		multiclass_probability(nr_class,pairwise_prob,prob_estimates);
+		result=2*sigmoid_predict(f, model->probA[0], model->probB[0], deriv2)-1;
 
-		int prob_max_idx = 0;
-		for(i=1;i<nr_class;i++)
-			if(prob_estimates[i] > prob_estimates[prob_max_idx])
-				prob_max_idx = i;
-		for(i=0;i<nr_class;i++)
-			free(pairwise_prob[i]);
-		free(dec_values);
-		free(pairwise_prob);
-		return model->label[prob_max_idx];
+		while (deriv1!=-1) {
+			drdx->index=deriv1->index;
+			drdx->value=2*deriv1->value*deriv2;
+			deriv1++;
+			drdx++;
+		}
+
+		free(deriv1);
+
+		return result;
 	}
 	else {
-		fprintf(stderr, "Binary classification models only supported\n");
+		fprintf(stderr, "Only binary classification models with probability estimates are supported.\n");
 		exit(1);
 	}
 }
@@ -329,19 +324,19 @@ void predict_binary(FILE *input, FILE *output)
 
 	int svm_type=svm_get_svm_type(model);
 	int nr_class=svm_get_nr_class(model);
-	double *prob_estimates=NULL;
+	double prob_estimate;
+	svm_node *deriv=Malloc(svm_node, max_nr_attr);
 	int j;
 
 	if (svm_type==NU_SVR || svm_type==EPSILON_SVR || nr_class!=2 || predict_probability!=1)
 	{
-		info("Binary class with probabilities estimates only supported.\n");
+		info("Only binary class models with probability estimates are supported.\n");
 		exit(1);
 	}
 	else
 	{
 		int *labels=(int *) malloc(nr_class*sizeof(int));
 		svm_get_labels(model,labels);
-		prob_estimates = (double *) malloc(nr_class*sizeof(double));
 		fprintf(output,"labels");		
 		for(j=0;j<nr_class;j++)
 			fprintf(output," %d",labels[j]);
@@ -395,10 +390,10 @@ void predict_binary(FILE *input, FILE *output)
 		}
 		x[i].index = -1;
 
-		predict_label = svm_predict_binary(model,x,prob_estimates);
-		fprintf(output,"%g",predict_label);
-		for(j=0;j<nr_class;j++)
-			fprintf(output," %.16lg",prob_estimates[j]);
+		prob_estimate = svm_predict_binary(model,x,deriv);
+		fprintf(output,"%g",prob_estimate);
+		for(j=0;deriv[j]!=-1;j++)
+			fprintf(output," %d:%.16lg", deriv[j].index, deriv[j].value);
 		fprintf(output,"\n");
 
 		if(predict_label == target_label)
@@ -413,7 +408,7 @@ void predict_binary(FILE *input, FILE *output)
 	}
 	info("Accuracy = %g%% (%d/%d) (classification)\n",
 			(double)correct/total*100,correct,total);
-	if(predict_probability)	free(prob_estimates);
+	free(deriv);
 }
 
 void exit_with_help()
