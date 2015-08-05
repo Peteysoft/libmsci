@@ -1,7 +1,6 @@
 #ifndef KSELECT_H__DEFINED
 
 #include <vector>
-#include "quicksort.h"
 #include "vector_s.h"
 #include "tree_lg.h"
 #include "tree_lgi.h"

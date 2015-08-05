@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "randomize.h"
+#include "quicksort.h"
 #include "kselect.h"
 
 namespace libpetey {

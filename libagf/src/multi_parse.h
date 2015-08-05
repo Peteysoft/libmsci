@@ -9,10 +9,10 @@
 #include "agf_lib.h"
 
 //default stack limit:
-#define MAXNOPTSTACK 2001
+#define MAXNOPTSTACK 10001
 
 //because we love arbitrary limitations:
-#define MAXNPART 2000
+#define MAXNPART 10000
 
 namespace libagf {
 

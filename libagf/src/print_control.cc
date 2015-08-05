@@ -12,11 +12,12 @@ int main(int argc, char **argv) {
   int strictflag;
   int err;
 
+  opt_args.Qtype=0;
   err=agf_parse_command_opts(argc, argv, "Q:G", &opt_args);
   if (err!=0) exit(err);
 
   if (argc<1) {
-    fprintf(docfs, "syntax: print_control [-Q type] n [nrow]\n");
+    fprintf(docfs, "syntax: print_control [-Q type] [-G] n [nrow]\n");
     fprintf(docfs, "where:\n");
     fprintf(docfs, "  type = 0 hierarchical (default)\n");
     fprintf(docfs, "         1 one against all\n");
@@ -26,6 +27,7 @@ int main(int argc, char **argv) {
     fprintf(docfs, "         5 orthogonal coding matrix (n<25; n%%4==0)\n");
     fprintf(docfs, "  n    = number of classes\n");
     fprintf(docfs, "  nrow = number of rows\n");
+    fprintf(docfs, "  -G   = \"strict\" flag: all classes are included in each partition\n");
     exit(0);
   }
 
