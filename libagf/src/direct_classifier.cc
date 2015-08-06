@@ -53,10 +53,10 @@ namespace libagf {
     if (flag) {
       real **train2;
       if (d1!=this->D) {
-        fprintf(stderr, "agf2class: first dimension (%d) of trans. mat. does not agree with that of borders data (%d)\n", d1, this->D);
+        fprintf(stderr, "direct_classifier: first dimension (%d) of trans. mat. does not agree with that of borders data (%d)\n", d1, this->D);
         return DIMENSION_MISMATCH;
       }
-      fprintf(stderr, "agf2class: Normalising the border samples...\n");
+      fprintf(stderr, "direct_classifier: Normalising the border samples...\n");
       //from the outside, the classifier looks like it has the same number of
       //features as before normalization:
       D1=d2;
@@ -73,7 +73,7 @@ namespace libagf {
       train=train2;
     } else {
       if (d2!=this->D) {
-        fprintf(stderr, "agf2class: second dimension of trans. mat. does not that of borders data: %d vs. %d\n", d2, this->D);
+        fprintf(stderr, "direct_classifier: second dimension of trans. mat. does not that of borders data: %d vs. %d\n", d2, this->D);
         return DIMENSION_MISMATCH;
       }
       //this is very clear:

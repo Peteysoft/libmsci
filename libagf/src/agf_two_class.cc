@@ -9,8 +9,6 @@
 #include "kextreme.h"
 #include "quicksort.h"
 
-//#include "/home/petey/nr/nr.h"
-
 using namespace std;
 using namespace libpetey;
 

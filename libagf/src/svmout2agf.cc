@@ -64,6 +64,7 @@ int main(int argc, char **argv) {
 
   if (line[0][strptr]=='l') {
     cls_ta clab;
+    cls_ta checkcls;
 
     //read in the labels:
     strptr+=6;
@@ -108,6 +109,11 @@ int main(int argc, char **argv) {
         }
         strptr+=stradv;
         pdf2[label_list[j]]=pdf1;
+      }
+
+      checkcls=choose_class(pdf2, ncls2);
+      if (checkcls!=cls[i]) {
+        fprintf(stderr, "svmout2agf: warning, class label does not match probability estimates\n");
       }
       
       con[i]=(ncls1*pdf2[cls[i]]-1)/(ncls1-1);

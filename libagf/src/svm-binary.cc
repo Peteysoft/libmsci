@@ -2,15 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
+#include <errno.h>
+#include <ctype.h>
 
 /*
- * #include <ctype.h>
 #include <float.h>
-#include <string.h>
 #include <stdarg.h>
 #include <limits.h>
 #include <locale.h>
-#include <errno.h>
 */
 
 #include "svm.h"
@@ -23,6 +23,16 @@ template <class T> static inline T max(T x,T y) { return (x>y)?x:y; }
 #endif
 
 #define Malloc(type,n) (type *)malloc((n)*sizeof(type))
+
+int max_nr_attr = 64;
+
+void print_svm_node(svm_node *node) {
+	while (node->index!=-1) {
+		printf("%d:%lg ", node->index, node->value);
+		++node;
+	}
+	printf("\n");
+}
 
 static inline double powi(double base, int times)
 {
@@ -107,7 +117,7 @@ double svm_distance2(const svm_node *x, const svm_node *y, svm_node *deriv) {
 	{
 		sum += y->value * y->value;
 		deriv->index=y->index;
-		deriv->value=-2*y->value;
+		deriv->value=2*y->value;
 		++deriv;
 		++y;
 	}
@@ -145,14 +155,16 @@ void svm_dot_deriv(const svm_node *px, const svm_node *py, svm_node *deriv)
 double k_function_deriv(const svm_node *x, const svm_node *y,
 			  const svm_parameter& param, svm_node *deriv)
 {
+	double t1, t2;		//temporary values
+
 	switch(param.kernel_type)
 	{
 		case LINEAR:
 			svm_dot_deriv(x, y, deriv);
 			return svm_dot(x,y);
-		case POLY:
-			double t1=param.gamma*svm_dot(x,y)+param.coef0;
-			double t2=powi(t1, param.degree-1)*param.degree;
+		case POLY: 
+			t1=param.gamma*svm_dot(x,y)+param.coef0;
+			t2=powi(t1, param.degree-1)*param.degree;
 			svm_dot_deriv(x, y, deriv);
 			while (deriv->index!=-1) {
 				deriv->value*=t2;
@@ -161,16 +173,18 @@ double k_function_deriv(const svm_node *x, const svm_node *y,
 			return powi(t1, param.degree);
 		case RBF:
 		{
-			double t1 = exp(-param.gamma*svm_distance2(x, y, deriv));
+			t1 = exp(-param.gamma*svm_distance2(x, y, deriv));
+			//printf("svm_distance2: deriv=");
+			//print_svm_node(deriv);
 			while (deriv->index!=-1) {
 				deriv->value*=-param.gamma*t1;
 				++deriv;
 			}
-			return t2;
+			return t1;
 		}
 		case SIGMOID:
-			double t1=tanh(param.gamma*dot(x,y)+param.coef0);
-			double t2=param.gamma*(1-t1*t1);
+			t1=tanh(param.gamma*svm_dot(x,y)+param.coef0);
+			t2=param.gamma*(1-t1*t1);
 			svm_dot_deriv(x, y, deriv);
 			while (deriv->index!=-1) {
 				deriv->value*=t2;
@@ -187,7 +201,7 @@ double k_function_deriv(const svm_node *x, const svm_node *y,
 
 double svm_predict_deriv(const svm_model *model, const svm_node *x, svm_node *deriv)
 {
-	int i;
+	int i, j, k;
 	int nr_class = model->nr_class;
 
 	if(model->param.svm_type == ONE_CLASS ||
@@ -200,44 +214,62 @@ double svm_predict_deriv(const svm_model *model, const svm_node *x, svm_node *de
 	}
 	else
 	{
+		svm_node *deriv1=Malloc(svm_node, max_nr_attr);
 		int l = model->l;
 		double sum=0;
 		int max_index=0;
+		int *index_list=Malloc(int, max_nr_attr);
+
 		//yes, we will actually initialize the derivative vector to zero for all indices all
 		//the way up to the max allowed--that's how brain-dead this system is...:
-		for (i=0; i<max_nr_attr; i++) {
-			deriv[i].index=i;
-			deriv[i].value=0;
+		for (i=0; i<max_nr_attr; i++) index_list[i]=0;
+		for(i=0;i<l;i++) {
+			for (j=0; model->SV[i][j].index!=-1; j++) {
+				int index=model->SV[i][j].index;
+				index_list[index]=1;
+				if (index>max_index) max_index=index;
+			}
 		}
+		j=0;
+		for (i=0; i<=max_index; i++) {
+			if (index_list[i]) {
+				deriv[j].index=i;
+				deriv[i].value=0;
+				j++;
+			}
+		}
+		deriv[j].index=-1;
+
 		for(i=0;i<l;i++) {
 			double kvalue;
-			svm_node deriv1;
 
-			kvalue = k_function_deriv(x,model->SV[i], model->param, &deriv1);
-			sum+=model->sv_coef[0][i];
+			kvalue = k_function_deriv(x,model->SV[i], model->param, deriv1);
+			sum+=model->sv_coef[0][i]*kvalue;
 			k=0;
 			for (j=0; deriv1[j].index!=-1; j++) {
 				if (deriv[k].index==deriv1[j].index) {
 					deriv[k].value+=model->sv_coef[0][i]*deriv1[j].value;
 					k++;
 				} else {
-					for (;deriv[k].index<deriv1[k].index; k++);
+					for (;deriv[k].index<deriv1[j].index; k++);
 				}
 			}
-			if (deriv1[j-1].index>max_index) max_index=deriv1[j-1].index;
 		}
 		deriv[max_index+1].index=-1;
-		sum-=model->rho[p];
+		sum-=model->rho[0];
+		printf("svm_predict_deriv: sum=%lg\n", sum);
+
+		free(deriv1);
 
 		return sum;
 	}
 }
 
-static double sigmoid_predict(double decision_value, double A, double B, double *deriv)
+static double sigmoid_deriv(double decision_value, double A, double B, double *deriv)
 {
 	double expfApB = exp(decision_value*A+B);
 	*deriv=-A*expfApB/(1+expfApB)/(1+expfApB);
-	return 1.0/(1+exp(fApB)) ;
+	return 1.0/(1+expfApB) ;
 }
 
 double svm_predict_binary(
@@ -249,21 +281,21 @@ double svm_predict_binary(
 	if ((model->param.svm_type == C_SVC || model->param.svm_type == NU_SVC) &&
 	    model->probA!=NULL && model->probB!=NULL)
 	{
+		svm_node *deriv1=Malloc(svm_node, max_nr_attr);
+		double deriv2;
 		int i;
 		double f;
 		double result;
-		svm_node *deriv1=Malloc(svm_node, max_nr_attr);
 
 		f=svm_predict_deriv(model, x, deriv1);
 
-		result=2*sigmoid_predict(f, model->probA[0], model->probB[0], deriv2)-1;
+		result=1-2*sigmoid_deriv(f, model->probA[0], model->probB[0], &deriv2);
 
-		while (deriv1!=-1) {
-			drdx->index=deriv1->index;
-			drdx->value=2*deriv1->value*deriv2;
-			deriv1++;
-			drdx++;
+		for (i=0; deriv1[i].index!=-1; i++) {
+			drdx[i].index=deriv1[i].index;
+			drdx[i].value=-2*deriv1[i].value*deriv2;
 		}
+		drdx[i].index=-1;
 
 		free(deriv1);
 
@@ -282,7 +314,6 @@ int print_null(const char *s,...) {return 0;}
 static int (*info)(const char *fmt,...) = &printf;
 
 struct svm_node *x;
-int max_nr_attr = 64;
 
 struct svm_model* model;
 int predict_probability=1;
@@ -330,7 +361,7 @@ void predict_binary(FILE *input, FILE *output)
 
 	if (svm_type==NU_SVR || svm_type==EPSILON_SVR || nr_class!=2 || predict_probability!=1)
 	{
-		info("Only binary class models with probability estimates are supported.\n");
+		fprintf(stderr, "Only binary class models with probability estimates are supported.\n");
 		exit(1);
 	}
 	else
@@ -391,9 +422,10 @@ void predict_binary(FILE *input, FILE *output)
 		x[i].index = -1;
 
 		prob_estimate = svm_predict_binary(model,x,deriv);
-		fprintf(output,"%g",prob_estimate);
-		for(j=0;deriv[j]!=-1;j++)
-			fprintf(output," %d:%.16lg", deriv[j].index, deriv[j].value);
+		if (prob_estimate<0) predict_label=0; else predict_label=1;
+		fprintf(output,"%lg",prob_estimate);
+		for(j=0;deriv[j].index!=-1;j++)
+			fprintf(output," %d:%lg", deriv[j].index, deriv[j].value);
 		fprintf(output,"\n");
 
 		if(predict_label == target_label)
@@ -473,7 +505,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	predict(input,output);
+	predict_binary(input,output);
 	svm_free_and_destroy_model(&model);
 	free(x);
 	free(line);

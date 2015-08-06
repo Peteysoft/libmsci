@@ -36,6 +36,7 @@ CFLAGS = $(OPT_VER) -I$(GSL_INCLUDE) -I$(INCLUDE_PATH) -Wno-deprecated #-O2 -g
 #                                                                     #
 #---------------------------------------------------------------------#
 
+LIBSVM = /usr/local/libsvm-3.18
 
 LIBNAME = libagf$(OPT_VER).a
 
@@ -189,6 +190,9 @@ $(OBJECT_FILES): %$(OPT_VER).o: %.cc $(LIBRARY_INCLUDE)
 
 $(LIBRARY_INCLUDE): $(INCLUDE_FILES)
 	touch $(LIBRARY_INCLUDE)
+
+svm-binary: svm-binary.cc $(LIBSVM)/svm.o $(LIBSVM)/svm.h $(LIBNAME) $(LIBPETEY) $(LIBRARY_INCLUDE)
+	$(CC) $(CFLAGS) -I$(LIBSVM) svm-binary.cc -o svm-binary $(LIBSVM)/svm.o
 
 #$(LIBPETEY):
 #	make -C $(DATASET_PATH) 
