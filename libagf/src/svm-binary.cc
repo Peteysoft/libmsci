@@ -26,12 +26,12 @@ template <class T> static inline T max(T x,T y) { return (x>y)?x:y; }
 
 int max_nr_attr = 64;
 
-void print_svm_node(svm_node *node) {
+void print_svm_node(FILE *fs, svm_node *node) {
 	while (node->index!=-1) {
-		printf("%d:%lg ", node->index, node->value);
+		fprintf(fs, "%d:%lg ", node->index, node->value);
 		++node;
 	}
-	printf("\n");
+	fprintf(fs, "\n");
 }
 
 static inline double powi(double base, int times)
@@ -142,7 +142,7 @@ void svm_dot_deriv(const svm_node *px, const svm_node *py, svm_node *deriv)
 		}
 		else
 		{
-		//if derivative lacks index, just assume it's zero!
+		//if argument lacks index, just assume derivative is zero!
 			if(px->index > py->index)
 				++py;
 			else 
@@ -175,7 +175,7 @@ double k_function_deriv(const svm_node *x, const svm_node *y,
 		{
 			t1 = exp(-param.gamma*svm_distance2(x, y, deriv));
 			//printf("svm_distance2: deriv=");
-			//print_svm_node(deriv);
+			//print_svm_node(stdout, deriv);
 			while (deriv->index!=-1) {
 				deriv->value*=-param.gamma*t1;
 				++deriv;
@@ -234,11 +234,13 @@ double svm_predict_deriv(const svm_model *model, const svm_node *x, svm_node *de
 		for (i=0; i<=max_index; i++) {
 			if (index_list[i]) {
 				deriv[j].index=i;
-				deriv[i].value=0;
+				deriv[j].value=0;
 				j++;
 			}
 		}
 		deriv[j].index=-1;
+
+		free(index_list);
 
 		for(i=0;i<l;i++) {
 			double kvalue;
@@ -255,7 +257,6 @@ double svm_predict_deriv(const svm_model *model, const svm_node *x, svm_node *de
 				}
 			}
 		}
-		deriv[max_index+1].index=-1;
 		sum-=model->rho[0];
 		printf("svm_predict_deriv: sum=%lg\n", sum);
 
@@ -304,6 +305,37 @@ double svm_predict_binary(
 	else {
 		fprintf(stderr, "Only binary classification models with probability estimates are supported.\n");
 		exit(1);
+	}
+}
+
+//numerical derivatives:
+void svm_predict_deriv_num(svm_model *model, const svm_node *x, double dx, svm_node *drdx) {
+	int i;
+	svm_node *deriv=Malloc(svm_node, max_nr_attr);	//ignored
+	svm_node *x1=Malloc(svm_node, max_nr_attr);
+	svm_node *x2=Malloc(svm_node, max_nr_attr);
+	double r1, r2;
+
+	for (i=0; x[i].index!=-1; i++) {
+		x1[i].index=x[i].index;
+		x1[i].value=x[i].value;
+		x2[i].index=x[i].index;
+		x2[i].value=x[i].value;
+		drdx[i].index=x[i].index;
+		drdx[i].value=0;
+	}
+	x1[i].index=-1;
+	x2[i].index=-1;
+	drdx[i].index=-1;
+
+	for (int i=0; x[i].index!=-1; i++) {
+		x1[i].value-=dx;
+		x2[i].value+=dx;
+		r1=svm_predict_binary(model, x1, deriv);
+		r2=svm_predict_binary(model, x2, deriv);
+		drdx[i].value=(r2-r1)/dx/2;
+		x1[i].value=x[i].value;
+		x2[i].value=x[i].value;
 	}
 }
 
@@ -357,6 +389,7 @@ void predict_binary(FILE *input, FILE *output)
 	int nr_class=svm_get_nr_class(model);
 	double prob_estimate;
 	svm_node *deriv=Malloc(svm_node, max_nr_attr);
+	svm_node *deriv2=Malloc(svm_node, max_nr_attr);
 	int j;
 
 	if (svm_type==NU_SVR || svm_type==EPSILON_SVR || nr_class!=2 || predict_probability!=1)
@@ -422,11 +455,13 @@ void predict_binary(FILE *input, FILE *output)
 		x[i].index = -1;
 
 		prob_estimate = svm_predict_binary(model,x,deriv);
+		svm_predict_deriv_num(model,x,0.001, deriv2);
 		if (prob_estimate<0) predict_label=0; else predict_label=1;
 		fprintf(output,"%lg",prob_estimate);
 		for(j=0;deriv[j].index!=-1;j++)
 			fprintf(output," %d:%lg", deriv[j].index, deriv[j].value);
 		fprintf(output,"\n");
+		print_svm_node(output, deriv2);
 
 		if(predict_label == target_label)
 			++correct;
