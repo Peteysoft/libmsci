@@ -429,6 +429,19 @@ void get_format_code<double>(char *code) {
   code[2]='\0';
 }
 
+template <>
+void get_format_code<int32_t>(char *code) {
+  code[0]='d';
+  code[1]='\0';
+}
+
+template <>
+void get_format_code<int64_t>(char *code) {
+  code[0]='l';
+  code[1]='d';
+  code[2]='\0';
+}
+
 //reads ASCII files in the same format as used by Kohonen's LVQ package
 //returns number of lines read in
 //if there is an error, returns a negative number
@@ -594,52 +607,55 @@ cls_ta * read_lvq_classes(FILE *fs, nel_ta &n, int hflag) {
 
 }
 
-nel_ta read_svm(FILE *ifs, real_a **&train, cls_ta *&cls, dim_ta &nvar, real_a missing, int Uflag) {
+//should work for integer as well as floating-point ordinates:
+template <class real, class cls_t>
+nel_ta read_svm(FILE *ifs, real **&train, cls_t *&cls, dim_ta &nvar, real missing) {
 
   long n;
-  real_a **vec;			//vectors as read in (may be too short)
-  real_a **vec2;		//final vectors
-  int *cls_lst;			//list of classes
-  cls_ta ncls;			//number of classes
+  real **vec;			//vectors as read in (may be too short)
+  real **vec2;		//final vectors
   dim_ta *nfeat;		//total number of features in each vector in vec
-  dim_ta ind;
+  dim_ta ind;			//features index
   int err;
 
   char **line;			//raw ascii lines read from file
   int pos;			//position in line
   int rel;			//relative position in line
 
-  linked_list<real_a> feat;	//raw features read in 
+  linked_list<real> feat;	//raw features read in 
   linked_list<dim_ta> sub;	//raw indices
 
   line=read_ascii_all(ifs, &n);
 
-  vec=new real_a *[n];
-  cls=new cls_ta[n];
+  vec=new real *[n];
+  cls=new cls_t[n];
   nfeat=new dim_ta[n];
 
-  char fcode[4];
+  char fcode0[4];
+  char format0[10];
+  char fcode1[4];
   char format1[10];
 
-  get_format_code<real_a>(fcode);
-  sprintf(format1, "%%%s%%d%%n", fcode);
+  get_format_code<cls_t>(fcode0);
+  sprintf(format0, "%%%s%%d%%n", fcode0);
+  get_format_code<real>(fcode1);
+  sprintf(format1, "%%%s%%d%%n", fcode1);
 
   nvar=0;
-  ncls=0;
 
   //read in the raw data (no preset maximums, lines can have any number of features):
   for (nel_ta i=0; i<n; i++) {
-    real_a val;			//value of feature
-    real_a *raw;		//array of raw features data
+    real val;			//value of feature
+    real *raw;		//array of raw features data
     dim_ta *ind2;		//array of feature indices
     long cnt1, cnt2;		//# of indices/ features read in
     int len=strlen(line[i]);
-    err=sscanf(line[i], "%d%d%n", cls+i, &ind, &pos);
+    //err=sscanf(line[i], "%d%d%n", cls+i, &ind, &pos);
+    err=sscanf(line[i], format0, cls+i, &ind, &pos);
     if (err==0) {
       n=i;
       break;
     }
-    if (cls[i]>=ncls) ncls=cls[i]+1;
     if (err==1) {
       fprintf(stderr, "read_svm: error; missing features data on line %d\n", i);
       exit(FILE_READ_ERROR);
@@ -671,7 +687,7 @@ nel_ta read_svm(FILE *ifs, real_a **&train, cls_ta *&cls, dim_ta &nvar, real_a m
     ind2=sub.make_array(cnt1);
     raw=feat.make_array(cnt2);
     assert(cnt1==cnt2);
-    vec[i]=new real_a[nfeat[i]];
+    vec[i]=new real[nfeat[i]];
     for (dim_ta j=0; j<nfeat[i]-1; j++) vec[i][j]=missing;
     //printf("line %d; %d features ...", i, nfeat[i]);
     for (dim_ta j=0; j<cnt1; j++) {
@@ -691,15 +707,12 @@ nel_ta read_svm(FILE *ifs, real_a **&train, cls_ta *&cls, dim_ta &nvar, real_a m
 
   //printf("features data: %d X %d\n", n, nvar);
 
-  vec2=new real_a *[n];
-  vec2[0]=new real_a[n*nvar];
-  cls_lst=new cls_ta[ncls];
-  for (cls_ta j=0; j<ncls; j++) cls_lst[j]=0;
+  vec2=new real *[n];
+  vec2[0]=new real[n*nvar];
 
   //fill in missing values:
   for (nel_ta i=0; i<n; i++) {
     //printf("line %d; %d features ...", i, nfeat[i]);
-    cls_lst[cls[i]]=1;
     vec2[i]=vec2[0]+i*nvar;
     for (dim_ta j=0; j<nvar; j++) {
       if (j<nfeat[i]) {
@@ -714,19 +727,6 @@ nel_ta read_svm(FILE *ifs, real_a **&train, cls_ta *&cls, dim_ta &nvar, real_a m
   }
   delete [] vec;
 
-  //convert class labels to go from 0..nc-1:
-  if (Uflag) {
-    cls_ta ncls2=0;
-    for (cls_ta j=0; j<ncls; j++) {
-      if (cls_lst[j]!=0) {
-        cls_lst[j]=ncls2;
-        ncls2++;
-      }
-    }
-    for (nel_ta i=0; i<n; i++) cls[i]=cls_lst[cls[i]];
-  }
-
-  delete [] cls_lst;
   delete [] nfeat;
   train=vec2;
 
@@ -734,7 +734,41 @@ nel_ta read_svm(FILE *ifs, real_a **&train, cls_ta *&cls, dim_ta &nvar, real_a m
 
 }
 
-nel_ta read_svm(const char *fname, real_a **&train, cls_ta *&cls, dim_ta &nvar, real_a missing, int Uflag) {
+template <class real, class cls_t>
+nel_ta read_svm(FILE *fs, real **&train, cls_t *&cls, dim_ta &nvar, real missing, int Uflag) {
+  cls_t ncls;			//number of classes
+  nel_ta result;
+  //real *ord;
+
+  result=read_svm(fs, train, cls, nvar, missing, Uflag);
+
+  //cls=new cls_t[result];
+  for (nel_ta i=0; i<result; i++) {
+    //cls[i]=ord[i];
+    if (cls[i]>=ncls) ncls=cls[i]+1;
+  }
+  //delete [] ord;
+
+  //convert class labels to go from 0..nc-1:
+  if (Uflag) {
+    int cls_lst[ncls];			//list of classes
+    for (cls_t i=0; i<ncls; i++) cls_lst[i]=0;
+    for (nel_ta i=0; i<result; i++) cls_lst[cls[i]]=1;
+    cls_t ncls2=0;
+    for (cls_t j=0; j<ncls; j++) {
+      if (cls_lst[j]!=0) {
+        cls_lst[j]=ncls2;
+        ncls2++;
+      }
+    }
+    for (nel_ta i=0; i<result; i++) cls[i]=cls_lst[cls[i]];
+  }
+
+  return result;
+}
+
+template <class real, class cls_t>
+nel_ta read_svm(const char *fname, real **&train, cls_t *&cls, dim_ta &nvar, real missing, int Uflag) {
   nel_ta result;
 
   FILE *fs;
@@ -775,7 +809,7 @@ nel_ta read_svmout(FILE *ifs, cls_t *&cls, real **&p, cls_t &ncls, nel_ta n) {
   char **line;
   long nline;                   //number of lines
 
-  linked_list<cls_ta> label;    //list of labels
+  linked_list<cls_t> label;    //list of labels
   cls_t *label_list;           //list of labels
 
   long ncls1;                   //number of class labels
@@ -798,7 +832,7 @@ nel_ta read_svmout(FILE *ifs, cls_t *&cls, real **&p, cls_t &ncls, nel_ta n) {
   for (strptr=0; line[0][strptr]!='\0' && isblank(line[0][strptr]); strptr++);
 
   if (line[0][strptr]=='l') {
-    cls_ta clab;
+    cls_t clab;
 
     //read in the labels:
     strptr+=6;
@@ -825,7 +859,7 @@ nel_ta read_svmout(FILE *ifs, cls_t *&cls, real **&p, cls_t &ncls, nel_ta n) {
     //only allocate the arrays if n is not set:
     if (n<=0) {
       n=nline-1;
-      cls=new cls_ta[n];
+      cls=new cls_t[n];
       p=new real *[n];
       p[0]=new real[n*ncls2];
     }
@@ -875,7 +909,7 @@ nel_ta read_svmout(FILE *ifs, cls_t *&cls, real **&p, cls_t &ncls, nel_ta n) {
     for (nel_ta i=n; i<nline; i++) delete [] line[i];
     if (p!=NULL) {
       for (nel_ta i=0; i<n; i++) {
-        for (cls_ta j=0; j<ncls; j++) p[i][j]=0;
+        for (cls_t j=0; j<ncls; j++) p[i][j]=0;
         if (cls[i]>=0 && cls[i]<=ncls-1) p[i][cls[i]]=1;
       }
     }
@@ -889,6 +923,11 @@ nel_ta read_svmout(FILE *ifs, cls_t *&cls, real **&p, cls_t &ncls, nel_ta n) {
   return n;
 }
 
+template nel_ta read_svm<double, double>(FILE *fs, double **&, double *&, dim_ta &, double);
+template nel_ta read_svm<float, float>(FILE *fs, float **&, float *&, dim_ta &, float);
+template nel_ta read_svm<real_a, cls_ta>(FILE *fs, real_a **&, cls_ta *&, dim_ta &, real_a);
+template nel_ta read_svm<real_a, cls_ta>(FILE *fs, real_a **&, cls_ta *&, dim_ta&, real_a, int);
+template nel_ta read_svm<real_a, cls_ta>(const char *, real_a **&, cls_ta *&, dim_ta &, real_a, int);
 
 template void print_lvq_svm<cls_ta, real_a>(FILE *fs, real_a **, cls_ta *, nel_ta, dim_ta, int, int);
 template nel_ta read_svmout<cls_ta, real_a>(FILE *ifs, cls_ta *&, real_a **&, cls_ta &, nel_ta);

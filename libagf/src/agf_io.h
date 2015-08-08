@@ -1,7 +1,7 @@
 //Copyright (C) 2007 Peter Mills.  All rights reserved.
 
-#ifndef AGF_IO_H_INCLUDED
-#define AGF_IO_H_INCLUDED 1
+#ifndef _LIBAGF__AGF_IO_H__INCLUDED
+#define _LIBAGF__AGF_IO_H__INCLUDED 1
 
 #include <stdio.h>
 
@@ -66,15 +66,21 @@ namespace libagf {
 
   //read classification data containing in an ASCII file (LIBSVM format):
   //returns number of elements or negative error code=line where error occurred
+  template <class real, class cls_t>
   nel_ta read_svm(const char *fname, 		//file name
-		real_a **&train, 		//returned training data
-		cls_ta *&cls, 			//returned class data
+		real **&train, 			//returned training data
+		cls_t *&cls, 			//returned class data
 		dim_ta &nvar, 			//number of dimensions
-		real_a missing=0,		//value for missing data
-		int Uflag=0);			//re-label classes to go from 0..nc-1
+		real missing,			//value for missing data
+		int Uflag);			//re-label classes to go from 0..nc-1
 
   //same as above, read from a stream:
-  nel_ta read_svm(FILE *fs, real_a **&train, cls_ta *&cls, dim_ta &nvar, real_a missing=0, int Uflag=0);
+  template <class real, class cls_t>
+  nel_ta read_svm(FILE *fs, real **&train, cls_t *&cls, dim_ta &nvar, real missing, int Uflag);
+
+  //SVM format is actually always floating point for the ordinates:
+  template <class real, class cls_t>
+  nel_ta read_svm(FILE *fs, real **&train, cls_t *&ord, dim_ta &nvar, real missing=0);
 
   template <class cls_t, class real>
   void print_lvq_svm(FILE *fs, 

@@ -1,5 +1,5 @@
-#ifndef BINARYCLASSIFIER_H
-#define BINARYCLASSIFIER_H 1
+#ifndef _LIBAGF__BINARYCLASSIFIER__H
+#define _LIBAGF__BINARYCLASSIFIER__H 1
 
 #include <stdio.h>
 #include <gsl/gsl_matrix.h>

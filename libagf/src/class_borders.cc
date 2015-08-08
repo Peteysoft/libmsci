@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
   }
   if (opt_args.asciiflag) {
     if (opt_args.Mflag) {
-      ntrain=read_svm(fs, train, cls, nvar, opt_args.Uflag);
+      ntrain=read_svm(fs, train, cls, nvar, opt_args.missing, opt_args.Uflag);
     } else {
       ntrain=read_lvq(fs, train, cls, nvar, opt_args.Hflag);
     }
