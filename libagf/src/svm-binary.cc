@@ -26,6 +26,8 @@ template <class T> static inline T max(T x,T y) { return (x>y)?x:y; }
 
 int max_nr_attr = 64;
 
+double global_dx;		//because we love global variables...
+
 void print_svm_node(FILE *fs, svm_node *node) {
 	while (node->index!=-1) {
 		fprintf(fs, "%d:%lg ", node->index, node->value);
@@ -164,7 +166,7 @@ double k_function_deriv(const svm_node *x, const svm_node *y,
 			return svm_dot(x,y);
 		case POLY: 
 			t1=param.gamma*svm_dot(x,y)+param.coef0;
-			t2=powi(t1, param.degree-1)*param.degree;
+			t2=powi(t1, param.degree-1)*param.degree*param.gamma;
 			svm_dot_deriv(x, y, deriv);
 			while (deriv->index!=-1) {
 				deriv->value*=t2;
@@ -258,7 +260,7 @@ double svm_predict_deriv(const svm_model *model, const svm_node *x, svm_node *de
 			}
 		}
 		sum-=model->rho[0];
-		printf("svm_predict_deriv: sum=%lg\n", sum);
+		//printf("svm_predict_deriv: sum=%lg\n", sum);
 
 		free(deriv1);
 
@@ -455,13 +457,16 @@ void predict_binary(FILE *input, FILE *output)
 		x[i].index = -1;
 
 		prob_estimate = svm_predict_binary(model,x,deriv);
-		svm_predict_deriv_num(model,x,0.001, deriv2);
 		if (prob_estimate<0) predict_label=0; else predict_label=1;
 		fprintf(output,"%lg",prob_estimate);
 		for(j=0;deriv[j].index!=-1;j++)
 			fprintf(output," %d:%lg", deriv[j].index, deriv[j].value);
 		fprintf(output,"\n");
-		print_svm_node(output, deriv2);
+
+		if (global_dx>0) {
+			svm_predict_deriv_num(model,x,global_dx, deriv2);
+			print_svm_node(output, deriv2);
+		}
 
 		if(predict_label == target_label)
 			++correct;
@@ -484,6 +489,7 @@ void exit_with_help()
 	"Usage: svm-binary [options] test_file model_file output_file\n"
 	"options:\n"
 	"-q : quiet mode (no outputs)\n"
+	"-f dx: debug mode: print numerical derivatives\n"
 	);
 	exit(1);
 }
@@ -493,6 +499,7 @@ int main(int argc, char **argv)
 	FILE *input, *output;
 	int i;
 	predict_probability=1;
+	global_dx=0;
 	// parse options
 	for(i=1;i<argc;i++)
 	{
@@ -503,6 +510,9 @@ int main(int argc, char **argv)
 			case 'q':
 				info = &print_null;
 				i--;
+				break;
+			case 'f':
+				global_dx=atof(argv[i]);
 				break;
 			default:
 				fprintf(stderr,"Unknown option: -%c\n", argv[i-1][1]);
