@@ -64,6 +64,7 @@ namespace libagf {
     flag_a uflag;	//-u un-normalize borders and gradients
     flag_a Uflag;	//-U re-label classes to go from [0-nc).
     flag_a zflag;	//-z randomize
+    flag_a Zflag;	//-Z use "in-house" SVM estimator
   };
 
   //normalizes a set of vectors from averages and standard deviations:

@@ -108,6 +108,7 @@ OBJECT_FILES = 	agf_metric2$(OPT_VER).o \
 		classifier_obj$(OPT_VER).o \
 		binaryclassifier$(OPT_VER).o \
 		direct_classifier$(OPT_VER).o \
+		svm2class$(OPT_VER).o \
 		batch_borders$(OPT_VER).o \
 		solve_cond_prob$(OPT_VER).o
 

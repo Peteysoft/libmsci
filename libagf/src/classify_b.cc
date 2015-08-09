@@ -1,6 +1,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "full_util.h"
 #include "agf_lib.h"
@@ -15,7 +16,7 @@ int main(int argc, char *argv[]) {
   char *confile;		//output confidences
   FILE *fs;
 
-  agf2class<real_a, cls_ta> *classifier;
+  binaryclassifier<real_a, cls_ta> *classifier;
 
   //transformation matrix:
   real_a **mat=0;
@@ -35,7 +36,7 @@ int main(int argc, char *argv[]) {
 
   agf_command_opts opt_args;
 
-  errcode=agf_parse_command_opts(argc, argv, "a:nu", &opt_args);
+  errcode=agf_parse_command_opts(argc, argv, "a:nuAEMUZ", &opt_args);
   if (errcode==FATAL_COMMAND_OPTION_PARSE_ERROR) return errcode;
 
   //parse the command line arguments:
@@ -62,10 +63,24 @@ int main(int argc, char *argv[]) {
   ran_init();			//random numbers resolve ties
 
   //read in class borders:
-  classifier=new agf2class<real_a, cls_ta>(argv[0]);
+  if (opt_args.Zflag) {
+    //"in-house" SVM predictor:
+    classifier=new svm2class<real_a, cls_ta>(argv[0]);
+  } else {
+    classifier=new agf2class<real_a, cls_ta>(argv[0]);
+  }
   //printf("%d border vectors found: %s\n", ntrain, argv[0]);
 
-  test=read_vecfile(argv[1], ntest, nvar);
+  if (opt_args.asciiflag) {
+    cls_ta *dum;		//class data which we throw away...
+    if (opt_args.Mflag) {
+      ntest=read_svm(argv[1], test, dum, nvar, opt_args.missing, opt_args.Uflag);
+    } else {
+      ntest=read_lvq(argv[1], test, dum, nvar);
+    }
+  } else {
+    test=read_vecfile(argv[1], ntest, nvar);
+  }
   if (nvar == -1) {
     fprintf(stderr, "Error reading input file: %s\n", argv[1]);
     return FILE_READ_ERROR;
@@ -127,22 +142,41 @@ int main(int argc, char *argv[]) {
   //printf("\n");
 
   //write the results to a file:
-  fs=fopen(outfile, "w");
-  if (fs == NULL) {
-    fprintf(stderr, "Unable to open file, %s, for writing\n", outfile);
-    return UNABLE_TO_OPEN_FILE_FOR_WRITING;
-  }
-  fwrite(result, sizeof(cls_ta), ntest, fs);
-  fclose(fs);
+  if (opt_args.asciiflag) {
+    cls_ta clist[2];
+    cls_ta ncls;
+    fs=fopen(argv[2], "w");
+    if (fs == NULL) {
+      fprintf(stderr, "Unable to open file, %s, for writing\n", outfile);
+      return UNABLE_TO_OPEN_FILE_FOR_WRITING;
+    }
+    if (opt_args.Mflag) {
+      ncls=classifier->class_list(clist);
+      assert(ncls==2);
+      fprintf(fs, "labels %d %d\n", clist[0], clist[1]);
+    }
+    for (nel_ta i=0; i<ntest; i++) {
+      fprintf(fs, "%d %g %g\n", result[i], (1-con[i])/2, (1+con[i])/2);
+    }
+    fclose(fs);
+  } else {
+    fs=fopen(outfile, "w");
+    if (fs == NULL) {
+      fprintf(stderr, "Unable to open file, %s, for writing\n", outfile);
+      return UNABLE_TO_OPEN_FILE_FOR_WRITING;
+    }
+    fwrite(result, sizeof(cls_ta), ntest, fs);
+    fclose(fs);
 
-  //write the results to a file:
-  fs=fopen(confile, "w");
-  if (fs == NULL) {
-    fprintf(stderr, "Unable to open file, %s, for writing\n", confile);
-    return UNABLE_TO_OPEN_FILE_FOR_WRITING;
+    //write the results to a file:
+    fs=fopen(confile, "w");
+    if (fs == NULL) {
+      fprintf(stderr, "Unable to open file, %s, for writing\n", confile);
+      return UNABLE_TO_OPEN_FILE_FOR_WRITING;
+    }
+    fwrite(con, sizeof(real_a), ntest, fs);
+    fclose(fs);
   }
-  fwrite(con, sizeof(real_a), ntest, fs);
-  fclose(fs);
   
   //clean up:
   delete [] result;

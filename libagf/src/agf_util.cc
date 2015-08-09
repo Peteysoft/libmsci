@@ -77,6 +77,7 @@ int agf_parse_command_opts(int &argc, char **&argv, const char *optlist, agf_com
   opt_args->uflag=0;		//-u
   opt_args->Uflag=0;		//-U
   opt_args->zflag=0;		//-z
+  opt_args->Zflag=0;		//-Z
 
   //enumerated selections:
   opt_args->algtype=-1;		//-c
@@ -135,15 +136,15 @@ int agf_parse_command_opts(int &argc, char **&argv, const char *optlist, agf_com
       case ('A'):
              opt_args->asciiflag=1;
 	     break;
+      case ('B'):
+             opt_args->Bflag=1;
+	     break;
       case ('c'):
              ncon=sscanf(optarg, "%d", &opt_args->algtype);
              if (ncon != 1) {
                fprintf(stderr, "Warning: garbled option argument: -c %s", optarg);
                errcode=COMMAND_OPTION_PARSE_ERROR;
              }
-	     break;
-      case ('B'):
-             opt_args->Bflag=1;
 	     break;
       case ('C'):
              opt_args->Cflag=1;
@@ -441,6 +442,9 @@ int agf_parse_command_opts(int &argc, char **&argv, const char *optlist, agf_com
 	     break;
       case ('z'):
              opt_args->zflag=1;
+	     break;
+      case ('Z'):
+             opt_args->Zflag=1;
 	     break;
       case ('?'):
              fprintf(stderr, "Unknown option: -%c -- ignored\n", optopt);

@@ -88,7 +88,7 @@ VPATH = datasets/ sparse/ libpetey/ libagf/
 LIBPETEY = libpetey
 INSTALL_PETEY = $(LIB_PATH)/libpetey$(OPT).a
 
-all: libpetey$(OPT).a libdataset$(OPT).a libsparse$(OPT).a libagf$(OPT).a
+all: $(LIBPETEY) libdataset$(OPT).a libsparse$(OPT).a libagf$(OPT).a
 
 $(LIBPETEY):
 	make -C libpetey LIB_DIR=$(LIB_PATH) INCLUDE_DIR=$(INCLUDE_PATH) \

@@ -22,6 +22,7 @@
 #include "classifier_obj.h"
 #include "binaryclassifier.h"
 #include "direct_classifier.h"
+#include "svm2class.h"
 #include "multiclass.h"
 #include "multiclass_hier.h"
 #include "multiclass_c.h"

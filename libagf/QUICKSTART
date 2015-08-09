@@ -297,6 +297,7 @@ Option		Function
 		  See paper describing the theory.
 -X		Ratio between sizes of sample classes (P(2)/P(1)).
 -z		Randomize data.
+-Z		Use "in-house" SVM predictors.
 
 
 COMMAND LINE EXECUTABLES

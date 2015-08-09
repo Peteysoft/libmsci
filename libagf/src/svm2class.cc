@@ -1,7 +1,9 @@
 #include <math.h>
+#include <string.h>
 
 #include "read_ascii_all.h"
 #include "error_codes.h"
+#include "full_util.h"
 #include "agf_lib.h"
 
 using namespace libpetey;
@@ -28,7 +30,7 @@ namespace libagf {
   template <class real>
   real radial_basis(real *x, real *y, dim_ta n, void *param) {
     real gamma=((real *) param)[0];
-    real d2=agf_metric2(x, y, n);
+    real d2=metric2(x, y, n);
     return exp(-gamma*d2);
   }
 
@@ -60,7 +62,7 @@ namespace libagf {
     real degree=p2[2];
     real dot=linear_basis_deriv(x, y, n, NULL, deriv);
     for (dim_ta i=0; i<n; i++) {
-      deriv*=pow(gamma*dot+coef0, degree-1)*degree*gamma;
+      deriv[i]*=pow(gamma*dot+coef0, degree-1)*degree*gamma;
     }
     return pow(gamma*dot+coef0, degree);
   }
@@ -91,17 +93,24 @@ namespace libagf {
     return t1;
   }
 
-  template <class real>
-  svm2class<real>::svm2class(char *modfile) {
+  template <class real, class cls_t>
+  svm2class<real, cls_t>::svm2class(char *modfile) {
     int err=init(modfile);
     if (err!=0) throw err;
   }
 
-  template <class real>
-  int svm2class<real>::init(char *modfile) {
-    FILE fs=fopen(modfile, "r");
-    char *line;
-    char *substr;
+  template <class real, class cls_t>
+  svm2class<real, cls_t>::~svm2class() {
+    delete [] sv[0];
+    delete [] sv;
+    delete [] param;
+  }
+
+  template <class real, class cls_t>
+  int svm2class<real, cls_t>::init(char *modfile) {
+    FILE *fs=fopen(modfile, "r");
+    char *line=NULL;
+    char **substr=NULL;
     int nsub;
     int nsv1;		//should agree with nsv...
     int pfound=0;	//number of parameters for probability estimation read in (should be 2)
@@ -115,11 +124,16 @@ namespace libagf {
     param=new real[3];
 
     do {
+      delete [] line;
+      delete [] substr;
       line=fget_line(fs, 1);
       substr=split_string_destructive(line, nsub);
+      //printf("svm2class: nsub=%d\n", nsub);
+      //for (int i=0; i<nsub; i++) printf("%s ", substr[i]);
+      //printf("\n");
       if (strcmp(substr[0], "svm_type")==0) {
         if (strcmp(substr[1], "c_svc")!=0 && strcmp(substr[1], "nu-svc")!=0) {
-          fprintf(stderr, "svm2class: not a classifier SVM in file, %s\n", modfile);
+          fprintf(stderr, "svm2class: not a classifier SVM in file, %s (%s)\n", modfile, substr[1]);
 	  fclose(fs);
 	  return PARAMETER_OUT_OF_RANGE;
         }
@@ -165,10 +179,13 @@ namespace libagf {
       } else if (strcmp(substr[0], "probB")==0) {
         probB=atof(substr[1]);
 	pfound++;
+      } else if (strcmp(substr[0], "label")==0) {
+        label1=atoi(substr[1]);
+        label2=atoi(substr[2]);
       }
-      delete [] line;
-      delete [] substr;
     } while (strcmp(substr[0], "SV")!=0);
+    delete [] line;
+    delete [] substr;
 
     if (pfound!=2) {
       fprintf(stderr, "svm2class: probability estimates must be supported (in file, %s)\n", modfile);
@@ -191,10 +208,10 @@ namespace libagf {
   real svm2class<real, cls_t>::R(real *x, real *praw) {
     real sum;
     real r;
-    real *x1=do_ltran(x);
+    real *x1=this->do_xtran(x);
 
     for (nel_ta i=0; i<nsv; i++) {
-      sum+=(*kernel)(x, sv[i], this->D1)*coef[i];
+      sum+=(*kernel)(x, sv[i], this->D1, param)*coef[i];
     }
     sum-=rho;
     r=1-2/(1+exp(sum*probA+probB));
@@ -206,17 +223,25 @@ namespace libagf {
 
   }
 
+  //some book-keeping:
+  template <class real, class cls_t>
+  cls_t svm2class<real, cls_t>::class_list(cls_t *list) {
+    list[0]=label1;
+    list[1]=label2;
+    return this->ncls;
+  }
+
   template <class real, class cls_t>
   real svm2class<real, cls_t>::R_deriv(real *x, real *drdx) {
     real sum;
     real t1, t2;		//temporaries
     real deriv[this->D1];
     real drdx1[this->D1];
-    real *x1=do_ltran(x);
+    real *x1=this->do_xtran(x);
 
     for (dim_ta j=0; j<this->D1; j++) drdx[j]+=0;
     for (nel_ta i=0; i<nsv; i++) {
-      sum+=(*kernel_deriv)(x, sv[i], this->D1, deriv)*coef[i];
+      sum+=(*kernel_deriv)(x, sv[i], this->D1, param, deriv)*coef[i];
       for (dim_ta j=0; j<this->D1; j++) drdx1[j]+=deriv[j]*coef[i];
     }
     sum-=rho;
@@ -227,7 +252,7 @@ namespace libagf {
     if (this->mat!=NULL) {
       delete [] x1;
       //grad_x(f(Ax))=grad_y(f(y)*A
-      vect_mult(mat, drdx1, drdx, this->D, this->D1);
+      vector_mult(this->mat, drdx1, drdx, this->D, this->D1);
     } else {
       for (dim_ta j=0; j<this->D; j++) drdx[j]=drdx1[j];
     }
@@ -235,5 +260,7 @@ namespace libagf {
     return 1-2/(1+t1);
 
   }
+
+  template class svm2class<real_a, cls_ta>;
 
 }

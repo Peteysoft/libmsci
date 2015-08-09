@@ -105,6 +105,7 @@ namespace libpetey {
 
   //find the beginnings of all whitespace-separated sub-strings:
   char ** split_string_destructive(char *string, int &n) {
+    char **result;
     linked_list<char *> loc;	//locations
     long n1;
     int i, j;
@@ -127,10 +128,12 @@ namespace libpetey {
         }
       }
       string[i]='\0';
+      i++;
     } while (finish==0);
 
-    return loc.make_array(n1);
+    result=loc.make_array(n1);
     n=n1;
+    return result;
   }
 
 } //end namespace libpetey

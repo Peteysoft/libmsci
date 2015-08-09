@@ -740,7 +740,7 @@ nel_ta read_svm(FILE *fs, real **&train, cls_t *&cls, dim_ta &nvar, real missing
   nel_ta result;
   //real *ord;
 
-  result=read_svm(fs, train, cls, nvar, missing, Uflag);
+  result=read_svm(fs, train, cls, nvar, missing);
 
   //cls=new cls_t[result];
   for (nel_ta i=0; i<result; i++) {
