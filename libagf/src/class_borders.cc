@@ -221,10 +221,6 @@ int main(int argc, char *argv[]) {
   //count the number of classes:
   nclass=1;
   for (nel_ta i=0; i<ntrain; i++) if (cls[i]>=nclass) nclass=cls[i]+1;
-  if (nclass < 2) {
-    fprintf(stderr, "class_borders: Cannot perform classifications with less than two classes!\n");
-    return PARAMETER_OUT_OF_RANGE;
-  }
   if (opt_args.cl_thresh >= nclass) {
     fprintf(stderr, "class_borders: Class threshold greater than number of classes.\n");
     return PARAMETER_OUT_OF_RANGE;
@@ -242,6 +238,10 @@ int main(int argc, char *argv[]) {
     apply_partition(cls, ntrain, map);
     for (cls_ta i=0; i<nclass; i++) if (map[i]>=nncls) nncls=map[i]+1;
     nclass=nncls;
+  }
+  if (nclass < 2) {
+    fprintf(stderr, "class_borders: Cannot perform classifications with less than two classes!\n");
+    return PARAMETER_OUT_OF_RANGE;
   }
 
   brdfile=new char[strlen(argv[1])+5];

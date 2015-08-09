@@ -226,7 +226,7 @@ namespace libagf {
 
     if (this->mat!=NULL) {
       delete [] x1;
-      //grad_x(f(Ax))=grad_y(f(Ax)*A
+      //grad_x(f(Ax))=grad_y(f(y)*A
       vect_mult(mat, drdx1, drdx, this->D, this->D1);
     } else {
       for (dim_ta j=0; j<this->D; j++) drdx[j]=drdx1[j];
