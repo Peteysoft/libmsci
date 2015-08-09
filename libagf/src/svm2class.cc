@@ -21,12 +21,12 @@ namespace libagf {
     real gamma=p2[0];
     real coef0=p2[1];
     real degree=p2[2];
-    real dot=linear_basis(x, y, n, param);
+    real dot=linear_basis(x, y, n, NULL);
     return pow(gamma*dot+coef0, degree);
   }
 
   template <class real>
-  real polynomial_basis(real *x, real *y, dim_ta n, void *param) {
+  real radial_basis(real *x, real *y, dim_ta n, void *param) {
     real gamma=((real *) param)[0];
     real d2=agf_metric2(x, y, n);
     return exp(-gamma*d2);
@@ -37,8 +37,58 @@ namespace libagf {
     real *p2=(real *) param;
     real gamma=p2[0];
     real coef0=p2[1];
-    real dot=linear_basis(x, y, n, param);
+    real dot=linear_basis(x, y, n, NULL);
     return tanh(gamma*dot+coef0);
+  }
+
+  //basis functions ("kernels"):
+  template <class real>
+  real linear_basis_deriv(real *x, real *y, dim_ta n, void *param, real *deriv) {
+    real dot=0;
+    for (dim_ta i=0; i<n; i++) {
+      dot+=x[i]*y[i];
+      deriv[i]=y[i];
+    }
+    return dot;
+  }
+
+  template <class real>
+  real polynomial_basis_deriv(real *x, real *y, dim_ta n, void *param, real *deriv) {
+    real *p2=(real *) param;
+    real gamma=p2[0];
+    real coef0=p2[1];
+    real degree=p2[2];
+    real dot=linear_basis_deriv(x, y, n, NULL, deriv);
+    for (dim_ta i=0; i<n; i++) {
+      deriv*=pow(gamma*dot+coef0, degree-1)*degree*gamma;
+    }
+    return pow(gamma*dot+coef0, degree);
+  }
+
+  template <class real>
+  real radial_basis_deriv(real *x, real *y, dim_ta n, void *param, real *deriv) {
+    real gamma=((real *) param)[0];
+    real diff;
+    real t1;
+    real d2=0;
+    for (dim_ta i=0; i<n; i++) {
+      deriv[i]=x[i]-y[i];
+      d2+=deriv[i]*deriv[i];
+    }
+    t1=exp(-gamma*d2);
+    for (dim_ta i=0; i<n; i++) deriv[i]*=-2*t1*gamma;
+    return t1;
+  }
+
+  template <class real>
+  real sigmoid_basis_deriv(real *x, real *y, dim_ta n, void *param, real *deriv) {
+    real *p2=(real *) param;
+    real gamma=p2[0];
+    real coef0=p2[1];
+    real dot=linear_basis_deriv(x, y, n, NULL, deriv);
+    real t1=tanh(gamma*dot+coef0);
+    for (dim_ta i=0; i<n; i++) deriv[i]*=gamma*(1-t1*t1);
+    return t1;
   }
 
   template <class real>
@@ -82,14 +132,18 @@ namespace libagf {
         }
       } else if (strcmp(substr[0], "kernel_type")==0) {
         if (strcmp(substr[1], "linear")==0) {
-	  kernel=&linear_basis;
+	  kernel=&linear_basis<real>;
+	  kernel_deriv=&linear_basis_deriv<real>;
 	  param=NULL;
         } else if (strcmp(substr[1], "polynomial")==0) {
-          kernel=&polynomial_basis;
+          kernel=&polynomial_basis<real>;
+          kernel_deriv=&polynomial_basis_deriv<real>;
 	} else if (strcmp(substr[1], "rbf")==0) {
-          kernel=&radial_basis;
+          kernel=&radial_basis<real>;
+          kernel_deriv=&radial_basis_deriv<real>;
 	} else if (strcmp(substr[1], "sigmoid")==0) {
-          kernel=&radial_basis;
+          kernel=&sigmoid_basis<real>;
+          kernel_deriv=&sigmoid_basis_deriv<real>;
 	} else {
           fprintf(stderr, "svm2class: basis function, %s, not recognized (file, %s)\n", substr[1], modfile);
 	  fclose(fs);
@@ -151,3 +205,35 @@ namespace libagf {
     return r;
 
   }
+
+  template <class real, class cls_t>
+  real svm2class<real, cls_t>::R_deriv(real *x, real *drdx) {
+    real sum;
+    real t1, t2;		//temporaries
+    real deriv[this->D1];
+    real drdx1[this->D1];
+    real *x1=do_ltran(x);
+
+    for (dim_ta j=0; j<this->D1; j++) drdx[j]+=0;
+    for (nel_ta i=0; i<nsv; i++) {
+      sum+=(*kernel_deriv)(x, sv[i], this->D1, deriv)*coef[i];
+      for (dim_ta j=0; j<this->D1; j++) drdx1[j]+=deriv[j]*coef[i];
+    }
+    sum-=rho;
+    t1=exp(sum*probA+probB);
+    t2=-probA*t1/(1+t1)/(1+t1);
+    for (dim_ta j=0; j<this->D1; j++) drdx1[j]*=2*t2;
+
+    if (this->mat!=NULL) {
+      delete [] x1;
+      //grad_x(f(Ax))=grad_y(f(Ax)*A
+      vect_mult(mat, drdx1, drdx, this->D, this->D1);
+    } else {
+      for (dim_ta j=0; j<this->D; j++) drdx[j]=drdx1[j];
+    }
+
+    return 1-2/(1+t1);
+
+  }
+
+}

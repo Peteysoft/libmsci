@@ -386,27 +386,25 @@ int main(int argc, char *argv[]) {
     grad2=allocate_matrix<real_a, nel_ta>(opt_args.n, nvar1);
     for (nel_ta i=0; i<opt_args.n; i++) {
       double tmp_b;
-      double tmp_g;
       for (dim_ta j=0; j<nvar1; j++) {
         bord2[i][j]=ave[j];
-        grad2[i][j]=0;
         for (dim_ta k=0; k<nvar; k++) {
 	  double mat2_el;
           double s_k=gsl_vector_get(s, k);
           if (s_k == 0) continue;
           tmp_b=0;
-          tmp_g=0;
           for (dim_ta l=0; l<nvar; l++) {
 	    double vt_el=gsl_matrix_get(vt, l, k);
             tmp_b+=vt_el*border[i][l];
-            tmp_g+=vt_el*gradient[i][l];
           }
 	  mat2_el=gsl_matrix_get(mat2, j, k);
           bord2[i][j]+=tmp_b*mat2_el/s_k;
-          grad2[i][j]+=tmp_g*mat2_el/s_k;
         }
       }
     }
+    //note: the gradients do not transform the same as the vectors!!
+    matrix_mult_t(gradient, mat, grad2, opt_args.n, nvar, nvar1);
+
     nvar=nvar1;
     delete_matrix(border);
     delete_matrix(gradient);

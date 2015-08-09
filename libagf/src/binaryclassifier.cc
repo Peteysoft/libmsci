@@ -5,6 +5,8 @@
 #include <string.h>
 #include <assert.h>
 
+#include <gsl/gsl_linalg.h>
+
 #include "full_util.h"
 //#include "peteys_tmpl_lib.h"
 
@@ -472,6 +474,10 @@ namespace libagf {
     this->b=b1;
   
     if (flag) {
+      gsl_matrix *u;
+      gsl_vector *s;
+      gsl_matrix *vt;
+      gsl_vector *work;
       if (d1!=this->D) {
         fprintf(stderr, "agf2class: first dimension (%d) of trans. mat. does not agree with that of borders data (%d)\n", d1, this->D);
         return DIMENSION_MISMATCH;
@@ -483,18 +489,55 @@ namespace libagf {
 
       //apply constant factor:
       for (nel_ta i=0; i<n; i++) {
-        for (dim_ta j=0; j<this->D1; j++) {
+        for (dim_ta j=0; j<this->D; j++) {
           brd[i][j]=brd[i][j]-this->b[j];
         }
       }
 
       brd2=matrix_mult(brd, this->mat, n, this->D, this->D1);
-      grd2=matrix_mult(grd, this->mat, n, this->D, this->D1);
+      grd2=allocate_matrix<real, int32_t>(n, this->D1);
+
+      //gradients do NOT transform the same as the vectors:
+      u=gsl_matrix_alloc(this->D, this->D1);
+      for (dim_ta i=0; i<this->D; i++) {
+        for (dim_ta j=0; j<this->D1; j++) {
+          gsl_matrix_set(u, i, j, this->mat[i][j]);
+	}
+      }
+      s=gsl_vector_alloc(this->D1);
+      vt=gsl_matrix_alloc(this->D1, this->D1);
+      work=gsl_vector_alloc(this->D1);
+      gsl_linalg_SV_decomp(u, vt, s, work);
+      gsl_vector_free(work);
+      for (nel_ta i=0; i<n; i++) {
+        double tmp_g;
+        for (dim_ta j=0; j<this->D1; j++) {
+          grd2[i][j]=0;
+          for (dim_ta k=0; k<this->D1; k++) {
+            double vt_el;
+            double s_k=gsl_vector_get(s, k);
+            if (s_k == 0) continue;
+            tmp_g=0;
+            for (dim_ta l=0; l<this->D; l++) {
+	      double u_el=gsl_matrix_get(u, l, k);
+              tmp_g+=u_el*grd[i][l];
+            }
+            vt_el=gsl_matrix_get(vt, j, k);
+            grd2[i][j]+=tmp_g*vt_el/s_k;
+          }
+        }
+      }
+
+      gsl_matrix_free(u);
+      gsl_vector_free(s);
+      gsl_matrix_free(vt);
+
       delete_matrix(brd);
       delete_matrix(grd);
       brd=brd2;
       grd=grd2;
-      //have to recalculate all the gradient vectors, dammit:
+
+      //have to recalculate all the gradient lengths, dammit:
       for (nel_ta i=0; i<n; i++) {
         gd[i]=0;
         for (dim_ta j=0; j<this->D1; j++) gd[i]+=grd[i][j]*grd[i][j];

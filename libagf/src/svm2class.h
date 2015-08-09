@@ -14,9 +14,11 @@ namespace libagf {
       real rho;			//constant term
 
       //kernel function:
-      real (kernel *) (real *, real *, dim_ta n, void *param);
+      real (kernel *) (real *, real *, dim_ta, void *);
       //parameters for kernel function:
       real *param;
+      //kernel function with derivatives:
+      real (kernel_deriv *) (real *, real *, dim_ta, void *, real *);
 
       //for calculating probabilities:
       real probA;
@@ -26,6 +28,7 @@ namespace libagf {
       ~svm2class();
       int init(char *modfile);
       virtual real R(real *x, real *praw=NULL);
+      real R_deriv(real *x, real *praw=NULL);
   };
 }
 
