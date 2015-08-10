@@ -257,16 +257,16 @@ namespace libagf {
     real *x1=this->do_xtran(x);
 
     for (nel_ta i=0; i<nsv; i++) {
-      sum+=(*kernel)(x1, sv[i], this->D1, param)*coef[i];
+      sum+=coef[i]*(*kernel)(x1, sv[i], this->D1, param);
     }
     sum-=rho;
     r=1-2/(1+exp(sum*probA+probB));
 
     if (this->id>=0 && praw!=NULL) praw[this->id]=sum;
     if (this->mat!=NULL) delete [] x1;
-    printf("R: x=");
-    for (dim_ta i=0; i<this->D; i++) printf(" %g", x[i]);
-    printf("\n");
+    //printf("R: x=");
+    //for (dim_ta i=0; i<this->D; i++) printf(" %g", x[i]);
+    //printf("\n");
 
     return r;
   }

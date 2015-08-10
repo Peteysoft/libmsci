@@ -37,7 +37,7 @@ GSL_LIB = /usr/lib
 
 # C++ compiler options:
 #CFLAGS = $(OPT) -Wno-deprecated -I$(INCLUDE_PATH) -I$(GSL_INCLUDE) -g
-CFLAGS = $(OPT) -I$(INCLUDE_PATH) -I$(GSL_INCLUDE) -g
+CFLAGS = $(OPT) -I$(INCLUDE_PATH) -I$(GSL_INCLUDE)
 
 #linker flags (standard executables):
 LDFLAGS = -L$(GSL_LIB) -lgsl -lgslcblas

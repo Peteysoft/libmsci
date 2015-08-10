@@ -270,6 +270,9 @@ namespace libagf {
     }
   }
 
+  template int agfparam_init<float>(agfparam<float> *, float *, nel_ta, float);
+  template int agfparam_init<double>(agfparam<double> *, double *, nel_ta, double);
+
   template nel_ta find_class_borders<float>(float **x, 
 			dim_ta nvar, 
 			nel_ta ntrain,

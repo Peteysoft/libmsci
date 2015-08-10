@@ -418,8 +418,14 @@ namespace libagf {
   int general2class<real, cls_t>::commands(multi_train_param &param, 
 		cls_t **clist, char *fbase) {
     //accelerator mode:
-    fprintf(param.commandfs, "%s -O \"%s\" %s %s %s\n", param.commandname, command, 
+    if (strcmp(command, "")==0) {
+      //if command name is the empty string, we don't include it:
+      fprintf(param.commandfs, "%s %s %s %s\n", param.commandname, this->name, 
+		      param.train, fbase);
+    } else {
+      fprintf(param.commandfs, "%s -O \"%s\" %s %s %s\n", param.commandname, command, 
 		this->name, param.train, fbase);
+    }
 
     //no need to print the class partions...
     return 2;

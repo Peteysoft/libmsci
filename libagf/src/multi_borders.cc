@@ -67,7 +67,7 @@ int main (int argc, char **argv) {
   //while keeping the ones to pass to class_borders
   //--the former include options for normalization or pre-processing:
   opt[3]=&nsv;
-  argc=parse_command_opts(argc, argv, "a0nS-+^MKOu", "%s%%%d%s%s%s%%%s%", opt, flag, 3);
+  argc=parse_command_opts(argc, argv, "a0nS-+^MKOuZ", "%s%%%d%s%s%s%%%s%%", opt, flag, 3);
   if (argc<0) {
     fprintf(stderr, "multi_borders: error parsing command line\n");
     exit(FATAL_COMMAND_OPTION_PARSE_ERROR);
@@ -301,7 +301,7 @@ int main (int argc, char **argv) {
       //class borders through the command name:
       commandname=new char[strlen(AGF_COMMAND_PREFIX)+strlen(normfile)+
 		strlen(AGF_BINARY_CLASSIFIER)+strlen(AGF_OPT_VER)+
-		strlen(extra)+21];
+		strlen(extra)+23];
       sprintf(commandname, "%s%s%s %s -u -a %s", AGF_COMMAND_PREFIX, 
 		AGF_BINARY_CLASSIFIER, AGF_OPT_VER, extra, normfile);
     } else {
@@ -344,10 +344,19 @@ int main (int argc, char **argv) {
 
   //done with set-up phase, now we can actually get to the real work!
   //"accelerator" function:
-  if (flag[9]) {
-    precom=(char *) opt[9];
-    //external models are meant to work with ASCII files:
-    if (flag[4]==0 && flag[7]) strcat(commandname, " -M");
+  if (flag[9] || flag[11]) {
+    if (flag[9]) {
+      precom=(char *) opt[9];
+    } else {
+      precom=new char[1];
+      precom[0]='\0';
+    }
+    if (flag[4]==0) {
+      //external models are meant to work with ASCII files:
+      if (flag[7]) strcat(commandname, " -M");
+      //pass -Z option to class_borders:
+      if (flag[11]) strcat(commandname, " -Z");
+    }
     shell=new multiclass_hier<real_a, cls_ta>(infs, 0, 1,
 		precom, flag[7], opt_args.Kflag);
   } else {
