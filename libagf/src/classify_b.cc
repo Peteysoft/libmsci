@@ -41,7 +41,10 @@ int main(int argc, char *argv[]) {
 
   //parse the command line arguments:
   if (argc != 3) {
-    printf("Syntax:   classify_b [-n] [-u] [-a normfile] border test output\n");
+    printf("Syntax:   classify_b \\\n");
+    printf("                  [-Z] [-A [-M [-E missing]]] \\\n");
+    printf("                  [-n] [-u] [-a normfile] \\\n");
+    printf("                  border test output\n");
     printf("\n");
     printf("where:\n");
     printf("  border      files containing class borders:\n");
@@ -56,6 +59,10 @@ int main(int argc, char *argv[]) {
     printf("  -n          option to normalise the data\n");
     printf("  -u          normalize borders data (stored in un-normalized coords)\n");
     printf("  -a normfile file containing normalization data\n");
+    printf("  -Z          \"in-house\" LIBSVM predictor\n");
+    printf("  -A          ASCII format for test data and output\n");
+    printf("  -M          LIBSVM format for test data and output\n");
+    printf("  -E missing  missing value for LIBSVM features data\n");
     printf("\n");
     return INSUFFICIENT_COMMAND_ARGS;
   }
@@ -154,9 +161,13 @@ int main(int argc, char *argv[]) {
       ncls=classifier->class_list(clist);
       assert(ncls==2);
       fprintf(fs, "labels %d %d\n", clist[0], clist[1]);
-    }
-    for (nel_ta i=0; i<ntest; i++) {
-      fprintf(fs, "%d %g %g\n", result[i], (1-con[i])/2, (1+con[i])/2);
+      for (nel_ta i=0; i<ntest; i++) {
+        fprintf(fs, "%d %g %g\n", clist[result[i]], (1-con[i])/2, (1+con[i])/2);
+      }
+    } else {
+      for (nel_ta i=0; i<ntest; i++) {
+        fprintf(fs, "%d %g %g\n", result[i], (1-con[i])/2, (1+con[i])/2);
+      }
     }
     fclose(fs);
   } else {

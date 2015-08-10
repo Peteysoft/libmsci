@@ -36,6 +36,10 @@ namespace libagf {
 
   };
 
+  //mainly to zero all those bloody diagnostic parameters:
+  template <class real>
+  int agfparam_init(agfparam<real> *param, real var[2], nel_ta k, real W);
+
   //stick the training data plus AGF parameters into the structure:
   template <class real>
   int agfbordparam_init(bordparam<real> *param,

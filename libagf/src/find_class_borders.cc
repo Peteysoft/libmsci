@@ -69,8 +69,38 @@ namespace libagf {
 
   //initialize all the parameters for AGF algorithm:
   template <class real>
-  int agfbordparam_init(
-			bordparam<real> *param,
+  int agfparam_init(agfparam<real> *param,
+			real var[2], 		//variance range
+			nel_ta k, 		//number of nearest neighbours
+			real W) {		//total of weights
+    int err;
+
+    param->var[0] = var[0];
+    param->var[1] = var[1];
+    param->k = k;
+    param->W = W;
+
+    //zero diagnostics:
+    param->min_nd=agf_global_weights_maxiter+2;	//two more than max allowable
+    param->max_nd=0;
+    param->total_nd=0;
+
+    param->min_f=1;		//maximum allowable
+    param->max_f=0;
+    param->total_f=0;
+
+    param->min_W=1000*W;		//maximum allowable
+    param->max_W=0;
+    param->total_W=0;
+
+    param->ncall=0;
+
+    return 0;
+  }
+
+  //initialize all the parameters for AGF algorithm:
+  template <class real>
+  int agfbordparam_init(bordparam<real> *param,
 			real **train, 		//locations of training samples
 						//sorted by class
 			dim_ta D, 		//number of dimensions
@@ -89,26 +119,7 @@ namespace libagf {
 
     //parameters for AGF algorithm:
     aparam=new agfparam<real>;
-    aparam->var[0] = var[0];
-    aparam->var[1] = var[1];
-    aparam->k = k;
-    aparam->W = W;
-
-    //zero diagnostics:
-    aparam->min_nd=agf_global_weights_maxiter+2;	//two more than max allowable
-    aparam->max_nd=0;
-    aparam->total_nd=0;
-
-    aparam->min_f=1;		//maximum allowable
-    aparam->max_f=0;
-    aparam->total_f=0;
-
-    aparam->min_W=1000*W;		//maximum allowable
-    aparam->max_W=0;
-    aparam->total_W=0;
-
-    aparam->ncall=0;
-
+    agfparam_init(aparam, var, k, W);
     param->rparam=aparam;
 
     return 0;

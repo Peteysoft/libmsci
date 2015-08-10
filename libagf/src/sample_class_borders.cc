@@ -196,27 +196,28 @@ namespace libagf {
   //train a binary classifier in which the Bayesian borders are discretely sampled:
   template <class real>
   nel_ta sample_class_borders(
-		real (*rfunc) (real *, void *, real *),   //returns difference in conditional prob.
-                int (*sample) (void *, real *, real *),   //returns random sample of given class
-                void *param,                              //these are just along for the ride
-                nel_ta n,                                 //number of time to sample
-                dim_ta D,                                 //number of dimensions
-                real tol,                                 //desired tolerance
-		iter_ta maxit,                          //maximum number of iterations in root-finder
-                real **border,                            //returned border samples
-                real **gradient,                          //return border gradients
-                real rthresh=0)                           //location of Bayesian border
+		//returns difference in conditional prob. plus derivatives:
+		real (*rfunc) (real *, void *, real *),
+                //returns a pair of random samples (one for each class):
+                int (*sample) (void *, real *, real *),
+                void *param,		//these are just along for the ride
+                nel_ta n,		//number of time to sample
+                dim_ta D,		//number of dimensions
+                real tol,		//desired tolerance
+		iter_ta maxit,		//max no. of iterations in root-finder
+                real **border,		//returned border samples
+                real **gradient,	//return border gradients
+                real rthresh=0)		//location of Bayesian border
   {
   
-    gsl_rng *rann;	//GSL random number generator
+    gsl_rng *rann;		//GSL random number generator
 
     real d1, d2;		//difference between conditional probabilities
-  			//of two classes
+  				//of two classes
     real *grad1, *grad2;	//gradients of initial brackets
-    real dddt1, dddt2;	//derivatives at initial brackets
+    real dddt1, dddt2;		//derivatives at initial brackets
 
-    iter_ta nfail;	//number of convergence failures
-
+    iter_ta nfail;		//number of convergence failures
     iter_ta min_iter;	//minimum number of iterations
     iter_ta max_iter;	//maximum number    "
     iter_ta total_iter;	//total          "

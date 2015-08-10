@@ -68,9 +68,29 @@ namespace libagf {
   }
 
   template <class real>
+  void radial_basis_deriv_num(real *x, real *y, dim_ta n, real dx, void *param, real *deriv) {
+    real x1[n];
+    real x2[n];
+    real r1, r2;
+    for (dim_ta i=0; i<n; i++) {
+      x1[i]=x[i];
+      x2[i]=x[i];
+    }
+    for (dim_ta i=0; i<n; i++) {
+      x1[i]-=dx;
+      x2[i]+=dx;
+      r1=radial_basis(x1, y, n, param);
+      r2=radial_basis(x2, y, n, param);
+      deriv[i]=(r2-r1)/dx/2;
+      x1[i]=x[i];
+      x2[i]=x[i];
+    }
+  }
+
+  template <class real>
   real radial_basis_deriv(real *x, real *y, dim_ta n, void *param, real *deriv) {
+    real deriv1[n];
     real gamma=((real *) param)[0];
-    real diff;
     real t1;
     real d2=0;
     for (dim_ta i=0; i<n; i++) {
@@ -79,7 +99,15 @@ namespace libagf {
     }
     t1=exp(-gamma*d2);
     for (dim_ta i=0; i<n; i++) deriv[i]*=-2*t1*gamma;
+
     return t1;
+
+    //sanity check (checks out...):
+    radial_basis_deriv_num(x, y, n, real(0.001), param, deriv1);
+    for (dim_ta i=0; i<n; i++) printf(" %g", deriv[i]);
+    printf("\n");
+    for (dim_ta i=0; i<n; i++) printf(" %g", deriv1[i]);
+    printf("\n");
   }
 
   template <class real>
@@ -94,6 +122,19 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  svm2class<real, cls_t>::svm2class() {
+    sv=NULL;
+    nsv=0;
+    coef=NULL;
+    param=NULL;
+    this->mat=NULL;
+    this->b=NULL;
+    this->id=-1;
+    this->D=0;
+    this->D1=0;
+  }
+
+  template <class real, class cls_t>
   svm2class<real, cls_t>::svm2class(char *modfile) {
     int err=init(modfile);
     if (err!=0) throw err;
@@ -104,6 +145,7 @@ namespace libagf {
     delete [] sv[0];
     delete [] sv;
     delete [] param;
+    delete [] coef;
   }
 
   template <class real, class cls_t>
@@ -115,6 +157,10 @@ namespace libagf {
     int nsv1;		//should agree with nsv...
     int pfound=0;	//number of parameters for probability estimation read in (should be 2)
 
+    this->mat=NULL;
+    this->b=NULL;
+    this->id=-1;
+
     if (fs==NULL) {
       fprintf(stderr, "svm2class: failed to open model file, %s\n", modfile);
       return UNABLE_TO_OPEN_FILE_FOR_READING;
@@ -124,8 +170,8 @@ namespace libagf {
     param=new real[3];
 
     do {
-      delete [] line;
-      delete [] substr;
+      if (line!=NULL) delete [] line;
+      if (substr!=NULL) delete [] substr;
       line=fget_line(fs, 1);
       substr=split_string_destructive(line, nsub);
       //printf("svm2class: nsub=%d\n", nsub);
@@ -206,21 +252,23 @@ namespace libagf {
 
   template <class real, class cls_t>
   real svm2class<real, cls_t>::R(real *x, real *praw) {
-    real sum;
+    real sum=0;
     real r;
     real *x1=this->do_xtran(x);
 
     for (nel_ta i=0; i<nsv; i++) {
-      sum+=(*kernel)(x, sv[i], this->D1, param)*coef[i];
+      sum+=(*kernel)(x1, sv[i], this->D1, param)*coef[i];
     }
     sum-=rho;
     r=1-2/(1+exp(sum*probA+probB));
 
     if (this->id>=0 && praw!=NULL) praw[this->id]=sum;
     if (this->mat!=NULL) delete [] x1;
+    printf("R: x=");
+    for (dim_ta i=0; i<this->D; i++) printf(" %g", x[i]);
+    printf("\n");
 
     return r;
-
   }
 
   //some book-keeping:
@@ -232,22 +280,53 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  void svm2class<real, cls_t>::R_deriv_num(real *x, real dx, real *drdx) {
+    real x1[this->D];
+    real x2[this->D];
+    real r1, r2;
+    for (dim_ta i=0; i<this->D; i++) {
+      x1[i]=x[i];
+      x2[i]=x[i];
+    }
+    for (dim_ta i=0; i<this->D; i++) {
+      x1[i]-=dx;
+      x2[i]+=dx;
+      r1=R(x1);
+      r2=R(x2);
+      //printf("r1=%g; r2=%g\n", r1, r2);
+      //printf("x1[%d]=%g; x2[%d]=%g\n", i, x1[i], i, x2[i]);
+      drdx[i]=(r2-r1)/dx/2;
+      //printf("%g ", drdx[i]);
+      x1[i]=x[i];
+      x2[i]=x[i];
+    }
+    printf("\n");
+    printf("R_d_num: x=");
+    for (dim_ta i=0; i<this->D; i++) printf(" %g", x[i]);
+    printf("\n");
+  }
+
+  template <class real, class cls_t>
   real svm2class<real, cls_t>::R_deriv(real *x, real *drdx) {
-    real sum;
+    real sum=0;
     real t1, t2;		//temporaries
     real deriv[this->D1];
     real drdx1[this->D1];
+    real drdx2[this->D];
+    real r;
     real *x1=this->do_xtran(x);
 
-    for (dim_ta j=0; j<this->D1; j++) drdx[j]+=0;
+    for (dim_ta j=0; j<this->D1; j++) drdx1[j]=0;
     for (nel_ta i=0; i<nsv; i++) {
-      sum+=(*kernel_deriv)(x, sv[i], this->D1, param, deriv)*coef[i];
-      for (dim_ta j=0; j<this->D1; j++) drdx1[j]+=deriv[j]*coef[i];
+      sum+=coef[i]*(*kernel_deriv)(x1, sv[i], this->D1, param, deriv);
+      for (dim_ta j=0; j<this->D1; j++) drdx1[j]+=coef[i]*deriv[j];
     }
     sum-=rho;
+
     t1=exp(sum*probA+probB);
-    t2=-probA*t1/(1+t1)/(1+t1);
+    t2=probA*t1/(1+t1)/(1+t1);		//derivative of sigmoid function
     for (dim_ta j=0; j<this->D1; j++) drdx1[j]*=2*t2;
+    r=1-2/(1+t1);
 
     if (this->mat!=NULL) {
       delete [] x1;
@@ -257,10 +336,30 @@ namespace libagf {
       for (dim_ta j=0; j<this->D; j++) drdx[j]=drdx1[j];
     }
 
-    return 1-2/(1+t1);
+    //basic sanity check:
+    R_deriv_num(x, 0.00001, drdx2);
+    printf("%g : ", r);
+    //printf("%g : ", sum);
+    for (dim_ta i=0; i<this->D; i++) printf(" %g", drdx[i]);
+    printf("\n");
+    printf("%g : ", R(x));
+    for (dim_ta i=0; i<this->D; i++) printf(" %g", drdx2[i]);
+    printf("\n");
+
+    //return sum;
+    return r;
 
   }
 
+  template <class real, class cls_t>
+  real svmrfunc(real *x, void *param, real *deriv) {
+    bordparam<real> *p1=(bordparam<real> *) param;
+    svm2class<real, cls_t> *p2=(svm2class<real, cls_t> *) p1->rparam;
+    return p2->R_deriv(x, deriv);
+  }
+
   template class svm2class<real_a, cls_ta>;
+
+  template real_a svmrfunc<real_a, cls_ta>(real_a *, void *, real_a *);
 
 }

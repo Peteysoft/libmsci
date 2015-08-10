@@ -35,6 +35,9 @@ int main(int argc, char *argv[]) {
   dim_ta nvar=0;	//number of variables
   nel_ta n1;		//number of class labels
 
+  bordparam<real_a> param;		//parameters for sampling function
+  int (*sfunc) (void *, real_a *, real_a *);		//sampling function
+
   real_a **border;	//border vectors
   real_a **gradient;	//gradient vectors
 
@@ -64,7 +67,7 @@ int main(int argc, char *argv[]) {
   //borders options: -s -t -r -T
   //normalization options: -n -S -a
   //supernewton iteration: -h -i -I
-  exit_code=agf_parse_command_opts(argc, argv, "a:h:i:I:k:l:N:q:r:s:t:T:v:V:W:nuS:O:KMU", &opt_args);
+  exit_code=agf_parse_command_opts(argc, argv, "a:h:i:I:k:l:N:q:r:s:t:T:v:V:W:nuS:O:AKMUZ", &opt_args);
   if (exit_code==FATAL_COMMAND_OPTION_PARSE_ERROR) return exit_code;
 
   if (argc < 2) {
@@ -87,6 +90,7 @@ int main(int argc, char *argv[]) {
     printf("\n");
     printf("options:\n");
     printf("  -a normfile file containing normalization data (input/output)\n");
+    printf("  -A          input file in ASCII format\n");
     printf("  -h hrel     relative displacement in numerical derivative calculations [%g]\n", opt_args.hrel);
     printf("  -i maxit1   maximum number of iterations when searching for class border (%d)\n", (int32_t) agf_global_borders_maxiter);
     printf("  -I maxit2   maximum number of iterations when calculating weights (%d)\n", (int32_t) agf_global_weights_maxiter);
@@ -94,7 +98,7 @@ int main(int argc, char *argv[]) {
     printf("                --default is to use all the data\n");
     printf("  -K          keep temporary files\n");
     printf("  -l tol      tolerance of W (default=%g)\n", (float) agf_global_weights_tol);
-    printf("  -M          files in LIBSVM format\n");
+    printf("  -M          input file in LIBSVM format\n");
     printf("  -O command  command used to return probability estimates from model\n");
     printf("                (if specified, training data is assumed to be in ASCII format)\n");
     printf("  -n          option to normalise the data\n");
@@ -111,6 +115,7 @@ int main(int argc, char *argv[]) {
     printf("  -V var2     upper filter variance bracket\n");
     printf("                --default is to use the total variance of the data\n");
     printf("  -W Wc       objective total weight (default=%g)\n", (float) opt_args.W2);
+    printf("  -Z          train borders from LIBSVM model\n");
     printf("\n");
     printf("  To train the class borders using an external command, set the -O option to\n");
     printf("to supply a command that, in conjunction with the model parameters, returns\n");
@@ -139,8 +144,8 @@ int main(int argc, char *argv[]) {
   ave=NULL;
   std=NULL;
 
-  if (opt_args.multicommand!=NULL) {
-    opt_args.asciiflag=1;
+  if (opt_args.multicommand!=NULL || opt_args.Zflag) {
+    if (opt_args.multicommand!=NULL) opt_args.asciiflag=1;
     modelfile=argv[0];
     argv++;
     argc--;
@@ -305,37 +310,48 @@ int main(int argc, char *argv[]) {
   //should really be based on the ratio between possible combinations
   //(in this case approximate) and the desired number:
   //printf("cb: test=%f\n", (2.*opt_args.n)/(ntrain-clind[1])/clind[1]);
+  if ((2.*opt_args.n)/(ntrain2-clind2)/clind2 > 0.25) {
+    //for small datasets:
+    bordparam_init(&param, train+clind[0], nvar, ntrain2, clind2, 1);
+    sfunc=&oppositesample_small<real_a>;
+  } else {
+    //for large datasets:
+    bordparam_init(&param, train+clind[0], nvar, ntrain2, clind2);
+    sfunc=&oppositesample<real_a>;
+  }
   if (opt_args.multicommand==NULL) {
-    if ((2.*opt_args.n)/(ntrain2-clind2)/clind2 > 0.25) {
-      opt_args.n=find_class_borders_small(train+clind[0], nvar, ntrain2, clind2, opt_args.n,
-		opt_args.var, opt_args.k, opt_args.W2, opt_args.tol,
-		border, gradient, opt_args.rthresh);
+    real_a (*rfunc) (real_a *, void *, real_a *);
+    svm2class<real_a, cls_ta> *svmmod;
+    agfparam<real_a> rparam;
+
+    if (opt_args.Zflag) {
+      rfunc=&svmrfunc<real_a, cls_ta>;
+      svmmod=new svm2class<real_a, cls_ta>(modelfile);
+      param.rparam=svmmod;
     } else {
-      opt_args.n=find_class_borders(train+clind[0], nvar, ntrain2, clind2, opt_args.n,
-		opt_args.var, opt_args.k, opt_args.W2, opt_args.tol,
+      rfunc=&agfrfunc<real_a>;
+      agfparam_init(&rparam, opt_args.var, opt_args.k, opt_args.W2);
+      param.rparam=&rparam;
+    }
+
+    opt_args.n=sample_class_borders(rfunc, sfunc, &param, 
+		opt_args.n, nvar, opt_args.tol, agf_global_borders_maxiter, 
 		border, gradient, opt_args.rthresh);
+
+    if (opt_args.Zflag) {
+      delete svmmod;
+    } else {
+      print_agfborddiag(&param, stdout);
     }
   } else {
-    bordparam<real_a> param;		//parameters for sampling function
-    int (*sfunc) (void *, real_a *, real_a *);		//sampling function
-    //initialize parameters:
-    if ((2.*opt_args.n)/(ntrain2-clind2)/clind2 > 0.25) {
-      //for small datasets:
-      bordparam_init(&param, train+clind[0], nvar, ntrain2, clind2, 1);
-      sfunc=&oppositesample_small<real_a>;
-    } else {
-      //for large datasets:
-      bordparam_init(&param, train+clind[0], nvar, ntrain2, clind2);
-      sfunc=&oppositesample<real_a>;
-    }
     //not pretty, is it?
     opt_args.n=batch_borders<real_a, cls_ta>(opt_args.multicommand, modelfile, 
 		sfunc, (void *) &param, 
 		opt_args.n, nvar, opt_args.tol, agf_global_borders_maxiter, opt_args.hrel, 
 		border, gradient, opt_args.rthresh, opt_args.Mflag, opt_args.Kflag,
 		opt_args.nt);
-    bordparam_clean(&param);
   }
+  bordparam_clean(&param);
 
   //un-normalize the vectors before writing them to a file:
   //(only if -u set)

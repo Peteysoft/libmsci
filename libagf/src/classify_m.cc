@@ -51,8 +51,8 @@ int main(int argc, char *argv[]) {
   if (argc != 3) {
     FILE *helpfs=stdout;
     fprintf(helpfs, "\n");
-    fprintf(helpfs, "Syntax:   classify_m [-Q type] [-w cw] [-a normfile [-u]] \n");
-    fprintf(helpfs, "                       [-O command [-K] [-M [-E missing] | [-H] [-C]]]\n");
+    fprintf(helpfs, "Syntax:   classify_m [-Q type] [-w cw] [-a normfile [-u]] \\\n");
+    fprintf(helpfs, "                       [-O command [-K] [-M [-E missing] | [-H] [-C]]] \\\n");
     fprintf(helpfs, "                       control test output\n");
     fprintf(helpfs, "\n");
     fprintf(helpfs, "where:\n");

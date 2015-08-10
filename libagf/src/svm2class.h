@@ -28,14 +28,20 @@ namespace libagf {
       cls_t label1;
       cls_t label2;
     public:
+      svm2class();
       svm2class(char *modfile);
-      ~svm2class();
+      virtual ~svm2class();
       int init(char *modfile);
       virtual real R(real *x, real *praw=NULL);
       virtual cls_t class_list(cls_t *cls);
-      real R_deriv(real *x, real *praw=NULL);
+      real R_deriv(real *x, real *drdx);
+      void R_deriv_num(real *x, real dx, real *drdx);
 
   };
+
+  //for training class borders:
+  template <class real, class cls_t>
+  real svmrfunc(real *x, void *param, real *deriv);
 
 }
 
