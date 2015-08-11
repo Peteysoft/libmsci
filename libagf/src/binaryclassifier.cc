@@ -37,7 +37,6 @@ namespace libagf {
   template <class real, class cls_t>
   binaryclassifier<real, cls_t>::~binaryclassifier() {
     delete [] this->name;
-    //if (mat!=NULL) delete [] xtran;
   }
 
   //flag is ignored
@@ -257,7 +256,7 @@ namespace libagf {
     delete [] command;
     //workspace variable (*** need to eliminate ***):
     delete [] syscall;
-    delete [] this->name;
+    //delete [] this->name;
   }
 
   template <class real, class cls_t>
@@ -467,7 +466,7 @@ namespace libagf {
   agf2class<real, cls_t>::~agf2class() {
     delete_matrix(brd);
     delete_matrix(grd);
-    delete [] this->name;
+    //delete [] this->name;
     delete [] gd;
   }
 
