@@ -190,11 +190,9 @@ int main(int argc, char *argv[]) {
   }
   
   //clean up:
+  delete classifier;
   delete [] result;
-  //delete [] brd[0];
-  //delete [] brd;
-  //delete [] grd[0];
-  //delete [] grd;
+  delete [] con;
   delete [] test[0];
   delete [] test;
   delete [] outfile;

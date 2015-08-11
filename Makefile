@@ -18,8 +18,8 @@ OPT=-g
 # C++ compiler:
 CPP = g++
 
-BASE_PATH = /home/lenovo
-#BASE_PATH = /mnt/sda1/home2/pete
+#BASE_PATH = /home/lenovo
+BASE_PATH = /mnt/sdc1/home2/pete
 #BASE_PATH = /home/pmills
 
 LIB_PATH = $(BASE_PATH)/lib
@@ -31,9 +31,11 @@ MANPATH=$(BASE_PATH)/man
 #MANPATH=/usr/local/man
 
 # GSL include location:
-GSL_INCLUDE = /usr/include
+#GSL_INCLUDE = /usr/include
+GSL_INCLUDE = $(INCLUDE_PATH)
 # GSL library locations:
-GSL_LIB = /usr/lib
+#GSL_LIB = /usr/lib
+GSL_LIB = $(LIB_PATH)
 
 # C++ compiler options:
 #CFLAGS = $(OPT) -Wno-deprecated -I$(INCLUDE_PATH) -I$(GSL_INCLUDE) -g
@@ -71,7 +73,7 @@ ARPATH = /usr/local/lib
 LIBARPACK=arpack_x86
 
 # extension for executables (for libsparse):
-EXE_EXT=.exe
+#EXE_EXT=.exe
 
 FFLAGS = -I$(INCLUDE_PATH) $(OPT) #-fno-underscoring
 
@@ -85,13 +87,13 @@ FTRAILING_UNDERSCORES=_
 
 VPATH = datasets/ sparse/ libpetey/ libagf/
 
-LIBPETEY = libpetey
+LIBPETEY = scientific_library
 INSTALL_PETEY = $(LIB_PATH)/libpetey$(OPT).a
 
 all: $(LIBPETEY) libdataset$(OPT).a libsparse$(OPT).a libagf$(OPT).a
 
 $(LIBPETEY):
-	make -C libpetey LIB_DIR=$(LIB_PATH) INCLUDE_DIR=$(INCLUDE_PATH) \
+	make -C libpetey LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
 		OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT) \
 		CC=$(CPP) CFLAGS="$(CFLAGS)" \
 		GSL_INCLUDE=$(GSL_INCLUDE) GSL_LIB=$(GSL_LIB) \
@@ -114,7 +116,7 @@ libsparse$(OPT).a: $(INSTALL_PETEY)
 		GSL_LIB=$(GSL_LIB)
 
 libagf$(OPT).a: $(INSTALL_PETEY)
-	make -C libagf LIB_DIR=$(LIB_PATH) INCLUDE_DIR=$(INCLUDE_PATH) \
+	make -C libagf LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
 		OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT) \
 		CC=$(CPP) CFLAGS="$(CFLAGS)" \
 		GSL_INCLUDE=$(GSL_INCLUDE) GSL_LIB=$(GSL_LIB)
@@ -139,7 +141,7 @@ $(INSTALL_PETEY): $(LIBPETEY)
 			BIN_PATH=$(BIN_PATH) MANPATH=$(MANPATH) \
 			OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT)
 
-install: $(INSTALL_PETEY)
+install:
 	make install -C datasets LIB_DIR=$(LIB_PATH) INCLUDE_DIR=$(INCLUDE_PATH) \
 			OPT_VER=$(OPT)
 	make install -C sparse LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
@@ -148,9 +150,27 @@ install: $(INSTALL_PETEY)
 	make install -C libagf LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
 			BIN_PATH=$(BIN_PATH) \
 			OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT)
+	make install -C libpetey LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
+			BIN_PATH=$(BIN_PATH) MANPATH=$(MANPATH) \
+			OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT)
+
 
 install_allopt: libpetey-g.a libpetey-O2.a libpetey-pg.a
 	make install OPT=-g
 	make install OPT=-pg
 	make install OPT=-O2
+
+check:
+	make -C libpetey test LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
+		BIN_PATH=$(BIN_PATH) \
+		OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT) \
+		CC=$(CPP) CFLAGS="$(CFLAGS)" \
+		GSL_INCLUDE=$(GSL_INCLUDE) GSL_LIB=$(GSL_LIB) \
+		LEX=$(LEX) YY=$(YY) INT_UTIL_LDF="$(INT_UTIL_LDF)"
+
+	make -C libagf test LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
+		BIN_PATH=$(BIN_PATH) \
+		OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT) \
+		CC=$(CPP) CFLAGS="$(CFLAGS)" \
+		GSL_INCLUDE=$(GSL_INCLUDE) GSL_LIB=$(GSL_LIB)
 

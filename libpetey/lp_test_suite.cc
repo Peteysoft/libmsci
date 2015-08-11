@@ -16,13 +16,13 @@ using namespace libpetey;
 int main(int argc, char **argv) {
 
   //test kselect classes (all four of them):
-  int nk=5;
+  const int nk=5;
   int k[nk]={1, 2, 5, 10, 20};
-  int nn=7;
+  const int nn=7;
   int n[nn]={1, 2, 5, 10, 20, 50, 100};
   kiselect_base<float> *kisel;
   int err;
-  int exit_code;
+  int exit_code=0;
 
   ran_init();
 
@@ -82,9 +82,9 @@ int main(int argc, char **argv) {
   }
 
   err=test_lode(5, 1e-10);
-  err=test_lode(5, 1e-15);
+  //err=test_lode(5, 1e-15);
   /*
-  err=test_lode(5, 1e-20);
+  err=test_lode(5, 1e-10);
   err=test_lode(100, 1e-10);
   err=test_lode(10000, 1e-10);
   err=test_lode(1000000, 1e-10);

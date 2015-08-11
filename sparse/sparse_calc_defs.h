@@ -2,7 +2,7 @@
 
 #include "bit_array.h"
 
-#include "linked.cc"
+#include "../libpetey/linked.cc"
 #include "vector_s.h"
 #include "string_petey.h"
 #include "symbol_table.h"

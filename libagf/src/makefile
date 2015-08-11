@@ -128,6 +128,7 @@ INCLUDE_FILES = agf_util.h \
 		adgaf.h \
 		classifier_obj.h \
 		binaryclassifier.h \
+		svm2class.h \
 		direct_classifier.h \
 		multi_parse.h \
 		multiclass.h \

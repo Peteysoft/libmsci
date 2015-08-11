@@ -54,10 +54,6 @@ LIBLEX=fl
 # linker options for interactive utilities sparse_calc and date_calc:
 INT_UTIL_LDF = -L$(READLINE_LIB) -l$(LIBLEX) -lreadline -lncurses
 
-all: libpetey$(OPT).a $(EXE) date_calc 
-
-petey: libpetey$(OPT).a
-
 #list of include files:
 INCLUDE = peteys_tmpl_lib.h \
 	 	time_class.h \
@@ -125,6 +121,10 @@ TEST = sorter \
 		lp_test_suite \
 		test_libpetey
 		
+all: libpetey$(OPT).a $(EXE) date_calc 
+
+petey: libpetey$(OPT).a
+
 allopt:
 	make OPT=-g all
 	make OPT=-pg all
@@ -145,7 +145,7 @@ clean_all:
 	make OPT=-pg clean
 	make OPT=-O2 clean
 
-install: libpetey$(OPT).a ignore_code date_calc
+install: libpetey$(OPT).a $(EXE) date_calc
 	install libpetey$(OPT).a $(LIB_PATH)
 	install $(INCLUDE) $(INCLUDE_PATH)
 	install $(EXE) $(BIN_PATH)

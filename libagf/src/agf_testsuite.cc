@@ -3,10 +3,10 @@
 using namespace libagf;
 
 int main(int argc, char **argv) {
-  int ntest1=11;
+  const int ntest1=11;
   int n1[ntest1]={1, 1, 1,  2,  5, 1, 2, 10, 20, 50, 100};
   int n2[ntest1]={1, 2, 10, 2, 15, 1, 1, 1, 20, 15, 100};
-  int ntest2=6;
+  const int ntest2=6;
   int n[ntest2]={2, 3, 5, 10, 20, 100};
   int err;
   int exit_code=0;

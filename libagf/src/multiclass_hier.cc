@@ -10,7 +10,7 @@
 #include "randomize.h"
 #include "peteys_tmpl_lib.h"
 
-#include "linked.cc"
+#include "../../libpetey/linked.cc"
 
 #include "agf_lib.h"
 

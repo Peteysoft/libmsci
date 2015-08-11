@@ -44,19 +44,20 @@ namespace libagf {
     if (aparam->k>0) {
       d=dgrad(bparam->train, bparam->D, bparam->n, bparam->ind, x, 
 		aparam->var, aparam->k, aparam->W, drdx, &diag_param);
+
+      if (diag_param.f < aparam->min_f) aparam->min_f=diag_param.f;
+      else if (diag_param.f > aparam->max_f) aparam->max_f=diag_param.f;
+      aparam->total_f+=diag_param.f;
     } else {
       d=dgrad(bparam->train, bparam->D, bparam->n, bparam->ind, x, 
 		aparam->var, aparam->W, drdx, &diag_param);
+
     }
 
     //fill in the diagnostics:
     if (diag_param.nd < aparam->min_nd) aparam->min_nd=diag_param.nd;
     else if (diag_param.nd > aparam->max_nd) aparam->max_nd=diag_param.nd;
     aparam->total_nd+=diag_param.nd;
-
-    if (diag_param.f < aparam->min_f) aparam->min_f=diag_param.f;
-    else if (diag_param.f > aparam->max_f) aparam->max_f=diag_param.f;
-    aparam->total_f+=diag_param.f;
 
     if (diag_param.W < aparam->min_W) aparam->min_W=diag_param.W;
     else if (diag_param.W > aparam->max_W) aparam->max_W=diag_param.W;
