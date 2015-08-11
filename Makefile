@@ -18,8 +18,8 @@ OPT=-g
 # C++ compiler:
 CPP = g++
 
-#BASE_PATH = /home/lenovo
-BASE_PATH = /mnt/sdc1/home2/pete
+BASE_PATH = /home/lenovo
+#BASE_PATH = /mnt/sdc1/home2/pete
 #BASE_PATH = /home/pmills
 
 LIB_PATH = $(BASE_PATH)/lib
@@ -56,6 +56,8 @@ LIBLEX=fl
 # linker options for interactive utilities sparse_calc and date_calc:
 INT_UTIL_LDF = -L$(READLINE_LIB) -l$(LIBLEX) -lreadline -lncurses
 
+# extension for executables (for libsparse):
+#EXE_EXT=.exe
 
 #----------------------------------------------------------------#
 ########### The following macros are for libsparse: ##############
@@ -71,9 +73,6 @@ FORTRAN_RUNTIME=gfortran
 ARPATH = /usr/local/lib
 #ARPATH = $(LIB_PATH)
 LIBARPACK=arpack_x86
-
-# extension for executables (for libsparse):
-#EXE_EXT=.exe
 
 FFLAGS = -I$(INCLUDE_PATH) $(OPT) #-fno-underscoring
 

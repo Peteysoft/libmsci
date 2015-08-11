@@ -33,6 +33,8 @@ namespace libagf {
       virtual ~svm2class();
       int init(char *modfile);
       virtual real R(real *x, real *praw=NULL);
+      virtual cls_t classify(real *x, real *p, real *praw=NULL);
+      virtual cls_t classify(real *x, real &p, real *praw=NULL);
       virtual cls_t class_list(cls_t *cls);
       real R_deriv(real *x, real *drdx);
       void R_deriv_num(real *x, real dx, real *drdx);

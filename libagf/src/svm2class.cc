@@ -245,6 +245,16 @@ namespace libagf {
       fprintf(stderr, "svm2class: warning, number of support vectors read in does not match stated (%d vs. %d) (file: %s)\n", nsv, nsv1, modfile);
     }
 
+    //if the labels are in the wrong order, sort them!
+    this->D1=this->D;
+    if (label1>label2) {
+      cls_t ls=label1;
+      label1=label2;
+      label2=ls;
+      for (nel_ta i=0; i<nsv; i++) coef[i]=-coef[i];
+      rho=-rho;
+    }
+
     this->D1=this->D;
 
     fclose(fs);
@@ -300,10 +310,12 @@ namespace libagf {
       x1[i]=x[i];
       x2[i]=x[i];
     }
+    /*
     printf("\n");
     printf("R_d_num: x=");
     for (dim_ta i=0; i<this->D; i++) printf(" %g", x[i]);
     printf("\n");
+    */
   }
 
   template <class real, class cls_t>
@@ -336,6 +348,8 @@ namespace libagf {
       for (dim_ta j=0; j<this->D; j++) drdx[j]=drdx1[j];
     }
 
+    return r;
+
     //basic sanity check:
     R_deriv_num(x, 0.00001, drdx2);
     printf("%g : ", r);
@@ -346,9 +360,28 @@ namespace libagf {
     for (dim_ta i=0; i<this->D; i++) printf(" %g", drdx2[i]);
     printf("\n");
 
-    //return sum;
-    return r;
+  }
 
+  template <class real, class cls_t>
+  cls_t svm2class<real, cls_t>::classify(real *x, real *p, real *praw) {
+    real r;
+    r=R(x, praw);
+    p[0]=(1-r)/2;
+    p[1]=1-p[0];
+    if (r<0) return label1; else return label2;
+  }
+
+  template <class real, class cls_t>
+  cls_t svm2class<real, cls_t>::classify(real *x, real &p, real *praw) {
+    real r;
+    r=R(x, praw);
+    if (r<0) {
+      p=(1-r)/2;
+      return label1;
+    } else {
+      p=(1+r)/2;
+      return label2;
+    }
   }
 
   template <class real, class cls_t>

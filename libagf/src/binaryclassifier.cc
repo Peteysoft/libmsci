@@ -421,14 +421,23 @@ namespace libagf {
     //accelerator mode:
     if (strcmp(command, "")==0) {
       //if command name is the empty string, we don't include it:
-      fprintf(param.commandfs, "%s %s %s %s\n", param.commandname, this->name, 
+      fprintf(param.commandfs, "%s %s %s %s", param.commandname, this->name, 
 		      param.train, fbase);
     } else {
-      fprintf(param.commandfs, "%s -O \"%s\" %s %s %s\n", param.commandname, command, 
+      fprintf(param.commandfs, "%s -O \"%s\" %s %s %s", param.commandname, command, 
 		this->name, param.train, fbase);
     }
 
-    //no need to print the class partions...
+    //still need to print the class partions:
+    for (cls_t i=0; clist[0]+i!=clist[1]; i++) {
+      fprintf(param.commandfs, " %d", clist[0][i]);
+    }
+    fprintf(param.commandfs, " %c", PARTITION_SYMBOL);
+    for (cls_t i=0; clist[1]+i!=clist[2]; i++) {
+      fprintf(param.commandfs, " %d", clist[1][i]);
+    }
+    fprintf(param.commandfs, "\n");
+
     return 2;
   }
 
