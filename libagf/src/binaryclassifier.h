@@ -78,6 +78,11 @@ namespace libagf {
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
   };
 
+  template <class real>
+  real sigmoid_predict(real x);
+
+  float tanh(float x);
+
   //the "engine" upon which all the others are built:
   template <class real, class cls_t>
   class agf2class:public binaryclassifier<real, cls_t> {
@@ -86,12 +91,14 @@ namespace libagf {
       real **grd;		//gradients at the samples
       real *gd;			//lengths of all the gradient vectors
       nel_ta n;			//number of samples
+      //function to transform decision value to approximate probabilities:
+      real (*sigmoid_func) (real);
       //real *ave;		//need these to condtion the test data
     public:
       //initialized from a pair of files
       //(<fbase>.brd contains border samples, <fbase>.bgd contains 
       //corresponding gradients):
-      agf2class (const char *fbase); 		//base name of model files
+      agf2class (const char *fbase, real (*sygfun)(real)=&tanh); 		//base name of model files
       virtual ~agf2class();
       //transformation matrix is not copied, only the pointer is stored
       //--do not delete original before classifier class instance:

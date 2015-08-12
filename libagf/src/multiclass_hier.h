@@ -25,7 +25,7 @@ namespace libagf {
       multiclass_hier();
       //initialize from a control file for classification:
       multiclass_hier(const char *file, 	//control file
-		int type=2,		//type of result in non-hier classification
+		int type=0,		//type of result in non-hier classification
 					//(just passed to above object-class)
 		real cw=1.,		//constraint weight (sum of cond. prob.)
 		const char *com=NULL,	//command for external binary classifier
@@ -39,7 +39,7 @@ namespace libagf {
 		int maxstacksize=MAXNOPTSTACK);	//size of option stack
 
       //control files passed as streams:
-      multiclass_hier(FILE *fs, int type=2, real cw=1.,	const char *com=NULL,
+      multiclass_hier(FILE *fs, int type=0, real cw=1.,	const char *com=NULL,
 		int Mflag=0, int Kflag=0);
       multiclass_hier(FILE *fs, int argc, char **argv, 
 		int maxstacksize=MAXNOPTSTACK);

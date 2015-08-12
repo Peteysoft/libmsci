@@ -441,14 +441,23 @@ namespace libagf {
     return 2;
   }
 
+  template <class real>
+  real sigmoid_predict(real x) {
+    return 1-2/(1+exp(x));
+  }
+
+  float tanh(float x) {return tanh(float(x));}
+
   //normflag: pick up normalization matrix
   //uflag: border samples are stored un-normalized
   template <class real, class cls_t>
-  agf2class<real, cls_t>::agf2class(const char *fbase) {
+  agf2class<real, cls_t>::agf2class(const char *fbase, real (* sigfun)(real)) {
     //ave=NULL;
     this->mat=NULL;
     //this->xtran=NULL;
     this->id=-1;
+
+    sigmoid_func=sigfun;
 
     this->name=new char[strlen(fbase)+1];
     strcpy(this->name, fbase);
@@ -578,22 +587,20 @@ namespace libagf {
 
   template <class real, class cls_t>
   real agf2class<real, cls_t>::R(real *x, real *praw) {
-    real r;
+    real r0;
     real *xtran;
+    nel_ta k;		//intermediate values in the calculation
+    real d;		//may be useful for continuum generalization
 
     xtran=this->do_xtran(x);
+    r0=border_classify0(brd, grd, this->D1, n, xtran, k, d);
     if (this->id>=0 && praw!=NULL) {
-      nel_ta k;
-      real d;
-      praw[this->id]=border_classify0(brd, grd, this->D1, n, xtran, k, d);
-      //praw[this->id+n]=gd[k];//ain't gonna work...
-      r=tanh(praw[this->id]);
-      printf("r=%g\n" , praw[this->id]);
-    } else {
-      r=border_classify(brd, grd, this->D1, n, xtran);
+      praw[this->id]=r0;
+      //printf("r=%g\n" , praw[this->id]);
     }
     if (this->mat!=NULL) delete [] xtran;
-    return r;
+
+    return (*sigmoid_func) (r0);
   }
 
   template <class real, class cls_t>
@@ -605,6 +612,9 @@ namespace libagf {
       fprintf(fs, "%s", fbase);
     }
   }
+
+  template float sigmoid_predict<float>(float);
+  template double sigmoid_predict<double>(double);
 
   template class binaryclassifier<real_a, cls_ta>;
   template class general2class<real_a, cls_ta>;

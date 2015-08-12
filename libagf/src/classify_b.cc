@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     //"in-house" SVM predictor:
     classifier=new svm2class<real_a, cls_ta>(argv[0]);
   } else {
-    classifier=new agf2class<real_a, cls_ta>(argv[0]);
+    classifier=new agf2class<real_a, cls_ta>(argv[0], &sigmoid_predict);
   }
   //printf("%d border vectors found: %s\n", ntrain, argv[0]);
 
