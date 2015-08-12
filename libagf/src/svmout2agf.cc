@@ -4,6 +4,7 @@
 #include <ctype.h>
 
 #include "error_codes.h"
+#include "randomize.h"
 #include "linked.h"
 #include "read_ascii_all.h"
 #include "agf_defs.h"
@@ -45,6 +46,8 @@ int main(int argc, char **argv) {
     printf("            .cls for classes, .con for confidence ratings\n");
     exit(FATAL_COMMAND_OPTION_PARSE_ERROR);
   }
+
+  ran_init();
 
   //generate the output file names:
   clsfile=new char[strlen(argv[2])+5];
@@ -165,6 +168,8 @@ int main(int argc, char **argv) {
   fclose(ofs1);
 
   //printf("%d %d\n", n, nline);
+
+  ran_end();
 
   delete [] line;
   delete [] cls;

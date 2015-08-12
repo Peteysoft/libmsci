@@ -36,13 +36,14 @@ int main(int argc, char *argv[]) {
 
   agf_command_opts opt_args;
 
-  errcode=agf_parse_command_opts(argc, argv, "a:nuAEMUZ", &opt_args);
+  opt_args.algtype=0;
+  errcode=agf_parse_command_opts(argc, argv, "a:c:nuAEMUZ", &opt_args);
   if (errcode==FATAL_COMMAND_OPTION_PARSE_ERROR) return errcode;
 
   //parse the command line arguments:
   if (argc != 3) {
     printf("Syntax:   classify_b \\\n");
-    printf("                  [-Z] [-A [-M [-E missing]]] \\\n");
+    printf("                  [-Z] [-A [-M [-E missing]]] [-c funcode]\\\n");
     printf("                  [-n] [-u] [-a normfile] \\\n");
     printf("                  border test output\n");
     printf("\n");
@@ -63,6 +64,10 @@ int main(int argc, char *argv[]) {
     printf("  -A          ASCII format for test data and output\n");
     printf("  -M          LIBSVM format for test data and output\n");
     printf("  -E missing  missing value for LIBSVM features data\n");
+    printf("  -c funcode  sigmoid function for transforming decision values:\n");
+    printf("  	            0 = tanh\n");
+    printf("  	            1 = erf\n");
+    printf("  	            2 = logistic function [f(x)=2/(1+exp(x))]\n");
     printf("\n");
     return INSUFFICIENT_COMMAND_ARGS;
   }
@@ -74,7 +79,7 @@ int main(int argc, char *argv[]) {
     //"in-house" SVM predictor:
     classifier=new svm2class<real_a, cls_ta>(argv[0]);
   } else {
-    classifier=new agf2class<real_a, cls_ta>(argv[0], &sigmoid_predict);
+    classifier=new agf2class<real_a, cls_ta>(argv[0], opt_args.algtype);
   }
   //printf("%d border vectors found: %s\n", ntrain, argv[0]);
 

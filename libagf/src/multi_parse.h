@@ -52,6 +52,7 @@ namespace libagf {
     real_a cw;			//constraint weight
     int Mflag;			//LIBSVM format
     int Kflag;			//keep temporary files
+    int sigcode;	//code for sigmoid func. to transform decision values
   };
 
   //initializes internal values and concatinates bottom-level options;

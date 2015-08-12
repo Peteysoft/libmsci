@@ -28,7 +28,7 @@ namespace libagf {
 
   //high level initialization for classification:
   template <class real, class cls_t>
-  multiclass_hier<real, cls_t>::multiclass_hier(const char *file, int type, real cw, const char *com, int mf, int kf) {
+  multiclass_hier<real, cls_t>::multiclass_hier(const char *file, int type, real cw, const char *com, int mf, int kf, int sigcode) {
     FILE *fs;
     int err;
 
@@ -37,13 +37,13 @@ namespace libagf {
       fprintf(stderr, "multiclass_hier: Unable to open control file, %s\n", file);
       exit(UNABLE_TO_OPEN_FILE_FOR_READING);
     }
-    err=init(fs, type, cw, com, mf, kf);
+    err=init(fs, type, cw, com, mf, kf, sigcode);
     if (err!=0) exit(err);
   }
 
   template <class real, class cls_t>
-  multiclass_hier<real, cls_t>::multiclass_hier(FILE *fs, int type, real cw, const char *com, int mf, int kf) {
-    int err=init(fs, type, cw, com, mf, kf);
+  multiclass_hier<real, cls_t>::multiclass_hier(FILE *fs, int type, real cw, const char *com, int mf, int kf, int sigcode) {
+    int err=init(fs, type, cw, com, mf, kf, sigcode);
     if (err!=0) exit(err);
   }
 
@@ -69,7 +69,7 @@ namespace libagf {
   }
     
   template <class real, class cls_t>
-  int multiclass_hier<real, cls_t>::init(FILE *fs, int type, real cw, const char *com, int mf, int kf) {
+  int multiclass_hier<real, cls_t>::init(FILE *fs, int type, real cw, const char *com, int mf, int kf, int sigcode) {
     multi_parse_param param;
     int err;
 
@@ -84,6 +84,7 @@ namespace libagf {
     param.Kflag=kf;
     param.cw=cw;
     param.type=type;
+    param.sigcode=sigcode;
 
     param.infs=fs;
     param.lineno=0;
@@ -229,7 +230,7 @@ namespace libagf {
           classifier=new general2class<real, cls_t>(fname, options,
 			param.Mflag, param.Kflag);
 	} else if (param.commandname==NULL) {
-          classifier=new agf2class<real, cls_t>(fname);
+          classifier=new agf2class<real, cls_t>(fname, param.sigcode);
         } else {
           classifier=new general2class<real, cls_t>(fname, 
 		param.commandname, param.Mflag, param.Kflag);

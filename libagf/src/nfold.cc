@@ -77,6 +77,7 @@ int main(int argc, char *argv[]) {
   opt_args.n=NBORD_DEFAULT;
   opt_args.tol=TOL_DEFAULT;
   opt_args.ftest=F_DEFAULT;
+  opt_args.algtype=0;
   
   err_code=agf_parse_command_opts(argc, argv, "a:c:d:f:i:I:k:l:m:N:r:s:S:t:v:V:W:Knu", &opt_args);
   if (err_code==FATAL_COMMAND_OPTION_PARSE_ERROR) return err_code;
@@ -130,8 +131,6 @@ int main(int argc, char *argv[]) {
   //default
   strcpy(flagstr, "");
   strcpy(normout, "");
-
-  if (opt_args.algtype==-1) opt_args.algtype=0;
 
   if (opt_args.svd>0) {
     sprintf(flagstr, "-S %6d ", opt_args.svd);

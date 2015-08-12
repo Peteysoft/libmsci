@@ -442,16 +442,45 @@ namespace libagf {
   }
 
   template <class real>
-  real sigmoid_predict(real x) {
+  real logistic_function(real x) {
     return 1-2/(1+exp(x));
   }
 
-  float tanh(float x) {return tanh(float(x));}
-
-  //normflag: pick up normalization matrix
-  //uflag: border samples are stored un-normalized
   template <class real, class cls_t>
-  agf2class<real, cls_t>::agf2class(const char *fbase, real (* sigfun)(real)) {
+  agf2class<real, cls_t>::agf2class(const char *fbase, int sigtype) {
+    int err;
+    SIGFUN_TYPE (*sigfun) (SIGFUN_TYPE);
+    switch (sigtype) {
+      case (0):
+        sigfun=&tanh;
+	break;
+      case (1):
+        sigfun=&erf;
+	break;
+      case (2):
+	sigfun=&logistic_function;
+	break;
+      default:
+	fprintf(stderr, "agf2class: code for function to transform decision values (%d) not recognized\n", sigtype);
+	fprintf(stderr, "             [0=tanh; 1=erf; 2=2/(1-exp(..))]--using tanh()\n");
+        sigfun=&tanh;
+    }
+    err=init(fbase, sigfun);
+    if (err!=0) throw err;
+  }
+
+  template <class real, class cls_t>
+  agf2class<real, cls_t>::agf2class(const char *fbase, 
+		SIGFUN_TYPE (* sigfun)(SIGFUN_TYPE)) {
+    int err=init(fbase, sigfun);
+    if (err!=0) throw err;
+  }
+
+  template <class real, class cls_t>
+  int agf2class<real, cls_t>::init(const char *fbase, 
+	 	SIGFUN_TYPE (* sigfun)(SIGFUN_TYPE)) {
+    int err;
+
     //ave=NULL;
     this->mat=NULL;
     //this->xtran=NULL;
@@ -462,12 +491,11 @@ namespace libagf {
     this->name=new char[strlen(fbase)+1];
     strcpy(this->name, fbase);
 
-    int err=agf_read_borders(fbase, brd, grd, n, this->D);
-    if (err!=0) exit(err);
+    err=agf_read_borders(fbase, brd, grd, n, this->D);
+    if (err!=0) return err;
 
     fprintf(stderr, "agf2class: %d border samples found in model, %s\n", n, fbase);
     this->D1=this->D;
- 
     this->ncls=2;
 
     //calculate and store the lengths of all the gradient vectors for possible
@@ -478,6 +506,8 @@ namespace libagf {
       for (dim_ta j=0; j<this->D; j++) gd[i]+=grd[i][j]*grd[i][j];
       gd[i]=sqrt(gd[i]);
     }
+
+    return err;
   }
 
   template <class real, class cls_t>
@@ -613,8 +643,8 @@ namespace libagf {
     }
   }
 
-  template float sigmoid_predict<float>(float);
-  template double sigmoid_predict<double>(double);
+  template float logistic_function<float>(float);
+  template double logistic_function<double>(double);
 
   template class binaryclassifier<real_a, cls_ta>;
   template class general2class<real_a, cls_ta>;

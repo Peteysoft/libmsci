@@ -80,7 +80,7 @@ int agf_parse_command_opts(int &argc, char **&argv, const char *optlist, agf_com
   opt_args->Zflag=0;		//-Z
 
   //enumerated selections:
-  opt_args->algtype=-1;		//-c
+  //opt_args->algtype=-1;		//-c
   opt_args->metrictype=0;	//-m
 
   //integer parameters:

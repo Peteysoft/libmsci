@@ -30,7 +30,8 @@ namespace libagf {
 		real cw=1.,		//constraint weight (sum of cond. prob.)
 		const char *com=NULL,	//command for external binary classifier
 		int Mflag=0,		//use LIBSVM format for external classifier
-		int Kflag=0);		//keep temporary files
+		int Kflag=0,		//keep temporary files
+		int sigcode=0);		//type of sigmoid trans. func.
 
       //initialize from a control file for training only:
       multiclass_hier(const char *file, 	//control file
@@ -40,7 +41,7 @@ namespace libagf {
 
       //control files passed as streams:
       multiclass_hier(FILE *fs, int type=0, real cw=1.,	const char *com=NULL,
-		int Mflag=0, int Kflag=0);
+		int Mflag=0, int Kflag=0, int sigcode=0);
       multiclass_hier(FILE *fs, int argc, char **argv, 
 		int maxstacksize=MAXNOPTSTACK);
 
@@ -50,7 +51,7 @@ namespace libagf {
       //move initialization to special methods:
       //high level initialization:
       int init(FILE *fs, int type, real cw, const char *com,
-		int Mflag, int Kflag=0);
+		int Mflag, int Kflag=0, int sigcode=0);
       int init(FILE *fs, int argc, char **argv,	int maxstacksize=MAXNOPTSTACK);
 
       //low level initialization:

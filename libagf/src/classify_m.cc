@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
   dim_ta nvar1, nvar2;
 
   opt_args.Qtype=0;
-  errcode=agf_parse_command_opts(argc, argv, "O:a:Q:w:nuMCHE:K", &opt_args);
+  errcode=agf_parse_command_opts(argc, argv, "O:a:Q:w:c:nuMCHE:K", &opt_args);
   if (opt_args.nt==NT_DEFAULT) opt_args.nt=2;
   if (opt_args.W1==-1) opt_args.W1=1.;
   if (errcode==FATAL_COMMAND_OPTION_PARSE_ERROR) return errcode;
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
   if (argc != 3) {
     FILE *helpfs=stdout;
     fprintf(helpfs, "\n");
-    fprintf(helpfs, "Syntax:   classify_m [-Q type] [-w cw] [-a normfile [-u]] \\\n");
+    fprintf(helpfs, "Syntax:   classify_m [-Q type] [-c funcode] [-w cw] [-a normfile [-u]] \\\n");
     fprintf(helpfs, "                       [-O command [-K] [-M [-E missing] | [-H] [-C]]] \\\n");
     fprintf(helpfs, "                       control test output\n");
     fprintf(helpfs, "\n");
@@ -82,8 +82,13 @@ int main(int argc, char *argv[]) {
     fprintf(helpfs, "  -H          no header\n");
     fprintf(helpfs, "  -C          no class data\n");
     fprintf(helpfs, "  -K          keep temporary files\n");
+    fprintf(helpfs, "  -c funcode  sigmoid function for transforming decision values:\n");
+    fprintf(helpfs, "  	            0 = tanh\n");
+    fprintf(helpfs, "  	            1 = erf\n");
+    fprintf(helpfs, "  	            2 = logistic function [f(x)=2/(1+exp(x))]\n");
     fprintf(helpfs, "\n");
-    fprintf(helpfs, "The syntax of the control file is as follows:\n\n");
+    fprintf(helpfs, "The syntax of the control file is as follows:\n");
+    fprintf(helpfs, "\n");
     fprintf(helpfs, "  <branch>         ::= <model> \"{\" <branch_list> \"}\" | <CLASS>\n");
     fprintf(helpfs, "  <model>          ::= <FNAME> [<CODE> <OPTIONS>] | <partition_list>\n");
     fprintf(helpfs, "  <branch_list>    ::= <branch> | <branch_list> <branch>\n");
@@ -104,7 +109,7 @@ int main(int argc, char *argv[]) {
     fprintf(helpfs, "                 - K for KNN\n");
     fprintf(helpfs, "                 - G for an external classifier whose command is contained in\n");
     fprintf(helpfs, "                   <OPTIONS>\n");
-    fprintf(helpfs, "  <OPTIONS>      is a quoted list of options for a direct classifier");
+    fprintf(helpfs, "  <OPTIONS>      is a quoted list of options for a direct classifier\n");
     fprintf(helpfs, "\n");
 
     return INSUFFICIENT_COMMAND_ARGS;
@@ -113,7 +118,8 @@ int main(int argc, char *argv[]) {
   ran_init();			//random numbers resolve ties
 
   classifier=new multiclass_hier<real_a, cls_ta>(argv[0], opt_args.Qtype,
-		opt_args.W1, opt_args.multicommand, opt_args.Mflag, opt_args.Kflag);
+		opt_args.W1, opt_args.multicommand, 
+		opt_args.Mflag, opt_args.Kflag, opt_args.algtype);
 
   //classifier->print(stdout);
 

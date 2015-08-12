@@ -68,7 +68,9 @@ namespace libagf {
 		real cw=1.,		//constraint weight (sum of cond. prob.)
 		const char *com=NULL,	//command for binary classifier
 		int Mflag=0,		//LIBSVM format for external classifiers
-		int Kflag=0);		//keep temporary files
+		int Kflag=0,		//keep temporary files
+		int sigcode=0);		//code for sigmoid func. to transform
+     					//decision values
 		
       virtual ~multiclass();
 
@@ -79,12 +81,13 @@ namespace libagf {
 
       //if we want to initialize with a list of files and partitions:
       int init(char **fname, 		//name of each of the binary models
-		      cls_t **part, 	//partitions
-		      int npart, 	//number of partitions
-		      int tflag=0,	//for training purposes
-		      char *com=NULL,	//external binary classification command
-		      int Mflag=0,	//external command uses LIBSVM format
-		      int Kflag=0);	//keep temporary files
+		cls_t **part, 		//partitions
+		int npart, 		//number of partitions
+ 		int tflag=0,		//for training purposes
+		char *com=NULL,		//external binary classification command
+		int Mflag=0,		//external command uses LIBSVM format
+ 		int Kflag=0,		//keep temporary files
+		int sigcode=0);		//code for sigmoid trans. func.
 
       //use actual examples to train the mapping:
       int train_map(real **train, cls_t *cls, nel_ta n);

@@ -39,7 +39,7 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  multiclass<real, cls_t>::multiclass(const char *file, int clstyp, real cw, const char *com, int mf, int kf) {
+  multiclass<real, cls_t>::multiclass(const char *file, int clstyp, real cw, const char *com, int mf, int kf, int sigcode) {
     int err;
     multi_parse_param param;
 
@@ -63,7 +63,8 @@ namespace libagf {
       strcpy(param.commandname, com);
     }
     param.Mflag=mf;
-    param.Kflag=kf;  
+    param.Kflag=kf;
+    param.sigcode=sigcode;  
     err=init(param);
     if (err!=0) exit(err);
 
@@ -90,7 +91,7 @@ namespace libagf {
     constraint_weight=param.cw;
 
     init(name, part, nmodel, param.trainflag, param.commandname, 
-		    param.Mflag, param.Kflag);
+		    param.Mflag, param.Kflag, param.sigcode);
 
     //check for a mapping:
     flag=0;
@@ -150,7 +151,7 @@ namespace libagf {
 
   template <class real, class cls_t>
   int multiclass<real, cls_t>::init(char **fname, cls_t **part, int npart, 
-		int tflag, char *com, int Mflag, int Kflag) {
+		int tflag, char *com, int Mflag, int Kflag, int sigcode) {
     nmodel=npart;
     this->ncls=0;
     for (int i=0; i<nmodel; i++) {
@@ -168,7 +169,7 @@ namespace libagf {
         twoclass[i]=new binaryclassifier<real, cls_t>(fname[i]);
       } else {
         if (com==NULL) {
-          twoclass[i]=new agf2class<real, cls_t>(fname[i]);
+          twoclass[i]=new agf2class<real, cls_t>(fname[i], sigcode);
         } else {
           twoclass[i]=new general2class<real, cls_t>(fname[i], 
 			com, Mflag, Kflag);

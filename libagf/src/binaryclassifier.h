@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <gsl/gsl_matrix.h>
 
+#define SIGFUN_TYPE double
+
 #include "agf_defs.h"
 
 #include "classifier_obj.h"
@@ -79,9 +81,7 @@ namespace libagf {
   };
 
   template <class real>
-  real sigmoid_predict(real x);
-
-  float tanh(float x);
+  real logistic_function(real x);
 
   //the "engine" upon which all the others are built:
   template <class real, class cls_t>
@@ -92,14 +92,22 @@ namespace libagf {
       real *gd;			//lengths of all the gradient vectors
       nel_ta n;			//number of samples
       //function to transform decision value to approximate probabilities:
-      real (*sigmoid_func) (real);
+      SIGFUN_TYPE (*sigmoid_func) (SIGFUN_TYPE);
       //real *ave;		//need these to condtion the test data
     public:
       //initialized from a pair of files
       //(<fbase>.brd contains border samples, <fbase>.bgd contains 
       //corresponding gradients):
-      agf2class (const char *fbase, real (*sygfun)(real)=&tanh); 		//base name of model files
+      //
+      //this version allows you to pass code directly from command line:
+      agf2class(const char *fbase, 		//base name of model files
+		      int sigtype=0);		//0=tanh
+      						//1=erf
+						//2=2/(1-exp(..))
+      agf2class (const char *fbase, 		//base name of model files
+		SIGFUN_TYPE (*sigfun)(SIGFUN_TYPE));	//function to transform decision values
       virtual ~agf2class();
+      int init(const char *fbase, SIGFUN_TYPE (*sigfun)(SIGFUN_TYPE));
       //transformation matrix is not copied, only the pointer is stored
       //--do not delete original before classifier class instance:
       virtual int ltran(real **mat1, real *b1, dim_ta d1, dim_ta d2, int flag);
