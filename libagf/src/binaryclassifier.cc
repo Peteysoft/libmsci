@@ -446,6 +446,12 @@ namespace libagf {
     return 1-2/(1+exp(x));
   }
 
+  //arctangent normalized to go from [-1,1] with df/dx|_x=0 = 1
+  template <class real>
+  real atan_norm(real x) {
+    return M_PI*atan(2*x/M_PI)/2;
+  }
+
   template <class real, class cls_t>
   agf2class<real, cls_t>::agf2class(const char *fbase, int sigtype) {
     int err;
@@ -459,6 +465,9 @@ namespace libagf {
 	break;
       case (2):
 	sigfun=&logistic_function;
+	break;
+      case (3):
+	sigfun=&atan_norm;
 	break;
       default:
 	fprintf(stderr, "agf2class: code for function to transform decision values (%d) not recognized\n", sigtype);
@@ -645,6 +654,9 @@ namespace libagf {
 
   template float logistic_function<float>(float);
   template double logistic_function<double>(double);
+
+  template float atan_norm<float>(float);
+  template double atan_norm<double>(double);
 
   template class binaryclassifier<real_a, cls_ta>;
   template class general2class<real_a, cls_ta>;

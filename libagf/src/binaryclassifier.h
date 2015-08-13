@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <gsl/gsl_matrix.h>
 
+//we are working in single precision for no other reason than to prove
+//that my algorithms are stable:
 #define SIGFUN_TYPE double
 
 #include "agf_defs.h"
@@ -104,6 +106,7 @@ namespace libagf {
 		      int sigtype=0);		//0=tanh
       						//1=erf
 						//2=2/(1-exp(..))
+						//3=atan
       agf2class (const char *fbase, 		//base name of model files
 		SIGFUN_TYPE (*sigfun)(SIGFUN_TYPE));	//function to transform decision values
       virtual ~agf2class();
