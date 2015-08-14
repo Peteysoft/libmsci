@@ -41,8 +41,8 @@ void gsl_lsq_solver(gsl_matrix *a, gsl_vector *r, gsl_vector *p) {
 int solve_cond_prob2(gsl_matrix *a,		//decision matrix
 		gsl_vector *r,			//original "raw" probabilities
 		gsl_vector *p,			//returned cond. prob.
-		int *gind,
-		int &ng,
+		int *gind,			//current active columns
+		int &ng,			//number of active columns
 		int iter) {			//iteration
   gsl_matrix *u;
   gsl_matrix *vt;
@@ -52,9 +52,14 @@ int solve_cond_prob2(gsl_matrix *a,		//decision matrix
   gsl_vector *p1;
   int m=a->size1;
   int n=a->size2;
+  int bind[ng];		//columns to potentially discard
   int n1;
 
   a1=gsl_matrix_alloc(m, ng);
+
+  //printf("solve_cond_prob: indices:\n");
+  //for (int j=0; j<ng; j++) printf(" %d", gind[j]);
+  //printf("\n");
 
   for (int i=0; i<m; i++) {
     for (int j=0; j<ng; j++) {
@@ -81,6 +86,11 @@ int solve_cond_prob2(gsl_matrix *a,		//decision matrix
   gsl_linalg_SV_decomp(a1, vt, s, work);
   gsl_linalg_SV_solve(a1, vt, s, r, p1);
 
+  gsl_vector_free(s);
+  gsl_vector_free(work);
+  gsl_matrix_free(vt);
+  gsl_matrix_free(a1);
+
   //gsl_lsq_solver(u, r, p);
 
   //find probabilities less than 0 and pull them out:
@@ -91,6 +101,8 @@ int solve_cond_prob2(gsl_matrix *a,		//decision matrix
     if (p1_i>=0) {
       gind[n1]=gind[i];
       n1++;
+    } else {
+      bind[i-n1]=gind[i];
     }
   }
   //printf("\n");
@@ -117,16 +129,44 @@ int solve_cond_prob2(gsl_matrix *a,		//decision matrix
     } else {
       for (int i=0; i<ng; i++) gsl_vector_set(p, gind[i], gsl_vector_get(p1, i));
     }
-  } else if (n1>0 && n1<ng) {
-    ng=n1;
-    solve_cond_prob2(a, r, p, gind, ng, iter+1);
+  } else if (n1>0) {
+    //if there is more than one value less than one, we have to pull out 
+    //each of them in turn and find the solution with the fewest zeroes:
+    if (n1<ng-1) {
+      int gind1[ng];	//new columns that are still good
+      int ng1;
+      int gind2[ng];
+      int maxng=n1;
+      for (int j=0; j<ng; j++) gind2[j]=gind[j];
+      //this is terribly inefficient because solutions are repeated:
+      for (int i=0; i<ng-n1; i++) {
+        for (int j=0; j<n1; j++) gind1[j]=gind[j];
+        for (int j=0; j<i; j++) {
+	  gind1[n1+j]=bind[j];
+	}
+        for (int j=i+1; j<ng-n1; j++) {
+	  gind1[n1+j-1]=bind[j];
+	}
+	ng1=ng-1;
+        solve_cond_prob2(a, r, p, gind1, ng1, iter+1);
+	if (ng1>maxng) {
+          maxng=ng1;
+	  for (int j=0; j<ng1; j++) gind2[j]=gind1[j];
+	}
+      }
+      if (maxng>ng1) {
+        for (int i=0; i<maxng; i++) gind[i]=gind2[i];
+	ng=maxng;
+      } else {
+        for (int i=0; i<n1; i++) gind[i]=gind1[i];
+	ng=ng1;
+      }
+    } else {
+      ng=n1;
+      solve_cond_prob2(a, r, p, gind, ng, iter+1);
+    }
   }
 
-  gsl_vector_free(s);
-  gsl_vector_free(work);
-  gsl_matrix_free(vt);
-
-  gsl_matrix_free(a1);
   gsl_vector_free(p1);
 
   return 0;

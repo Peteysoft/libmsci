@@ -135,8 +135,8 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  svm2class<real, cls_t>::svm2class(char *modfile) {
-    int err=init(modfile);
+  svm2class<real, cls_t>::svm2class(char *modfile, int tc) {
+    int err=init(modfile, tc);
     if (err!=0) throw err;
   }
 
@@ -149,7 +149,7 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  int svm2class<real, cls_t>::init(char *modfile) {
+  int svm2class<real, cls_t>::init(char *modfile, int tc) {
     FILE *fs=fopen(modfile, "r");
     char *line=NULL;
     char **substr=NULL;
@@ -160,6 +160,7 @@ namespace libagf {
     this->mat=NULL;
     this->b=NULL;
     this->id=-1;
+    ttype=tc;
 
     if (fs==NULL) {
       fprintf(stderr, "svm2class: failed to open model file, %s\n", modfile);
@@ -270,8 +271,20 @@ namespace libagf {
       sum+=coef[i]*(*kernel)(x1, sv[i], this->D1, param);
     }
     sum-=rho;
-    r=1-2/(1+exp(sum*probA+probB));
-
+    switch (ttype) {
+      case (-1):
+        r=-sum;
+	break;
+      case (0):
+        r=1-2/(1+exp(sum*probA+probB));
+	break;
+      case (1):
+	r=-tanh(sum);
+	break;
+      default:
+        r=1-2/(1+exp(sum*probA+probB));
+	break;
+    }
     if (this->id>=0 && praw!=NULL) praw[this->id]=sum;
     if (this->mat!=NULL) delete [] x1;
     //printf("R: x=");

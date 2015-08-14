@@ -42,6 +42,7 @@ int main(int argc, char *argv[]) {
   dim_ta nvar1, nvar2;
 
   opt_args.Qtype=0;
+  opt_args.algtype=0;
   errcode=agf_parse_command_opts(argc, argv, "O:a:Q:w:c:nuMCHE:K", &opt_args);
   if (opt_args.nt==NT_DEFAULT) opt_args.nt=2;
   if (opt_args.W1==-1) opt_args.W1=1.;

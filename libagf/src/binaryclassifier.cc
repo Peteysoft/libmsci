@@ -457,6 +457,9 @@ namespace libagf {
     int err;
     SIGFUN_TYPE (*sigfun) (SIGFUN_TYPE);
     switch (sigtype) {
+      case (-1):
+        sigfun=NULL;
+	break;
       case (0):
         sigfun=&tanh;
 	break;
@@ -626,20 +629,21 @@ namespace libagf {
 
   template <class real, class cls_t>
   real agf2class<real, cls_t>::R(real *x, real *praw) {
-    real r0;
+    real r;
     real *xtran;
     nel_ta k;		//intermediate values in the calculation
     real d;		//may be useful for continuum generalization
 
     xtran=this->do_xtran(x);
-    r0=border_classify0(brd, grd, this->D1, n, xtran, k, d);
+    r=border_classify0(brd, grd, this->D1, n, xtran, k, d);
     if (this->id>=0 && praw!=NULL) {
-      praw[this->id]=r0;
+      praw[this->id]=r;
       //printf("r=%g\n" , praw[this->id]);
     }
     if (this->mat!=NULL) delete [] xtran;
+    if (sigmoid_func != NULL) r=(*sigmoid_func) (r);
 
-    return (*sigmoid_func) (r0);
+    return r;
   }
 
   template <class real, class cls_t>

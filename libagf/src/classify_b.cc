@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
   //read in class borders:
   if (opt_args.Zflag) {
     //"in-house" SVM predictor:
-    classifier=new svm2class<real_a, cls_ta>(argv[0]);
+    classifier=new svm2class<real_a, cls_ta>(argv[0], opt_args.algtype);
   } else {
     classifier=new agf2class<real_a, cls_ta>(argv[0], opt_args.algtype);
   }

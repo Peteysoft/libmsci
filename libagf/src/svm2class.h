@@ -27,11 +27,14 @@ namespace libagf {
       //book-keeping:
       cls_t label1;
       cls_t label2;
+
+      //type of transformation for decision value:
+      int ttype;
     public:
       svm2class();
-      svm2class(char *modfile);
+      svm2class(char *modfile, int tc=0);
       virtual ~svm2class();
-      int init(char *modfile);
+      int init(char *modfile, int tc=0);
       virtual real R(real *x, real *praw=NULL);
       virtual cls_t classify(real *x, real *p, real *praw=NULL);
       virtual cls_t classify(real *x, real &p, real *praw=NULL);
