@@ -364,6 +364,9 @@ namespace libagf {
     return npart;
   }
 
+  //checke the integrity of the partitions:
+  //1  = "non-strict" partitioning
+  //-1 = error
   template <class cls_t>
   int multi_partition_strict(char **model, cls_t **partition, int npart) {
     //check them over:
@@ -371,51 +374,61 @@ namespace libagf {
     //2. there must be one of each class present between 0 and ncls-1
     cls_t j, k;
     cls_t *tbl;
+    cls_t *tbl_ttl;
     cls_t ncls;
+    int err=0;
 
-    //printf("partition: %d\n", npart);
-    for (ncls=0; partition[0][ncls]>=0; ncls++) {
-      //printf("%d ", partition[0][ncls]);
-    }
-    //printf("| ");
-    for (j=0; partition[1][j]>=0; j++) {
-      //printf("%d\n", partition[1][j]);
+    //count the number of classes:
+    ncls=0;
+    for (int i=0; i<npart; i++) {
+      //printf("partition: %d\n", npart);
+      for (j=0; partition[2*i][j]>=0; j++) {
+        if (partition[2*i][j]>=ncls) ncls=partition[2*i][j]+1;
+        //printf("%d ", partition[0][ncls]);
+      }
+      //printf("| ");
+      for (j=0; partition[2*i+1][j]>=0; j++) {
+        if (partition[2*i+1][j]>=ncls) ncls=partition[2*i+1][j]+1;
+        //printf("%d\n", partition[1][j]);
+      }
     }
     //printf("\n");
-    ncls+=j;
     //printf("ncls=%d\n", ncls);
 
     tbl=new cls_t[ncls];
+    tbl_ttl=new cls_t[ncls];
+    for (j=0; j<ncls; j++) tbl_ttl[j]=0;
     for (cls_t i=0; i<npart; i++) {
       for (j=0; j<ncls; j++) tbl[j]=0;
-      for (j=0; partition[2*i][j]>=0; j++) {
-        if (j>=ncls || partition[2*i][j]>=ncls) {
-          fprintf(stderr, "parse_multi_partitions: too many classes or out-of-bounds label in partition.\n");
-          fprintf(stderr, "	left side; partition #=%d; class #=%d; class=%d\n", 
-			i, j, partition[2*i][j]);
-          exit(PARAMETER_OUT_OF_RANGE);
-        }
-        tbl[partition[2*i][j]]+=1;
+      for (k=0; partition[2*i][k]>=0; k++) {
+        tbl[partition[2*i][k]]+=1;
       }
       for (k=0; partition[2*i+1][k]>=0; k++) {
-        if (k+j-1>=ncls || partition[2*i+1][k]>=ncls) {
-          fprintf(stderr, "parse_multi_partitions: too many classes or out-of-bounds label in partition.\n");
-	  fprintf(stderr, "	right side; partition #=%d; class #=%d; class=%d\n", 
-			i, j+k-1, partition[2*i+1][k]);
-          exit(PARAMETER_OUT_OF_RANGE);
-        }
         tbl[partition[2*i+1][k]]+=1;
       }
       for (j=0; j<ncls; j++) {
-        if (tbl[j]!=1) {
-          fprintf(stderr, "parse_multi_partitions: missing or duplicate class in partition.\n");
-          exit(PARAMETER_OUT_OF_RANGE);
+        if (tbl[j]==0) {
+          //fprintf(stderr, "parse_multi_partitions: missing or duplicate class in partition.\n");
+	  err=1;
+	} else if (tbl[j]>1) {
+          fprintf(stderr, "multi_partition_strict: duplicate class in partition %d.\n", i);
+	  err=-1;
         }
+	//printf("%d: tbl[%d]=%d\n", i, j, tbl[j]);
+	tbl_ttl[j]+=tbl[j];
       }
     }
+    for (j=0; j<ncls; j++) {
+      if (tbl_ttl[j]==0) {
+        fprintf(stderr, "multi_partitions_strict: missing class %d.\n", j);
+	//GIGO
+        //err=-1;
+      } 
+    }
     delete [] tbl;
+    delete [] tbl_ttl;
 
-    return 0;
+    return err;
 
   }
 

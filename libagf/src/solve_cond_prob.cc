@@ -132,13 +132,14 @@ int solve_cond_prob2(gsl_matrix *a,		//decision matrix
   } else if (n1>0) {
     //if there is more than one value less than one, we have to pull out 
     //each of them in turn and find the solution with the fewest zeroes:
+    //this is terribly inefficient because solutions are repeated:
+    //(and because it's NP!)
     if (n1<ng-1) {
       int gind1[ng];	//new columns that are still good
       int ng1;
       int gind2[ng];
       int maxng=n1;
       for (int j=0; j<ng; j++) gind2[j]=gind[j];
-      //this is terribly inefficient because solutions are repeated:
       for (int i=0; i<ng-n1; i++) {
         for (int j=0; j<n1; j++) gind1[j]=gind[j];
         for (int j=0; j<i; j++) {

@@ -35,6 +35,19 @@ namespace libagf {
     }
   }
 
+  void one_against_one(FILE *fs, int ncls, const char *options) {
+    for (int i=0; i<ncls; i++) {
+      for (int j=i+1; j<ncls; j++) {
+        if (options!=NULL) {
+          if (i==0) fprintf(fs, "\"%s\"", options); else fprintf(fs, "\".\"");
+        } else {
+          fprintf(fs, "\"\"");
+        }
+        fprintf(fs, " %d %c %d;\n", i, PARTITION_SYMBOL, j);
+      }
+    }
+  }
+
   void partition_adjacent(FILE *fs, int ncls, const char *options) {
     for (int i=1; i<ncls; i++) {
       if (options!=NULL) {
@@ -200,6 +213,13 @@ namespace libagf {
 
   void print_control_1vsall(FILE *fs, int ncls, const char *opt) {
     one_against_all(fs, ncls, opt);
+    fprintf(fs, "{");
+    for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
+    fprintf(fs, "}\n");
+  }
+
+  void print_control_1vs1(FILE *fs, int ncls, const char *opt) {
+    one_against_one(fs, ncls, opt);
     fprintf(fs, "{");
     for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
     fprintf(fs, "}\n");

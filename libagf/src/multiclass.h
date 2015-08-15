@@ -52,6 +52,8 @@ namespace libagf {
       //raw mapping:
       gsl_matrix *map;
 
+      //is the mapping "strict"--i.e. each row includes all classes?
+      int strictflag;
     public:
       multiclass();
       //initialized from a control file:

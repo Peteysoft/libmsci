@@ -25,6 +25,7 @@ int main(int argc, char **argv) {
     fprintf(docfs, "         3 random coding matrix (n<65)\n");
     fprintf(docfs, "         4 \"exhaustive\" coding matrix (n<34)\n");
     fprintf(docfs, "         5 orthogonal coding matrix (n<25; n%%4==0)\n");
+    fprintf(docfs, "         6 one against one\n");
     fprintf(docfs, "  n    = number of classes\n");
     fprintf(docfs, "  nrow = number of rows\n");
     fprintf(docfs, "  -G   = \"strict\" flag: all classes are included in each partition\n");
@@ -58,6 +59,9 @@ int main(int argc, char **argv) {
       break;
     case(5):
       print_control_ortho(stdout, n);
+      break;
+    case(6):
+      print_control_1vs1(stdout, n);
       break;
     default:
       print_control_hier(stdout, n);

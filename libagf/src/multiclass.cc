@@ -85,6 +85,9 @@ namespace libagf {
     int err=0;
 
     nmodel=parse_multi_partitions(&param, name, part, MAXNPART);
+    err=multi_partition_strict(name, part, nmodel);
+    if (err<0) throw PARAMETER_OUT_OF_RANGE;
+    if (err>0) strictflag=0; else strictflag=1;
 
     //classification type and constraint weight:
     type=param.type;
@@ -484,7 +487,26 @@ namespace libagf {
     //print_gsl_matrix(stdout, map);
     //printf("\n");
 
-    solve_cond_prob(map, b, p1);
+    if (strictflag) {
+      solve_cond_prob(map, b, p1);
+    } else {
+      gsl_matrix *map1=gsl_matrix_alloc(nmodel, this->ncls);
+      for (cls_t i=0; i<nmodel; i++) {
+        cls_t cnt=0;
+	real r_i=gsl_vector_get(b, i);
+        for (cls_t j=0; j<this->ncls; j++) {
+          real map_el=gsl_matrix_get(map, i, j);
+          if (map_el==0) {
+            gsl_matrix_set(map1, i, j, r_i);
+          } else {
+            gsl_matrix_set(map1, i, j, map_el);
+	    cnt++;
+	  }
+	}
+      }
+      solve_cond_prob(map1, b, p1);
+      gsl_matrix_free(map1);
+    }
 
     for (cls_t i=0; i<this->ncls; i++) {
       p[i]=gsl_vector_get(p1, i);
