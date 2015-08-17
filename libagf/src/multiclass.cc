@@ -412,6 +412,8 @@ namespace libagf {
     cls_t cls;
     gsl_vector *p1=gsl_vector_alloc(this->ncls);
 
+    if (strictflag==0) classify_scratch(b, p);
+
     code_svd();
 
     gsl_linalg_SV_solve(u, vt, s, b, p1);
@@ -440,6 +442,7 @@ namespace libagf {
     gsl_matrix *u1;
     gsl_matrix *vt1;
     gsl_vector *work;
+    gsl_vector *b1;
 
     gsl_vector *p1=gsl_vector_alloc(this->ncls);
 
@@ -452,12 +455,21 @@ namespace libagf {
     gsl_matrix_memcpy(u1, map);
 
     //normalize on the basis of the raw probabilities:
+    b1=gsl_vector_alloc(nmodel+1);
+    gsl_vector_set(b1, nmodel, 1);
     for (int i=0; i<nmodel; i++) {
       real val=gsl_vector_get(b, i);
       for (int j=0; j<this->ncls; j++) {
-        gsl_matrix_set(u1, i, j, gsl_matrix_get(u1, i, j)/val);
+        real map_el=gsl_matrix_get(u1, i, j);
+	if (map_el==0) {
+          //gsl_matrix_set(u1, i, j, 1);
+          gsl_matrix_set(u1, i, j, val);
+	} else {
+          //gsl_matrix_set(u1, i, j, map_el/val);
+          gsl_matrix_set(u1, i, j, 1);
+	}
       }
-      gsl_vector_set(b, i, 1);
+      gsl_vector_set(b1, i, 1);
     }
 
     gsl_linalg_SV_decomp(u1, vt1, s1, work);
@@ -472,6 +484,7 @@ namespace libagf {
     gsl_vector_free(s1);
     gsl_matrix_free(u1);
     gsl_matrix_free(vt1);
+    gsl_vector_free(b1);
 
     return cls;
   }
@@ -490,18 +503,14 @@ namespace libagf {
     if (strictflag) {
       solve_cond_prob(map, b, p1);
     } else {
-      gsl_matrix *map1=gsl_matrix_alloc(nmodel, this->ncls);
+      gsl_matrix *map1=gsl_matrix_alloc(nmodel+1, this->ncls);
+      gsl_matrix_memcpy(map1, map);
       for (cls_t i=0; i<nmodel; i++) {
         cls_t cnt=0;
 	real r_i=gsl_vector_get(b, i);
         for (cls_t j=0; j<this->ncls; j++) {
           real map_el=gsl_matrix_get(map, i, j);
-          if (map_el==0) {
-            gsl_matrix_set(map1, i, j, r_i);
-          } else {
-            gsl_matrix_set(map1, i, j, map_el);
-	    cnt++;
-	  }
+          if (map_el==0) gsl_matrix_set(map1, i, j, r_i);
 	}
       }
       solve_cond_prob(map1, b, p1);

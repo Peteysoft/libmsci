@@ -76,8 +76,7 @@ EXECUTABLES =	class_borders \
 		sort_discrete_vectors \
 		search_discrete_vectors \
 		optimize_r0 calibrate_p2 calc_joint_entropy \
-		calibrate_p3 \
-		ortho_coding_matrix_brute_force
+		calibrate_p3 
 
 OLD = 		classify_a \
 		classify_knn \
