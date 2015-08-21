@@ -142,7 +142,7 @@ real supernewton(void (*funcd) (real, void *, real *, real *),
           } else {
             err->nbis++;
           }
-        } else if (nroot=3) {
+        } else if (nroot==3) {
           real xdiff, xdiffmin;
 
           x0_4=(x1+x2)/2;
