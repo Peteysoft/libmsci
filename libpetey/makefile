@@ -107,6 +107,7 @@ OBJECT =	symbol_table$(OPT).o \
 		erfinv$(OPT).o \
 		roots_mins$(OPT).o \
 		solve_lode$(OPT).o \
+		constrained$(OPT).o \
 		gsl_util$(OPT).o \
 		rk_dumb_ts$(OPT).o \
 		peteys_no_templates$(OPT).o
