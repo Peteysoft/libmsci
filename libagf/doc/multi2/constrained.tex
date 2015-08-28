@@ -23,19 +23,17 @@ be the difference in conditional probabilities of the $i$th binary classifier.
 These conditional probabilities are mapped to the actual probabilities
 using a mapping, $A$, which we will call the ``coding matrix'', as follows:
 \begin{equation}
-r_i=\sum_{j=1}^{n_c}a_{ij} p(j|\vec x)
+\sum_{j=1}^{n_c}a_{ij} p(j|\vec x)=r_i
 \label{basic_equation}
 \end{equation}
-or $\vec r=A \vec p$, where $\vec p=\lbrace p(i|\vec x) \rbrace$ are the conditional probabilities
+or $A \vec p=\vec r$, where $\vec p=\lbrace p(i|\vec x) \rbrace$ are the conditional probabilities
 of the multi-class problem.
 The elements of $A$ will be, $a_{ij} \in \lbrace -1, ~1 \rbrace$,
 We forbid $A$ from having any zeroes so that all the partitions
 partitions divide the whole set of classes, not just a subset--contrast, e.g.,
 one-vs.-all and one-vs.-one.
 The more complicated case in which zeroes are
-allowed will not be considered here since it requires more than a simple
-linear mapping from the multiple class probabilities to the 
-estimated binary probabilities.
+allowed will be considered in section \ref{non_strict}.
 
 This looks like a straight-forward linear inverse problem, but with two
 caveats.  First, it is frequently over-determined.  Second, it ought to
@@ -47,7 +45,7 @@ should always sum to 1:
 \end{equation}
 and should also lie between 0 and 1:
 \begin{equation}
-0 \le p(j|\vec x) le 1
+0 \le p(j|\vec x) \le 1
 \end{equation}
 
 Currently the {\it libagf} library \citep{Mills2011},
@@ -78,6 +76,7 @@ c=\arg \min (A^T A)^{-1}A^T \vec r
 versus voting:
 \begin{equation}
 c=\arg \min A \vec r
+\label{voting}
 \end{equation}
 with voting being the most popular because it does not require $\vec r$ to
 return probabilities but only classes in the form of $\lbrace -1,~+1\rbrace$.
@@ -279,6 +278,38 @@ The columns are periodic and thus similar to a set of harmonic functions.
 In such case the least-squares ``pseudo''-inverse will equal the voting result
 since $(A^T A)^{-1} A^T \cdot \vec r = n_p A^T \vec r$ and the voting method
 can return accurate estimates of the conditional probabilities.
+
+\section{``Non-strict'' case}
+
+\label{non_strict}
+
+So far we have only considered the case where the binary classifiers partition
+all the classes, but what if we allow the binary classifiers to work with only
+a sub-set of all the classes? Now, we allow the coding matrix, $A$, to 
+contain $0$ elements: $a_{ij} \in \lbrace -1, 0 1 \rbrace$. 
+A $-1$ indicates that the class is in the left side of
+the partition, a $1$ that it is in the right side, while a zero means that
+it is not included in the partition. 
+
+While the voting method in (\ref{voting}) remains the 
+same, the inverse problem in (\ref{basic_equation}) will have to be revised. 
+Mainly, we divide
+by the sum of the multi-class probabilities contained in the partition:
+\begin{equation}
+	\frac{\sum_j a_{ij} p_j}{\sum_j |a_{ij}| p_j} = r_i
+\end{equation}
+where $\vec p$, we recall, is a vector of multi-class conditional probabilities. 
+Some rearrangement produces the following:
+\begin{equation}
+	\sum_j a_{ij} p_j + r_i \sum_{j|a_{ij}=0} p_j = r_i
+	\label{general_form}
+\end{equation}
+Note that this more general formulation includes the ``strict'' case.
+To solve the matrix equation in (\ref{general_form}) for the non-strict case, 
+the matrix will have to be generated afresh for each estimate
+whereas in the strict case, the matrix can be inverted or partially inverted
+and then applied to the RHS which is the only part of the equation that
+changes.
 
 \section{Re-calibration}
 
@@ -535,7 +566,7 @@ the normal, $\vec v_i$:
 To show that this satisfies (\ref{trivial_min}) we can rearrange the constraint
 to solve for one of the variables:
 \begin{equation}
-	\vec x_i = b = \sum_{j \ne i} v_j x_j
+	\vec x_i = b - \sum_{j \ne i} v_j x_j
 \end{equation}
 where for simplicity we have omitted the subscript enumerating the constraint
 from the parameters.
@@ -557,6 +588,113 @@ produces the following:
 	\frac{v_i^2 b}{|\vec v|^2} - b + \frac{b}{|\vec v|^2} \sum_{j \ne i} v_j^2 
     = \frac{b}{|\vec v|^2} \left (\sum_{j \ne i} v_j^2 + v_i^2 \right ) - b = 0
 \end{equation}
+
+\section{Solving the constrained problem}
+
+We wish to solve the following minimization problem:
+\begin{equation}
+	\arg \min_{\vec x} |\vec x|
+\end{equation}
+where $\vec x \in \Re^n$, subject to the following constraints:
+\begin{equation}
+	\vec v_i \cdot \vec x \ge c_i
+\end{equation}
+where $i \in [1, n+1]$ and the constraints enclose a hyper-pyramid.
+
+Since both the minimization problem and the constraints are convex 
+\citep{Boyd_etal2004}, the basic procedure is first, to find the unconstrained
+solution, then find an interior point and move towards the unconstrained
+solution. If we encounter a constraint, then we restrict the solution so as
+to lie along the constraint and continue to move towards the unconstrained
+solution. We outline the steps in detail below.
+
+\subsection{Step 1: finding the interior point}
+
+Let $V_k$ be the matrix containing the set of constraint normals but
+excluding the $k$th normal: $V_k = \lbrace \vec v_i | i \ne j \rbrace$. 
+We first transform the problem by letting $\vec z=V_k \cdot \vec x$.
+Let $\vec z_0 = \lbrace c_i | i \ne k \rbrace$.
+
+We are searching for an interior point, 
+$\vec p = V_k^{-1} \cdot \vec z_0 + \Delta \vec x$, 
+where $\Delta \vec x$ has only positive components, such that:
+\begin{equation}
+	\vec v_k \cdot \left ( V_k^{-1} \cdot \vec z_0 + \Delta \vec x \right ) > c_k
+\end{equation}
+If the constraints have been laid out properly, the inequality should be 
+satisfied when $\Delta \vec x$ is zero.
+We can't solve for $\Delta \vec x$ directly since it can take on a 
+multitude of different values. What we can do is
+take the difference between the left and right sides with $\Delta \vec x = \vec 0$
+\begin{equation}
+	d = \vec v_k \cdot V_k^{-1} \cdot \vec z_0 - c_k
+\end{equation}
+and spread some fraction, $f;~0 < f < 1$, of this difference evenly between the 
+elements of the interior point, $\vec p$:
+\begin{equation}
+	\vec p = V_k^{-1} \cdot \vec z_0 + \frac{f d}{\vec v_k \cdot \vec 1} \vec 1
+\end{equation}
+where $\vec 1$ is a vector of ones.
+
+\subsection{Step 2: move between the interior point and the unconstrained solution}
+
+Let $\vec x_0$ be the unconstrained solution. Initially, this will simply be
+the zero vector, $\vec x_0 = \vec 0$, but will change with successive 
+refinements to the solution. See below. 
+
+Either this solution violates no constraints,
+in which case no further work needs to be done, or
+it violates one or more of them. In the latter case, we find, for each of the
+violated constraints, the distance
+to the constraint hyper-plane along the line between the interior point and
+the unconstrained solution:
+\begin{equation}
+	s_i = \frac{c_i - \vec v_i \cdot \vec p}
+	{\vec v_i \cdot \vec x_0 - \vec v_i \cdot \vec p}
+\end{equation}
+where $s_i$ is the line parameter and
+$\lbrace i |~\vec v_i \cdot \vec x_0 < c_i \rbrace$ are the violated
+constraints. Again if the constraints have been laid out properly, $s$ should
+always be positive.
+
+
+Let $s_{min}=\min_i s_i$ be the minimum value for the line parameter and 
+$h=\arg \min_i s_i$ be the closest violated constraint.
+If $n=1$ then the solution is $x=\frac{c_h}{v_h}$
+
+\subsection{Step 3: restrict the problem to lie on the closest violated constraint}
+
+Let $k$ be an index for $\vec x$ such that $v_{jk} \ne 0$. 
+We eliminate $x_k$ using the following transformation:
+\begin{equation}
+	x_k = \frac{c_h - \sum_{i \ne k} v_{hi} x_i}{v_{hk}}
+\end{equation}
+Therefore, each of the constraints transform as follows:
+\begin{eqnarray}
+	v_{ij}^\prime & = & \left \lbrace \begin{array}{rc} 
+	v_{ij} - \frac{v_{hj}}{v_{hk}} ; & j < k \\
+	v_{ij+1} - \frac{v_{hj+1}}{v_{hk}} ; & j \ge k
+	\end{array} \right . \\
+	c_i^\prime & = & c_i - \frac{c_h}{v_{hk}} \\
+	i & \ne & h \\
+	j & \in & [1, n-1]
+\end{eqnarray}
+Note that the problem is now reduced in size by one.
+
+\subsection{Step 4: find the new interior point and unconstrained solution}
+
+The new interior point can be found using the line parameter, $s_{min}$:
+\begin{equation}
+	\vec p^\prime = \vec p + s_{min} (\vec x_0 - \vec p)
+\end{equation}
+The new value for $x_0$ is the closest point to the old value inside the
+constraint hyper-plane:
+\begin{equation}
+	\vec x_0^\prime = \vec x_0 + \left ( \frac{c_h - \vec v_h \cdot \vec x_0}{| \vec v_h |^2} \right ) \vec v_h
+\end{equation}
+Using these vectors with the $k$th component eliminated, we restart the
+solution from Step 2.
+
 
 \bibliography{../agf_bib.bib} 
 
