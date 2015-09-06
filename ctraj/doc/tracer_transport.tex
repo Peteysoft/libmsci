@@ -339,7 +339,7 @@ We wish to solve the system of linear ordinary differential equations (ODEs):
 Supposing $A$ has no time dependence, we perform an eigenvector 
 decomposion:
 \begin{equation}
-  A = T \Lambda T^{-1}
+  A = T \cdot \Lambda \cdot T^{-1}
 \end{equation}
 where $T$ is a matrix of right eigenvectors, and $\Lambda$ is a diagonal matrix
 of eigenvalues, $\lambda_{ii}=\lambda_i$.  
@@ -490,8 +490,8 @@ matrix, $S$ is an $[n \times n]$ diagonal matrix of {\it singular values}
 $U$ and $V^T$ are also termed the left and right {\it singular vectors}, 
 respectively and are normally calculated through eigenvalue analysis:
 \begin{eqnarray}
-R\cdot R^T \cdot U & = & U\cdot S^2 \\
-V^T \cdot R^T \cdot R & = & S^2 \cdot V^T
+	R\cdot R^T \cdot U & = & U \cdot S^2 \label{left_SV_eigenproblem}\\
+	R^T \cdot R \cdot V & = & V \cdot S^2 \label{right_SV_eigenproblem}
 \end{eqnarray}
 Typically, only one of $U$ or $V$ is calculated and then the other by projection
 onto $R$.  Which one is calculated first is best determined by whether $m$
@@ -623,9 +623,13 @@ a_{ij}+a_{ji} & = & 0
 \end{eqnarray}
 
 Meanwhile, $R$ is a rotation.  All the singular values of $R$ will be 1:
+\begin{equation}
+	\vec q \cdot R^T \cdot R \cdot \vec q = \vec q \cdot \vec q \label{length_conservation}
+\end{equation}
+This implies:
 \begin{eqnarray}
-\vec q \cdot R^T \cdot R \cdot \vec q & = & \vec q \cdot \vec q\\
-R^T \cdot R \cdot \vec q & = & \vec q
+R^T \cdot R \cdot \vec v & = & s^2 \vec v \nonumber \\
+	s & = & 1 \label{ortho_eigen}
 \end{eqnarray}
 Because it is a rotation, it will be orthonormal with a determinant of 1.
 
@@ -708,14 +712,56 @@ say that:
 \end{equation}
 Implying that for the eigenvalue problem,
 \begin{eqnarray}
-\vec q \cdot R^T \cdot R & = & s^2 \vec q \nonumber\\
+R^T \cdot R \cdot \vec v & = & s^2 \vec v \nonumber\\
 s^2 & \le & 1 \label{SV_inequality}
 \end{eqnarray}
-Note that this does not constitute a proof: the actual proof is more 
-involved.
 This further shows that the Lyapunov exponents are all
 either zero or negative with the largest equal to 0.  This has been shown
 numerically in \citet{Mills2012}.
+Note however that this does not constitute a proof; the actual proof is more 
+involved.
+
+To prove (\ref{SV_inequality}) from (\ref{tracer_map_inequality}), we first
+expand $\vec q$ in terms of the right singular values, 
+$\lbrace \vec v_i \rbrace$:
+\begin{equation}
+	\vec q = \sum_i c_i \vec v_i
+\end{equation}
+where $\lbrace c_i \rbrace$ are a set of coefficients.
+Substituting this into the eigenvalue equation in (\ref{right_SV_eigenproblem}):
+\begin{equation}
+	R^T \cdot R \cdot \sum_i c_i \vec v_i = \sum_i c_i s_i^2 \vec v_i
+\end{equation}
+and multiplying with $\vec q$:
+\begin{eqnarray}
+	\vec q \cdot R^T \cdot R \cdot \vec q & = & \sum_i c_i \vec v_i \sum c_i s_i^2 \vec v_i \\
+   & = & \sum_i \sum_j c_i c_j s_i^2 \vec v_i \cdot \vec v_j \\
+   & = & \sum_i \sum_j c_i c_j s_i^2 \delta_{ij} \\
+	  & = & \sum_i c_i^2 s_i^2
+\end{eqnarray}
+Similarly, we can show that:
+\begin{equation}
+	\vec q \cdot \vec q = \sum_i c_i^2
+\end{equation}
+If we assume that $s_i \le 1$ for every $i$, then:
+\begin{equation}
+	\sum_i c_i^2 s_i^2 \le \sum_i c_i^2 
+	\label{diffusive_inequality_in_terms_of_SVs}
+\end{equation}
+since each term on the left side is less-than-or-equal-to the
+corresponding term on the right side. 
+Note that in order for the inequality in 
+(\ref{diffusive_inequality_in_terms_of_SVs}) to be broken, at least one
+singular value must be greater-than one.
+Therefore (\ref{tracer_map_inequality}) is true for every $\vec q$
+if-and-only-if (\ref{SV_inequality}) is true for every $s$.
+A similar argument will prove (\ref{length_conservation})
+iff (\ref{ortho_eigen}).
+
+%Therefore:
+%\begin{equation}
+%	\forall q~ (\vec q \cdot R^T \cdot R \cdot \vec q \le \vec q \cdot \vec q) \iff \forall s ~(R^T \cdot R \cdot \vec v = s^2 \vec v \land s \le 1)
+%\end{equation}
 
 \section{Volume deformation versus the transport map}
 
@@ -836,7 +882,7 @@ finite-difference equation with uniform spatial grids:
 	\frac{d (q_{i-1} + q_{i+1} - 2 q_i)}{\Delta x^2} \\
 & = & \left (- \frac{v}{2 \Delta x} + \frac{d}{\Delta x^2} \right ) q_{i-1} -
 	\frac{2 d}{\Delta x^2} q_i + 
-	\left (\frac{v}{2 \Delta x} + \frac{d}{\Delta x^2} \right ) q_{i+1}
+	\left (\frac{v}{2 \Delta x} + \frac{d}{\Delta x^2} \right ) q_{i+1} \label{finite_difference_diffusion}
 \end{eqnarray}
 where $d$ is a scalar diffusion coefficient.
 Expressed as elements of a matrix:
@@ -899,7 +945,7 @@ a_{ii} & \le & 0 \\
 a_{ij}+a_{ji} & \le & 0
 \end{eqnarray}
 in agreement with our definition of a strictly diffusive transport map in
-(\ref{tracer_map_inequality}).
+(\ref{tracer_map_inequality}). 
 
 
 \section{Adding sources and sinks}

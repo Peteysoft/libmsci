@@ -250,8 +250,8 @@ Finally, consider the general case of an orthogonal coding matrix in
 as in (\ref{ortho3}),
 which has the property $A^T A = A A^T = n_c I$,
 the distance between pairs of both rows and columns will be maximized.
-This, according to \citep{Dietterich_Bakiri1995} and
-\citep{Allwein_etal2000}, will minimize classification errors. 
+This, according to \citet{Dietterich_Bakiri1995} and
+\citet{Allwein_etal2000}, will minimize classification errors. 
 An orthogonal matrix, is not trivial to
 derive and will not exist for all values of $n_c$.
 
@@ -260,7 +260,7 @@ that nonetheless has the property, $A^T A = n_p I$, where the
 identity, $I$, is $n_c \times n_c$. Consider for instance, 
 the following matrix for $n_c=5$, 
 similar, though not identical, to the ``exhaustive''
-matrix described in \citep{Dietterich_Bakiri1995}:
+matrix described in \citet{Dietterich_Bakiri1995}:
 \begin{equation}
   A = 
   \begin{bmatrix}
@@ -326,7 +326,7 @@ c = \left \lbrace
 \right .
 \end{equation}
 as $r_0 = 0$, but there is no reason why this should be so.  
-In both \citep{Mills2009} and \citep{Mills2011}, we show how shifting this
+In both \citet{Mills2009} and \citet{Mills2011}, we show how shifting this
 border can be used to recalibrate an image derived from statistical
 classification.
 
@@ -668,6 +668,7 @@ Let $k$ be an index for $\vec x$ such that $v_{jk} \ne 0$.
 We eliminate $x_k$ using the following transformation:
 \begin{equation}
 	x_k = \frac{c_h - \sum_{i \ne k} v_{hi} x_i}{v_{hk}}
+	\label{constraint_application}
 \end{equation}
 Therefore, each of the constraints transform as follows:
 \begin{eqnarray}
@@ -694,7 +695,8 @@ constraint hyper-plane:
 \end{equation}
 Using these vectors with the $k$th component eliminated, we restart the
 solution from Step 2.
-
+At the end of each restart, the missing variable will have to be reconstituted
+using Equation (\ref{constraint_application}).
 
 \bibliography{../agf_bib.bib} 
 

@@ -208,12 +208,13 @@ measurement locations are fitted
 through coefficients, $\lbrace c_i \rbrace$, to the measurements.
 Thus, we need to fit the following equation:
 \begin{equation}
-\sum_{i=1}^m c_i \vect w_k \cdot H_k \cdot \vect v = q_k
+\sum_{i=1}^m c_i \vect w_k \cdot H_k \cdot \vect v_i = q_k
 \end{equation}
 where $m$ is the number of singular vectors used in the analysis,
 $q_k$ is the measurement at time step $k$ (we assume that each measurement
-has a unique time stamp), $H_k$ is the tracer mapping at time $k$
-and $w_k$ is a vector of interpolation coefficients.
+has a unique time stamp), $H_k$ is the tracer mapping at time $k$,
+$w_k$ is a vector of interpolation coefficients and $\vect v_i$ is
+the $i$th right principal component.
 The fitting is done using a linear least squares \citep{gsl_ref}.
 
 To perform the analysis, we need to choose a lead time, as well as

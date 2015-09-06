@@ -16,7 +16,7 @@
 Kernel density estimation is method of estimating density from a set of samples,
 $\lbrace \vec x_i \rbrace$, that works like a linear filter:
 \begin{eqnarray}
-f(\vec r) & = & \frac{1}{n} \sum_{i=1}^{n} w_i(\vec r) \label{kernel_estimate}\\
+f(\vec r) & = & \frac{1}{n h^D} \sum_{i=1}^{n} w_i(\vec r) \label{kernel_estimate}\\
 w_i & = & K\left(\frac{|\vec r - \vec x_i|}{h}\right)
 \end{eqnarray}
 where $f$ is the estimated density, $\vec r$ is the {\it test point},

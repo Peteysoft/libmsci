@@ -29,7 +29,7 @@ LD_FLAGS = -L$(GSL_LIB) -L$(LIB_PATH) -lagf$(OPT_VER) -lpetey$(OPT_VER) -lgsl -l
 
 LIBNAME = libagf$(OPT_VER).a
 
-SAMPLE_CLASS = sample_class classify_sc pdf_sc1 pdf_sc2 sc_borders
+SAMPLE_CLASS = sample_class classify_sc pdf_sc1 pdf_sc2 sc_borders class2_errvh
 
 OBJECT_FILES = sample_class1_obj.o sample_class2_obj.o
 
