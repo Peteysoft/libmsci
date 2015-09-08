@@ -1,8 +1,10 @@
+#include <math.h>
 #include <assert.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
 
 #include "error_codes.h"
+#include "randomize.h"
 
 #define FUCK(X) X-1
 #define TM 1
@@ -90,35 +92,50 @@ namespace libpetey {
   int find_interior(
 		gsl_matrix *v,		//constraint normals
 		gsl_vector *c,		//constraint thresholds
-    		gsl_vector *interior,	//interior point
+    		gsl_vector *pp,		//interior point
 		double offset) {	//offset (if applicable)
-    int err;
-    gsl_vector *pp;		//interior point in transformed coords
+    int err=0;
 
     if (v->size1 != c->size ||
-		    interior->size!= v->size2) {
+		    pp->size!= v->size2) {
       fprintf(stderr, "find_interior: dimension mismatch\n");
       throw DIMENSION_MISMATCH;
     }
 
+    //d=v_k*V_k^-1*z_0 - c_k
+    //k=n
     pp=gsl_vector_alloc(v->size2);
 
     if (c->size==v->size2+1) {
+      gsl_vector_view v_k = gsl_matrix_row(v, v->size2);
       gsl_vector *xp=gsl_vector_alloc(v->size2);
       double dot;		//dot product--must be less than c_n
-      c->size--;
-      v->size1--;
-      solver(v, c, xp);
-      dot=cblas_ddot(c->size, c->data, c->stride, xp->data, xp->stride);
-      c->size++;
-      v->size1++;
-      if (dot > gsl_vector_get(c, c->size-1)) {
-        fprintf(stderr, "get_interior: contraints not consistent\n");
-        throw PARAMETER_OUT_OF_RANGE;
+      double sum_v_k=0;		//sum of elements of nth constraint
+      double c_k=gsl_vector_get(c, v->size2);
+      c->size--;		//z_0i=c_i; k ommitted
+      err=solver(v, c, xp);
+      if (err!=0) {
+        fprintf(stderr, "find_interior: solver returned error, %d\n", err);
+        throw err;
       }
+      //dot=cblas_ddot(c->size, c->data, c->stride, xp->data, xp->stride);
+      err=gsl_blas_ddot(&v_k.vector, xp, &dot);
+      if (err!=0) {
+        fprintf(stderr, "find_interior: gsl_blas_ddot returned error, %d\n", err);
+        throw err;
+      }
+      c->size++;
+      if (dot > c_k) {
+        fprintf(stderr, "get_interior: contraints not consistent\n");
+	gsl_vector_free(xp);
+	return PARAMETER_OUT_OF_RANGE;
+        //throw PARAMETER_OUT_OF_RANGE;
+      }
+      //p=V_k^-1*z_0 + f*d*1/v_k*1
+      for (int i=0; i<v->size2; i++) sum_v_k+=gsl_vector_get(&v_k.vector, i);
       for (int i=0; i<v->size2; i++) {
-        double pp_el=gsl_vector_get(pp, i);
-        gsl_vector_set(pp, i, pp_el+dot/pp_el/v->size2);
+        double xp_el=gsl_vector_get(xp, i);
+	gsl_vector_set(pp, i, xp_el+offset*(dot-c_k)/sum_v_k);
       }
       gsl_vector_free(xp);
     } else {
@@ -126,10 +143,28 @@ namespace libpetey {
       throw PARAMETER_OUT_OF_RANGE;
     }
 
-    err=gsl_blas_dgemv(CblasNoTrans, 1., v, pp, 0., interior);
+    //err=gsl_blas_dgemv(CblasNoTrans, 1., v, pp, 0., interior);
 
     return err;
 
+  }
+
+  void normalize_constraints(gsl_matrix *v,
+		  gsl_vector *c) {
+    assert(v->size1==c->size);
+    
+    for (int i=0; i<v->size1; i++) {
+      double d=0;
+      for (int j=0; j<v->size2; j++) {
+        double v_j=gsl_matrix_get(v, i, j);
+	d+=v_j*v_j;
+      }
+      d=sqrt(d);
+      for (int j=0; j<v->size2; j++) {
+	gsl_matrix_set(v, i, j, gsl_matrix_get(v, i, j)/d);
+      }
+      gsl_vector_set(c, i, gsl_vector_get(c, i)/d);
+    }
   }
 
   //tests each of the constraint and returns the indices of each of the
@@ -154,6 +189,41 @@ namespace libpetey {
 	n++;
       }
     }
+  }
+
+  int test_interior(int n) {		//dimension of problem
+    gsl_vector *x0=gsl_vector_alloc(n);	//random point in interior of constraint hyper-pyramid
+    gsl_matrix *v=gsl_matrix_alloc(n+1, n);	//set of random constraint normals
+    gsl_vector *c=gsl_vector_alloc(n+1);	//constraint constants
+    gsl_vector *p=gsl_vector_alloc(n);
+    int err;
+    int ind[n];
+
+    for (int i=0; i<n; i++) gsl_vector_set(x0, i, rang());
+
+    do {
+      //create a set of random constraint normals:
+      for (int i=0; i<n+1; i++) {
+        double c_i=0;
+        for (int j=0; j<n; j++) {
+          double val=rang();
+	  double v_ij=gsl_vector_get(x0, j)-val;
+          gsl_matrix_set(v, i, j, v_ij);
+	  c_i+=v_ij*val;
+	}
+      }
+      //constraints may not enclose a volume but find_interior should catch
+      //this:
+      err=find_interior(v, c, p, 0.5);
+    } while (err!=0);
+
+    err=check_constraints(v, c, p, ind);
+
+    if (err!=0) {
+      fprintf(stderr, "test_interior: unit test for find_interior and check_constraints failed!\n");
+      return -1;
+    }
+    return 0;
   }
 
   //***NOTE***: matrix coefficients do not transform the same as vectors
@@ -192,6 +262,47 @@ namespace libpetey {
     return index;
   }
     
+  //returns the index of the eliminated variable:
+  int apply_constraint( 
+		gsl_matrix *v,		//constraint normals
+		gsl_vector *c,		//constraint thresholds
+		int cindex,		//index of constraint
+		int vindex,		//index of variable to eliminate
+		gsl_matrix *v2,
+		gsl_vector *c2) {
+    double c_c=gsl_vector_get(c, cindex);	//constraint limit at cindex
+    //pull out the desired constraint:
+    gsl_vector_view applied_constraint=gsl_matrix_row(v, cindex);
+    double v_cv;		//constraint coeff.
+
+    //apply constraint to the constraints themselves:
+    for (int i=0; i<cindex; i++) {
+      //pull out row views for original matrices:
+      gsl_vector_view vrow=gsl_matrix_row(v, i);
+      //pull out row views for transformed matrices:
+      gsl_vector_view v2row=gsl_matrix_row(v2, i);
+
+      //then pass them to apply_constraint for vector only:
+      vindex=constrain_row(&vrow.vector, &applied_constraint.vector, 
+		      vindex, &v2row.vector);
+      v_cv=gsl_matrix_get(v, cindex, vindex);
+      gsl_vector_set(c2, i, gsl_vector_get(c, i)-c_c/v_cv);
+
+    }
+    for (int i=cindex+1; i<v->size1; i++) {
+      //pull out row views for original matrices:
+      gsl_vector_view vrow=gsl_matrix_row(v, i);
+      //pull out row views for transformed matrices:
+      gsl_vector_view v2row=gsl_matrix_row(v2, i-1);
+
+      //then pass them to apply_constraint for vector only:
+      constrain_row(&vrow.vector, &applied_constraint.vector, 
+		      vindex, &v2row.vector);
+      gsl_vector_set(c2, i-1, gsl_vector_get(c, i)-c_c/v_cv);
+    }
+
+    return vindex;
+  }
   //returns the index of the eliminated variable:
   int apply_constraint(gsl_matrix *a, 
 		gsl_vector *b,		//solution vector
@@ -246,6 +357,116 @@ namespace libpetey {
 
     return vindex;
   }
+
+  int constrained(gsl_matrix *v,	//transformed constraint normals
+		  gsl_vector *c,	//transformed constraint thresholds
+		  gsl_vector *p,	//interior point
+		  gsl_vector *x) {
+    int err=0;
+    int nb;		//number of broken constraints
+    int bind[v->size2];		//list of broken constraints
+    int n=x->size;
+
+    assert(p->size==x->size);
+    assert(x->size==v->size2);
+    assert(v->size2==v->size1-1);
+    assert(c->size==v->size1);
+
+    //check for violated constraints:
+    nb=check_constraints(v, c, x, bind);
+    //if a constraint has been violated, find the least distance to the
+    //constraint hyperplane:
+    if (nb > 0) {
+      double smin=0;		//distance to nearest constraint
+      int minind;		//index of nearest constraint
+      int vind=-1;		//index of next eliminated variable
+      gsl_vector *pn=gsl_vector_alloc(n);
+      gsl_vector *xn=gsl_vector_alloc(n);
+      gsl_vector *pp=gsl_vector_alloc(n-1);
+      gsl_vector *xp=gsl_vector_alloc(n-1);
+      gsl_matrix *vp=gsl_matrix_alloc(n-1, n);
+      gsl_vector *cp=gsl_vector_alloc(n);
+
+      for (int i=0; i<nb; i++) {
+        double s;
+	double vdotp, vdotx;
+        gsl_vector_view v_ind=gsl_matrix_row(v, bind[i]);
+
+	gsl_blas_ddot(&v_ind.vector, p, &vdotp);
+	gsl_blas_ddot(&v_ind.vector, x, &vdotx);
+
+	s=(gsl_vector_get(c, bind[i])-vdotp)/(vdotx-vdotp);
+	assert(s>=0);
+	if (s<smin) {
+          smin=s;
+	  minind=bind[i];
+	}
+      }
+
+      //transform the other constraints according to the closest violated
+      //constraint:
+      apply_constraint(v, c, minind, vind, vp, cp);
+
+      //find the location of the both the new interior point and the solution
+      //on the constraint hyperplane as projected onto the new variables:
+      gsl_vector_memcpy(pn, p);
+      gsl_vector_scale(pn, -1);
+      gsl_vector_add(pn, x);
+      gsl_vector_scale(pn, smin);
+      gsl_vector_add(pn, p);
+
+      double vidotx;
+      double vdotv;
+      gsl_vector_view v_i=gsl_matrix_row(v, minind);
+
+      gsl_blas_ddot(&v_i.vector, x, &vidotx);
+      gsl_blas_ddot(&v_i.vector, &v_i.vector, &vdotv);
+
+      gsl_vector_memcpy(xn, &v_i.vector);
+      gsl_vector_scale(xn, (gsl_vector_get(c, minind)-vidotx)/vdotv);
+      gsl_vector_add(xn, x);
+
+      //exclude chosen variables:
+      for (int i=0; i<vind; i++) {
+        gsl_vector_set(xp, i, gsl_vector_get(xn, i));
+        gsl_vector_set(pp, i, gsl_vector_get(pn, i));
+      }
+      for (int i=vind; i<n-1; i++) {
+        gsl_vector_set(xp, i, gsl_vector_get(xn, i+1));
+        gsl_vector_set(pp, i, gsl_vector_get(pn, i+1));
+      }
+
+      //restart the solution:
+      constrained(vp, cp, pp, xp);
+
+      //reconstitute the missing variable before exiting:
+      double xvind=gsl_vector_get(c, minind);
+
+      for (int i=0; i<vind; i++) {
+	double xp_i=gsl_vector_get(xp, i);
+	gsl_vector_set(x, i, xp_i);
+        xvind-=gsl_matrix_get(v, minind, i)*xp_i;
+      }
+      for (int i=vind; i<n-1; i++) {
+	double xp_i=gsl_vector_get(xp, i);
+	gsl_vector_set(x, i+1, xp_i);
+        xvind-=gsl_matrix_get(v, minind, i+1)*xp_i;
+      }
+      gsl_vector_set(x, vind, xvind/gsl_matrix_get(v, minind, vind));
+
+      //clean up:
+      gsl_vector_free(xn);
+      gsl_vector_free(pn);
+      gsl_vector_free(xp);
+      gsl_vector_free(pp);
+      gsl_matrix_free(vp);
+      gsl_vector_free(cp);
+    }
+
+    return err;
+
+  }
+
 
   int constrained(gsl_matrix *a,	//matrix to solve
 		gsl_vector *b,		//solution vector
