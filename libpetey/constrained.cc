@@ -526,7 +526,7 @@ namespace libpetey {
           vdotx0+=vel*gsl_vector_get(xtrial, j);
 	  vdotint+=vel*gsl_vector_get(interior, j);
 	}
-	s[i]=(gsl_vector_get(c, bind[i])-vdotint-vdotx0)/vdotint;
+	s[i]=(gsl_vector_get(c, bind[i])-vdotint)/(vdotx0-vdotint);
 	if (s[i]<smin) {
           smin=s[i];
 	  bimin=i;
@@ -592,5 +592,54 @@ namespace libpetey {
     return FUCK(TM);
 
   }
+
+  int constrained(gsl_matrix *a,	//matrix to solve
+		gsl_vector *b,		//solution vector
+		gsl_matrix *v,		//constraint normals
+		gsl_vector *c,		//constraint thresholds
+		gsl_vector *x) {	//result
+
+    gsl_matrix *p;		//interior point
+    int err=0;
+
+    if (a->size1 != b->size ||
+		    a->size2 != x->size ||
+		    v->size2 != a->size2 ||
+		    v->size1 > a->size2+1 ||
+		    c->size != v->size1 ||
+		    interior->size!= a->size2) {
+      fprintf(stderr, "constrained: dimension mismatch\n");
+      throw DIMENSION_MISMATCH;
+    }
+
+    p=gsl_vector_alloc(x->size);
+    find_interior(v, c, p, 0.5);
+
+    //if the matrix is square, we can use the more efficient method:
+    if (a->size1 == a->size2) {
+      gsl_matrix *vt=gsl_matrix_alloc(v->size1, v->size2);	//transformed constraint normals
+      gsl_matrix *ct=gsl_vector_alloc(c->size);			//transformed constraint thresholds
+      gsl_vector_view v_i;
+      gsl_vector_view vt_i;
+      double ct_i;
+      //procedure is pretty basic: transform the constraints, then pass 
+      //everything to the procedure that minimizes just |x|, then transform
+      //the results back...
+      gsl_matrix_transpose(a);
+      for (int i=0; i<v->size1; i++) {
+        v_i=gsl_matrix_row(v, i);
+	vt_i=gsl_matrix_row(vt, i);
+	solver(a, &v_i.vector, &vt_i.vector);
+        gsl_blas_ddot(&vt_i.vector, b, ct_i);
+	gsl_vector_set(ct, ct_i);
+      }
+      constrained(vt, ct, p, x);
+    } else {
+      constrained(a, b, v, c, p, x);
+    }
+
+    return err;
+  }
+
 } //end namespace libpetey
 

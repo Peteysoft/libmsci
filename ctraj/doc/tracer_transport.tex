@@ -501,7 +501,8 @@ respectively and are normally calculated through eigenvalue analysis:
 Typically, only one of $U$ or $V$ is calculated and then the other by projection
 onto $R$.  Which one is calculated first is best determined by whether $m$
 is greater than or less than $n$.  Equation (\ref{SVD_def}) assumes that 
-$m>n$.
+$m>n$. 
+For all the problems discussed in this review, $m=n$.
 
 Because both $R^T \cdot R$ and $R \cdot R^T$ are symmetric
 the singular values,
@@ -758,13 +759,12 @@ Note that in order for the inequality in
 singular value must be greater-than one.
 Therefore (\ref{tracer_map_inequality}) is true for every $\vec q$
 if-and-only-if (\ref{SV_inequality}) is true for every $s$.
+In the language of set theory and first-order logic:
+\begin{equation}
+	\forall \vec q \in \Re^n ~ (\vec q \cdot R^T \cdot R \cdot \vec q \le \vec q \cdot \vec q) \iff \forall s \in \Re | ~R^T \cdot R \cdot \vec v = s^2 \vec v ~ (s \le 1)
+\end{equation}
 A similar argument will prove (\ref{length_conservation})
 iff (\ref{ortho_eigen}).
-
-%Therefore:
-%\begin{equation}
-%	\forall \vec q \in \Re^n ~ (\vec q \cdot R^T \cdot R \cdot \vec q \le \vec q \cdot \vec q) \iff \forall s \in \Re ~(R^T \cdot R \cdot \vec v = s^2 \vec v \land s \le 1)
-%\end{equation}
 
 \section{Volume deformation versus the transport map}
 
@@ -1004,7 +1004,7 @@ are many special properties that can be derived for the solutions.
 Matrix methods are also
 helpful in understanding and improving the stability of solutions.
 
-%\input{tt_symbol_list.tex}
+\input{tt_symbol_list.tex}
 
 \addcontentsline{toc}{section}{References}
 \bibliography{tracer.bib}
