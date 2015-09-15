@@ -43,5 +43,14 @@ namespace libpetey {
     return A;
   }
 
+  void gsl_throw_handler(const char *reason, const char * file, int line, int gsl_errno) {
+    fprintf(stderr, "Error in %s, line %d: %s\n", file, line, reason);
+    throw gsl_errno;
+  }
+
+  void gsl_continue_handler(const char *reason, const char * file, int line, int gsl_errno) {
+    fprintf(stderr, "Error in %s, line %d: %s\n", file, line, reason);
+  }
+
 }
 

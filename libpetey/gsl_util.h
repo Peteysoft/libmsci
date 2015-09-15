@@ -14,6 +14,11 @@ namespace libpetey {
   gsl_matrix *random_gsl_matrix(int m, int n);
   void random_gsl_matrix(gsl_matrix *a);
 
+  //throws error using C++ throw operator:
+  void gsl_throw_handler(const char *reason, const char *file, int line, int gsl_err);
+  //prints out message but doesn't otherwise interrupt the program:
+  void gsl_continue_handler(const char *reason, const char *file, int line, int gsl_err);
+
 }
 
 #endif

@@ -20,6 +20,10 @@ namespace libagf {
       gsl_matrix *vt;
       gsl_vector *s;
 
+      //pre-compute constraint coefficients:
+      gsl_matrix *cnorm;
+      gsl_vector *cthresh;
+
       //empirically derived mapping (from raw to final):
       real **imap;
 
@@ -37,6 +41,9 @@ namespace libagf {
 
       //prepare SVD of coding matrix:
       int code_svd();
+
+      //initialize constraints:
+      void init_constraint();
 
       //type of classification:
       int type;

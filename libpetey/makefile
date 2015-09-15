@@ -79,6 +79,7 @@ INCLUDE = peteys_tmpl_lib.h \
 		erfinv.h \
 		roots_mins.h \
 		solve_lode.h \
+		constrained.h \
 		gsl_util.h \
 		rk_dumb_ts.h \
 		peteys_no_templates.h

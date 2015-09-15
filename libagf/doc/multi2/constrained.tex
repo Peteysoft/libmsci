@@ -673,10 +673,10 @@ We eliminate $x_k$ using the following transformation:
 Therefore, each of the constraints transform as follows:
 \begin{eqnarray}
 	v_{ij}^\prime & = & \left \lbrace \begin{array}{rc} 
-	v_{ij} - {v_{hj}}/{v_{hk}} ; & j < k \\
-	v_{ij+1} - {v_{hj+1}}/{v_{hk}} ; & j \ge k
+	v_{ij} - {v_{ik} v_{hj}}/{v_{hk}} ; & j < k \\
+	v_{ij+1} - {v_{ik} v_{hj+1}}/{v_{hk}} ; & j \ge k
 	\end{array} \right . \\
-	c_i^\prime & = & c_i - {c_h}/{v_{hk}} \\
+	c_i^\prime & = & c_i - {v_{ik} c_h}/{v_{hk}} \\
 	i & \ne & h \\
 	j & \in & [1, n-1]
 \end{eqnarray}
