@@ -582,7 +582,7 @@ namespace libagf {
 
     for (cls_t i=0; i<this->ncls; i++) {
       printf("%g ", gsl_vector_get(p1, i));
-      p[i]=gsl_vector_get(p1, i);
+      //p[i]=gsl_vector_get(p1, i);
       //if (p[i]<0) printf("p[%d]=%g out-of-bounds\n", i, p[i]);
       //pt+=p[i];
     }

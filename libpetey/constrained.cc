@@ -249,15 +249,16 @@ namespace libpetey {
     assert(index < row->size && index >= 0);
 
     double v_i=gsl_vector_get(constraint, index);
+    double x_i=gsl_vector_get(row, index);
     for (int j=0; j<index; j++) {
       double x_el=gsl_vector_get(row, j);
       double v_j=gsl_vector_get(constraint, j);
-      gsl_vector_set(row2, j, x_el-gsl_vector_get(constraint, index)*v_j/v_i);
+      gsl_vector_set(row2, j, x_el-x_i*v_j/v_i);
     }
     for (int j=index+1; j<row->size; j++) {
       double x_el=gsl_vector_get(row, j);
       double v_j=gsl_vector_get(constraint, j);
-      gsl_vector_set(row2, j-1, x_el-gsl_vector_get(constraint, index)*v_j/v_i);
+      gsl_vector_set(row2, j-1, x_el-x_i*v_j/v_i);
     }
 
     return index;
