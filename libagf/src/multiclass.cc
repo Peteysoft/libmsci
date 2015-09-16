@@ -545,7 +545,6 @@ namespace libagf {
 	}
       }
       solve_cond_prob(map1, b, p1);
-      gsl_matrix_free(map1);
     }
 
     //apply normalization constraint:  

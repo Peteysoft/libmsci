@@ -6,6 +6,7 @@
 #include "gsl_util.h"
 #include "error_codes.h"
 #include "randomize.h"
+#include "constrained.h"
 
 #define FUCK(X) X-1
 #define TM 1
@@ -96,6 +97,8 @@ namespace libpetey {
     		gsl_vector *pp,		//interior point
 		double offset) {	//offset (if applicable)
     int err=0;
+    int nb;
+    int bind[pp->size];
 
     if (v->size1 != c->size ||
 		    pp->size!= v->size2) {
@@ -143,6 +146,9 @@ namespace libpetey {
       throw PARAMETER_OUT_OF_RANGE;
     }
 
+    nb=check_constraints(v, c, pp, bind);
+    assert(nb==0);
+
     //err=gsl_blas_dgemv(CblasNoTrans, 1., v, pp, 0., interior);
 
     return err;
@@ -175,6 +181,8 @@ namespace libpetey {
 		  gsl_vector *x,		//point to test
 		  int *ind) {			//list of violated constraints
     int n=0;
+    double eps=1e-15;
+
     if (v->size1 != c->size || v->size2 != x->size) {
       fprintf(stderr, "check constraints: dimension mismatch\n");
       throw DIMENSION_MISMATCH;
@@ -182,9 +190,13 @@ namespace libpetey {
     for (int i=0; i<v->size1; i++) {
       double *vrow;
       double dot;
+      double c_i=gsl_vector_get(c, i);
       vrow=gsl_matrix_ptr(v, i, 0);
       dot=cblas_ddot(v->size2, vrow, 1, x->data, x->stride);
-      if (dot<gsl_vector_get(c, i)) {
+      //we have to fudge this a little bit otherwise it screws up:
+      //(although I wonder if the errors might not compound after a while??)
+      //if (dot<c_i) {
+      if (c_i-dot > eps) {
         ind[n]=i;
 	n++;
       }
@@ -308,6 +320,7 @@ namespace libpetey {
 
     return vindex;
   }
+
   //returns the index of the eliminated variable:
   int apply_constraint(gsl_matrix *a, 
 		gsl_vector *b,		//solution vector
@@ -340,7 +353,6 @@ namespace libpetey {
       vindex=constrain_row(&vrow.vector, &applied_constraint.vector, 
 		      vindex, &v2row.vector);
       assert(vindex >=0 && vindex < a->size2);
-      printf("apply_constraint: vindex=%d\n", vindex);
       v_cv=gsl_matrix_get(v, cindex, vindex);
       gsl_vector_set(c2, i, gsl_vector_get(c, i)-
 		      gsl_matrix_get(v, i, vindex)*c_c/v_cv);
@@ -394,8 +406,8 @@ namespace libpetey {
     //if a constraint has been violated, find the least distance to the
     //constraint hyperplane:
     if (nb > 0) {
-      double smin=0;		//distance to nearest constraint
-      int minind;		//index of nearest constraint
+      double smin=1;		//distance to nearest constraint
+      int minind=-1;		//index of nearest constraint
       int vind=-1;		//index of next eliminated variable
       gsl_vector *pn=gsl_vector_alloc(n);
       gsl_vector *xn=gsl_vector_alloc(n);
@@ -413,12 +425,13 @@ namespace libpetey {
 	gsl_blas_ddot(&v_ind.vector, x, &vdotx);
 
 	s=(gsl_vector_get(c, bind[i])-vdotp)/(vdotx-vdotp);
-	assert(s>=0);
+	assert(s>=0 && s<=1);
 	if (s<smin) {
           smin=s;
 	  minind=bind[i];
 	}
       }
+      assert(minind>=0);
 
       //transform the other constraints according to the closest violated
       //constraint:
@@ -660,6 +673,7 @@ namespace libpetey {
     //if the matrix is square, we can use the more efficient method:
     //if (a->size1 == a->size2) {
     if (0) {
+      //there is actually no advantage to doing it this way:
       gsl_matrix *vt=gsl_matrix_alloc(v->size1, v->size2);	//transformed constraint normals
       gsl_vector *ct=gsl_vector_alloc(c->size);			//transformed constraint thresholds
       gsl_vector *xt=gsl_vector_alloc(b->size);
@@ -675,7 +689,7 @@ namespace libpetey {
 	vt_i=gsl_matrix_row(vt, i);
 	solver(a, &v_i.vector, &vt_i.vector);
         gsl_blas_ddot(&vt_i.vector, b, &ct_i);
-	gsl_vector_set(ct, i, ct_i);
+	gsl_vector_set(ct, i, gsl_vector_get(c, i)+ct_i);
       }
 
       p=gsl_vector_alloc(b->size);
