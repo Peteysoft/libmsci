@@ -382,7 +382,7 @@ namespace libpetey {
       gsl_vector_set(b2, i, gsl_vector_get(b, i)-
 		      gsl_matrix_get(a, i, vindex)*c_c/v_cv);
     }
-    printf("apply_constraint: vindex=%d\n", vindex);
+    //printf("apply_constraint: vindex=%d\n", vindex);
 
     return vindex;
   }
@@ -522,7 +522,7 @@ namespace libpetey {
     //first, we find the unconstrained solution:
     //xtrial=gsl_vector_alloc(x->size);
     solver(a, b, x);
-
+/*
     printf("constrained: solve:\n");
     printf("a=\n");
     print_gsl_matrix(stdout, a);
@@ -538,7 +538,7 @@ namespace libpetey {
     gsl_vector_fprintf(stdout, x, "%g ");
     printf("interior point=\n");
     gsl_vector_fprintf(stdout, interior, "%g ");
-
+*/
     //see how many constraints it violates:
     nb=check_constraints(v, c, x, bind);
     //find distance between the interior point and each of the violated
@@ -548,9 +548,11 @@ namespace libpetey {
     if (nb>0) {
       //if there is only one variable left, we solve based on the violated
       //constraint: (vx=c)
+      /*
       printf("constraints broken: ");
       for (int i=0; i<nb; i++) printf("%d ", bind[i]);
       printf("\n");
+      */
       if (x->size==1) {
         assert(nb==1);	//if problem has been specified properly, only
 	  			//one constraint can be violated
@@ -587,10 +589,11 @@ namespace libpetey {
         fprintf(stderr, "constrained: something went wrong\n");
         throw INTERNAL_ERROR;
       }
+      /*
       printf("distances to each constraint: ");
       for (int i=0; i<nb; i++) printf("%g ", s[i]);
       printf("\n");
-
+      */
       //allocate new variables for solving reduced problem:
       a2=gsl_matrix_alloc(a->size1, a->size2-1);
       b2=gsl_vector_alloc(a->size1);
@@ -672,8 +675,8 @@ namespace libpetey {
 
     //if the matrix is square, we can use the more efficient method:
     //if (a->size1 == a->size2) {
+    //there is actually no advantage to doing it this way:
     if (0) {
-      //there is actually no advantage to doing it this way:
       gsl_matrix *vt=gsl_matrix_alloc(v->size1, v->size2);	//transformed constraint normals
       gsl_vector *ct=gsl_vector_alloc(c->size);			//transformed constraint thresholds
       gsl_vector *xt=gsl_vector_alloc(b->size);

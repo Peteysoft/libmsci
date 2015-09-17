@@ -263,7 +263,6 @@ namespace libagf {
   //initialize the constraint coefficents and thresholds:
   template <class real, class cls_t>
   void multiclass<real, cls_t>::init_constraint() {
-    printf("multiclass: initializing constraints\n");
     if (cnorm==NULL) {
       gsl_vector_view lastrow;
       cnorm=gsl_matrix_alloc(this->ncls, this->ncls-1);
@@ -519,19 +518,8 @@ namespace libagf {
   cls_t multiclass<real, cls_t>::classify_special(gsl_vector *b, real *p) {
     real pt=0;
     gsl_matrix *map1;
-    gsl_vector *bt=gsl_vector_alloc(nmodel);
-    //solve by old method:
-    gsl_vector *p1=gsl_vector_alloc(this->ncls);
-    //solve by new method:
-    gsl_vector *p2=gsl_vector_alloc(this->ncls-1);
-
-    init_constraint();
-
-    //print_gsl_matrix(stdout, map);
-    //printf("\n");
 
     if (strictflag) {
-      solve_cond_prob(map, b, p1);
       map1=map;
     } else {
       map1=gsl_matrix_alloc(nmodel+1, this->ncls);
@@ -544,53 +532,54 @@ namespace libagf {
           if (map_el==0) gsl_matrix_set(map1, i, j, r_i);
 	}
       }
-      solve_cond_prob(map1, b, p1);
     }
 
-    //apply normalization constraint:  
-    //to avoid any biases produced by using the same variable each time
-    int ind=ranu()*this->ncls;
-    gsl_matrix *at=gsl_matrix_alloc(nmodel, this->ncls-1);
+    //old method:
+    if (type==7) {	//(logic isn't pretty, but simplest way to implement)
+      gsl_vector *p1=gsl_vector_alloc(this->ncls);
+      solve_cond_prob(map1, b, p1);
+      for (cls_t i=0; i<this->ncls; i++) {
+        p[i]=gsl_vector_get(p1, i);
+      }
+      gsl_vector_free(p1);
+    //new method:
+    } else {
+      gsl_vector *bt=gsl_vector_alloc(nmodel);
+      gsl_vector *p2=gsl_vector_alloc(this->ncls-1);
+      //apply normalization constraint:  
+      //to avoid any biases produced by using the same variable each time
+      int ind=ranu()*this->ncls;
+      gsl_matrix *at=gsl_matrix_alloc(nmodel, this->ncls-1);
+      init_constraint();
 
-    printf("multiclass::classify_special: applying first constraint\n");
-    for (int i=0; i<nmodel; i++) {
-      printf("multiclass::classify_special: i=%d\n", i);
-      double aind=gsl_matrix_get(map1, i, ind);
-      gsl_vector_set(bt, i, gsl_vector_get(b, i)-aind);
+      for (int i=0; i<nmodel; i++) {
+        double aind=gsl_matrix_get(map1, i, ind);
+        gsl_vector_set(bt, i, gsl_vector_get(b, i)-aind);
+        for (int j=0; j<ind; j++) {
+          gsl_matrix_set(at, i, j, gsl_matrix_get(map1, i, j)-aind);
+        }
+        for (int j=ind+1; j<this->ncls; j++) {
+          gsl_matrix_set(at, i, j-1, gsl_matrix_get(map1, i, j)-aind);
+        }
+      }
+
+      constrained(at, bt, cnorm, cthresh, p2);
+
+      //reconstitute missing variable and extract the rest:
+      p[ind]=1;
       for (int j=0; j<ind; j++) {
-        gsl_matrix_set(at, i, j, gsl_matrix_get(map1, i, j)-aind);
+        p[j]=gsl_vector_get(p2, j);
+        p[ind]-=p[j];
       }
       for (int j=ind+1; j<this->ncls; j++) {
-        gsl_matrix_set(at, i, j-1, gsl_matrix_get(map1, i, j)-aind);
+        p[j]=gsl_vector_get(p2, j-1);
+        p[ind]-=p[j];
       }
+      gsl_vector_free(p2);
+      gsl_matrix_free(at);
     }
 
-    printf("multiclass::classify_special: calling constrained subroutine\n");
-    constrained(at, bt, cnorm, cthresh, p2);
-
-    //reconstitute missing variable and extract the rest:
-    p[ind]=1;
-    for (int j=0; j<ind; j++) {
-      p[j]=gsl_vector_get(p2, j);
-      p[ind]-=p[j];
-    }
-    for (int j=ind+1; j<this->ncls; j++) {
-      p[j]=gsl_vector_get(p2, j-1);
-      p[ind]-=p[j];
-    }
-
-    for (cls_t i=0; i<this->ncls; i++) {
-      printf("%g ", gsl_vector_get(p1, i));
-      //p[i]=gsl_vector_get(p1, i);
-      //if (p[i]<0) printf("p[%d]=%g out-of-bounds\n", i, p[i]);
-      //pt+=p[i];
-    }
-    printf("\n");
-    //printf("pt=%g\n", pt);
-    gsl_vector_free(p1);
-    gsl_vector_free(p2);
     if (strictflag!=1) gsl_matrix_free(map1);
-    gsl_matrix_free(at);
 
     return choose_class(p, this->ncls);
 
@@ -632,6 +621,9 @@ namespace libagf {
       case (6):
         cls1=classify_scratch(b, pdf);
         break;
+      case (7):
+	cls1=classify_special(b, pdf);
+	break;
       default:
         cls1=classify_special(b, pdf);
         break;

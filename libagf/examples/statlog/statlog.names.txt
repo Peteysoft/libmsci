@@ -1,0 +1,80 @@
+Citation Request:
+   The Stalog databases are a subset of the datasets used in the
+   European Statlog project.  Any publications based on these datasets
+   should include an acknowledgment of the original sources of the
+   datasets.
+
+1. Title: Statlog Databases
+
+2. Sources: 
+    (a) See Above.
+    (b) Donors: Ross D. King
+                Department of Statistics and Modelling Science
+                University of Strathclyde
+                Glasgow G1 1XH
+                Scotland
+                U.K.
+                +44 41 552-4400 x 3033
+                Fax +44 41 552-4711
+                ross@turing.uk.ac
+   (c) Date: October 1992
+
+3. Past Usage:
+   1. Feng,C., Sutherland,A., King,S., Muggleton,S. & Henery,R.
+      (1993). Comparison of Machine Learning Classifiers to 
+      Statistics and Neural Networks. AI & Stats Conf. 93.
+   
+4. Relevant Information:
+   The databases available here were in used in the European StatLog
+   project, which involves comparing the performances of machine learning,
+   statistical, and neural network algorithms on data sets from real-world
+   industrial areas including medicine, finance, image analysis,
+   and engineering design.  Not all of the databases used in the
+   project are available in this repository.
+
+5. Databases:
+
+   (a) Vehicle Silhouettes:
+       The original purpose was to find a method of distinguishing
+       3D objects within a 2D image by application of an ensemble of
+       shape feature extractors to the 2D silhouettes of the objects.
+
+   (b) Landsat Satellite:
+       The database consists of the multi-spectral values
+       of pixels in 3x3 neighbourhoods in a satellite image,
+       and the classification associated with the central pixel
+       in each neighbourhood. The aim is to predict this
+       classification, given the multi-spectral values. In
+       the sample database, the class of a pixel is coded as
+       a number.
+
+   (c) Shuttle:
+       The shuttle dataset contains 9 attributes all of which are 
+       numerical. Approximately 80% of the data belongs to class 1.
+
+   (d) Australian Credit Approval:
+       This file concerns credit card applications.  All attribute names
+       and values have been changed to meaningless symbols to protect
+       confidentiality of the data.  This database exists elsewhere in
+       the repository (Credit Screening Database) in a slightly different
+       form.
+
+   (e) Heart Disease:
+       This dataset is a heart disease database similar to a database
+       already present in the repository (Heart Disease databases)
+       but in a slightly different form.  This database contains 13 
+       attributes (which have been extracted from a larger set of 75).
+
+   (f) Image Segmentation:
+       This dataset is an image segmentation database similar to a database
+       already present in the repository (Image segmentation database)
+       but in a slightly different form.  The instances were drawn randomly 
+       from a database of 7 outdoor images.  The images were handsegmented 
+       to create a classification for every pixel.  Each instance is a 3x3 
+       region.
+
+   (g) German Credit:
+       This dataset classifies people described by a set of attributes as
+       good or bad credit risks.  Comes in two formats (one all numeric).
+       Also comes with a cost matrix.
+
