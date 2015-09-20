@@ -95,7 +95,8 @@ namespace libpetey {
 		gsl_matrix *v,		//constraint normals
 		gsl_vector *c,		//constraint thresholds
     		gsl_vector *pp,		//interior point
-		double offset) {	//offset (if applicable)
+		double offset,		//offset (if applicable)
+	  	int (* solver) (gsl_matrix *, gsl_vector *, gsl_vector *)) {
     int err=0;
     int nb;
     int bind[pp->size];
@@ -116,7 +117,7 @@ namespace libpetey {
       double c_k=gsl_vector_get(c, v->size2);
       c->size--;		//z_0i=c_i; k ommitted
       v->size1--;
-      err=solver(v, c, xp);
+      err=(*solver)(v, c, xp);
       if (err!=0) {
         fprintf(stderr, "find_interior: solver returned error, %d\n", err);
         throw err;
@@ -503,7 +504,8 @@ namespace libpetey {
 		gsl_matrix *v,		//constraint normals
 		gsl_vector *c,		//constraint thresholds
     		gsl_vector *interior,	//interior point
-		gsl_vector *x){		//result
+		gsl_vector *x,		//result
+	  	int (* solver) (gsl_matrix *, gsl_vector *, gsl_vector *)) {
 
     gsl_vector *xtrial;		//unconstrained solution
     int bind[c->size];		//which constraints are broken
@@ -521,7 +523,7 @@ namespace libpetey {
 
     //first, we find the unconstrained solution:
     //xtrial=gsl_vector_alloc(x->size);
-    solver(a, b, x);
+    (*solver)(a, b, x);
 /*
     printf("constrained: solve:\n");
     printf("a=\n");
@@ -654,7 +656,8 @@ namespace libpetey {
 		gsl_vector *b,		//solution vector
 		gsl_matrix *v,		//constraint normals
 		gsl_vector *c,		//constraint thresholds
-		gsl_vector *x) {	//result
+		gsl_vector *x,		//result
+	  	int (* solver) (gsl_matrix *, gsl_vector *, gsl_vector *)) {
 
     gsl_vector *p;		//interior point
     int err=0;
@@ -690,7 +693,7 @@ namespace libpetey {
       for (int i=0; i<v->size1; i++) {
         v_i=gsl_matrix_row(v, i);
 	vt_i=gsl_matrix_row(vt, i);
-	solver(a, &v_i.vector, &vt_i.vector);
+	(*solver)(a, &v_i.vector, &vt_i.vector);
         gsl_blas_ddot(&vt_i.vector, b, &ct_i);
 	gsl_vector_set(ct, i, gsl_vector_get(c, i)+ct_i);
       }
@@ -703,7 +706,7 @@ namespace libpetey {
       //transform result back:
       gsl_matrix_transpose(a);
       gsl_vector_sub(xt, b);
-      solver(a, xt, x);
+      (*solver)(a, xt, x);
 
       gsl_matrix_free(vt);
       gsl_vector_free(ct);

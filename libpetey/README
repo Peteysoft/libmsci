@@ -110,8 +110,8 @@ supernewton.h:	Powerful root-finding algorithm.  Brackets the root and fits a
 		numerical stability.  Function to be zeroed must return its 
 		derivatives.
 
-tree_lg:	Binary tree class used to find k- minimum and maximum values.
-tree_lgi:	Binary tree class used to find k- minimum and maximum values.  
+tree_lg.h:	Binary tree class used to find k- minimum and maximum values.
+tree_lgi.h:	Binary tree class used to find k- minimum and maximum values.  
 		Sorts indices simultaneous to actual values.
 
 linked.h:	Templated linked-list class.
@@ -127,6 +127,12 @@ quicksort.h:	Quicksort routine plus k-least routines based on a quicksort.
 parse_command_opts: Subroutine for parsing the optional command arguments
 		in far fewer commands than getopt.
 
+read_ascii_all.h:	Reads an ASCII file all in one go. Other related 
+		functions including reading a line of characters with automatic
+		memory allocation.
+
+randomize.h:	Simple interface for GSL random number generator.
+
 petey_pointer.h: "Smart" pointer template class.
 
 symbol_table.h: Templated symbol table class.
@@ -134,8 +140,34 @@ symbol_table.h: Templated symbol table class.
 full_util.h:	Utilities for working with full matrices stored in primitive
 		types.
 
+erfinv.h:	Inverse error function.
+
+kselect.h:	A family of objects for selecting the k-least elements in a
+		list. Eight types: tree, heap, quicksort, and selection that
+		store associated indices and that don't.
+
+roots_mins.h:	One-dimensional minimizers and root finders.
+
+rk_dumb_ts.h:	Thread-safe Runge-Kutta integrator without adaptive stepsize.
+
+peteys_no_templates.h:	Templates without templates. Heapsort and binary search
+		of lists of void pointers.
+
+gsl_util.h:	Assortment of useful functions for GSL vectors and matrices.
+
+solve_lode.h:	Solves systems of linear ordinary differential equations (ODEs)
+		with constant coefficients. Uses the GNU Scientific Library (GSL)
+
+constrained.h	Solves linear least squares problems subject to a series of
+		constraints that form a triangular hyper-pyramid. Uses the GSL.
+
 date_calc:	Command-line calculator for working with dates.  Tests the
 		time_class class.
+
+sorter:		Executable for sorting and finding the kleast of an ASCII list 
+		of numbers.
+
+random:		Print out a list of random numbers.
 
 
 In libsparse.a:

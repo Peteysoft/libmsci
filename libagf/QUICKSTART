@@ -278,9 +278,15 @@ Option		Function
 			1=filter variance min and max;
 			2=total weight min and max
 		  non-hierarchical multi-class classification:
-			0=solve conditional probabilities by matrix inversion
-			1=estimate class by voting
-			2=voting over-rides matrix inversion.
+			0=solve conditional probabilities by constrained inverse
+				(default)
+			1=solve cond. prob. by linear least squares,
+				no constraints, no re-normalization
+			2=estimate class by voting from probability
+			3=estimate class by voting from class label
+			4=voting from probability over-rides matrix inversion.
+				Probabilities are corrected and re-normalized.
+			5=voting from class label over-rides matrix inversion.
 				Probabilities are corrected and re-normalized.
 -r		Class borders: value of conditional prob. at discrimination border.
 -R		For random sampling.

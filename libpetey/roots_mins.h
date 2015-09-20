@@ -3,17 +3,17 @@
 
 namespace libpetey {
 
-  //minimization routine that uses bisection:
+  //minimization routine that uses golden ratio:
   template <class real>
   real min_golden(void (*func) (real, void *, real *),
 		void *params,	//function parameters
-                real x1,	//first bracket
-		real x2,	//second bracket
-		real x3,
+                real x1,	//first point; y(x2) < y(x1)
+		real x2,	//second point
+		real x3,	//third point; y(x2) < y(x3)
 		real tol,	//desired tolerance
 		long maxiter,	//maximum number of iterations
 		long &err,	//returns number of iterations
-		real &y0);	//to avoid redundant calculation
+		real &y0);	//value at x2; returned minimum
 
   //root-finding function which brackets the root
   //and interpolates between the two brackets:

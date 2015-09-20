@@ -67,7 +67,7 @@ int main (int argc, char **argv) {
   //while keeping the ones to pass to class_borders
   //--the former include options for normalization or pre-processing:
   opt[3]=&nsv;
-  argc=parse_command_opts(argc, argv, "a0nS-+^MKOuZ", "%s%%%d%s%s%s%%%s%%", opt, flag, 3);
+  argc=parse_command_opts(argc, argv, "a0nS-+^MKOuZA", "%s%%%d%s%s%s%%%s%%%", opt, flag, 3);
   if (argc<0) {
     fprintf(stderr, "multi_borders: error parsing command line\n");
     exit(FATAL_COMMAND_OPTION_PARSE_ERROR);
@@ -126,8 +126,8 @@ int main (int argc, char **argv) {
     fprintf(helpfs, "  -u             store borders data in un-normalized coordinates\n");
     fprintf(helpfs, "  -a normfile    normalize/use normfile for normalization data\n");
     fprintf(helpfs, "                     (default is <train>.std\n");
-    //fprintf(helpfs, "  -A             training data is in ASCII (LVQ) format\n");
-    fprintf(helpfs, "  -M             training data is in LIBSVM format (only with -+ or -^)\n");
+    fprintf(helpfs, "  -A             training data is in ASCII (LVQ) format\n");
+    fprintf(helpfs, "  -M             training data is in LIBSVM format (only with -- or -^)\n");
     fprintf(helpfs, "  -- command     command to use for training [%s%s%s] (data in ASCII format)\n", AGF_COMMAND_PREFIX, 
 			AGF_BINARY_CLASSIFIER, AGF_OPT_VER);
     fprintf(helpfs, "  -+ extra       additional options to pass to training command\n");
@@ -136,6 +136,7 @@ int main (int argc, char **argv) {
     //fprintf(helpfs, "  -0             trial run only: print out commands but do not execute them\n");
     fprintf(helpfs, "  -O pcom        \"accelerator\" mode: convert existing models to border samples\n");
     fprintf(helpfs, "                   pcom is an external command that returns probability estimates\n");
+    fprintf(helpfs, "  -Z             accelerate LIBSVM model using in-house codes\n");
     fprintf(helpfs, "\n");
     fprintf(helpfs, "The syntax of the control file is as follows:\n\n");
     fprintf(helpfs, "  <branch>         ::= <model> \"{\" <branch_list> \"}\" | <CLASS>\n");
@@ -190,9 +191,6 @@ int main (int argc, char **argv) {
   commandfs=stdout;
 
   //create a unique session id (or at least as close as we can come):
-  //ftime(&date);
-  //pid=getpid();
-  //session_id=pid*10000+date.millitm;        //how big do PID's get??
   session_id=seed_from_clock();
 
   //not a great idea--what if we want to throw the control file in there 
@@ -222,7 +220,7 @@ int main (int argc, char **argv) {
     }
     command=new char [strlen(trainfile)+strlen(normfile)+strlen(tempbase)+
 		strlen(AGF_COMMAND_PREFIX)+strlen(AGF_LTRAN_COM)+
-		strlen(AGF_OPT_VER)+100];
+		strlen(AGF_OPT_VER)+104];
     sprintf(command, "%s%s%s -a %s", AGF_COMMAND_PREFIX, AGF_LTRAN_COM,
 		AGF_OPT_VER, normfile);
     if (flag[2]) {
@@ -232,7 +230,8 @@ int main (int argc, char **argv) {
       sprintf(command+strlen(command), " -S %d", nsv);
     }
 
-    if (flag[4]) {
+    //class_borders can now work with both native binary and ASCII formats:
+    if (flag[4] || flag[12]) {
       char mc[3];
       mc[0]='\0';
       if (flag[7]) strcpy(mc, "-M");
@@ -249,7 +248,9 @@ int main (int argc, char **argv) {
       } else {
         train=new char [strlen(tempbase)+1];
         sprintf(train, "%s", tempbase);
-        fprintf(commandfs, "cp %s.cls %s.cls\n", trainfile, tempbase);
+	if (flag[12]==0) {
+          fprintf(commandfs, "cp %s.cls %s.cls\n", trainfile, tempbase);
+	}
       }
     }
   } else {
@@ -301,15 +302,18 @@ int main (int argc, char **argv) {
       //class borders through the command name:
       commandname=new char[strlen(AGF_COMMAND_PREFIX)+strlen(normfile)+
 		strlen(AGF_BINARY_CLASSIFIER)+strlen(AGF_OPT_VER)+
-		strlen(extra)+23];
+		strlen(extra)+25];
       sprintf(commandname, "%s%s%s %s -u -a %s", AGF_COMMAND_PREFIX, 
 		AGF_BINARY_CLASSIFIER, AGF_OPT_VER, extra, normfile);
     } else {
       commandname=new char[strlen(AGF_COMMAND_PREFIX)+strlen(extra)+
-		strlen(AGF_BINARY_CLASSIFIER)+strlen(AGF_OPT_VER)+11];
+		strlen(AGF_BINARY_CLASSIFIER)+strlen(AGF_OPT_VER)+13];
       sprintf(commandname, "%s%s%s %s", AGF_COMMAND_PREFIX, 
 		AGF_BINARY_CLASSIFIER, AGF_OPT_VER, extra);
     }
+    //class_borders can work with both native binary and ASCII files:
+    if (flag[12]) strcat(commandname, " -A");
+    if (flag[7]) strcat(commandname, " -M");
   }
 
   //input control file:
@@ -352,10 +356,10 @@ int main (int argc, char **argv) {
       precom[0]='\0';
     }
     if (flag[4]==0) {
-      //external models are meant to work with ASCII files:
-      if (flag[7]) strcat(commandname, " -M");
       //pass -Z option to class_borders:
-      if (flag[11]) strcat(commandname, " -Z");
+      if (flag[11]) {
+        strcat(commandname, " -Z");
+      }
     }
     shell=new multiclass_hier<real_a, cls_ta>(infs, 0, 1,
 		precom, flag[7], opt_args.Kflag);

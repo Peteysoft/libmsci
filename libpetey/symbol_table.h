@@ -8,9 +8,9 @@ namespace libpetey {
   template <class sym_t>
   class symbol_table {
     protected:
-      long n;		//number of entries
+      long n;			//number of entries
       long nunq;		//number of unique symbols
-      long array_size;	//size of arrays
+      long array_size;		//size of array
       sym_t *sym;		//the symbols
       long *sind;		//indexes the variables in terms of the symbols
 
