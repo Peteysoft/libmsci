@@ -32,15 +32,27 @@ namespace libagf {
       int ttype;
     public:
       svm2class();
-      svm2class(char *modfile, int tc=0);
+      svm2class(char *modfile, 		//file containing LIBSVM model
+		      int tc=0);	//how to transform decision value:
+      					//-1: f (return raw decision value)
+      					//0:  1 - 2/(1+exp(A*f+B)
+					//1:  -tanh(f)
       virtual ~svm2class();
       int init(char *modfile, int tc=0);
+
       virtual real R(real *x, real *praw=NULL);
       virtual cls_t classify(real *x, real *p, real *praw=NULL);
       virtual cls_t classify(real *x, real &p, real *praw=NULL);
       virtual cls_t class_list(cls_t *cls);
-      real R_deriv(real *x, real *drdx);
-      void R_deriv_num(real *x, real dx, real *drdx);
+
+      //return difference in conditional prob. (R=P(2|x)-P(1|x)) plus derivative:
+      real R_deriv(real *x, 			//test point
+		      real *drdx);		//gradient of R
+      //return numerical derivative to validate above:
+      void R_deriv_num(real *x, 		//test point
+		      real dx, 			//absolute different in x
+		      				//(dr/dx=(R(x+dx)-R(x))/dx)
+		      real *drdx);		//approximate gradient of R
 
   };
 

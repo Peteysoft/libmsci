@@ -286,10 +286,10 @@ can return accurate estimates of the conditional probabilities.
 So far we have only considered the case where the binary classifiers partition
 all the classes, but what if we allow the binary classifiers to work with only
 a sub-set of all the classes? Now, we allow the coding matrix, $A$, to 
-contain $0$ elements: $a_{ij} \in \lbrace -1, 0 1 \rbrace$. 
-A $-1$ indicates that the class is in the left side of
-the partition, a $1$ that it is in the right side, while a zero means that
-it is not included in the partition. 
+contain $0$ elements: $a_{ij} \in \lbrace -1,~0,~1 \rbrace$. 
+$a_{ij}=-1$ indicates that the $j$th class is in the left side of
+the $i$th partition, $a_{ij}=1$ that it is in the right side, 
+while $a_{ij}=0$ means that it is not included in the partition. 
 
 While the voting method in (\ref{voting}) remains the 
 same, the inverse problem in (\ref{basic_equation}) will have to be revised. 
@@ -301,7 +301,7 @@ by the sum of the multi-class probabilities contained in the partition:
 where $\vec p$, we recall, is a vector of multi-class conditional probabilities. 
 Some rearrangement produces the following:
 \begin{equation}
-	\sum_j a_{ij} p_j + r_i \sum_{j|a_{ij}=0} p_j = r_i
+	\sum_j \left [a_{ij} + \delta_{0a_{ij}} r_i \right ] p_j = r_i
 	\label{general_form}
 \end{equation}
 Note that this more general formulation includes the ``strict'' case.
@@ -657,6 +657,7 @@ $\lbrace i |~\vec v_i \cdot \vec x_0 < c_i \rbrace$ are the violated
 constraints. Again if the constraints have been laid out properly, $s$ should
 always be positive.
 
+[*this will not work in all situations! This needs to be reworked...]
 
 Let $s_{min}=\min_i s_i$ be the minimum value for the line parameter and 
 $h=\arg \min_i s_i$ be the closest violated constraint.

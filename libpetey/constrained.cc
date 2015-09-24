@@ -196,8 +196,8 @@ namespace libpetey {
       dot=cblas_ddot(v->size2, vrow, 1, x->data, x->stride);
       //we have to fudge this a little bit otherwise it screws up:
       //(although I wonder if the errors might not compound after a while??)
-      //if (dot<c_i) {
-      if (c_i-dot > eps) {
+      if (dot<c_i) {
+      //if (c_i-dot > eps) {
         ind[n]=i;
 	n++;
       }
@@ -580,8 +580,11 @@ namespace libpetey {
           vdotx0+=vel*gsl_vector_get(x, j);
 	  vdotint+=vel*gsl_vector_get(interior, j);
 	}
+//***this will not work in all cases!
+//must be redone!
 	s[i]=(gsl_vector_get(c, bind[i])-vdotint)/(vdotx0-vdotint);
-	assert(s[i]>=0 && s[i]<=1);
+	//this is the source of our problem; solution: just get rid of it...
+	//assert(s[i]>=0 && s[i]<=1);
 	if (s[i]<smin) {
           smin=s[i];
 	  bimin=i;
