@@ -23,7 +23,7 @@ namespace libpetey {
     		gsl_vector *pp,		//interior point
 		double offset,		//how far away from constraint borders
   					//to make interior point
-		int (* solver) (gsl_matrix *,
+		int (* solver1) (gsl_matrix *,
 				gsl_vector *,
 				gsl_vector *)=&solver);
 
@@ -59,7 +59,7 @@ namespace libpetey {
 		gsl_vector *c,		//constraint thresholds
 		gsl_vector *p,		//interior point
 		gsl_vector *x,		//solution vector
-		int (* solver) (gsl_matrix *,
+		int (* solver1) (gsl_matrix *,
 				gsl_vector *,
 				gsl_vector *)=&solver);
 
@@ -68,7 +68,7 @@ namespace libpetey {
 		gsl_matrix *v,		//constraint normals
 		gsl_vector *c,		//constraint thresholds
 		gsl_vector *x,		//result
-		int (* solver) (gsl_matrix *,
+		int (* solver1) (gsl_matrix *,
 				gsl_vector *,
 				gsl_vector *)=&solver);
 }

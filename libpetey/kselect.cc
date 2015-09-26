@@ -396,16 +396,16 @@ namespace libpetey {
 
   template <class type>
   long kiselect_quick<type>::add(type val) {
-    (*data)[this->ncur]=val;
-    (*ind)[this->ncur]=this->ncur;
+    (*data)[(int) this->ncur]=val;
+    (*ind)[(int) this->ncur]=this->ncur;
     this->ncur++;
     return data->size();
   }
 
   template <class type>
   long kiselect_quick<type>::add(type val, long ind2) {
-    (*data)[this->ncur]=val;
-    (*ind)[this->ncur]=ind2;
+    (*data)[(int) this->ncur]=val;
+    (*ind)[(int) this->ncur]=ind2;
     this->ncur++;
     return data->size();
   }

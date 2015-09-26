@@ -657,11 +657,18 @@ $\lbrace i |~\vec v_i \cdot \vec x_0 < c_i \rbrace$ are the violated
 constraints. Again if the constraints have been laid out properly, $s$ should
 always be positive.
 
-[*this will not work in all situations! This needs to be reworked...]
-
 Let $s_{min}=\min_i s_i$ be the minimum value for the line parameter and 
 $h=\arg \min_i s_i$ be the closest violated constraint.
 If $n=1$ then the solution is $x=\frac{c_h}{v_h}$
+
+[*this will not work in all situations! This needs to be reworked...]
+Speculate: will only work when the following condition holds:
+\begin{equation}
+	\frac{\vec v_i \cdot \vec v_j}{|\vec v_i||\vec v_j|} > 0;~i \ne j
+\end{equation}
+In other words, the hyper-pyramid contains no oblique angles.
+Otherwise, it may be necessary to revisit different combinations of constraints
+when more than one constraint is violated.
 
 \subsection{Step 3: restrict the problem to lie on the closest violated constraint}
 
