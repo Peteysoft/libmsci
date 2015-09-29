@@ -514,7 +514,8 @@ addpath:
             //if (vartyp[i]!=SCALAR_DATA) vartyp[i]=DELETED;
             vartyp[i]=DELETED;
             sym=symtab.get(i);
-            if (delflag[(long) i]) fprintf(fs, "delete %s \"m\"\n", sym);
+            //if (delflag[(long) i]) fprintf(fs, "delete %s \"m\"\n", sym);
+            if (delflag[i]) fprintf(fs, "delete %s \"m\"\n", sym);
             delete [] sym;
           }
           fclose(fs);
@@ -550,7 +551,8 @@ declaration:
         id=symtab.add($2);
       }
       vartyp[id]=$1;
-      delflag.off(id);
+      //delflag.off(id);
+      delflag[id]=0;
       //printf("current symbol table:\n");
       //symtab.print();
       delete [] $2;
@@ -562,13 +564,15 @@ declaration:
         id=symtab.add($2);
       }
       vartyp[id]=VEC_T;
-      delflag.off(id);
+      //delflag.off(id);
+      delflag[id]=0;
       delete [] $2;
     }
   | DELETE LITERAL DELIM {
       int id=symtab.lookup($2);
       if (id>=0) {
-        if (vartyp[id]!=SCALAR_DATA) delflag.on(id);
+        //if (vartyp[id]!=SCALAR_DATA) delflag.on(id);
+        if (vartyp[id]!=SCALAR_DATA) delflag.set(id);
         vartyp[id]=DELETED;
       } else {
         yyerror("Variable not defined");
@@ -578,7 +582,8 @@ declaration:
   | DELETE LITERAL LITERAL DELIM {
       int id=symtab.lookup($2);
       if (id>=0) {
-        if (vartyp[id]!=SCALAR_DATA) delflag.on(id);
+        //if (vartyp[id]!=SCALAR_DATA) delflag.on(id);
+        if (vartyp[id]!=SCALAR_DATA) delflag.set(id);
         fprintf(stderr, "Variable, %s, marked for deletion\n", $2);
         if (strcmp($3, "m")!=0) vartyp[id]=DELETED;
       } else {
@@ -589,7 +594,8 @@ declaration:
     }
   | DELETE ALL DELIM {
       for (int i=0; i<symtab.entries(); i++) {
-        delflag.on(i);
+        //delflag.on(i);
+        delflag.set(i);
         vartyp[i]=DELETED;
       }
     }
@@ -598,13 +604,15 @@ declaration:
       if (id<0) {
         yyerror("Variable not defined");
       } else {
-        delflag.off(id);
+        //delflag.off(id);
+        delflag[id]=0;
       }
       delete [] $2;
     }
   | SAVE ALL DELIM {
       for (int i=0; i<symtab.entries(); i++) {
-        if (vartyp[(long)i]!=DELETED) delflag.off(i);
+        //if (vartyp[(long)i]!=DELETED) delflag.off(i);
+        if (vartyp[(long)i]!=DELETED) delflag[i]=0;
       }
     };
 
@@ -857,7 +865,8 @@ vector_exp: VEC {
         id=symtab.add($3);
       }
       vartyp[id]=VEC_T;
-      delflag.off(id);
+      //delflag.off(id);
+      delflag[id]=0;
       delete [] $3;
     }
   | SIZE LEFT_BRAC scalar_exp RIGHT_BRAC {
@@ -1241,7 +1250,8 @@ matrix_exp: MATRIX {
         id=symtab.add($3);
       }
       vartyp[id]=$1;
-      delflag.off(id);
+      //delflag.off(id);
+      delflag[id]=0;
       delete [] $3;
     }
   | matrix_exp LEFT_BRAC scalar_exp RIGHT_BRAC {
@@ -1422,7 +1432,8 @@ assignment:
           fprintf(stderr, "Row substitution not allowed--use vector subscripts instead\n");
           yyerror("Type mismatch");
         }
-        if (dflag==0) delflag.off(id);
+        //if (dflag==0) delflag.off(id);
+        if (dflag==0) delflag[id]=0;
       }
       delete [] $1;
     }
@@ -1476,7 +1487,8 @@ assignment:
           fprintf(stderr, "Row substitution not allowed--use paired vector subscripts instead\n");
           yyerror("Type mismatch");
         }
-        if (dflag==0) delflag.off(id);
+        //if (dflag==0) delflag.off(id);
+        if (dflag==0) delflag[id]=0;
       }
       delete [] $1;
       delete [] $3.data;
@@ -1527,7 +1539,8 @@ assignment:
           fprintf(stderr, "Row substitution not allowed--use paired vector subscripts instead\n");
           yyerror("Type mismatch");
         }
-        if (dflag==0) delflag.off(id);
+        //if (dflag==0) delflag.off(id);
+        if (dflag==0) delflag[id]=0;
       }
       delete [] $1;
       delete [] $3.data;
@@ -1578,7 +1591,8 @@ assignment:
           }
           delete [] fname;
         }
-        if (dflag==0) delflag.off(id);
+        //if (dflag==0) delflag.off(id);
+        if (dflag==0) delflag[id]=0;
       } 
       delete [] $1;
     }
@@ -1638,7 +1652,8 @@ assignment:
           }
           delete [] fname;
         }
-        if (dflag==0) delflag.off(id);
+        //if (dflag==0) delflag.off(id);
+        if (dflag==0) delflag[id]=0;
       } 
       //(memory leaks (were) (should be) punishment for making errors...)
       delete [] $1;
@@ -1697,7 +1712,8 @@ assignment:
           delete mat;
           delete [] fname;
         }
-        if (dflag==0) delflag.off(id);
+        //if (dflag==0) delflag.off(id);
+        if (dflag==0) delflag[id]=0;
       } 
       //(memory leaks (were) (should be) punishment for making errors...)
       delete [] $1;
@@ -1781,22 +1797,26 @@ int main (int argc, char **argv) {
       case ('S'):
         id=symtab.add(optarg);
         vartyp[id]=SPARSE_T;
-        delflag.off(id);
+        //delflag.off(id);
+        delflag[id]=0;
         break;
       case ('M'):
         id=symtab.add(optarg);
         vartyp[id]=FULL_T;
-        delflag.off(id);
+        //delflag.off(id);
+        delflag[id]=0;
         break;
       case ('a'):
         id=symtab.add(optarg);
         vartyp[id]=SPARSE_ARRAY_T;
-        delflag.off(id);
+        //delflag.off(id);
+        delflag[id]=0;
         break;
       case ('V'):
         id=symtab.add(optarg);
         vartyp[id]=VEC_T;
-        delflag.off(id);
+        //delflag.off(id);
+        delflag[id]=0;
         break;
       case ('?'):
         fprintf(stderr, "sparse_calc: Unknown option -%c -- ignored\n", optopt);

@@ -218,4 +218,8 @@ void bit_array::print() {
   printf("\n");
 }
 
+int bit_array::test(int nbits) {
+  
+}
+
 }

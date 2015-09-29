@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
     argc=-argc;
   }
 
-  if (argc <= 3 || flag[8]) {
+  if (argc < 3 || flag[8]) {
     FILE *docfs;
     int err;
     if (flag[8]) {

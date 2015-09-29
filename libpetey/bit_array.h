@@ -54,6 +54,9 @@ namespace libpetey {
 
       void print();
 
+      //test the bit array:
+      int test(int nbits);		//number of bits to read and write
+
   };
 
   inline long bit_array::nel() {
@@ -63,6 +66,9 @@ namespace libpetey {
   inline char bit_array::change(char value, long ind) {
     if (value == 0) return off(ind); else return on(ind);
   }
+
+  int test_bit_array(int bitsize,
+		  int nbits);
 
 } //end namespace libpetey
 

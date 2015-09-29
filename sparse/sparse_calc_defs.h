@@ -1,6 +1,7 @@
 #include <sys/types.h>
 
-#include "bit_array.h"
+#include <bitset>
+//#include "bit_array.h"
 
 #include "../libpetey/linked.cc"
 #include "vector_s.h"
@@ -53,7 +54,8 @@ struct vector_t {
 extern symbol_table<string_petey> symtab;
 extern vector_s<integer> vartyp;
 extern vector_s<real> scaltab;
-extern bit_array delflag;
+//extern bit_array delflag;
+extern std::bitset<SC_NSYM> delflag;
 extern char *path;
 //extern symbol_table<string_petey> funtab;
 //extern int (*) (int nmat, matrix **mat, int nscal, real *scal, void &*result) [MAXNSYM];

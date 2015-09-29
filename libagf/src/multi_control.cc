@@ -8,7 +8,8 @@
 #include <gsl/gsl_linalg.h>
 
 //#include "full_util.h"
-#include "bit_array.h"
+//#include "bit_array.h"
+#include <bitset>
 #include "gsl_util.h"
 #include "error_codes.h"
 #include "randomize.h"
@@ -17,6 +18,7 @@
 #include "agf_lib.h"
 
 using namespace libpetey;
+using namespace std;
 
 namespace libagf {
 
@@ -116,7 +118,8 @@ namespace libagf {
     nrow=pow(2, ncls-1)-1;
 
     for (int64_t i=0; i<nrow; i++) {
-      bit_array *tobits=new bit_array((word *) &i, (sizeof(long)+1)/sizeof(word), ncls-1);
+      //bit_array *tobits=new bit_array((word *) &i, (sizeof(long)+1)/sizeof(word), ncls-1);
+      bitset<sizeof(i)*8> *tobits=new bitset<sizeof(i)*8>(i);
       fprintf(fs, "\"\" ");
       for (long j=0; j<ncls-1; j++) {
         if ((*tobits)[j]==0) fprintf(fs, "%d ", j+1);
@@ -133,7 +136,8 @@ namespace libagf {
   //need to design a more efficient version of this...
   void ortho_coding_matrix_brute_force(FILE *fs, int n) {
     long *trial;
-    bit_array *tobits;
+    //bit_array *tobits;
+    bitset<sizeof(int)*8> *tobits;
     int **coding_matrix;
     int nfilled;
     int nperm;
@@ -155,7 +159,10 @@ namespace libagf {
     for (int i=0; i<nperm; i++) {
       int dprod;
       //printf("%d\n", trial[i]);
-      tobits=new bit_array((word *) (trial+i), (sizeof(long)+1)/sizeof(word), n);
+      //tobits=new bit_array((word *) (trial+i), (sizeof(long)+1)/sizeof(word), n);
+      //all zeros or all ones not allowed:
+      if (trial[i]==0 || trial[i]==nperm-1) continue;
+      tobits=new bitset<sizeof(i)*8>(trial[i]);
       for (long j=0; j<n; j++) {
         coding_matrix[nfilled][j]=2*(long) (*tobits)[j]-1;
         //printf("%d ", (int32_t) (*tobits)[j]);

@@ -17,8 +17,10 @@ ctraj_vfield_2d<real>::ctraj_vfield_2d() {
   fstream=NULL;
 }
 
+//initializes the object from a binary file
 template <class real>
-int ctraj_vfield_2d<real>::init(char *name, int64_t page_size) {
+int ctraj_vfield_2d<real>::init(char *name, 		//data file
+			int64_t page_size) {		//page size for file
   long loc, dum;
 
   printf("Opening: %s\n", name);
@@ -53,6 +55,8 @@ void ctraj_vfield_2d<real>::help(FILE *fs) {
   ctraj_optargs(fs, "B", 1);
 }
 
+// parses the command arguments and passes the results to the 
+//initialization routine
 template <class real>
 int ctraj_vfield_2d<real>::setup(int argc, char **argv) {
   void *optarg[10];

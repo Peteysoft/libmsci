@@ -20,7 +20,8 @@ namespace sparse_calc {
 symbol_table<string_petey> symtab;
 vector_s<integer> vartyp(SC_NSYM);
 vector_s<real> scaltab(SC_NSYM);
-bit_array delflag(SC_NSYM); 
+//bit_array delflag(SC_NSYM);
+std::bitset<SC_NSYM> delflag;
 char *path;
 
 linked_list<FILE *> sc_stream_stack;
@@ -439,7 +440,8 @@ int scalar_assign(const char *symbol, real data) {
   vartyp[id]=SCALAR_DATA;
   scaltab[id]=data;
   //no need to "delete" scalar variables:
-  delflag.off(id);
+  //delflag.off(id);
+  delflag[id]=0;
   return 0;
 }
 
@@ -459,7 +461,8 @@ int matrix_assign(const char *symbol, matrix_t *matrix) {
   }
 
   vartyp[id]=type;
-  delflag.on(id);
+  //delflag.on(id);
+  delflag[id]=1;
   fname=add_path(symbol);
 
   if (sc_firstpass==1) {
@@ -525,7 +528,8 @@ int vector_assign(const char *symbol, real *data, integer n) {
     id=symtab.add(symbol);
   }
   vartyp[id]=VEC_T;
-  delflag.on(id);
+  //delflag.on(id);
+  delflag[id]=1;
 
   fname=add_path(symbol);
   fs=fopen(fname, "w");

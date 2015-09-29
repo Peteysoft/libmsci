@@ -718,6 +718,30 @@ namespace libpetey {
       p=gsl_vector_alloc(x->size);
       find_interior(v, c, p, 0.5);
       constrained(a, b, v, c, p, x);
+
+      //we've solved it using the flawed algorithm, lets see if the criteria
+      //for the algorithm being always valid are satisfied:
+      //calculate a^t*a:
+      gsl_matrix *ata=gsl_matrix_alloc(a->size2, a->size2);
+      gsl_vector *t1=gsl_vector_alloc(a->size2);
+      gsl_blas_dgemm(CblasTrans, CblasNoTrans, 1., a, a, 0., ata);
+      double vpmag[a->size2];
+      //calculate v_i (A^T A)^{-1} v_j/sqrt(v_i (A^T A) v_i)/sqrt(v_j (A^T A) v_j) for each i and j:
+      for (int i=0; i<v->size1; i++) {
+	gsl_vector_view v_i=gsl_matrix_row(v, i);
+        (*solver1) (ata, &v_i.vector, t1);
+	gsl_blas_ddot(&v_i.vector, &v_i.vector, vpmag+i);
+	vpmag[i]=sqrt(vpmag[i]);
+	for (int j=0; j<i; j++) {
+	  gsl_vector_view v_i=gsl_matrix_row(v, j);
+          double vidotvj;
+	  gsl_blas_ddot(t1, &v_i.vector, &vidotvj);
+	  printf("%12.5g ", vidotvj/vpmag[i]/vpmag[j]);
+	}
+	printf("\n");
+      }
+      gsl_vector_free(t1);
+      gsl_matrix_free(ata);
     }
 
     gsl_vector_free(p);
