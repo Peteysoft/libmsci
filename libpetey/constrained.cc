@@ -723,25 +723,38 @@ namespace libpetey {
       //for the algorithm being always valid are satisfied:
       //calculate a^t*a:
       gsl_matrix *ata=gsl_matrix_alloc(a->size2, a->size2);
-      gsl_vector *t1=gsl_vector_alloc(a->size2);
+      gsl_matrix *at=gsl_matrix_alloc(a->size2, a->size1);
+      gsl_vector *t1=gsl_vector_alloc(a->size1);
+      gsl_vector *t2=gsl_vector_alloc(a->size1);
+      gsl_matrix_transpose_memcpy(at, a);
       gsl_blas_dgemm(CblasTrans, CblasNoTrans, 1., a, a, 0., ata);
+      print_gsl_matrix(stdout, a);
+      print_gsl_matrix(stdout, ata);
       double vpmag[a->size2];
-      //calculate v_i (A^T A)^{-1} v_j/sqrt(v_i (A^T A) v_i)/sqrt(v_j (A^T A) v_j) for each i and j:
+      //calculate v_i (A^T A)^{-1} v_j/sqrt(v_i (A^T A) v_i)/sqrt(v_j (A^T A)^{-1} v_j) for each i and j:
       for (int i=0; i<v->size1; i++) {
 	gsl_vector_view v_i=gsl_matrix_row(v, i);
-        (*solver1) (ata, &v_i.vector, t1);
-	gsl_blas_ddot(&v_i.vector, &v_i.vector, vpmag+i);
+        //(*solver1) (ata, &v_i.vector, t1);
+        (*solver1) (at, &v_i.vector, t1);
+	//gsl_blas_ddot(t1, &v_i.vector, vpmag+i);
+	gsl_blas_ddot(t1, t1, vpmag+i);
 	vpmag[i]=sqrt(vpmag[i]);
 	for (int j=0; j<i; j++) {
-	  gsl_vector_view v_i=gsl_matrix_row(v, j);
+	  gsl_vector_view v_j=gsl_matrix_row(v, j);
           double vidotvj;
-	  gsl_blas_ddot(t1, &v_i.vector, &vidotvj);
-	  printf("%12.5g ", vidotvj/vpmag[i]/vpmag[j]);
+          (*solver1) (at, &v_j.vector, t2);
+	  //gsl_blas_ddot(t1, &v_j.vector, &vidotvj);
+	  gsl_blas_ddot(t1, t2, &vidotvj);
+	  //printf("%12.5g ", vidotvj/sqrt(vpmag[i]*vpmag[j]));
+	  printf("%12.5g ", vidotvj);
+	  printf("%12.5g ", sqrt(vpmag[i]*vpmag[j]));
 	}
 	printf("\n");
       }
       gsl_vector_free(t1);
+      gsl_vector_free(t2);
       gsl_matrix_free(ata);
+      gsl_matrix_free(at);
     }
 
     gsl_vector_free(p);

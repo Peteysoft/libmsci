@@ -133,6 +133,130 @@ namespace libagf {
     }
   }
 
+  template <class vector_t>
+  void random_coding_row(vector_t &coding_row, int n, int strictflag) {
+    for (int i=0; i<n; i++) {
+      coding_row[i]=(1+strictflag)*int(ranu()*(3-strictflag))-1;
+    }
+  }
+
+  int check_coding_row(int *coding_row, int n) {
+    int c1flag=0;
+    int c2flag=0;
+    for (int i=1; i<n; i++) {
+      if (coding_row[i]==-1) c1flag=1;
+      if (coding_row[i]==1) c2flag=1;
+    }
+    if (c1flag && c2flag) return 1;
+    return 0;
+  }
+
+  //generate orthogonal coding matrix:
+  void ortho_coding_matrix_nqbf(FILE *fs, int n, int strictflag) {
+    int **coding_matrix;
+    double eps=1e-12;
+
+    //to wor properly this flag must be strictly 0 or 1:
+    assert(strictflag==0 || strictflag==1);
+
+    //allocate the coding matrix:
+    coding_matrix=new int *[n];
+    coding_matrix[0]=new int[n*n];
+    for (int i=1; i<n; i++) coding_matrix[i]=coding_matrix[0]+n*i;
+
+    //create a random first row:
+    do {
+      random_coding_row(coding_matrix[0], n, strictflag);
+    } while (check_coding_row(coding_matrix[0], n)==0);
+
+    for (int i=1; i<n; i++) {
+      //list of partial vectors already tried:
+      tree_lg<vector_s<int> > *list=new tree_lg<vector_s<int> >;
+      //allocate GSL data structures for linear system:
+      gsl_matrix *a=gsl_matrix_alloc(i, i);
+      gsl_vector *b=gsl_vector_alloc(i);
+      gsl_vector *x=gsl_vector_alloc(i);
+      //allocate space for singular value decomposition:
+      gsl_matrix *vt=gsl_matrix_alloc(i, i);
+      gsl_vector *s=gsl_vector_alloc(i);
+      gsl_vector *work=gsl_vector_alloc(i);
+      //allocate partial trial vector:
+      vector_s<int> *trial=new vector_s<int>(n-i);
+      //maximum number of permutations:
+      double nperm=pow(3-strictflag, n);
+
+      try_again:	//more spaghetti code... yah!
+        //create linear system to solve:
+        for (int j=0; j<i; j++) {
+          for (int k=0; k<i; k++) {
+            gsl_matrix_set(j, k, coding_matrix[j][k]);
+          }
+        }
+        //find the singular value decomposition:
+        gsl_linalg_SV_decomp(a, vt, s, work);
+
+        //create a random partial trial vector:
+        do {
+          //lets write some spaghetti code:
+          if (list->nel() >= nperm) goto done;
+	  random_coding_row(trial, n, strictflag);
+        } while (list->add_member(trial) == list->nel());
+
+        //calculate solution vector:
+        for (int j=0; j<i; j++) {
+          double temp=0;
+          for (int k=0; k<n-i; k++) {
+            temp+=coding_matrix[j][k+i]*trial[k];
+          }
+          gsl_vector_set(b, -temp);
+        }
+
+        //solve the linear system to get the rest of the potential new row
+        //for the coding matrix:
+        gsl_linalg_SV_solve(a, vt, s, b, x);
+
+        //check that the rest of the vector has values of -1 or 1 (or 0):
+	for (int j=0; j<i; j++) {
+          double val=gsl_vector_get(b, j);
+          if (fabs(val-1) > eps && fabs(val+1) > eps && 
+			  (fabs(val) > eps || strictflag)) goto try_again;
+	  coding_matrix[i][j]=val;
+	}
+
+        for (int j=0; j<n-i; j++) {
+          coding_matrix[i][i+j]=trial[j];
+        }
+
+      if (check_coding_row(coding_matrix[i])==0) goto try_again;
+
+      //clean up:
+      gsl_matrix_free(a);
+      gsl_vector_free(b);
+      gsl_vector_free(x);
+      gsl_matrix_free(vt);
+      gsl_vector_free(s);
+      gsl_vector_free(work);
+      delete list;
+      delete trial;
+    }
+
+    for (int i=0; i<nfilled; i++) {
+      fprintf(fs, "\"\" ");
+      for (int j=0; j<n; j++) {
+        if (coding_matrix[i][j]<0) fprintf(fs, "%d ", j);
+      }
+      fprintf(fs, "%c", PARTITION_SYMBOL);
+      for (int j=0; j<n; j++) {
+        if (coding_matrix[i][j]>0) fprintf(fs, " %d", j);
+      }
+      fprintf(fs, ";\n");
+    }
+
+    delete [] coding_matrix[0];
+    delete [] coding_matrix;
+
+  }
+
   //need to design a more efficient version of this...
   void ortho_coding_matrix_brute_force(FILE *fs, int n) {
     long *trial;

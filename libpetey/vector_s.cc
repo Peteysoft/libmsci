@@ -204,7 +204,7 @@ namespace libpetey {
   int vector_s<type>::operator == (vector_s<type> &other) {
     assert(nel == other.nel);
     for (int i=0; i<nel; i++) {
-      if (other.data[i]==other.missing || data[i]==missing) break;
+      if (other.data[i]==other.missing || data[i]==missing) continue;
       if (other.data[i] != data[i]) return 0;
     }
     return 1;
@@ -214,7 +214,7 @@ namespace libpetey {
   int vector_s<type>::operator > (vector_s<type> &other) {
     assert(nel == other.nel);
     for (int i=0; i<nel; i++) {
-      if (other.data[i]==other.missing || data[i]==missing) break;
+      if (other.data[i]==other.missing || data[i]==missing) continue;
       if (data[i] > other.data[i]) return 1;
 		else if (data[i] < other.data[i]) return 0;
     }
@@ -225,7 +225,8 @@ namespace libpetey {
   int vector_s<type>::operator != (vector_s<type> &other) {
     assert(nel == other.nel);
     for (int i=0; i<nel; i++) {
-      if (other.data[i]==other.missing || data[i]==missing) break;
+      //does this behaviour make sense??
+      if (other.data[i]==other.missing || data[i]==missing) continue;
       if (other.data[i] != data[i]) return 1;
     }
     return 0;
@@ -235,7 +236,7 @@ namespace libpetey {
   int vector_s<type>::operator < (vector_s<type> &other) {
     assert(nel == other.nel);
     for (int i=0; i<nel; i++) {
-      if (other.data[i]==other.missing || data[i]==missing) break;
+      if (other.data[i]==other.missing || data[i]==missing) continue;
       if (data[i] < other.data[i]) return 1;
 		else if (data[i] > other.data[i]) return 0;
     }
@@ -246,7 +247,7 @@ namespace libpetey {
   int vector_s<type>::operator >= (vector_s<type> &other) {
     assert(nel == other.nel);
     for (int i=0; i<nel; i++) {
-      if (other.data[i]==other.missing || data[i]==missing) break;
+      if (other.data[i]==other.missing || data[i]==missing) continue;
       if (data[i] > other.data[i]) return 1;
 		else if (data[i] < other.data[i]) return 0;
     }
@@ -257,7 +258,7 @@ namespace libpetey {
   int vector_s<type>::operator <= (vector_s<type> &other) {
     assert(nel == other.nel);
     for (int i=0; i<nel; i++) {
-      if (other.data[i]==other.missing || data[i]==missing) break;
+      if (other.data[i]==other.missing || data[i]==missing) continue;
       if (data[i] < other.data[i]) return 1;
 		else if (data[i] > other.data[i]) return 0;
     }

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <vector_s.h>
 
 #include "tree_lg.h"
 
@@ -237,5 +238,6 @@ void tree_lg<type>::print(FILE *fs) {
 template class tree_lg<float>;
 template class tree_lg<double>;
 template class tree_lg<int64_t>;
+template class tree_lg<vector_s<int> >;
 
 } //end namespace libpetey

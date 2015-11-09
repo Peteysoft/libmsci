@@ -58,7 +58,7 @@ all: $(TEST).m$(VER).cls $(RAW).cls $(TRAIN_TIME) $(CLASS_TIME) raw_time.txt
 	@echo "Truth vs. multi-class:"
 	cls_comp_stats $(TEST).cls $(TEST).m$(VER)
 	@echo "AGF vs. multi-class:"
-	cls_comp_stats $(RAW).cls $(TEST).m$(VER)
+	cls_comp_stats -b $(RAW).cls $(TEST).m$(VER)
 	@echo "AGF vs. multi-class conditional probabilities:"
 	agf_correlate $(RAW).con $(TEST).m$(VER).con
 	@echo

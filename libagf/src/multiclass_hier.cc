@@ -688,7 +688,6 @@ namespace libagf {
       children[1]->set_id(id);
     }
   }
-  
 
   template class multiclass_hier<real_a, cls_ta>;
 

@@ -32,14 +32,21 @@ namespace libpetey {
       tree_lg(type data, long nd);
       ~tree_lg();
 
+      //adds a new element, returns number of elements:
       long add(type data);
+      //adds a unique element (member), returns number of elements:
       long add_member(type data);
+      //return number of elements:
       long nel();
+      //decompose tree into a sorted array:
       void decompose(type *sarr, long nd);
 
+      //delete smallest element:
       long delete_least();
+      //delete largest element:
       long delete_greatest();
 
+      //print out the tree:
       void print(FILE *fs);
   };
 
