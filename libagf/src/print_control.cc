@@ -6,6 +6,7 @@ using namespace libagf;
 
 int main(int argc, char **argv) {
   FILE *docfs=stdout;
+  int **coding_matrix=NULL;
   agf_command_opts opt_args;
   int n;
   int nrow;
@@ -45,26 +46,41 @@ int main(int argc, char **argv) {
       print_control_hier(stdout, n);
       break;
     case(1):
-      print_control_1vsall(stdout, n);
+      coding_matrix=one_against_all(n);
+      nrow=n;
       break;
     case(2):
-      print_control_adj(stdout, n);
+      coding_matrix=partition_adjacent(n);
+      nrow=n-1;
       break;
     case(3):
       nrow=atoi(argv[1]);
-      print_control_random(stdout, n, nrow, opt_args.Gflag);
+      coding_matrix=random_coding_matrix(n, nrow, opt_args.Gflag);
       break;
     case(4):
-      print_control_exhaustive(stdout, n);
+      coding_matrix=exhaustive_coding_matrix(n);
+      nrow=pow(2, n-1)-1;
       break;
     case(5):
-      print_control_ortho(stdout, n);
+      coding_matrix=ortho_coding_matrix_nqbf(n, opt_args.Gflag);
+      nrow=n;
       break;
     case(6):
-      print_control_1vs1(stdout, n);
+      coding_matrix=one_against_one(n);
+      nrow=(n-1)*n/2;
+      break;
+    case(7):
+      coding_matrix=ortho_coding_matrix_brute_force(n);
+      nrow=n;
       break;
     default:
       print_control_hier(stdout, n);
+  }
+
+  if (opt_args.Qtype > 0 && opt_args.Qtype < 8) {
+    print_control_nonhier(stdout, coding_matrix, nrow, n);
+    delete [] coding_matrix[0];
+    delete [] coding_matrix;
   }
 
   ran_end();

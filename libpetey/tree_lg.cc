@@ -202,6 +202,12 @@ long tree_lg<type>::delete_greatest() {
   return n;
 }
 
+template <class type>
+void tree_lg<type>::set_fcode() {
+  fcode=new char[1];
+  strcpy(fcode, "");
+}
+
 template <>
 void tree_lg<float>::set_fcode() {
   fcode=new char[3];
@@ -226,6 +232,16 @@ void tree_lg<type>::print(FILE *fs, tree_lg_el<type> *t, long depth) {
   print(fs, t->left, depth+1);
   for (long i=0; i<depth; i++) fprintf(fs, "  ");
   fprintf(fs, fcode, t->value);
+  fprintf(fs, "\n");
+  print(fs, t->right, depth+1);
+}
+
+template <>
+void tree_lg<vector_s<int> >::print(FILE *fs, tree_lg_el<vector_s<int> > *t, long depth) {
+  if (t==NULL) return;
+  print(fs, t->left, depth+1);
+  for (long i=0; i<depth; i++) fprintf(fs, "  ");
+  t->value.print(fs);
   fprintf(fs, "\n");
   print(fs, t->right, depth+1);
 }

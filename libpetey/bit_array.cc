@@ -16,6 +16,8 @@ bit_array::bit_array(long n) {
   nbits=n;
   nwords=(n-1)/(sizeof(word)*8)+1;
   data=new word[nwords];
+  //all unused space is to be padded with zeros:
+  for (long i=0; i<nwords; i++) data[i]=0;
 }
 
 bit_array::bit_array(long n, char value) {
@@ -25,13 +27,17 @@ bit_array::bit_array(long n, char value) {
   if (value == 0) {
     for (long i=0; i<nwords; i++) data[i]=0;
   } else {
-    for (long i=0; i<nwords; i++) data[i]=255;
+    for (long i=0; i<nwords-1; i++) data[i]=255;
+    data[nwords-1]=0;		//all extra space should be padded with 0s
+    for (long i=0; i<nwords*sizeof(word)*8-n; i++) on(i+(nwords-1)*sizeof(word))
   }
 }
 
 bit_array::bit_array(char *d, long n) {
   nbits=n;
   nwords=(n-1)/(sizeof(word)*8)+1;
+  data=new word[nwords];
+  data[nwords-1]=0;	//all extra space must be padded with 0s
   for (long i=0; i<n; i++) {
     if (d[i] > 0) on(i); else off(i);
   }
@@ -220,6 +226,94 @@ void bit_array::print() {
 
 int bit_array::test(int nbits) {
   
+}
+
+int bit_array::operator == (const bit_array &other) {
+  int nwd;		//number of words containing data
+  //once again, do we allow comparison between different sized arrays?
+  assert(nbits==other.nbits);
+
+  nwd=(n-1)/(sizeof(word)*8)+1;
+  //because we've padded extra space with zeros (we hope) comparisons are
+  //simpler:
+  for (int i=0; i<nwd; i++) {
+    if (data[i]!=other.data[i]) return 0;
+  }
+  return 1;
+}
+
+int bit_array::operator > (const bit_array &other) {
+  int nwd;		//number of words containing data
+  //once again, do we allow comparison between different sized arrays?
+  assert(nbits==other.nbits);
+
+  nwd=(n-1)/(sizeof(word)*8)+1;
+  //because we've padded extra space with zeros (we hope) comparisons are
+  //simpler:
+  for (int i=0; i<nwd; i++) {
+    if (data[i]>other.data[i]) return 1;
+    if (data[i]<other.data[i]) return 0;
+  }
+  return 0;
+}
+
+int bit_array::operator < (const bit_array &other) {
+  int nwd;		//number of words containing data
+  //once again, do we allow comparison between different sized arrays?
+  assert(nbits==other.nbits);
+
+  nwd=(n-1)/(sizeof(word)*8)+1;
+  //because we've padded extra space with zeros (we hope) comparisons are
+  //simpler:
+  for (int i=0; i<nwd; i++) {
+    if (data[i]<other.data[i]) return 1;
+    if (data[i]>other.data[i]) return 1;
+  }
+  return 0;
+}
+
+int bit_array::operator >= (const bit_array &other) {
+  int nwd;		//number of words containing data
+  //once again, do we allow comparison between different sized arrays?
+  assert(nbits==other.nbits);
+
+  nwd=(n-1)/(sizeof(word)*8)+1;
+  //because we've padded extra space with zeros (we hope) comparisons are
+  //simpler:
+  for (int i=0; i<nwd; i++) {
+    if (data[i]<other.data[i]) return 0;
+    if (data[i]>other.data[i]) return 1;
+  }
+  return 1;
+}
+
+int bit_array::operator <= (const bit_array &other) {
+  int nwd;		//number of words containing data
+  //once again, do we allow comparison between different sized arrays?
+  assert(nbits==other.nbits);
+
+  nwd=(n-1)/(sizeof(word)*8)+1;
+  //because we've padded extra space with zeros (we hope) comparisons are
+  //simpler:
+  for (int i=0; i<nwd; i++) {
+    if (data[i]>other.data[i]) return 0;
+    if (data[i]<other.data[i]) return 1;
+  }
+  return 1;
+}
+
+int bit_array::operator != (const bit_array &other) {
+  int nwd;		//number of words containing data
+  //once again, do we allow comparison between different sized arrays?
+  assert(nbits==other.nbits);
+
+  nwd=(n-1)/(sizeof(word)*8)+1;
+  //because we've padded extra space with zeros (we hope) comparisons are
+  //simpler:
+  for (int i=0; i<nwd; i++) {
+    if (data[i]!=other.data[i]) return 1;
+  }
+  return 0;
 }
 
 }

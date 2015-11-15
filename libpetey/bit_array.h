@@ -57,6 +57,14 @@ namespace libpetey {
       //test the bit array:
       int test(int nbits);		//number of bits to read and write
 
+      //can be treated as numbers:
+      int operator == (const bit_array &other);
+      int operator > (const bit_array &other);
+      int operator < (const bit_array &other);
+      int operator >= (const bit_array &other);
+      int operator <= (const bit_array &other);
+      int operator != (const bit_array &other);
+
   };
 
   inline long bit_array::nel() {

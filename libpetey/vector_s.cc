@@ -276,9 +276,33 @@ namespace libpetey {
   }
 
   template <>
+  void vector_s<int32_t>::print (FILE *fs) {
+    for (int i=0; i<nel; i++) {
+      printf("%d ", data[i]);
+    }
+    printf("\n");
+  }
+
+  template <>
+  void vector_s<int64_t>::print (FILE *fs) {
+    for (int i=0; i<nel; i++) {
+      printf("%ld ", data[i]);
+    }
+    printf("\n");
+  }
+
+  template <>
   void vector_s<float>::print (FILE *fs) {
     for (int i=0; i<nel; i++) {
       printf("%g ", data[i]);
+    }
+    printf("\n");
+  }
+
+  template <>
+  void vector_s<double>::print (FILE *fs) {
+    for (int i=0; i<nel; i++) {
+      printf("%lg ", data[i]);
     }
     printf("\n");
   }

@@ -14,6 +14,7 @@
 #include "error_codes.h"
 #include "randomize.h"
 #include "tree_lg.h"
+#include "vector_s.h"
 
 #include "agf_lib.h"
 
@@ -21,118 +22,7 @@ using namespace libpetey;
 using namespace std;
 
 namespace libagf {
-
-  //print out common control files:
-  void one_against_all(FILE *fs, int ncls, const char *options) {
-    for (int i=0; i<ncls; i++) {
-      if (options!=NULL) {
-        if (i==0) fprintf(fs, "\"%s\"", options); else fprintf(fs, "\".\"");
-      } else {
-        fprintf(fs, "\"\"");
-      }
-      fprintf(fs, " %d %c", i, PARTITION_SYMBOL);
-      for (int j=0; j<i; j++) fprintf(fs, " %d", j);
-      for (int j=i+1; j<ncls; j++) fprintf(fs, " %d", j);
-      fprintf(fs, ";\n");
-    }
-  }
-
-  void one_against_one(FILE *fs, int ncls, const char *options) {
-    for (int i=0; i<ncls; i++) {
-      for (int j=i+1; j<ncls; j++) {
-        if (options!=NULL) {
-          if (i==0) fprintf(fs, "\"%s\"", options); else fprintf(fs, "\".\"");
-        } else {
-          fprintf(fs, "\"\"");
-        }
-        fprintf(fs, " %d %c %d;\n", i, PARTITION_SYMBOL, j);
-      }
-    }
-  }
-
-  void partition_adjacent(FILE *fs, int ncls, const char *options) {
-    for (int i=1; i<ncls; i++) {
-      if (options!=NULL) {
-        if (i==0) fprintf(fs, "\"%s\"", options); else fprintf(fs, "\".\"");
-      } else {
-        fprintf(fs, "\"\"");
-      }
-      for (int j=0; j<i; j++) fprintf(fs, " %d", j);
-      fprintf(fs, " %c", PARTITION_SYMBOL);
-      for (int j=i; j<ncls; j++) fprintf(fs, " %d", j);
-      fprintf(fs, ";\n");
-    }
-  }
-
-  //need to design a version of this for larger n:
-  void random_coding_matrix(FILE *fs, int ncls, int ntrial, int strictflag) {
-    tree_lg<int64_t> used;
-    int row[ncls];
-    int64_t cur, curi;
-    int mult;
-    int list1[ncls];
-    int list2[ncls];
-    int n1, n2;
-
-    for (int i=0; i<ntrial; i++) {
-      do {
-        n1=0;
-        n2=0;
-        mult=1;
-	cur=0;
-	curi=0;
-        for (int j=0; j<ncls; j++) {
-          if (strictflag) {
-            row[j]=2*ranu();
-            cur+=mult*row[j];
-            curi+=mult*(1-row[j]);
-            row[j]=2*row[j]-1;
-            mult*=2;
-          } else {
-            row[j]=3*ranu();
-            cur+=mult*row[j];
-            curi+=mult*(2-row[j]);
-            row[j]=row[j]-1;
-            mult*=3;
-	  }
-          if (row[j]<0) {
-            list1[n1]=j;
-            n1++;
-          } else if (row[j]>0) {
-            list2[n2]=j;
-            n2++;
-          }
-	}
-      } while(used.add_member(cur)<0 || used.add_member(curi)<0 || n1<1 || n2<1);
-      fprintf(fs, "\"\"");
-      for (int j=0; j<n1; j++) fprintf(fs, " %d", list1[j]);
-      fprintf(fs, " %c", PARTITION_SYMBOL);
-      for (int j=0; j<n2; j++) fprintf(fs, " %d", list2[j]);
-      fprintf(fs, ";\n");
-    }
-  }
-
-  void exhaustive_coding_matrix(FILE *fs, int ncls) {
-    int64_t nrow;
-
-    nrow=pow(2, ncls-1)-1;
-
-    for (int64_t i=0; i<nrow; i++) {
-      //bit_array *tobits=new bit_array((word *) &i, (sizeof(long)+1)/sizeof(word), ncls-1);
-      bitset<sizeof(i)*8> *tobits=new bitset<sizeof(i)*8>(i);
-      fprintf(fs, "\"\" ");
-      for (long j=0; j<ncls-1; j++) {
-        if ((*tobits)[j]==0) fprintf(fs, "%d ", j+1);
-      }
-      fprintf(fs, "%c ", PARTITION_SYMBOL);
-      for (long j=0; j<ncls-1; j++) {
-        if ((*tobits)[j]) fprintf(fs, "%d ", j+1);
-      }
-      fprintf(fs, "0;\n");
-      delete tobits;
-    }
-  }
-
+  //a couple of helper functions:
   template <class vector_t>
   void random_coding_row(vector_t &coding_row, int n, int strictflag) {
     for (int i=0; i<n; i++) {
@@ -140,21 +30,120 @@ namespace libagf {
     }
   }
 
-  int check_coding_row(int *coding_row, int n) {
+  template <class vector_t>
+  int check_coding_row(vector_t &coding_row, int n, int nt=-1) {
     int c1flag=0;
     int c2flag=0;
-    for (int i=1; i<n; i++) {
-      if (coding_row[i]==-1) c1flag=1;
-      if (coding_row[i]==1) c2flag=1;
+    for (int i=0; i<n; i++) {
+      if (coding_row[i]==-1) c1flag++;
+      if (coding_row[i]==1) c2flag++;
     }
-    if (c1flag && c2flag) return 1;
+    if (c1flag > 0 && c2flag > 0 && (nt<0 || c1flag+c2flag==nt)) return 1;
     return 0;
   }
 
+  //print out common control files:
+  int ** one_against_all(int ncls) {
+    int **coding_matrix;
+    coding_matrix=new int *[ncls];
+    coding_matrix[0]=new int[ncls*ncls];
+    for (int i=0; i<ncls; i++) {
+      coding_matrix[i]=coding_matrix[0]+i*ncls;
+      for (int j=0; j<i; j++) coding_matrix[i][j]=-1;
+      for (int j=i+1; j<ncls; j++) coding_matrix[i][j]=-1;
+      coding_matrix[i][i]=1;
+    }
+    return coding_matrix;
+  }
+
+  int ** one_against_one(int ncls) {
+    int **coding_matrix;
+    int k=0;
+    int nrow=(ncls-1)*ncls/2;
+    coding_matrix=new int *[nrow];
+    coding_matrix[0]=new int[nrow*ncls];
+    for (int i=0; i<ncls; i++) {
+      for (int j=i+1; j<ncls; j++) {
+        coding_matrix[k]=coding_matrix[0]+k*ncls;
+	for (int m=0; m<ncls; m++) coding_matrix[k][m]=0;
+	coding_matrix[k][i]=-1;
+	coding_matrix[k][j]=1;
+	k++;
+      }
+    }
+    return coding_matrix;
+  }
+
+  int ** partition_adjacent(int ncls) {
+    int **coding_matrix;
+    coding_matrix=new int *[ncls-1];
+    coding_matrix[0]=new int[ncls*(ncls-1)];
+    for (int i=1; i<ncls; i++) {
+      coding_matrix[i-1]=coding_matrix[0]+(i-1)*ncls;
+      for (int j=0; j<i; j++) coding_matrix[i-1][j]=-1;
+      for (int j=i; j<ncls; j++) coding_matrix[i-1][j]=1;
+    }
+    return coding_matrix;
+  }
+
+  //need to design a version of this for larger n:
+  int ** random_coding_matrix(int ncls, int &ntrial, int strictflag) {
+    tree_lg<vector_s<int> > used;
+    vector_s<int> row(ncls);
+    int **coding_matrix;
+    int err1, err2;
+    double nperm=pow(3-strictflag, ncls);
+    coding_matrix=new int *[ntrial];
+    coding_matrix[0]=new int[ncls*ntrial];
+
+    for (int i=0; i<ntrial; i++) {
+      coding_matrix[i]=coding_matrix[0]+i*ncls;
+      do {
+        random_coding_row(row, ncls, strictflag);
+	err1=used.add_member(row);
+	//remember that the same row with signs reversed is equivalent:
+	for (int j=0; j<ncls; j++) row[j]=-row[j];
+	err2=used.add_member(row);
+        if (used.nel() >= nperm) {
+          ntrial=i;
+	  goto done;
+        }
+      } while(err1<0 || err2<0 || check_coding_row(row, ncls)==0);
+      for (int j=0; j<ncls; j++) coding_matrix[i][j]=row[j];
+    }
+    done: return coding_matrix;
+  }
+
+  int ** exhaustive_coding_matrix(int ncls) {
+    int64_t nrow;
+    int **coding_matrix;
+
+    nrow=pow(2, ncls-1)-1;
+
+    coding_matrix=new int *[nrow];
+    coding_matrix[0]=new int[nrow*ncls];
+
+    for (int64_t i=0; i<nrow; i++) {
+      //bit_array *tobits=new bit_array((word *) &i, (sizeof(long)+1)/sizeof(word), ncls-1);
+      bitset<sizeof(i)*8> *tobits=new bitset<sizeof(i)*8>(i);
+      coding_matrix[i]=coding_matrix[0]+i*ncls;
+      for (int j=0; j<ncls-1; j++) {
+        coding_matrix[i][j+1]=2*(*tobits)[j]-1;
+      }
+      coding_matrix[i][0]=1;
+      delete tobits;
+    }
+    return coding_matrix;
+  }
+
   //generate orthogonal coding matrix:
-  void ortho_coding_matrix_nqbf(FILE *fs, int n, int strictflag) {
+  int ** ortho_coding_matrix_nqbf(int n, int strictflag) {
+    tree_lg<vector_s<int> > list0;
+    vector_s<int> trial0(n);
+    double nperm0=pow(3-strictflag, n);
     int **coding_matrix;
     double eps=1e-12;
+    int nfilled;
 
     //to wor properly this flag must be strictly 0 or 1:
     assert(strictflag==0 || strictflag==1);
@@ -164,101 +153,158 @@ namespace libagf {
     coding_matrix[0]=new int[n*n];
     for (int i=1; i<n; i++) coding_matrix[i]=coding_matrix[0]+n*i;
 
-    //create a random first row:
     do {
-      random_coding_row(coding_matrix[0], n, strictflag);
-    } while (check_coding_row(coding_matrix[0], n)==0);
+    //create a random first row:
+      do {
+        random_coding_row(coding_matrix[0], n, strictflag);
+        //keep track of all initial rows:
+        for (int i=0; i<n; i++) trial0[i]=coding_matrix[0][i];
+      //} while (check_coding_row(coding_matrix[0], n)==0 || 
+//		      list0.add_member(trial0) < 0);
+      } while(0);
 
-    for (int i=1; i<n; i++) {
-      //list of partial vectors already tried:
-      tree_lg<vector_s<int> > *list=new tree_lg<vector_s<int> >;
-      //allocate GSL data structures for linear system:
-      gsl_matrix *a=gsl_matrix_alloc(i, i);
-      gsl_vector *b=gsl_vector_alloc(i);
-      gsl_vector *x=gsl_vector_alloc(i);
-      //allocate space for singular value decomposition:
-      gsl_matrix *vt=gsl_matrix_alloc(i, i);
-      gsl_vector *s=gsl_vector_alloc(i);
-      gsl_vector *work=gsl_vector_alloc(i);
-      //allocate partial trial vector:
-      vector_s<int> *trial=new vector_s<int>(n-i);
-      //maximum number of permutations:
-      double nperm=pow(3-strictflag, n);
+      for (int i=0; i<n; i++) {
+        trial0[i]=1;
+	coding_matrix[0][i]=1;
+      }
 
-      try_again:	//more spaghetti code... yah!
+      int i;
+      for (i=1; i<n; i++) {
+        //list of partial vectors already tried:
+        tree_lg<vector_s<int> > *list=new tree_lg<vector_s<int> >;
+        long ntried;		//number of vectors tried
+        //allocate GSL data structures for linear system:
+        gsl_matrix *a=gsl_matrix_alloc(i, i);
+        gsl_vector *b=gsl_vector_alloc(i);
+        gsl_vector *x=gsl_vector_alloc(i);
+        //allocate space for singular value decomposition:
+        gsl_matrix *vt=gsl_matrix_alloc(i, i);
+        gsl_vector *s=gsl_vector_alloc(i);
+        gsl_vector *work=gsl_vector_alloc(i);
+        //allocate partial trial vector:
+        vector_s<int> *trial=new vector_s<int>(n-i);
+        //maximum number of permutations:
+        double nperm=pow(3-strictflag, n-i);
+	//have to decide which columns to select so that matrix is
+	//non-singular:
+	double det;		//determinant
+	//permutations of the classes:
+	long *perm=NULL;
+	long inv[n];			//inverse mapping
+	vector_s<int> selvec;		//selection vector
+	//list of selection vectors to avoid repeats:
+	tree_lg<vector_s<int> > *selist=new tree_lg<vector_s<int> >;
+
         //create linear system to solve:
-        for (int j=0; j<i; j++) {
-          for (int k=0; k<i; k++) {
-            gsl_matrix_set(j, k, coding_matrix[j][k]);
-          }
-        }
-        //find the singular value decomposition:
-        gsl_linalg_SV_decomp(a, vt, s, work);
-
-        //create a random partial trial vector:
         do {
-          //lets write some spaghetti code:
-          if (list->nel() >= nperm) goto done;
-	  random_coding_row(trial, n, strictflag);
-        } while (list->add_member(trial) == list->nel());
+          if (perm!=NULL) delete [] perm;
+          perm=randomize(n);
+          for (int j=0; j<i; j++) selvec[perm[j]]=0;
+          for (int j=i; j<n; j++) selvec[perm[j]]=1;
+          det=0;
+          if (selist->add_member(selvec)<0) continue;
 
-        //calculate solution vector:
-        for (int j=0; j<i; j++) {
-          double temp=0;
-          for (int k=0; k<n-i; k++) {
-            temp+=coding_matrix[j][k+i]*trial[k];
+          for (int j=0; j<i; j++) {
+            for (int k=0; k<i; k++) {
+              gsl_matrix_set(a, j, k, coding_matrix[j][perm[k]]);
+            }
           }
-          gsl_vector_set(b, -temp);
-        }
+          //find the singular value decomposition:
+	  printf("matrix:\n");
+	  print_gsl_matrix(stdout, a);
+          gsl_linalg_SV_decomp(a, vt, s, work);
+          det=1;
+	  printf("singular values:\n");
+	  for (int j=0; j<i; j++) {
+            printf("%10.4g ", gsl_vector_get(s, j));
+            det*=gsl_vector_get(s, j);
+	  }
+	  printf("\n");
+        } while (det<eps);
 
-        //solve the linear system to get the rest of the potential new row
-        //for the coding matrix:
-        gsl_linalg_SV_solve(a, vt, s, b, x);
-
-        //check that the rest of the vector has values of -1 or 1 (or 0):
-	for (int j=0; j<i; j++) {
-          double val=gsl_vector_get(b, j);
-          if (fabs(val-1) > eps && fabs(val+1) > eps && 
-			  (fabs(val) > eps || strictflag)) goto try_again;
-	  coding_matrix[i][j]=val;
+	for (int j=0; j<n; j++) {
+          printf("%3d ", perm[j]);
+          inv[perm[j]]=j;
 	}
+	printf("\n");
+	printf("\n");
 
-        for (int j=0; j<n-i; j++) {
-          coding_matrix[i][i+j]=trial[j];
+        try_again:	//more spaghetti code... yah!
+          //create a random partial trial vector:
+          do {
+            //lets write some spaghetti code:
+            if (list->nel() >= nperm) goto done;
+            random_coding_row(*trial, n-i, strictflag);
+          } while (list->add_member(*trial) < 0);
+
+          //calculate solution vector:
+          for (int j=0; j<i; j++) {
+            double temp=0;
+            for (int k=0; k<n-i; k++) {
+              temp+=(*trial)[k]*coding_matrix[j][perm[k+i]];
+            }
+            gsl_vector_set(b, j, -temp);
+          }
+
+          //solve the linear system to get the rest of the potential new row
+          //for the coding matrix:
+          gsl_linalg_SV_solve(a, vt, s, b, x);
+
+	  for (int j=0; j<n-i; j++) printf("%2d ", (*trial)[j]);
+	  for (int j=0; j<i; j++) printf("%10.4g ", gsl_vector_get(x, j));
+          printf("\n");
+
+          //check that the rest of the vector has values of -1 or 1 (or 0):
+          for (int j=0; j<i; j++) {
+            double val=gsl_vector_get(x, j);
+            if (fabs(val-1) > eps && fabs(val+1) > eps && 
+			  (fabs(val) > eps || strictflag)) goto try_again;
+            coding_matrix[i][perm[j]]=round(val);
+          }
+
+          for (int j=0; j<n-i; j++) {
+            coding_matrix[i][perm[i+j]]=(*trial)[j];
+          }
+
+        if (check_coding_row(coding_matrix[i], n)==0) goto try_again;
+        printf("\n");
+
+        //clean up:
+        gsl_matrix_free(a);
+        gsl_vector_free(b);
+        gsl_vector_free(x);
+        gsl_matrix_free(vt);
+        gsl_vector_free(s);
+        gsl_vector_free(work);
+        delete list;
+	delete [] perm;
+	delete selist;
+      }
+      done: nfilled=i;
+
+      for (int i=0; i<nfilled; i++) {
+        for (int j=0; j<n; j++) printf("%2d ", coding_matrix[i][j]);
+        printf("\n");
+      }
+      printf("\n");
+
+      for (int i=0; i<nfilled; i++) {
+        for (int j=0; j<n; j++) {
+          int temp=0;
+          for (int k=0; k<n; k++) temp+=coding_matrix[i][k]*coding_matrix[j][k];
+          printf("%3d ", temp);
         }
-
-      if (check_coding_row(coding_matrix[i])==0) goto try_again;
-
-      //clean up:
-      gsl_matrix_free(a);
-      gsl_vector_free(b);
-      gsl_vector_free(x);
-      gsl_matrix_free(vt);
-      gsl_vector_free(s);
-      gsl_vector_free(work);
-      delete list;
-      delete trial;
-    }
-
-    for (int i=0; i<nfilled; i++) {
-      fprintf(fs, "\"\" ");
-      for (int j=0; j<n; j++) {
-        if (coding_matrix[i][j]<0) fprintf(fs, "%d ", j);
+        printf("\n");
       }
-      fprintf(fs, "%c", PARTITION_SYMBOL);
-      for (int j=0; j<n; j++) {
-        if (coding_matrix[i][j]>0) fprintf(fs, " %d", j);
-      }
-      fprintf(fs, ";\n");
-    }
+      printf("\n");
+    //} while (nfilled<n && list0.nel()<nperm0);
+    } while (0);
 
-    delete [] coding_matrix[0];
-    delete [] coding_matrix;
-
+    return coding_matrix;
   }
 
   //need to design a more efficient version of this...
-  void ortho_coding_matrix_brute_force(FILE *fs, int n) {
+  int ** ortho_coding_matrix_brute_force(int n) {
     long *trial;
     //bit_array *tobits;
     bitset<sizeof(int)*8> *tobits;
@@ -311,21 +357,9 @@ namespace libagf {
       delete tobits;
     }
 
-    for (int i=0; i<nfilled; i++) {
-      fprintf(fs, "\"\" ");
-      for (int j=0; j<n; j++) {
-        if (coding_matrix[i][j]<0) fprintf(fs, "%d ", j);
-      }
-      fprintf(fs, "%c", PARTITION_SYMBOL);
-      for (int j=0; j<n; j++) {
-        if (coding_matrix[i][j]>0) fprintf(fs, " %d", j);
-      }
-      fprintf(fs, ";\n");
-    }
-
     delete [] trial;
-    delete [] coding_matrix[0];
-    delete [] coding_matrix;
+
+    return coding_matrix;
   }
 
   void print_control_hier(FILE *fs, int ncls, int c0, int depth) {
@@ -342,43 +376,18 @@ namespace libagf {
     }
   }
 
-  void print_control_1vsall(FILE *fs, int ncls, const char *opt) {
-    one_against_all(fs, ncls, opt);
-    fprintf(fs, "{");
-    for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
-    fprintf(fs, "}\n");
-  }
-
-  void print_control_1vs1(FILE *fs, int ncls, const char *opt) {
-    one_against_one(fs, ncls, opt);
-    fprintf(fs, "{");
-    for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
-    fprintf(fs, "}\n");
-  }
-
-  void print_control_adj(FILE *fs, int ncls, const char *opt) {
-    partition_adjacent(fs, ncls, opt);
-    fprintf(fs, "{");
-    for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
-    fprintf(fs, "}\n");
-  }
-
-  void print_control_random(FILE *fs, int ncls, int nrow, int strictflag) {
-    random_coding_matrix(fs, ncls, nrow, strictflag);
-    fprintf(fs, "{");
-    for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
-    fprintf(fs, "}\n");
-  }
-
-  void print_control_exhaustive(FILE *fs, int ncls) {
-    exhaustive_coding_matrix(fs, ncls);
-    fprintf(fs, "{");
-    for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
-    fprintf(fs, "}\n");
-  }
-
-  void print_control_ortho(FILE *fs, int ncls) {
-    ortho_coding_matrix_brute_force(fs, ncls);
+  void print_control_nonhier(FILE *fs, int **coding_matrix, int n, int ncls, const char *options) {
+    for (int i=0; i<n; i++) {
+      if (options!=NULL) fprintf(fs, "\"%s\" ", options); else fprintf(fs, "\"\" ");
+      for (int j=0; j<ncls; j++) {
+        if (coding_matrix[i][j]<0) fprintf(fs, "%d ", j);
+      }
+      fprintf(fs, "%c", PARTITION_SYMBOL);
+      for (int j=0; j<ncls; j++) {
+        if (coding_matrix[i][j]>0) fprintf(fs, " %d", j);
+      }
+      fprintf(fs, ";\n");
+    }
     fprintf(fs, "{");
     for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
     fprintf(fs, "}\n");
