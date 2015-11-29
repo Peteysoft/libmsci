@@ -39,7 +39,7 @@ FILE FORMATS
 
 For vector data, use the extension, ".vec".  Vector files have a four byte header (by default, see next paragraph) that indicates the dimensionality of the data.  After that, each vector is stored one after the other as arrays of four byte floats.
 
-Writing these files is simple enough that it is inlined everywhere in the library, therefore we provide some example programs. To write such a file in C++, you can use the following commands:
+Writing these files is simple enough that it has been manually inlined everywhere in the library, therefore we provide some example programs. To write such a file in C++, you can use the following commands:
 
 #include <stdio.h>
 #include <stdint.h>
@@ -62,7 +62,7 @@ int main() {
 
   fs=fopen("data.vec", "w");
   fwrite(&D, sizeof(D), 1, fs);
-  for (int32_t i=0; i<n; i++) fwrite(data[i], sizeof(float), D, fs);
+  fwrite(data[0], sizeof(float), n*D, fs);
   fclose(fs);
   
   delete [] data[0];
@@ -124,7 +124,7 @@ In IDL:
   data=lonarr(100)
   ;...
   openw, 1, "data.cls"
-  writue, 1, data
+  writeu, 1, data
   close, 1
 
 In Fortran:
@@ -146,7 +146,7 @@ c = (Nc * P(c | x) - 1) / (Nc - 1)
 
 where P(c | x) is the conditional probability of the "winning" class.  A confidence rating of one indicates theoretically perfect knowledge of the true class, while a value of zero indicates that the estimate is little better than chance.  If conditional or joint probabilities are needed for all the classes, they are written to standard out.
 
-To understand how to read the output files, examine the routines "read_clsfile", "read_vecfile", and "read_datfile" for reading class data, vector data, and scalar floating-point data respectively.  These are contained in the source files "agf_util.h" and "agf_util.cc". Note that vector data is allocated in one contiguous block, meaning that it can also be read and written in one contiguous block.  It can also be deleted very easily using two commands:
+To understand how to read the output files, examine the routines "read_clsfile", "read_vecfile", and "read_datfile" subroutines for reading class data, vector data, and scalar floating-point data respectively.  These are contained in the source files "agf_io.h" and "agf_io.cc". Note that vector data is allocated in one contiguous block, meaning that it can also be read and written in one contiguous block.  It can also be deleted very easily using two commands:
 
 #include <stdint.h>
 #include "agf_io.h"
