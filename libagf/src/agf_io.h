@@ -82,21 +82,25 @@ namespace libagf {
   template <class real, class cls_t>
   nel_ta read_svm(FILE *fs, real **&train, cls_t *&ord, dim_ta &nvar, real missing=0);
 
+  //print to an ascii file (LVQPAK or LIBSVM format):
   template <class cls_t, class real>
-  void print_lvq_svm(FILE *fs, 
-		real **vec,
-		cls_t *cls,
-		nel_ta n,
-		dim_ta nvar,
-		int svmflag=0,
-		int nhflag=0);
+  void print_lvq_svm(FILE *fs, 		//stream
+		real **vec,		//features data
+		cls_t *cls,		//class data
+					//(lvq only: no class data printed if null)
+		nel_ta n,		//number of samples
+		dim_ta nvar,		//number of features
+		int svmflag=0,		//libsvm format
+		int nhflag=0);		//do not print header (lvq only)
 
+  //read the output from svm-predict:
   template <class cls_t, class real>
   nel_ta read_svmout(FILE *fs,
 		cls_t *&cls,
 		real **&p,
 		cls_t &ncls,
-		nel_ta n=-1);		//if n is greater than 0, cls & p are not allocated and exactly n
+		nel_ta n=-1);		//if n is greater than 0, cls & p are not 
+  					//allocated and exactly n
 					//entries are read (if they exist)
 
 }

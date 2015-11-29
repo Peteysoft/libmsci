@@ -106,6 +106,7 @@ namespace libagf {
 	err2=used.add_member(row);
         if (used.nel() >= nperm) {
           ntrial=i;
+          coding_matrix[ntrial]=NULL;
 	  goto done;
         }
       } while(err1<0 || err2<0 || check_coding_row(row, ncls)==0);
@@ -289,7 +290,7 @@ namespace libagf {
       printf("\n");
 
       for (int i=0; i<nfilled; i++) {
-        for (int j=0; j<n; j++) {
+        for (int j=0; j<nfilled; j++) {
           int temp=0;
           for (int k=0; k<n; k++) temp+=coding_matrix[i][k]*coding_matrix[j][k];
           printf("%3d ", temp);
@@ -299,6 +300,8 @@ namespace libagf {
       printf("\n");
     //} while (nfilled<n && list0.nel()<nperm0);
     } while (0);
+
+    if (nfilled<n) coding_matrix[nfilled]=NULL;
 
     return coding_matrix;
   }
@@ -357,8 +360,25 @@ namespace libagf {
       delete tobits;
     }
 
-    delete [] trial;
+    if (nfilled<n) coding_matrix[nfilled]=NULL;
 
+    for (int i=0; i<nfilled; i++) {
+      for (int j=0; j<n; j++) printf("%2d ", coding_matrix[i][j]);
+      printf("\n");
+    }
+    printf("\n");
+
+    for (int i=0; i<nfilled; i++) {
+      for (int j=0; j<nfilled; j++) {
+        int temp=0;
+        for (int k=0; k<n; k++) temp+=coding_matrix[i][k]*coding_matrix[j][k];
+        printf("%3d ", temp);
+      }
+      printf("\n");
+    }
+    printf("\n");
+
+    delete [] trial;
     return coding_matrix;
   }
 
@@ -378,6 +398,7 @@ namespace libagf {
 
   void print_control_nonhier(FILE *fs, int **coding_matrix, int n, int ncls, const char *options) {
     for (int i=0; i<n; i++) {
+      if (coding_matrix[i]==NULL) break;
       if (options!=NULL) fprintf(fs, "\"%s\" ", options); else fprintf(fs, "\"\" ");
       for (int j=0; j<ncls; j++) {
         if (coding_matrix[i][j]<0) fprintf(fs, "%d ", j);

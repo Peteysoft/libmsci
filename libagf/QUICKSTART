@@ -5,16 +5,16 @@ Questions, comments?  Contact the author:
 Peter Mills
 peteymills@hotmail.com
 
-You may also submit your maintenance and/or feature requests using Sourceforge.
+You may also submit your maintenance and/or feature requests using Github.
 
 If you find this software useful, please pass the word along to colleagues and others working in the field.
 
 
 INSTALLATION
 
-  First, make sure you have the required dependencies.  You will need the GNU Scientific Library (GSL).  If it is not already installed on your system, download and install it.  Take note of the location of the compiled libraries and include files.  You will also need to install "libpetey", another, much smaller numerical library.  Download this from Sourceforge and follow the installation instructions.
+  First, make sure you have the required dependencies.  You will need the GNU Scientific Library (GSL).  If it is not already installed on your system, download and install it.  Take note of the location of the compiled libraries and include files.  You will also need to install "libpetey", another, much smaller numerical library.  This is now bundled with libAGF in the software package, "libmsci" (miscellaneous science) on Github. Both packages can be compiled together from the base directory.
 
-  Download the source from Sourceforge.net.  Unzip and unpack the tarball to the desired directory.  Modify the makefile with the appropriate directories, compiler names and compiler flags.  Type "make" from inside the libagf directory to perform the build and "make install" to copy the executables, libraries and include files to the appropriate directories.
+  Download the source from Github.com.  Unzip and unpack the tarball to the desired directory.  Modify the makefile with the appropriate directories, compiler names and compiler flags.  Type "make" from inside the libAGF directory to perform the build and "make install" to copy the executables, libraries and include files to the appropriate directories.
 
   A configure script is not supplied: please refer to the Peteysoft coding standards (http://peteysoft.org/coding_standards.txt).
 
@@ -29,37 +29,43 @@ GSL_INCLUDE = location of the GSL include files (if different from above)
 
 CC = name of your C++ compiler
 
-  There are two ways to change the optimisation of the binaries.  If you would like multiple versions with different levels of optimisation, be sure to change the OPT_VER macro.  This will append the optimisation flag to all the object files, libraries and executables.  If you only want one version, then modify the CFLAGS macro in the usual manner.
+  There are two ways to change the optimisation of the binaries.  If you would like multiple versions with different levels of optimisation, be sure to change the OPT_VER macro.  This will append the optimisation flag to all the object files, libraries and executables.  If you want only one version, then modify the CFLAGS macro in the usual manner.
 
   To test the resulting executables, type, "make test".  To see the resulting comparison summary, it may be necessary to type it twice.  Overall accuracies of all the classification algorithms should be around 90 % and the uncertainty coefficients should be over 0.5, while the confidence ratings should roughly match the accuracies.  When comparing one algorithm to another, accuracies should be around 99% and uncertainty coefficients around 0.92, while the confidence ratings should be 1. or close to it, regardless of accuracy.  Probability density comparisons should be around r={0.98, 0.99, 0.97, 0.99} for KNN and AGF for the first class and KNN and AGF for the second class, respectively.
 
 FILE FORMATS
 
-  The programs accept three types of files with very simple, binary formats.  Although portability is sometimes an issue, the binary formats are easy to generate and allow for rapid access and compact storage.  For vector data, use the extension, ".vec".  Vector files have a four byte header (by default, see next paragraph) that indicates the dimensionality of the data.  After that, each vector is stored one after the other as arrays of four byte floats.  To write such a file in C++, you can use the following commands:
+  The programs accept three types of files with very simple, binary formats.  Although portability is sometimes an issue, the binary formats are easy to generate and allow for rapid access and compact storage.  The interface for all I/O routines, including those handling external formats, is contained in the header "agf_io.h". There are also command-line utilities for converting to and from more portable ASCII formats. See below.
+
+For vector data, use the extension, ".vec".  Vector files have a four byte header (by default, see next paragraph) that indicates the dimensionality of the data.  After that, each vector is stored one after the other as arrays of four byte floats.
+
+Writing these files is simple enough that it is inlined everywhere in the library, therefore we provide some example programs. To write such a file in C++, you can use the following commands:
 
 #include <stdio.h>
+#include <stdint.h>
 int main() {
 
   FILE *fs;
 
   float ** data;	//array of vectors
-  long n;		//number of vectors
-  long D;		//number of dimensions
+  int32_t n;		//number of vectors
+  int32_t D;		//number of dimensions
 
   n=100;	//(e.g.)
   D=2;
 
   data=new float * [n];
-  for (long i=0; i<n; i++) data[i]=new float[D];
+  data[0]=new float[n*D];
+  for (int32_t i=1; i<n; i++) data[i]=data[0]+D*i;
 
   //... commands to fill the matrix ...
 
   fs=fopen("data.vec", "w");
-  fwrite(&D, sizeof(long), 1, fs);
-  for (long i=0; i<n; i++) fwrite(data[i], sizeof(float), D, fs);
+  fwrite(&D, sizeof(D), 1, fs);
+  for (int32_t i=0; i<n; i++) fwrite(data[i], sizeof(float), D, fs);
   fclose(fs);
   
-  for (long i=0; i<n; i++) delete [] data[i];
+  delete [] data[0];
   delete [] data;
 
 }
@@ -91,23 +97,24 @@ In Fortran:
 
   close(10)
 
-For scalar data, the programs use a straight binary dump of the data.  By default, four byte (32 bit) integers are used for class data and four byte (32 bit) floating point variables are used for continuous data. (To change the types used by the command-line programs, edit the header "agf_defs.h".) For class data, use the extension ".cls" and for floating point data, use the extension, ".dat".  Scalar data always corresponds to vector data and is ordered accordingly.
 
+For scalar data, the programs use a straight binary dump of the data.  By default, four byte (32 bit) integers are used for class data and four byte (32 bit) floating point variables are used for continuous data. To change the types used by the command-line programs, edit the typedefs in the header "agf_defs.h". For class data, use the extension ".cls" and for floating point data, use the extension, ".dat".  Scalar data should correspond to vector data and be ordered accordingly.
 
 To write such data in C++, you can use the following commands:
 
 #include <stdio.h>
+#include <stdint.h>
 
 int main() {
   FILE *fs;
-  long *data;
-  long n;
+  int32_t *data;
+  int32_t n;
 
   n=100;	//(e.g)
-  data=new long[n];
+  data=new int32_t[n];
   //... commands to fill array  ...
   fs=fopen("data.cls", "w");
-  fwrite(data, sizeof(long), n, fs);
+  fwrite(data, sizeof(int32_t), n, fs);
   fclose(fs);
   delete [] data;
 }
@@ -131,23 +138,33 @@ In Fortran:
  
   write(10) (data(i), i=1,n)
 
-  close(10)
+  close(10
 
 Note that the class indices must go from 0 to Nc-1, where Nc is the number of classes.  The classification routines will output two binary files containing scalar data:  one with the extension, ".cls" containing class estimates, and one with the extension ".con" containing "confidence ratings" which are simply conditional probabilities re-scaled in the following manner:
 
 c = (Nc * P(c | x) - 1) / (Nc - 1)
 
-where P(c | x) is the conditional probability of the "winning" class.  A confidence rating of one indicates theoretically perfect knowledge of the true class, while a value of zero indicates that the result is little better than chance.  If conditional or joint probabilities are needed for all the classes, they are written to standard out.
+where P(c | x) is the conditional probability of the "winning" class.  A confidence rating of one indicates theoretically perfect knowledge of the true class, while a value of zero indicates that the estimate is little better than chance.  If conditional or joint probabilities are needed for all the classes, they are written to standard out.
 
-To read the output files, examine the routines "read_clsfile" for reading class data, "read_vecfile" for reading vector data and "read_datfile" for reading scalar floating point data, contained in the source file, "agf_util.cc", or you can use them directly.  Note that vector data is allocated in one contiguous block, meaning that it can also be read and written in one contiguous block.  It can also be deleted very simply using two commands:
+To understand how to read the output files, examine the routines "read_clsfile", "read_vecfile", and "read_datfile" for reading class data, vector data, and scalar floating-point data respectively.  These are contained in the source files "agf_util.h" and "agf_util.cc". Note that vector data is allocated in one contiguous block, meaning that it can also be read and written in one contiguous block.  It can also be deleted very easily using two commands:
+
+#include <stdint.h>
+#include "agf_io.h"
+
+...
 
   float ** data;
-  long n, D;
+  int32_t n, D;
 
   data=read_vecfile(data, n, D);
 
+  ....
+
   delete [] data[0];
   delete [] data;
+
+  ....
+
 
 In addition, the "libpetey" satellite library contains a utility called sparse_calc that can operate on both types of binary files containing floating point data (but not class data).  To read in and print a file of vector data called, "foo.vec" type the following commands:
 
@@ -160,7 +177,7 @@ To read in and print a file of scalar data called, "bar.dat", type the following
 
 Some users may prefer to use ASCII file formats to store their data.  If this is the case, there are a number of file conversion utilities included for comparison with other algorithms.  See the section entitled COMMAND LINE EXECUTABLES, below.
 
-Sometimes it's desireable to normalize the data before performing classifications.  Normalization in libagf has now been generalized to linear transformation and includes singular value decomposition as well as feature selection.  The command, "agf_precondition", is used to perform linear transformations on test and training (features) data and store the resulting transformation matrix in the same binary format for vector data as described above.  The default name is the same as before with the extension ".std" appended to the output base file name.  Features data can still be transformed directly within the machine learning routines using the command options "-n", "-S" and "-a": see the next section entitled COMMAND PARAMETERS, below.  By default, pre-trained model data is stored in the normalized coordinates; to store it in the non-normalized coordinates, use the command switch, "-u".
+Sometimes it's desireable to normalize the data before performing classifications.  Normalization in libAGF has now been generalized to linear transformation and includes singular value decomposition as well as feature selection.  The command, "agf_precondition", is used to perform linear transformations on test and training (features) data and store the resulting transformation matrix in the same binary format for vector data as described above.  The default name is the same as before with the extension ".std" appended to the output base file name.  Features data can still be transformed directly within the machine learning routines using the command options "-n", "-S" and "-a": see the next section entitled COMMAND PARAMETERS, below.  By default, pre-trained model data is stored in the normalized coordinates; to store it in the non-normalized coordinates, use the command switch, "-u".
 
 
 COMMAND PARAMETERS 
@@ -211,8 +228,6 @@ flags:
     -j       print joint instead of cond. prob. to stdout
     -n       normalize the data
 
-
->
 
 Here is a list of all the options, although not all commands support all options:
 
@@ -359,7 +374,7 @@ Pre-/post-processing:
 
 File conversion:
 
-  lvq2agf:	Converts the LVQPAK (ASCII) file format to the binary format accepted by libagf.  Many users may find these ASCII formats easier to work with.
+  lvq2agf:	Converts the LVQPAK (ASCII) file format to the binary format accepted by libAGF.  Many users may find these ASCII formats easier to work with.
   svm2agf:	LIBSVM format to libAGF.
   svmout2agf:	Converts (ASCII) output from LIBSVM to binary libAGF format.
   agf2ascii:	Converts binary libAGF format to ASCII (LVQPAK or LIBSVM)  format.
@@ -453,17 +468,18 @@ The test suite in examples/humidity_data tests the multi-borders paradigm on a d
 
 examples/Landsat:
 
-In the Landsat directory there are a number of scripts for performing surface classifications using Landsat data.  In particular, there is a simple app that allows the user to classify pixels by hand.  It opens a window with a Landsat scene in it; clicking one of the three mouse buttons allows you to classify pixels in the scene.  There are three files that already contain hand-classified forest clearcut data.
+In the Landsat directory there are a number of scripts for performing surface classifications using Landsat data.  In particular, there is a simple python app that allows the user to classify pixels by hand.  It opens a window with a Landsat scene in it; clicking one of the three mouse buttons allows you to classify pixels in the scene.  There are three files that already contain hand-classified forest clearcut data.
 
 
 MULTI-BORDERS CLASSIFICATION
 
   Multi-borders is an algorithm that generalizes the AGF-borders binary classification algorithm to multiple classes.  It is a means of specifying the configuration of the class borders using a recursive control language.  The "multi_borders" command is used for training a multi-borders model and has the following syntax:
 
-  multi_borders [<options>] <control-in> <train> <model> <control-out>
+  multi_borders [<options>] [<control-in>] <train> <model> <control-out>
 
-where: 
-  <control-in> is the input or training control file, 
+where:
+  <options> are a series of options to pass to the training program
+  <control-in> is the input or training control file--can also be taken from stdin
   <train> is the base-name of the binary files containing the training data
   <model> is the base-name for the files that will contain each of the binary classification models and 
   <control-out> is the output or classification control file which is passed to the classification program, "classify_m".  
@@ -521,7 +537,7 @@ $>classify_m -n foobar.txt test.vec result
 
 The results will be stored in "result.cls" and "result.con".
 
-  There are two types of multi-borders classification: hierarchical and non-hierarchical.  In non-hieararchical multi-borders classification, the classes are partitioned in multiple ways using a binary classifier and the equations relating the conditional probabilities of each class to those of the binary classifiers are solved returning all of the conditional probabilities.  In the hierarchical method (also called a decision tree), the classes are partitioned using either a binary classifier or a non-hierarchical multi-classifier, then each of those partitions are partitioned again and so on until there is only one class left.  Hierarchical classification returns only the conditional probability of the winning class.  The classify_m method automatical detects whether a control file uses the hierarchical method or only the non-hierarchical method (that is it has only one level) and prints out conditional probabilities as appropriate.  
+  There are two types of multi-borders classification: hierarchical and non-hierarchical.  In non-hieararchical multi-borders classification, the classes are partitioned in multiple ways using a binary classifier and the equations relating the conditional probabilities of each class to those of the binary classifiers are solved returning all of the conditional probabilities.  In the hierarchical method (also called a decision tree), the classes are partitioned using either a binary classifier or a non-hierarchical multi-class classifier, then each of those partitions are partitioned again and so on until there is only one class left.  Hierarchical classification returns only the conditional probability of the winning class.  The classify_m method automatical detects whether a control file uses the hierarchical method or only the non-hierarchical method (that is it has only one level) and prints out conditional probabilities as appropriate.  
 
   The parameters for training each binary classifier are contained in double quotes in the training control file.  To take parameters from the command line, use the null string ('""') while a period ('"."') tells the program to use the last set of parameters at the same level or below.  A series of statements for training each of the binary classifiers are generated and sent to standard output.  Once the commands are run, these binary classifiers will be stored in a pair of uniquely named files, the base-names of which replace, in the final control file, the quoted parameter lists from the training control file.
 
@@ -595,30 +611,52 @@ where predict is the command name--if there are options they must be passed dire
 
 LIBSVM tends to be slow, especially if you have a lot of training data.  Therefore, multi_borders includes the option to transform SVM/multi-borders hybrid models into full multi-borders models.  To access this "accelerator" mode, use the -O switch and pass the output classification control file from the previous pass:
 
-$>multi_borders -O "svm-predict -b 1" foobar.txt foo bar2 foobar2.txt
+$>multi_borders -A -M -O "svm-predict -b 1" foobar.txt foo bar2 foobar2.txt
 
 which generates the following output:
 
-class_borders -M -O "svm-train -b 1" bar.00 foo bar2.00
-class_borders -M -O "svm-train -b 1" bar.01.00 foo bar2.01.00
-class_borders -M -O "svm-train -b 1" bar.01-00 foo bar2.01-00
-class_borders -M -O "svm-train -b 1" bar.01-01 foo bar2.01-01
-class_borders -M -O "svm-train -b 1" bar foo bar2
+class_borders -A -M -O "svm-train -b 1" bar.00 foo bar2.00
+class_borders -A -M -O "svm-train -b 1" bar.01.00 foo bar2.01.00
+class_borders -A -M -O "svm-train -b 1" bar.01-00 foo bar2.01-00
+class_borders -A -M -O "svm-train -b 1" bar.01-01 foo bar2.01-01
+class_borders -A -M -O "svm-train -b 1" bar foo bar2
 
-Note how we're using class_borders to perform the training: it treats the external command as a source of conditional probabilities and finds a series of roots (zeroes) to sample the border between the two classes, just as it would with AGF estimates.  It is also worth noting that an extra parameter is included in the class_borders command: in addition to the output file name in the last parameter, the first parameter is the name of the model used to predict the probabilities, while the second parameter is a file containing training data which is used to sample the space while searching for roots.  This training data must be in ASCII format, just like in all other interoperations using external commands.  If the external command uses the training data directly to generate estimates, simply pass it twice.
+Note how we're using class_borders to perform the training: it treats the external command as a source of conditional probabilities and finds a series of roots (zeroes) to sample the border between the two classes, just as it would with AGF estimates.  It is also worth noting that an extra parameter is included in the class_borders command: in addition to the output file name in the last parameter, the first parameter is the name of the model used to predict the probabilities, while the second parameter is a file containing training data which is used to sample the space while searching for roots.  This training data can be in either binary or ASCII format, however output is always in libAGF native binary format.  If the external command uses the training data directly to generate estimates, simply pass it twice.
 
 Because numerical differentiation is used to generate the gradient vectors, accuracy may be reduced.  In fact in order to make this method even usable when run in conjunction with LIBSVM, it's necessary to increase the precision of output probabilities.  In version 3.18, these are printed at line number 125 in svm-predict.c:
 
 124		for(j=0;j<nr_class;j++)
 125			fprintf(output," %g",prob_estimates[j]);
 
-The %g can be changed to, e.g. %.12lg or a similar level of high precision.  Later versions may allow the use of analytical derivatives although this will require a minor extension of the LIBSVM library.
+The %g can be changed to, e.g. %.12lg or a similar level of high precision.  libAGF now supports the use of analytical derivative for LIBSVM models only. See below.
 
 Output is in the normal, AGF binary format and classify_m can be used as normal for classification:
 
 $>classify_m foobar2.txt test.vec output
 
 Running the commands, multi_borders, classify_m, and class_borders without arguments prints a generous help screen including a description of most of the features explained in this section.  There is also an example contained in the second half of the makefile under the examples/humidity_data directory (see, EXAMPLES, above).
+
+IN-HOUSE SVM CODES
+
+Note that libAGF now has its own "in-house" LIBSVM-compatible support-vector-machine, binary classification codes--for prediction only, not training. See the -Z option which can be used with class_borders, classify_b, multi_class, and classify_m. Briefly, to re-train the above LIBSVM multi-class model to a multi-borders model, use the following command:
+
+$>multi_borders -Z foobar.txt foo bar2 foobar2.txt
+
+which generates the following output:
+
+class_borders  -A -M -Z bar.00 foo bar2.00 1 / 2
+class_borders  -A -M -Z bar.01.00 foo bar2.01.00 3 / 4
+class_borders  -A -M -Z bar.01-00 foo bar2.01-00 3 4 5 / 6
+class_borders  -A -M -Z bar.01-01 foo bar2.01-01 3 4 / 5 6
+class_borders  -A -M -Z bar foo bar2 1 2 / 3 4 5 6
+
+The re-training is both faster than that described above and produces a more accurate model which should be almost as accurate as the original LIBSVM model.
+
+To classify test data in libAGF binary format using a LIBSVM binary model, generating output also in libAGF binary format, you can use the classify_b command:
+
+$>classify_b -Z svm_model test.vec output
+
+where svm_model has been generated using svm-predict.
 
 
 BIBLIOGRAPHY
