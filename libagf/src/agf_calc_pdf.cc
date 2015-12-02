@@ -28,8 +28,8 @@ real agf_calc_pdf(real **mat, dim_ta D, nel_ta n, real *vec, real var[2],
   real var_f;			//final value of the filter width (as variance)
   real tw;			//total weight
   real *knearest;		//distances of k nearest neighbours
-  real *weight;		//the current value for the weights
-  real n1, norm;		//normalisation coeff.
+  real *weight;			//the current value for the weights
+  real norm;			//normalisation coeff.
   real pdf;			//final calculated value of pdf
 
   //first we calculate all the distances:
@@ -51,9 +51,7 @@ real agf_calc_pdf(real **mat, dim_ta D, nel_ta n, real *vec, real var[2],
   for (nel_ta i=0; i<k; i++) tw+=weight[i];
 
   //use the final filter width to normalize the pdf:
-  n1=sqrt(var_f*M_PI*2);
-  norm=1;
-  for (dim_ta i=0; i<D; i++) norm*=n1;
+  norm=pow(sqrt(var_f*M_PI*2), D);
   
   //norm=pow(var_f*M_PI*2, m/2.);
   //printf("var_f=%g, tw=%g, norm=%g\n", var_f, tw, norm);
@@ -87,8 +85,8 @@ real agf_calc_pdf(real **mat, dim_ta D, nel_ta n, real *vec, real var[2],
   real *d2;			//the distances (squared)
   real var_f;			//final value of the filter width (as variance)
   real tw;			//total weight
-  real *weight;		//the current value for the weights
-  real n1, norm;		//normalisation coeff.
+  real *weight;			//the current value for the weights
+  real norm;			//normalisation coeff.
   real pdf;			//final calculated value of pdf
 
   //first we calculate all the distances:
@@ -106,9 +104,7 @@ real agf_calc_pdf(real **mat, dim_ta D, nel_ta n, real *vec, real var[2],
   for (nel_ta i=0; i<n; i++) tw+=weight[i];
 
   //use the final filter width to normalize the pdf:
-  n1=sqrt(var_f*M_PI*2);
-  norm=1;
-  for (dim_ta i=0; i<D; i++) norm*=n1;
+  norm=pow(sqrt(var_f*M_PI*2), D);
   
   //norm=pow(var_f*M_PI*2, m/2.);
   //printf("var_f=%g, tw=%g, norm=%g\n", var_f, tw, norm);

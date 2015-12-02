@@ -1,0 +1,50 @@
+1. Primitive types exist for a reason.  Do not use an object class or defined type if a primitive type will do.  Using primitive types makes the code easier to understand, produces less overhead when calling subroutines and makes it easier to call from different languages (e.g. calling C from Fortran).
+
+2. By the same token, if an algorithm can work with primitive types, write it for primitive types.  When using the algorithm with defined types, translate from those to the primitive types rather than adding unnecessary indirection.
+
+ E.g. when working with dates from climate data, I almost always perform Runge-Kutta integrations using a floating point value for the times even though the templated routines will work with a more complex date type.  
+
+3. Do not use an object or class hierarchy when a function or subroutine will do.  Again, the tendency is to reduce overhead, e.g. associated with the class definition itself and with initializing and setting up each object instantiation.
+
+4. Build highly general tools and use those tools as building blocks for more specific algorithms. 
+
+5. Form re-useable libraries from the general tools.
+
+ E.g. (4. & 5.), the ctraj trajectory libraries have very little in them, they are mostly pieced together from bits and pieces taken from several other libraries.  In the semi-Lagrangian tracer scheme, the wind fields are interpolated using generalized data structures from another library, they are integrated using a 4th-order Runge-Kutta subroutine from still another library, intermediate results are output using a general sparse matrix class and the final fields are integrated using sparse matrix multiplication, an entirely separate piece of software.
+
+6. Test your algorithms with the problem at hand.
+
+7. Use makefiles for your test cases.
+
+8. In the beginning, write a single main routine that solves the simplest case.  Later, once it is working, you can form it into a subroutine or object class and flesh it out with extra parameters and other features.
+
+9. If a parameter usually takes on the same or similar values, make it default to that value/one of those values.  This is easy if the syntactical structure is a main routine called from the command line or an object class, but can be difficult if it is a subroutine and the language does not support keyword parameters. 
+
+10. Do not use more indirection than absolutely necessary.  The call stack should rarely be more than three or four levels high (excluding system calls or recursive algorithms). 
+
+11. Enforced data hiding is rarely necessary.  If you need to access the fields in your object class directly from unrelated classes or subroutines, maybe the data shouldn't be hidden inside of a class in the first place.
+
+12. Generally, the closer the structural match of the syntactical structures (data, subroutines and classes) to the problem at hand, the more transparent the program and the better it works.  
+
+E.g., simulation software for the Gaspard-Rice scattering system has two classes: one for the individual discs and one for the scattering system as a whole.
+
+13. Given the choice between a simple solution and a complex solution, always choose the simpler one.  The gains in speed or functionality are rarely worth it. 
+
+E.g., to overcome the small time step required by the presence of gravity waves in an ocean GCM, one can use an inverse method to solve for surface pressure for a "flat-top" ocean, or one can have a separate simulation for the surface-height with a smaller time step, or one can have layers with variable thickness in which the gravity waves move independently (and more slowly because the layers are thin).  I would choose the last of the three options because it is the simplest and most symmetric, that is, elegant.
+
+14. It is not always possible or desirable to strive for the most general solution.  Sometimes you have to pick a design from amongst many possible different and even divergent designs and stick with it.  Once you have more information, the code can be refactored later.  
+
+E.g. in the libagf software, there are only two choices of kernel function (the kernel function is not that critical) and with the Gaussian kernel, there is only one way to solve for the bandwidth.  These choices were not easy to make but the alternative (make it more general) was just too fiddly and had too many divergent paths for the user to easily choose amongst.
+
+15. Unless the old code is written by an expert (and I will let the reader decide what I mean by that) and well documented, it is usually quicker and easier to rewrite it from scratch rather than work with someone else's code.  This is especially true in relation to scientific software which is not usually written by professional programmers and tends to be poorly documented.
+
+16. If you do decide to use someone else's code, it is usually better to encapsulate it using function and system calls rather than delve deep into the bowels.
+
+17. Do not be afraid to re-invent the wheel.  Re. 4. and 16., there is now a plethora of standard libraries available for just about every language, but something you write yourself will often fulfill your needs better, provide fewer surprises and give you a greater understanding of your own program as there will be no "black boxes".  Obviously, it will also improve your understanding of computer programming in general.  If you are a good programmer, your implementation may also be better in every way.
+
+18. Avoid side effects: write subroutines and executables that take a set of inputs and return a set of outputs and that's it.
+
+19. Try to separate the major components of the program into modules: IO should be separate from the data processing steps or "engine."  By the same token, the GUI interface should also be separate.
+
+20. Despite recent improvements in memory management, core memory that creeps into the swap space is a sure way to destroy performance.  Customized paging algorithms that operate directly on the input/output files can significantly alleviate this problem.
+

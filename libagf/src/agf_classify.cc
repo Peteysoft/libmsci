@@ -38,7 +38,7 @@ cls_t agf_classify(real **mat, 		//matrix of training data
   cls_t cls;			//final class
   real var_f;			//final filter variance
   //if we want joint probabilities:
-  real n1, norm;
+  real norm;
 
   //first we calculate all the distances:
   d2=new real[n];
@@ -76,9 +76,7 @@ cls_t agf_classify(real **mat, 		//matrix of training data
   //normalize the pdfs:
   if (joint) {
     //use the final filter width to normalize the pdf:
-    n1=sqrt(var_f*M_PI*2);
-    norm=1;
-    for (dim_ta i=0; i<D; i++) norm*=n1;
+    norm=n*pow(sqrt(var_f*M_PI*2), D);
   } else {
     norm=tw;
   }
@@ -122,7 +120,7 @@ cls_t agf_classify(real **mat,
   real minw, maxw;
 
   //if we want joint probabilities:
-  real n1, norm;
+  real norm;
 
   //first we calculate all the distances:
   d2=new real[n];
@@ -157,10 +155,7 @@ cls_t agf_classify(real **mat,
   //normalize the pdfs:
   if (joint) {
     //use the final filter width to normalize the pdf:
-    n1=sqrt(var_f*M_PI*2);
-    norm=1;
-    for (dim_ta i=0; i<D; i++) norm*=n1;
-    norm*=n;
+    norm=n*pow(sqrt(var_f*M_PI*2), D);
   } else {
     norm=tw;
   }

@@ -22,6 +22,70 @@ using namespace libpetey;
 using namespace std;
 
 namespace libagf {
+
+  template <class real, class cls_t>
+  int select_classes(real **x, cls_t *cls, int n, cls_t *select, real **x1, cls_t *cls1) {
+    real result;
+    int ncls1=0;
+    for (int i=0; i<n; i++) {
+      if (select[cls[i]]) {
+        x1[ncls1]=x[i];
+	cls1[ncls1]=cls[i];
+        ncls1++;
+      }
+    }
+    return ncls1;
+  }
+
+  template <class real>
+  real hausdorff_metric(real **x0, real **x1, int ncls0, int ncls1, int D) {
+    real dmin0[ncls0];
+    real dmin1[ncls1];
+    real d, result;
+    for (int i=0; i<ncls0; i++) dmin0[i]=metric2(x0[i], x1[0], D);
+    for (int i=0; i<ncls1; i++) dmin1[i]=metric2(x0[0], x1[i], D);
+    for (int i=0; i<ncls0; i++) {
+      for (int j=0; j<ncls1; j++) {
+        d=metric2(x0[i], x1[j], D);
+	if (d<dmin0[i]) dmin0[i]=d;
+	if (d<dmin1[j]) dmin1[j]=d;
+      }
+    }
+    result=0;
+    for (int i=0; i<ncls0; i++) if (dmin0[i]>result) result=dmin0[i];
+    for (int i=0; i<ncls1; i++) if (dmin1[i]>result) result=dmin1[i];
+    return result;
+  }
+
+  template <class real, class cls_t>
+  void class_triangle(real **x, cls_t *cls, int n, int D) {
+    int ncls=0;
+    real d;
+    cls_t *map;
+    real *x0[n], *x1[n];
+    cls_t cls0[n], cls1[n];
+    int ncls0, ncls1;
+    for (int i=0; i<n; i++) if (cls[i]>=ncls) ncls=cls[i]+1;
+    map=new cls_t[ncls];
+    for (int i=0; i<ncls; i++) map[i]=0;
+    for (int i=0; i<ncls; i++) {
+      for (int j=0; j<=i; j++) {
+        map[i]=1;
+	ncls0=select_classes(x, cls, n, map, x0, cls0);
+	map[i]=0;
+	map[j]=1;
+	ncls1=select_classes(x, cls, n, map, x1, cls1);
+	map[j]=0;
+	d=hausdorff_metric(x0, x1, ncls0, ncls1, D);
+	printf("%12.4g ", sqrt(d));
+      }
+      printf("\n");
+    }
+    delete [] map;
+  }
+
+  template void class_triangle<float, int32_t>(float **, int32_t *, int, int);
+
   //a couple of helper functions:
   template <class vector_t>
   void random_coding_row(vector_t &coding_row, int n, int strictflag) {

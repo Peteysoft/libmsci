@@ -1,0 +1,136 @@
+- Functions as well as main routines should take a set of inputs and generate
+a set of outputs while avoiding side effects.  Global variables and similar
+constructs should be avoided.  In the ideal case, both functions and main
+routines should be thread-safe, reentrant and idempotent.
+
+- File names used in main routines should, as much as possible, be explicit
+and passed in the form of arguments.  In this way, main routines are path-
+independent.
+
+- Temporary files should be avoided but when they are used, they should be
+named in such a way as to prevent conflicts with other running instances of the
+program.  This can be done by modifying input or output file names, by appending
+random numbers and by appending the current date and time. The user should have 
+complete control over the location of temporary files. (C actually has
+functions in the standard library for this--didn't know that until recently...)  
+
+- All code should be self-documenting.  In functions, this can be accomplished
+in several ways:
+  - function arguments are vertical with comments beside each one
+  - a block of text just before or just after the function declaration with
+    the following contents: purpose, syntax, arguments (input/output),
+    optional arguments, authors, dependencies, list of revisions
+  - descriptive symbol names
+  - comments beside all variable declarations
+  - comments describing each major task
+In main routines, the executable should produce a brief summary of its 
+operation (roughly following the second point, above) by either typing the 
+command name with no arguments or with a reserved option such as -h, -H or -?.
+When inventing variable names, the programmer should strive for a balance
+between descriptiveness and length as variable names that are too long
+tend to decrease rather than increase the readability of the code.
+
+- Indentation: code within blocks should be indented by two or four spaces
+(with two preferred for space reasons) from the next higher block.  
+If there is a branch statement or label (goto etc.) code
+should be indented in the closest possible analog to block-style coding.
+
+- Defaults: all main level routines should be supplied with a set of useful
+defaults so that the program can be called with as few arguments as possible.
+Defaults should be contained as constants in a single, top-level include file.
+In languages with optional (keyword) subroutine arguments (such as IDL) all 
+optional arguments should be supplied with defaults.
+
+- Physical parameters: physical parameters should be collected in a top-level 
+include file.  When possible, physical parameters in functions should be
+passed as arguments.
+
+- IO: input and output stages should be contained in a separate module from 
+the process module, i.e. that which does the "work" or the "engine."
+
+- GUI: similarly, graphical or text-based interfaces should be separated from 
+the main engine.
+
+- The main routine should do very little work.  In general, it should:
+1. initialize data structures
+2. call the input routines
+3. call subroutines that process the data
+4. call the output routines
+5. clean up
+That way, the software can be operated in at least two different modes:
+from the command line, or from another compiled program.
+
+- Arbitrary limitions in sizes of data structures, such as those containing 
+symbols, names, lists or lines of text should be avoided.  When they are used, 
+the structure size should be controlled by a single, easily-modifiable macro as
+high up in the dependency chain as possible.
+
+- Interoperability: main routines should read and output data in formats that
+are easily parsed by and/or compatible with other programs.  If a routine
+uses a native format highly specific to the application, other routines
+should be supplied that easily convert to and from more generic formats.
+If a main routine takes as input a single text file, the option should exist 
+for it to read from standard in.  Likewise, if it outputs a single text file,
+it should be able to write to standard out.
+
+- In a similar fashion, lower-level routines should avoid, in as much as it
+is possible, specialized data structures and extended set-up and clean-up
+phases.  In the ideal case, they should require only one call and take as 
+arguments data types native to the language.  This keeps the lower level 
+routines interoperable as well, particular by other languages (e.g. C from
+Fortran or vice versa).
+
+- Error-handling: if a routine has the possiblity of failing, the error should
+be caught and it should pass back an error code describing its status.
+On the other hand, range-checking anywhere but the main routine should be
+avoided, especially in production code.  This is the job of the calling routine.
+Error codes should be consistent within libraries.  Excessive error checking 
+should be avoided as this tends to clutter the code.  If there are many points
+in the program where errors can occur, the programmer should figure out a way
+to do this in a single block of code, such as an error-handling routine.
+I have still not figured out a way to do this that is both code-efficient and
+general, trapping both fatal and recoverable errors.
+
+- Command-line arguments: command line options within a single library should
+be consistent across all executables and should not be repeated.  Likewise,
+command-line syntax should be as consistent as possible.
+
+- Duplicate code should be avoided.  As a rule of thumb, if a piece of code is
+duplicated more than three times, the program should be refactored.
+
+- Atomicity: in compiled languages such as C, low-level subroutines should be 
+reduced to their most atomic form.  That is, if a subroutine takes as input 
+two variables, but the operations performed on the first variable do not 
+affect the operations on the second variable and vice versa, the function call 
+should be split in two: as either two calls to the same function or two calls 
+to two different functions. Note that this rule is not applicable to 
+vector-based languages such as IDL where efficiency depends upon the use of 
+as many vector operations as possible.  Here we want to keep everything in the 
+form of a vector, including arguments passed to low-level subroutines.
+(Atomicity is the wrong term here...)
+
+- Parameters for physical simulations, such as grid sizes, should be modifiable
+at runtime through dynamic memory allocation.  Fixed grid sizes that can only
+be modified at compile-time are unacceptable.
+
+- Machine independence: portability should be enforced through simplicity and
+transparency, not complex configure scripts.  It is usually easier to port a 
+program by making a small modification by hand than it is to fix a broken 
+configure script.  In some cases, it may be better to leave machine-dependent 
+code alone, for instance, a "longword" integer in C used for scaling and 
+iterating over an array.  Longwords are typically larger on machines with a 
+larger word size and a machine with a larger word size normally has a larger 
+address space in addition thus the code automatically scales for more powerful 
+hardware. If a section of code is either machine- or compiler-dependent, 
+it should be fixed by adding extra indirection (typedefs etc.) and splitting 
+off the different versions into other modules or another module.  Which 
+version to use is determined at compile time through preprocessor directives 
+or a similar mechanism.  Machine- or compiler-dependent code should be kept as 
+brief as possible.  An excellent example of this type of mechanism is the
+"stdint.h" header in C.
+
+- Modules: one class definition should occupy one file (plus header, if
+applicable), while short functions should be arranged so that closely related
+functions are contained in a single file (plus header, if applicable).
+Long functions should occupy a single file (plus header).  In general,
+modules (code contained in single file) should be roughly 200 lines or less.

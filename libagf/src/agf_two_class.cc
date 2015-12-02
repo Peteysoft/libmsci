@@ -119,7 +119,6 @@ real dcalc(real **mat, dim_ta D, nel_ta ntrain, nel_ta clind, real *vec, real va
 
   real d, dplus, dminus;
 
-  real **dwdx;			//gradients of weights
   real varf;
 
   //first we calculate all the distances:
