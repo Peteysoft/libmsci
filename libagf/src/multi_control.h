@@ -6,7 +6,7 @@
 namespace libagf {
   //calculate hausdorff metric between each pair of classes:
   template <class real, class cls_t>
-  void class_triangle(real **x, cls_t *cls, int n, int D);
+  real * class_triangle(real **x, cls_t *cls, int n, int D);
 
   //generate the most common kinds of coding matrices:
   //(non-hierarchical component only)

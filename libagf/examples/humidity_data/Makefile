@@ -31,7 +31,10 @@ TRN_CONTR = sq_control$(VER).txt
 #to make it easy to clean up:
 BASE = test_multi$(VER)/
 
+#really need default for this...
 OPTIONS1 = -s 100 -W 40 -k 450
+OPTIONS2a = -s 100 -W 25 -k 400
+OPTIONS2b = -s 100 -W 25 -k 400
 OPTIONS3 = -s 100 -W 40 -k 400
 OPTIONS4 = -s 125 -W 25 -k 300
 OPTIONS5 = -s 100 -W 40 -k 400
@@ -42,6 +45,10 @@ OPTIONS8 = -s 100 -W 40 -k 450
 OPTIONS9 = -s 100 -W 5 -k 250
 OPTIONS10 = -W 10 -k 400
 OPTIONS11 = -s 100 -W 20 -k 450
+OPTIONS12 = -s 100 -W 25 -k 400
+OPTIONS12a = -s 100 -W 25 -k 400
+OPTIONS12b = -s 200 -W 25 -k 400
+
 SCRIPT = $(BASE)script$(VER).sh
 OUTPUT = $(BASE)borders$(VER)
 CLS_CONTR = $(BASE)cls_control$(VER).txt

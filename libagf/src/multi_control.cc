@@ -57,34 +57,58 @@ namespace libagf {
     return result;
   }
 
+  template <class real>
+  real hausdorff_width(real **x, int n, int D) {
+    real dmin[n];
+    real d, result;
+    result=metric2(x[0], x[1], D);
+    for (int i=0; i<n; i++) {
+      for (int j=0; j<i; j++) {
+        d=metric2(x[i], x[j], D);
+	if (d<dmin[i]) dmin[i]=d;
+	if (d<dmin[j]) dmin[j]=d;
+      }
+    }
+    result=0;
+    for (int i=0; i<n; i++) if (dmin[i]>result) result=dmin[i];
+    return result;
+  }
+
   template <class real, class cls_t>
-  void class_triangle(real **x, cls_t *cls, int n, int D) {
+  real * class_triangle(real **x, cls_t *cls, int n, int D) {
     int ncls=0;
-    real d;
+    real *d;
+    int k=0;
     cls_t *map;
     real *x0[n], *x1[n];
     cls_t cls0[n], cls1[n];
     int ncls0, ncls1;
     for (int i=0; i<n; i++) if (cls[i]>=ncls) ncls=cls[i]+1;
     map=new cls_t[ncls];
+    d=new real[ncls*(ncls-1)/2];
     for (int i=0; i<ncls; i++) map[i]=0;
     for (int i=0; i<ncls; i++) {
-      for (int j=0; j<=i; j++) {
+      for (int j=0; j<i; j++) {
         map[i]=1;
 	ncls0=select_classes(x, cls, n, map, x0, cls0);
 	map[i]=0;
 	map[j]=1;
 	ncls1=select_classes(x, cls, n, map, x1, cls1);
 	map[j]=0;
-	d=hausdorff_metric(x0, x1, ncls0, ncls1, D);
-	printf("%12.4g ", sqrt(d));
+	d[k]=sqrt(hausdorff_metric(x0, x1, ncls0, ncls1, D));
+	printf("%12.4g ", d[k]);
+	k++;
       }
-      printf("\n");
+      map[i]=1;
+      ncls0=select_classes(x, cls, n, map, x0, cls0);
+      map[i]=0;
+      printf("%12.4g\n", sqrt(hausdorff_width(x0, ncls0, D)));
     }
     delete [] map;
+    return d;
   }
 
-  template void class_triangle<float, int32_t>(float **, int32_t *, int, int);
+  template float * class_triangle<float, int32_t>(float **, int32_t *, int, int);
 
   //a couple of helper functions:
   template <class vector_t>

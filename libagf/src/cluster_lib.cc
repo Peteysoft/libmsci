@@ -68,6 +68,25 @@ cluster_node<leaf_t, metric_t>::cluster_node(leaf_t leaf) {
 }
 
 template <class leaf_t, class metric_t>
+void cluster_node<leaf_t, metric_t>::print(FILE *fs, int depth, char *opt) {
+  for (int i=0; i<depth; i++) printf("  ");
+  if (d<0) {
+    fprintf(fs, "%d\n", child.leaf);
+  } else {
+    if (opt==NULL) {
+      fprintf(fs, "%g\n", d);
+    } else {
+      //generate multi-borders control file:
+      fprintf(fs, "%s {\n", opt);
+    }
+    child.branch[0]->print(fs, depth+1, opt);
+    child.branch[1]->print(fs, depth+1, opt);
+    for (int i=0; i<depth; i++) printf("  ");
+    fprintf(fs, "}\n", opt);
+  }
+}
+
+template <class leaf_t, class metric_t>
 cluster_node<leaf_t, metric_t> *cluster_node<leaf_t, metric_t>::up() {
   return parent;
 }
@@ -182,9 +201,8 @@ cluster_tree<real, cls_t>::~cluster_tree() {
 }
 
 template <class real, class cls_t>
-int cluster_tree<real, cls_t>::build_all(real **vec, int nvec, int nvar) {
+int cluster_tree<real, cls_t>::build_all(real *d, int nvec, int nvar) {
   cluster_node<int, real> *check;
-  real *d;
   int nd;
   long *sind;
   int j, k;
@@ -192,18 +210,6 @@ int cluster_tree<real, cls_t>::build_all(real **vec, int nvec, int nvar) {
   n=nvec;
 
   nd=n*(n-1)/2; 
-  d=new real[nd];
-
-  printf("Calculating distances: %6.1f%%", 0.);
-
-  for (int i=0; i<nd; i++) {
-    trimat_coord(i, j, k);
-    d[i]=sqrt(metric2(vec[j], vec[k], nvar));
-    //printf("%d %d; %g\n", j, k, d[i]);
-    printf("\b\b\b\b\b\b\b%6.1f%%", 100.*(i+1)/nd);
-    fflush(stdout);
-  }
-  printf("\n");
 
   sind=heapsort(d, nd);
 
@@ -227,6 +233,35 @@ int cluster_tree<real, cls_t>::build_all(real **vec, int nvec, int nvar) {
 }
 
 template <class real, class cls_t>
+int cluster_tree<real, cls_t>::build_all(real **vec, int nvec, int nvar) {
+  cluster_node<int, real> *check;
+  real *d;
+  int nd;
+  long *sind;
+  int j, k;
+ 
+  n=nvec;
+
+  nd=n*(n-1)/2; 
+  d=new real[nd];
+
+  printf("Calculating distances: %6.1f%%", 0.);
+
+  for (int i=0; i<nd; i++) {
+    trimat_coord(i, j, k);
+    d[i]=sqrt(metric2(vec[j], vec[k], nvar));
+    //printf("%d %d; %g\n", j, k, d[i]);
+    printf("\b\b\b\b\b\b\b%6.1f%%", 100.*(i+1)/nd);
+    fflush(stdout);
+  }
+  printf("\n");
+
+  build_all(d, n, nvar);
+
+  return 0;
+}
+
+template <class real, class cls_t>
 int cluster_tree<real, cls_t>::get_classes(cls_t *cls, cls_t ncls) {
   cluster_node<int, real> *subroot[ncls];		//roots for each class
   int nal2;
@@ -234,7 +269,6 @@ int cluster_tree<real, cls_t>::get_classes(cls_t *cls, cls_t ncls) {
 
   nal2=log(ncls)/log(2);
   sri=new cluster_node<int, real> *[nal2];
-
 
 }
 
@@ -385,6 +419,12 @@ int cluster_tree<real, cls_t>::browse(cls_t *cls, FILE *fs) {
   //endwin();
 
 }
+
+template <class real, class cls_t>
+void cluster_tree<real, cls_t>::print(FILE *fs, char *opt) {
+  root->print(fs, 0, opt);
+}
+
 
 template class cluster_tree<float, int32_t>;
 template class cluster_tree<double, int32_t>;

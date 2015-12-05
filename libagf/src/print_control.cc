@@ -18,25 +18,31 @@ int main(int argc, char **argv) {
   if (err!=0) exit(err);
 
   if (argc<1) {
-    fprintf(docfs, "syntax: print_control [-Q type] [-G] n [nrow]\n");
+    fprintf(docfs, "syntax: print_control [-Q type] [-G] {n | train} [nrow]\n");
     fprintf(docfs, "where:\n");
-    fprintf(docfs, "  type = 0 hierarchical (default)\n");
-    fprintf(docfs, "         1 one against all\n");
-    fprintf(docfs, "         2 partition adjacent classes\n");
-    fprintf(docfs, "         3 random coding matrix (n<65)\n");
-    fprintf(docfs, "         4 \"exhaustive\" coding matrix (n<34)\n");
-    fprintf(docfs, "         5 orthogonal coding matrix (n<25; n%%4==0)\n");
-    fprintf(docfs, "         6 one against one\n");
-    fprintf(docfs, "  n    = number of classes\n");
+    fprintf(docfs, "  type   = 0 hierarchical (default)\n");
+    fprintf(docfs, "           1 one against all\n");
+    fprintf(docfs, "           2 partition adjacent classes\n");
+    fprintf(docfs, "           3 random coding matrix (n<65)\n");
+    fprintf(docfs, "           4 \"exhaustive\" coding matrix (n<34)\n");
+    fprintf(docfs, "           5 orthogonal coding matrix (n<25; n%%4==0)\n");
+    fprintf(docfs, "           6 one against one\n");
+    fprintf(docfs, "           7 design hierarchical scheme based on training data\n");
+    fprintf(docfs, "  n      = number of classes\n");
+    fprintf(docfs, "  train  = base name of training data files (if applicable):\n");
+    fprintf(docfs, "             .vec for vector data\n");
+    fprintf(docfs, "             .cls for class data\n");
     fprintf(docfs, "  nrow = number of rows\n");
     fprintf(docfs, "  -G   = \"strict\" flag: all classes are included in each partition\n");
     exit(0);
   }
 
-  err=sscanf(argv[0], "%d", &n);
-  if (err!=1) {
-    fprintf(stderr, "print_control: error parsing command line first argument\n");
-    exit(COMMAND_OPTION_PARSE_ERROR);
+  if (opt_args.Qtype!=7) {
+    err=sscanf(argv[0], "%d", &n);
+    if (err!=1) {
+      fprintf(stderr, "print_control: error parsing command line first argument\n");
+      exit(COMMAND_OPTION_PARSE_ERROR);
+    }
   }
 
   ran_init();
@@ -69,7 +75,30 @@ int main(int argc, char **argv) {
       coding_matrix=one_against_one(n);
       nrow=(n-1)*n/2;
       break;
-    case(7):
+    case(7): {
+        dim_ta D;		//dimensionality of problem
+        nel_ta ntrain;		//number of training samples
+        real_a **x;		//features data
+        cls_ta *cls;		//class data
+        real_a *d;		//Hausdorff distance between all classes
+        //dendrogram based on distance between classes:
+        cluster_tree<real_a, cls_ta> dg;
+        char options[3]="\"\"";
+
+        err=agf_read_train(argv[0], x, cls, ntrain, D);
+        if (err!=0) exit(err);
+        d=class_triangle(x, cls, ntrain, D);
+        n=0;
+        for (nel_ta i=0; i<ntrain; i++) if (cls[i]>=n) n=cls[i]+1;
+        dg.build_all(d, n, D);
+        dg.print(stdout, options);
+	delete [] d;
+	delete [] cls;
+	delete [] x[0];
+	delete [] x;
+      }
+      break;
+    case(8):
       coding_matrix=ortho_coding_matrix_brute_force(n);
       nrow=n;
       break;
@@ -77,7 +106,7 @@ int main(int argc, char **argv) {
       print_control_hier(stdout, n);
   }
 
-  if (opt_args.Qtype > 0 && opt_args.Qtype < 8) {
+  if (opt_args.Qtype > 0 && opt_args.Qtype!=7) {
     print_control_nonhier(stdout, coding_matrix, nrow, n);
     delete [] coding_matrix[0];
     delete [] coding_matrix;

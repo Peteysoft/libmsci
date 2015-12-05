@@ -55,6 +55,9 @@ real tprob(real **x, int n, int D,
     dprob[j]/=norm/n;
   }
 
+  delete [] dwdx[0];
+  delete [] dwdx;
+
   return p;
 }
 
@@ -64,9 +67,18 @@ int main(int argc, char **argv) {
   cls_ta *cls;
   int n;
   int D;
+  real_a *d;
+  int ncls;
+  cluster_tree<real_a, cls_ta> dg;
+
 
   err=agf_read_train(argv[1], x, cls, n, D);
-  class_triangle(x, cls, n, D);
+  d=class_triangle(x, cls, n, D);
+  ncls=0;
+  for (int i=0; i<n; i++) if (cls[i]>=ncls) ncls=cls[i]+1;
+
+  dg.build_all(d, ncls, D);
+  dg.print(stdout);
 
   return err;
 

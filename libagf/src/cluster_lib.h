@@ -41,6 +41,8 @@ namespace libagf {
       //check integrity of dendrogram:
       cluster_node<leaf_t, metric_t> *check();
 
+      void print(FILE *fs, int depth, char *opt=NULL);
+
       //recursive delete:
       void del();
 
@@ -69,6 +71,7 @@ namespace libagf {
       ~cluster_tree();
 
       //build the tree using all the distances:
+      int build_all(real *d, int nvec, int nvar);
       int build_all(real **vec, int nvec, int nvar);
 
       //gets class labels once they've been marked:
@@ -76,6 +79,9 @@ namespace libagf {
 
       //interactive browsing utility:
       int browse(cls_t *cls, FILE *fs=NULL);
+
+      //print out the tree:
+      void print(FILE *fs, char *opt=NULL);
   };
   
 }
