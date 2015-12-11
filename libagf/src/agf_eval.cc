@@ -80,17 +80,17 @@ template <class cls_t>
 void print_contingency_table(nel_ta **acc_mat, cls_t nclt, cls_t nclr, FILE *fs) {
   fprintf(fs, "        retrieval\n");
   fprintf(fs, "truth ");
-  for (cls_t i=0; i<nclr; i++) fprintf(fs, "%3d ", i);
-  fprintf(fs, "  tot\n");
+  for (cls_t i=0; i<nclr; i++) fprintf(fs, "%5d ", i);
+  fprintf(fs, "    tot\n");
   for (cls_t i=0; i<nclt; i++) {
     fprintf(fs, "%3d   ", i);
     for (cls_t j=0; j<nclr; j++) {
-      fprintf(fs, "%3d ", acc_mat[i][j]);
+      fprintf(fs, "%5d ", acc_mat[i][j]);
     }
-    fprintf(fs, " %4d\n", acc_mat[i][nclr]);
+    fprintf(fs, " %6d\n", acc_mat[i][nclr]);
   }
   fprintf(fs, "\ntotal ");
-  for (cls_t i=0; i<nclr; i++) fprintf(fs, "%3d ", acc_mat[nclt][i]);
+  for (cls_t i=0; i<nclr; i++) fprintf(fs, "%5d ", acc_mat[nclt][i]);
   fprintf(fs, "\n");
 }
       

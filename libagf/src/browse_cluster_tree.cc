@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
   }
 
   //get the training co-ordinate data, pre-process if necessary
-  train=agf_get_features(trainfile, &opt_args, nvar, ntrain, 1);
+  train=agf_get_features(trainfile, &opt_args, ntrain, nvar, 1);
 
   fprintf(diagfs, "%d training vectors found in file: %s.vec\n", ntrain, trainfile);
 

@@ -42,7 +42,10 @@ namespace libagf {
   int agf_read_borders(const char *fbase, real_a **&brd, real_a **&grd, nel_ta &n, dim_ta &nvar);
 
   //gets features training data plus any transformations:
-  real_a ** agf_get_features(const char *fbase, agf_command_opts *opts, dim_ta &nvar, nel_ta &n, flag_a sufflag=0);
+  real_a ** agf_get_features(const char *fbase, agf_command_opts *opts, nel_ta &n, dim_ta &nvar, flag_a sufflag=0);
+  //get statistical classification training data:
+  int agf_get_train(const char *fbase, agf_command_opts *opts, real_a **&x,
+		  cls_ta *&cls, nel_ta &n, dim_ta &nvar);
 
   //compiles the command for preprocessing the feature data:
   char *compile_precommand(const char *fname, agf_command_opts *opts);

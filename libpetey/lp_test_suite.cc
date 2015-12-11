@@ -3,6 +3,7 @@
 
 #include "rk_dumb_ts.h"
 #include "solve_lode.h"
+#include "bit_array.h"
 
 namespace libpetey{
   template <class real>
@@ -92,6 +93,13 @@ int main(int argc, char **argv) {
 
   err=test_rk_ts2<double>(5, 0.001, 100);
   err=test_rk_ts2<double>(5, 0.01, 1000);
+
+  err=test_bit_array(1, 10);
+  if (err!=0) exit_code=err;
+  err=test_bit_array(10, 10);
+  if (err!=0) exit_code=err;
+  err=test_bit_array(100, 10);
+  if (err!=0) exit_code=err;
 
   ran_end();
 

@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "randomize.h"
 #include "agf_lib.h"
 
@@ -14,11 +16,11 @@ int main(int argc, char **argv) {
   int err;
 
   opt_args.Qtype=0;
-  err=agf_parse_command_opts(argc, argv, "Q:G", &opt_args);
+  err=agf_parse_command_opts(argc, argv, "Q:GnS:", &opt_args);
   if (err!=0) exit(err);
 
   if (argc<1) {
-    fprintf(docfs, "syntax: print_control [-Q type] [-G] {n | train} [nrow]\n");
+    fprintf(docfs, "syntax: print_control [-Q type] [-G] [-n] [-S nSV] {n | train} [nrow]\n");
     fprintf(docfs, "where:\n");
     fprintf(docfs, "  type   = 0 hierarchical (default)\n");
     fprintf(docfs, "           1 one against all\n");
@@ -76,17 +78,39 @@ int main(int argc, char **argv) {
       nrow=(n-1)*n/2;
       break;
     case(7): {
+        char *fname;		//filename
         dim_ta D;		//dimensionality of problem
         nel_ta ntrain;		//number of training samples
         real_a **x;		//features data
         cls_ta *cls;		//class data
         real_a *d;		//Hausdorff distance between all classes
+	nel_ta n1;		//number of samples in class data
+	int rmflag=0;		//remove normalization file?
         //dendrogram based on distance between classes:
         cluster_tree<real_a, cls_ta> dg;
         char options[3]="\"\"";
 
-        err=agf_read_train(argv[0], x, cls, ntrain, D);
-        if (err!=0) exit(err);
+        if ((opt_args.svd>0 || opt_args.normflag) && opt_args.normfile == NULL) {
+          opt_args.normfile=new char[L_tmpnam];
+	  tmpnam(opt_args.normfile);
+	  rmflag=1;
+        }
+	x=agf_get_features(argv[0], &opt_args, D, ntrain, 1);
+	if (x==NULL || ntrain<=0) {
+          fprintf(stderr, "Error reading input file, %s.vec\n", argv[0]);
+	  exit(FILE_READ_ERROR);
+	}
+	fname=new char[strlen(argv[0])+5];
+	sprintf(fname, "%s.cls", argv[0]);
+        cls=read_clsfile(fname, n1);
+	if (cls==NULL || n1<=0) {
+          fprintf(stderr, "Error reading input file, %s\n", fname);
+	  exit(FILE_READ_ERROR);
+	}
+	if (cls==NULL || n1<=0) {
+          fprintf(stderr, "Sample count mismatch: %d in %s.vec; %d in %s\n", n, argv[0], n1, fname);
+	  exit(SAMPLE_COUNT_MISMATCH);
+	}
         d=class_triangle(x, cls, ntrain, D);
         n=0;
         for (nel_ta i=0; i<ntrain; i++) if (cls[i]>=n) n=cls[i]+1;
@@ -96,6 +120,7 @@ int main(int argc, char **argv) {
 	delete [] cls;
 	delete [] x[0];
 	delete [] x;
+	if (rmflag) remove(opt_args.normfile);
       }
       break;
     case(8):

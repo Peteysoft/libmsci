@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
   }
 
   //get the training co-ordinate data, pre-process if necessary
-  train=agf_get_features(argv[1], &opt_args, nvar, ntrain);
+  train=agf_get_features(argv[1], &opt_args, ntrain, nvar);
 
   fprintf(logfs, "%d training vectors found: %s.vec\n", ntrain, argv[1]);
 

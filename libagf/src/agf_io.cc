@@ -360,7 +360,7 @@ char *compile_precommand(const char *fname, agf_command_opts *optargs) {
 }
 
 //increasingly I'm finding this bit really brain-dead:
-real_a **agf_get_features(const char *fbase, agf_command_opts *opt_args, dim_ta &nvar, nel_ta &n, flag_a sufflag)
+real_a **agf_get_features(const char *fbase, agf_command_opts *opt_args, nel_ta &n, dim_ta &nvar, flag_a sufflag)
 {
   real_a **train;
   char *vecfile;
