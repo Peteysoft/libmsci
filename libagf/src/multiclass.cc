@@ -395,6 +395,9 @@ namespace libagf {
         tly[j]+=gsl_matrix_get(map, i, j)*val/fabs(val);
       }
     }
+    //correction isn't perfect, but should move tallies closer to 
+    //conditional probability:
+    for (int j=0; j<this->ncls; j++) tly[j]=(tly[j]+1)/(nmodel+1);
     cls=choose_class(tly, this->ncls);
     return cls;
   }
@@ -404,6 +407,8 @@ namespace libagf {
   cls_t multiclass<real, cls_t>::vote_pdf(gsl_vector *b, real *tly) {
     real val;
     cls_t cls;
+    real k=1;		//correction factor
+    real total=0;
     //we just inline it:
     for (int i=0; i<this->ncls; i++) tly[i]=0;
     for (int i=0; i<nmodel; i++) {
@@ -412,8 +417,13 @@ namespace libagf {
         tly[j]+=gsl_matrix_get(map, i, j)*val;
       }
     }
-    cls=choose_class(tly, this->ncls);
+    //correction isn't perfect, but should move tallies closer to 
+    //conditional probability:
+    //for (int j=0; j<this->ncls; j++) if (tly[j]<0) tly[j]=0; else total+=tly[j];
+    //k=(nmodel-total+1)/this->ncls;
+    for (int j=0; j<this->ncls; j++) tly[j]=(tly[j]+k)/(nmodel+1);
 
+    cls=choose_class(tly, this->ncls);
     return cls;
   }
 
@@ -629,17 +639,34 @@ namespace libagf {
         break;
     }
 
-    if (cls2 >= 0) {        
+    if (cls2 >= 0) {
+      char flag[this->ncls];
+      int nc2=0;
+      /*
+      if (cls1!=cls2) {
+        pdf[cls1]=pdf[cls2];
+	cls1=cls2;
+	flag[cls1]=0;
+	flag[cls2]=0;
+      }
+      */
       //renormalize the conditional prob.:
       pt=0;
       for (cls_t i=0; i<this->ncls; i++) {
-        if (pdf[i]<0) pdf[i]=0;
-        pt+=pdf[i];
+        if (pdf[i]<0) {
+          pdf[i]=0;
+	  flag[i]=0;
+	} else {
+          flag[i]=1;
+          pt+=pdf[i];
+	  nc2++;
+	}
       }
       //printf("pt=%g\n", pt);
 
       //correct the resultant conditional probabilities (=hack):
       for (int i=0; i<this->ncls; i++) pdf[i]=pdf[i]/pt;
+      //for (int i=0; i<this->ncls; i++) if (flag[i]) pdf[i]=pdf[i]+(1-pt)/nc2;
 
       //if voting is different from matrix inversion, correct the results using a crude hack:
       if (cls1!=cls2) {
@@ -652,11 +679,14 @@ namespace libagf {
         k=(pdf[cls2]-pdf[cls1])/pt;
         for (cls_t i=0; i<this->ncls; i++) if (i!=cls1) pdf[i]=(1-k)*pdf[i];
         pdf[cls1]=pdf[cls2];
-        pt=0;
-        for (cls_t i=0; i<this->ncls; i++) pt+=pdf[i];
+        //pt=0;
+        //for (cls_t i=0; i<this->ncls; i++) pt+=pdf[i];
         //printf("pt (2)=%g\n", pt);
       }
     }
+    pt=0;
+        for (cls_t i=0; i<this->ncls; i++) pt+=pdf[i];
+        printf("pt (2)=%g\n", pt);
 
     return cls1;
   }

@@ -66,6 +66,7 @@ number of partitions.
 We can contrast two methods of determining the final class.  Matrix inversion:
 \begin{equation}
 c=\arg \min A^{-1} \vec r
+\label{inverse}
 \end{equation}
 or, if the matrix is over-determined, a pseudo-inverse such as
 the solution to (\ref{normal_eq}):
@@ -75,7 +76,7 @@ c=\arg \min (A^T A)^{-1}A^T \vec r
 \end{equation}
 versus voting:
 \begin{equation}
-c=\arg \min A \vec r
+c=\arg \min A^T \vec r
 \label{voting}
 \end{equation}
 with voting being the most popular because it does not require $\vec r$ to
@@ -496,7 +497,8 @@ solution is the identity matrix, $I$.
 
 We wish to solve the following minimization problem:
 \begin{equation}
-\underset{\vec p}{\min} (A \vec p - \vec r)^2 
+\underset{\vec p}{\min} (A \vec p - \vec r)^2
+\label{basic_min}
 \end{equation}
 subject to the constraints:
 \begin{eqnarray}
@@ -705,6 +707,46 @@ Using these vectors with the $k$th component eliminated, we restart the
 solution from Step 2.
 At the end of each restart, the missing variable will have to be reconstituted
 using Equation (\ref{constraint_application}).
+
+\section{Designing the coding matrix}
+
+Both \citet{Dietterich_Bakiri1995} and \citet{Allwein_etal2000} show that 
+optimal coding matrices should maximize the distance between the rows.
+Distance can be either a "bitwise" distance, the number of bits that must
+be changed in order for two vectors to be equal, which is equivalent to a
+Manhattan metric for real vectors, or the normal Cartesian metric.
+Since we are assuming real-valued results from the binary classifiers, the
+Cartesian metric is preferred. When we expand it the distance between
+two vectors, $\vec a_i$ and $\vec a_j$:
+\begin{equation}
+	|\vec a_i - \vec a_j| = \sqrt{|\vec a_i|^2 + |\vec a_j|^2 - \vec a_i \cdot \vec a_j}
+\end{equation}
+it's apparent that if the two vectors are taken from the rows of a
+``strict'' coding matrix,
+then the first two terms are constant, i.e., $|\vec a_i|^2 = |\vec a_j|^2 = n^2$. If one of the vectors is that of the differences in binary class conditional
+probabilities, $\vec r$, then it's value has strict limits, i.e.,
+$0 \le |\vec r|^2 \le n^2$. For this reason, we have used a dot product 
+in (\ref{voting}) to
+quantify the distance of $\vec r$ from a coding matrix row, $\vec a_i$ and
+the we can maximize the spacing between the rows in $A$ by ensuring that
+$A$ is orthogonal, that is $A^T \cdot A = n I$. When $A$ is orthogonal,
+the matrix inverse methods in (\ref{inverse}) and (\ref{pseudoinverse}) and voting scheme in (\ref{voting}) are equivalent.
+
+The real advantage of using an orthogonal coding matrix, however, comes about
+when trying to constrain the solution. First, we incorporate the constraint
+in (\ref{first_constraint}) into the coding matrix as in (\ref{ortho3}).
+The remaining constraints are now also orthogonal. Expanding (\ref{basic_min}):
+\begin{equation}
+\underset{\vec p}{\min} (A \vec p - \vec r)^2 \newline
+= \underset{\vec p}{\min} \vec p A^T A \vec p - 2 \vec r A \vec p + |\vec p|^2 \newline
+= \underset{\vec p}{\min} \vec p \cdot (\vec p - 2 \vec p_0) \newline
+\end{equation}
+where $p_0 = A^{-1} \vec r = A^T \vec r/n$. Note that we have removed both
+constant terms and constant factors from the last line. The unconstrained
+solution is $2 \vec x - 2 \vec x_0=0$ or $\vec x = \vec x_0$.
+
+Because of the way the coding matrix is constructed, the first constraint is
+always satisfied, that is, $\sum_i x_{0i}=1$. 
 
 \bibliography{../agf_bib.bib} 
 

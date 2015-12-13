@@ -45,6 +45,7 @@ OPTIONS8 = -s 100 -W 40 -k 450
 OPTIONS9 = -s 100 -W 5 -k 250
 OPTIONS10 = -W 10 -k 400
 OPTIONS11 = -s 100 -W 20 -k 450
+OPTIONS11a = -s 100 -W 25 -k 400
 OPTIONS12 = -s 100 -W 25 -k 400
 OPTIONS12a = -s 100 -W 25 -k 400
 OPTIONS12b = -s 200 -W 25 -k 400
@@ -56,7 +57,7 @@ CLS_CONTR = $(BASE)cls_control$(VER).txt
 TRAIN_TIME = $(BASE)train_time$(VER).txt
 CLASS_TIME = class_time$(VER).txt
 
-all: $(TEST).m$(VER).cls $(RAW).cls $(TRAIN_TIME) $(CLASS_TIME) raw_time.txt
+all: $(TEST).m$(VER).cls $(RAW).cls $(TRAIN_TIME) $(CLASS_TIME) raw_time.txt results$(VER).txt
 	@echo "Truth vs. AGF (raw):"
 	cls_comp_stats $(TEST).cls $(RAW)
 	@echo "Time for raw AGF:"
@@ -91,10 +92,9 @@ clean_database:
 	rm -f raw_time.txt
 	rm -f rawerr.txt
 
-$(TEST).m$(VER).cls $(CLASS_TIME): $(CLS_CONTR) $(TEST).vec
+$(TEST).m$(VER).cls $(TEST).m$(VER).con results$(VER).txt $(CLASS_TIME): $(CLS_CONTR) $(TEST).vec
 	( time ( classify_m $(CLS_CONTR) $(TEST).vec $(TEST).m$(VER) > results$(VER).txt 2> classerr$(VER).txt ) ) 2> $(CLASS_TIME)
 
-clean:
 $(CLS_CONTR) $(TRAIN_TIME): $(TRAIN).cls $(TRAIN).vec $(TRN_CONTR)
 	if [ ! -d $(BASE) ]; then mkdir $(BASE); fi
 	multi_borders $(OPTIONS$(VER)) $(TRN_CONTR) $(TRAIN) $(OUTPUT) \
@@ -102,10 +102,9 @@ $(CLS_CONTR) $(TRAIN_TIME): $(TRAIN).cls $(TRAIN).vec $(TRN_CONTR)
 	chmod u+x $(SCRIPT)
 	( time ( ./$(SCRIPT) 2> $(BASE)/trainerr.txt ) ) 2> $(TRAIN_TIME)
 
-$(RAW).cls $(RAW).vec raw_time.txt: $(TRAIN).vec $(TRAIN).cls $(TEST).vec
+$(RAW).cls $(RAW).vec results0.txt raw_time.txt: $(TRAIN).vec $(TRAIN).cls $(TEST).vec
 	( time ( agf $(OPTIONS0) classify $(TRAIN) $(TEST).vec $(RAW) > results0.txt 2> rawerr.txt ) ) 2> raw_time.txt
 
-$(CLS_CONTR) $(TRAIN_TIME): $(TRAIN).cls $(TRAIN).vec $(TRN_CONTR)
 $(TRAIN).vec $(TRAIN).cls $(TEST).vec $(TEST).cls: $(DATABASE).cls $(DATABASE).vec
 	agf_preprocess -R -n -f $(FRAC) $(DATABASE) $(TRAIN) $(TEST)
 
