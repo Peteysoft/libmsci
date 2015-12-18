@@ -1,0 +1,54 @@
+\documentclass{article}
+
+\title{When Support Vector Machines are just too slow}
+
+\section{Preliminaries}
+
+\subsection{Kernel estimation}
+
+A kernel is a scalar function of two vectors. Kernel functions are used for 
+non-parametric density estimation. A typical ``kernel-density estimator"
+looks like this:
+\begin{equation}
+	f(\vec x) = \frac {1}{N n} \sum_i K(\vec x_i, \vec x, \vec k)
+\end{equation}
+where $f$ is the density estimator, $K$ is the kernel function,
+$\lbrace \vec x_i \rbrace$ are a set of samples, $n$ is the number of samples,
+$\vec x$ is the test point,
+and $\vec k$ is a set of coefficients. 
+The normalization coefficient, $N$, normalizes $K$:
+\begin{equation}
+	N = \int_V K(\vec x, \vec x^\prime, \vec k) \mathrm d \vec x^\prime
+\end{equation}
+
+If the same kernel is used for every sample and every test point, the estimator
+may be sub-optimal, particularly in regions of very high or very low density.
+\citep{Terrell_Scott1992, Mills2011}.
+There are at least two solutions to this problem.
+In a ``variable-bandwidth'' estimator, the coefficients, $\vec k$, depend in some
+way on the density. Since the density itself is normally unavailable, the
+estimated density is used as a proxy. In \citet{Terrell_Scott1992} and
+\citet{Mills2011} 
+Let the kernel function takes the following form:
+\begin{equation}
+	K(\vec x, \vec y, h) = g \left (\frac{|\vec x - \vec y|}{h} \right )
+\end{equation}
+where $h$ is the ``bandwidth''. In \citet{Mills2011}, $h$ is made
+proportional to the density:
+\begin{equation}
+	h \propto \frac{1}{P^D} \approx \frac{1}{f^D}
+\end{equation}
+Since the normalization coefficient, $N$, must include the factor,
+${1}{h^D}$, some rearrangement shows that:
+\begin{equation}
+	\sum_i g \left (\frac{|\vec x - \vec x_i|}{h} \right ) = W = const.
+\end{equation}
+This is a generalization of the $k$-nearest-neighbours scheme in which the
+free parameter, $W$, takes the place of $k$. The bandwidth, $h$, can be solved
+for using any numerical, one-dimensional root-finding algorithm.
+
+Another method of improving the performance of a kernel-density estimator
+is to add a series of variable coefficients:
+\begin{equation}
+	f(\vec x) = \sum_i c_i K(\vec x_i, \vec x, \vec k)
+\end{equation}

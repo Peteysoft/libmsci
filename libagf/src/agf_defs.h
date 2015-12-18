@@ -86,6 +86,7 @@ namespace libagf {
     return result;
   }
 
+  //convert difference in conditional prob. to class of 0 or 1:
   template <class real>
   inline int convertR(real r) {
     if (r<0) {
@@ -97,6 +98,8 @@ namespace libagf {
     }
   }
 
+  //convert difference in conditional prob. to class of 0 or 1;
+  //calculate both conditional probs.
   template <class real>
   inline int convertR(real r, real *p) {
     int result=convertR(r);
@@ -105,6 +108,8 @@ namespace libagf {
     return result;
   }
 
+  //convert difference in conditional prob. to class of 0 or 1;
+  //calculate winning conditional prob.
   template <class real>
   inline int convertR(real r, real &p) {
     int result;
@@ -120,6 +125,66 @@ namespace libagf {
     }
     return result;
   }
+
+  //various lame-ass methods of re-normalizing conditional probabilities to
+  //remove values less than 0 and ensure they sum to 1:
+  //
+  //zero negative values, sum and normalize:
+  template <class real>
+  inline void p_renorm1(real *p, int ncls) {
+    real pt=0;
+    for (int i=0; i<ncls; i++) if (p[i]<0) p[i]=0; else pt+=p[i];
+    for (int i=0; i<ncls; i++) p[i]/=pt;
+  }
+
+  //subtract lowest negative value, sum and normalize (preserves correlation):
+  template <class real>
+  inline void p_renorm2(real *p, int ncls) {
+    real min=0;
+    real pt=0;
+    for (int i=0; i<ncls; i++) if (p[i]<min) min=p[i];
+    for (int i=0; i<ncls; i++) {
+      p[i]-=min;
+      pt+=p[i];
+    }
+    for (int i=0; i<ncls; i++) p[i]/=pt;
+  }
+
+  //zero negative values; additive normalization constant; repeat until
+  //no negatives are left:
+  template <class real>
+  inline void p_renorm3(real *tly, int ncls) {
+    real k;
+    real pt=0;
+    int ind[ncls];
+    int ng=0, ng2;
+    for (int i=0; i<ncls; i++) {
+      if (tly[i]<0) {
+        tly[i]=0;
+      } else {
+        pt+=tly[i];
+        ind[ng]=i;
+	ng++;
+      }
+    }
+    do {
+      k=(1-pt)/ng;
+      ng2=ng;
+      ng=0;
+      pt=0;
+      for (int j=0; j<ng2; j++) {
+        tly[ind[j]]=tly[ind[j]]+k;
+        if (tly[ind[j]]<0) {
+          tly[ind[j]]=0;
+        } else {
+          pt+=tly[ind[j]];
+          ind[ng]=ind[j];
+          ng++;
+        }
+      }
+    } while (ng!=ng2);
+  }
+
 }
 
 #endif

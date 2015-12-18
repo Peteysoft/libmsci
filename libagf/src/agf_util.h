@@ -63,6 +63,7 @@ namespace libagf {
     flag_a Rflag;	//-R randomly sample
     flag_a uflag;	//-u un-normalize borders and gradients
     flag_a Uflag;	//-U re-label classes to go from [0-nc).
+    flag_a Yflag;	//-Y top row of orthogonal control matrix implicitly al  1's
     flag_a zflag;	//-z randomize
     flag_a Zflag;	//-Z use "in-house" SVM estimator
   };

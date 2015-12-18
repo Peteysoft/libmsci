@@ -15,8 +15,10 @@ namespace libagf {
   int ** partition_adjacent(int ncls);
   int ** random_coding_matrix(int ncls, int &ntrial, int strictflag=0);
   int ** exhaustive_coding_matrix(int ncls);
-  int ** ortho_coding_matrix_nqbf(int ncls, int strictflag=1);
-  int ** ortho_coding_matrix_brute_force(int ncls);
+  int ** ortho_coding_matrix_nqbf(int ncls, 
+		  int strictflag=1, 		//zeroes not allowed
+		  int toprow1=0);		//top row is all ones
+  int ** ortho_coding_matrix_brute_force(int ncls, int toprow1=0);
 
   //generate common control files:
   //(complete control file)

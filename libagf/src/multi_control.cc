@@ -226,7 +226,7 @@ namespace libagf {
   }
 
   //generate orthogonal coding matrix:
-  int ** ortho_coding_matrix_nqbf(int n, int strictflag) {
+  int ** ortho_coding_matrix_nqbf(int n, int strictflag, int toprow1) {
     tree_lg<vector_s<int> > list0;
     vector_s<int> trial0(n);
     double nperm0=pow(3-strictflag, n);
@@ -243,21 +243,24 @@ namespace libagf {
     for (int i=1; i<n; i++) coding_matrix[i]=coding_matrix[0]+n*i;
 
     do {
-    //create a random first row:
-      do {
-        random_coding_row(coding_matrix[0], n, strictflag);
-        //keep track of all initial rows:
-        for (int i=0; i<n; i++) trial0[i]=coding_matrix[0][i];
-      //} while (check_coding_row(coding_matrix[0], n)==0 || 
-//		      list0.add_member(trial0) < 0);
-      } while(0);
+      int i;
 
-      for (int i=0; i<n; i++) {
-        trial0[i]=1;
-	coding_matrix[0][i]=1;
+      if (toprow1) {
+        //top row is all 1's:
+        for (int i=0; i<n; i++) {
+          trial0[i]=1;
+          coding_matrix[0][i]=1;
+        }
+      } else {
+        //create a random first row:
+        do {
+          random_coding_row(coding_matrix[0], n, strictflag);
+          //keep track of all initial rows:
+          for (int i=0; i<n; i++) trial0[i]=coding_matrix[0][i];
+        } while (check_coding_row(coding_matrix[0], n)==0 || 
+		      list0.add_member(trial0) < 0);
       }
 
-      int i;
       for (i=1; i<n; i++) {
         //list of partial vectors already tried:
         tree_lg<vector_s<int> > *list=new tree_lg<vector_s<int> >;
@@ -395,7 +398,7 @@ namespace libagf {
   }
 
   //need to design a more efficient version of this...
-  int ** ortho_coding_matrix_brute_force(int n) {
+  int ** ortho_coding_matrix_brute_force(int n, int toprow1) {
     long *trial;
     //bit_array *tobits;
     bitset<sizeof(int)*8> *tobits;
@@ -416,7 +419,12 @@ namespace libagf {
 
     trial=randomize(nperm);
 
-    nfilled=0;
+    if (toprow1) {
+      for (int i=0; i<n; i++) coding_matrix[0][i]=1;
+      nfilled=1;
+    } else {
+      nfilled=0;
+    }
     for (int i=0; i<nperm; i++) {
       int dprod;
       //printf("%d\n", trial[i]);

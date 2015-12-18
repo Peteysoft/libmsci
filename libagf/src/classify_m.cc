@@ -69,6 +69,7 @@ int main(int argc, char *argv[]) {
     fprintf(helpfs, "  -u          model (borders) data is not normalized\n");
     fprintf(helpfs, "  -Q          how to solve for probabilities in non-hierarchical scheme: [0]\n");
     fprintf(helpfs, "                0 = constrained inverse [default]\n");
+    fprintf(helpfs, "                      (may not produce an optimal estimate in all cases)\n");
     fprintf(helpfs, "                1 = linear least squares, no re-normalization\n");
     fprintf(helpfs, "                2 = voting from pdf, no re-normalization\n");
     fprintf(helpfs, "                3 = voting from class label, no re-normalization\n");
@@ -76,6 +77,11 @@ int main(int argc, char *argv[]) {
     fprintf(helpfs, "                    probabilities are adjusted and re-normalized\n");
     fprintf(helpfs, "                5 = voting from class overrides least squares, conditional\n");
     fprintf(helpfs, "                    probabilities are adjusted and re-normalized\n");
+    fprintf(helpfs, "                6 = experimental\n");
+    fprintf(helpfs, "                7 = constrained inverse\n");
+    fprintf(helpfs, "                      (may be extremely inefficient (NP) for some cases)\n");
+    fprintf(helpfs, "                8 = voting from pdf, corrected and normalized\n");
+    fprintf(helpfs, "                      (designed for orthogonal coding matrices)\n");
     fprintf(helpfs, "  -w cw       constraint weight (sum of cond. prob.) [1.]\n\n");
     fprintf(helpfs, "  -O command  external command for estimating classes and probabilities\n");
     fprintf(helpfs, "  -M          use LIBSVM format\n");

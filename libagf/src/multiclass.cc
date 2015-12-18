@@ -407,8 +407,6 @@ namespace libagf {
   cls_t multiclass<real, cls_t>::vote_pdf(gsl_vector *b, real *tly) {
     real val;
     cls_t cls;
-    real k=1;		//correction factor
-    real total=0;
     //we just inline it:
     for (int i=0; i<this->ncls; i++) tly[i]=0;
     for (int i=0; i<nmodel; i++) {
@@ -417,11 +415,51 @@ namespace libagf {
         tly[j]+=gsl_matrix_get(map, i, j)*val;
       }
     }
-    //correction isn't perfect, but should move tallies closer to 
-    //conditional probability:
-    //for (int j=0; j<this->ncls; j++) if (tly[j]<0) tly[j]=0; else total+=tly[j];
-    //k=(nmodel-total+1)/this->ncls;
-    for (int j=0; j<this->ncls; j++) tly[j]=(tly[j]+k)/(nmodel+1);
+    cls=choose_class(tly, this->ncls);
+    return cls;
+  }
+
+  //vote based on probabilities from the binary classifier:
+  //corrected and re-normalized:
+  template <class real, class cls_t>
+  cls_t multiclass<real, cls_t>::vote_pdf2(gsl_vector *b, real *tly) {
+    real val;
+    cls_t cls;
+    real pt=0;			//total of computed cond. prob.
+    cls_t ind[this->ncls];	//flag the good values
+    cls_t ng=0;			//number of good values
+    cls_t ng2;
+    float k;			//additive normalization constant
+
+    //we just inline it:
+    for (int i=0; i<this->ncls; i++) tly[i]=0;
+    for (int i=0; i<nmodel; i++) {
+      val=gsl_vector_get(b, i);
+      for (int j=0; j<this->ncls; j++) {
+        tly[j]+=gsl_matrix_get(map, i, j)*val;
+      }
+    }
+    //must be done in two steps (I think...):
+    //correction step:
+    for (int i=0; i<this->ncls; i++) {
+      tly[i]=(tly[i]+1)/(nmodel+1);
+      if (tly[i]<0) {
+        tly[i]=0;
+      } else {
+        pt+=tly[i];
+	ind[ng]=i;
+	ng++;
+      }
+    }
+    //re-normalization step (farm out to another unit):
+    //(use this version since we assume:
+    //- A^T*A=nI where A is the coding matrix
+    //- top row of A is all 1's which is not explicitly included in the control
+    //  file but is included in above calculation
+    //- we solve: p = A^T*r where the first value in r is a free parameter 
+    //  which we vary for normalization if the other constraints in p are 
+    //  violated)
+    p_renorm3(tly, this->ncls);
 
     cls=choose_class(tly, this->ncls);
     return cls;
@@ -599,7 +637,10 @@ namespace libagf {
   cls_t multiclass<real, cls_t>::solve_class(gsl_vector *b, real *pdf) {
     cls_t cls1, cls2;
     real pt;		//total of conditional probability estimates
+    real k;		//correction value
     real tally[this->ncls];
+    char flag[this->ncls];
+    int nc2=0;
 
     cls2=-1;
 
@@ -634,43 +675,23 @@ namespace libagf {
       case (7):
 	cls1=classify_special(b, pdf);
 	break;
+      case (8):
+        cls1=vote_pdf2(b, pdf);
+	break;
       default:
         cls1=classify_special(b, pdf);
         break;
     }
 
     if (cls2 >= 0) {
-      char flag[this->ncls];
-      int nc2=0;
-      /*
-      if (cls1!=cls2) {
-        pdf[cls1]=pdf[cls2];
-	cls1=cls2;
-	flag[cls1]=0;
-	flag[cls2]=0;
-      }
-      */
-      //renormalize the conditional prob.:
-      pt=0;
-      for (cls_t i=0; i<this->ncls; i++) {
-        if (pdf[i]<0) {
-          pdf[i]=0;
-	  flag[i]=0;
-	} else {
-          flag[i]=1;
-          pt+=pdf[i];
-	  nc2++;
-	}
-      }
-      //printf("pt=%g\n", pt);
-
       //correct the resultant conditional probabilities (=hack):
-      for (int i=0; i<this->ncls; i++) pdf[i]=pdf[i]/pt;
-      //for (int i=0; i<this->ncls; i++) if (flag[i]) pdf[i]=pdf[i]+(1-pt)/nc2;
+      //(we use these specific forms of renormalization because they tend to
+      //maximize the "peakedness" of the distribution which seem to better
+      //reflect most real distributions)
+      p_renorm1(pdf, this->ncls);
 
       //if voting is different from matrix inversion, correct the results using a crude hack:
       if (cls1!=cls2) {
-        real k;
         cls_t swp=cls1;
         cls1=cls2;
         cls2=swp;
@@ -685,8 +706,8 @@ namespace libagf {
       }
     }
     pt=0;
-        for (cls_t i=0; i<this->ncls; i++) pt+=pdf[i];
-        printf("pt (2)=%g\n", pt);
+    for (cls_t i=0; i<this->ncls; i++) pt+=pdf[i];
+    printf("pt (2)=%g\n", pt);
 
     return cls1;
   }

@@ -32,6 +32,7 @@ namespace libagf {
       cls_t classify_basic(gsl_vector *b, real *p);
       cls_t vote_label(gsl_vector *b, real *tly);
       cls_t vote_pdf(gsl_vector *b, real *tly);
+      cls_t vote_pdf2(gsl_vector *b, real *tly);
       cls_t solve_class(gsl_vector *b, real *p1);
 
       //more experimental versions:

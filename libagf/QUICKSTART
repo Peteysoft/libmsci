@@ -317,6 +317,7 @@ Option		Function
 -W		Parameter Wc--equivalent to k in a k-nearest-neighbours scheme.
 		  See paper describing the theory.
 -X		Ratio between sizes of sample classes (P(2)/P(1)).
+-Y		Top row of orthogonal control matrix is implicitly all ones.
 -z		Randomize data.
 -Z		Use "in-house" SVM predictors.
 
