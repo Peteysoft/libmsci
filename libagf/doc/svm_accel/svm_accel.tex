@@ -1,0 +1,313 @@
+\documentclass{article}
+
+\bibliographystyle{apa}
+\usepackage{natbib}
+
+\title{When Support Vector Machines are just too slow}
+
+\begin{document}
+
+\input{svm_accel_symbol_def}
+
+\section*{List of symbols}
+
+\input{svm_accel_symbol_table}
+
+\section{Theory}
+
+\subsection{Kernel estimation}
+
+A kernel is a scalar function of two vectors. Kernel functions are used for 
+non-parametric density estimation. A typical ``kernel-density estimator"
+looks like this:
+\begin{equation}
+	\densityestimator(\testpoint) = \frac {1}{\norm \nsample} \sum_{i=1}^\nsample \vectorkernel(\sample_i, \testpoint, \kernelparam)
+\end{equation}
+where $\densityestimator$ is an estimator for the density, $\probability$, 
+$\vectorkernel$ is the kernel function,
+$\lbrace \sample_i \rbrace$ are a set of samples, 
+$\nsample$ is the number of samples,
+$\testpoint$ is the test point,
+and $\kernelparam$ is a set of parameters. 
+The normalization coefficient, $\norm$, normalizes $\vectorkernel$:
+\begin{equation}
+	\norm = \int_V \vectorkernel(\point, \point^\prime, \kernelparam) \mathrm d \point^\prime
+\end{equation}
+
+The method can be used for statistical classification by simply comparing
+results from the different classes:
+\begin{equation}
+	\class = \arg \min_i \sum_{j|\classlabel_j = i} K(\sample_j, \testpoint, \kernelparam)
+\end{equation}
+where $\classlabel_j$ is the class of the $j$th sample. Naturally the method can also
+be used to estimate both the joint and conditional probabilities 
+($\condprob(\class, \vec x)$ and $\condprob(\class |\vec x)$ respectively). 
+More on this later.
+
+If the same kernel is used for every sample and every test point, the estimator
+may be sub-optimal, particularly in regions of very high or very low density.
+\citep{Terrell_Scott1992, Mills2011}.
+There are at least two solutions to this problem.
+In a ``variable-bandwidth'' estimator, the coefficients, $\kernelparam$, depend in some
+way on the density. Since the density itself is normally unavailable, the
+estimated density is used as a proxy. In \citet{Terrell_Scott1992} and
+\citet{Mills2011} 
+Let the kernel function takes the following form:
+\begin{equation}
+	\vectorkernel(\point, \point^\prime, \bandwidth) = \scalarkernel \left (\frac{|\point - \point^\prime|}{\bandwidth} \right )
+\end{equation}
+where $\bandwidth$ is the ``bandwidth''. 
+In \citet{Mills2011}, $\bandwidth$ is made proportional to the density:
+\begin{equation}
+	\bandwidth \propto \frac{1}{\probability^{1/\dimension}} \approx \frac{1}{\densityestimator^{1/\dimension}}
+\end{equation}
+where $\dimension$ is the dimension of the feature space.
+Since the normalization coefficient, $\norm$, must include the factor,
+${\bandwidth^\dimension}$, some rearrangement shows that:
+\begin{equation}
+	\frac{1}{\nsample} \sum_i \scalarkernel \left (\frac{|\testpoint - \sample_i|}{\bandwidth} \right ) = \kernelaverage = const.
+\end{equation}
+This is a generalization of the $k$-nearest-neighbours scheme in which the
+free parameter, $\kernelaverage$, takes the place of $k$. \citep{Mills2009, Mills2011}
+The bandwidth, $h$, can be solved
+for using any numerical, one-dimensional root-finding algorithm.
+The bandwidth is determined at each test point.
+
+Another method of improving the performance of a kernel-density estimator
+is to add a series of variable coefficients:
+\begin{equation}
+	\densityestimator(\testpoint) = \sum_i \svmcoeff_i \vectorkernel(\sample_i, \testpoint, \kernelparam)
+\end{equation}
+The coefficients, $\lbrace \svmcoeff_i \rbrace$, are found through an optimization
+procedure designed to minimize the error [citation...]. In the most popular
+form of this kernel method, Support Vector Machines (SVM), the coefficients
+are the result of a complex, dual optimization procedure which minimizes
+the classification error. We will briefly outline this procedure.
+
+\subsection{Support Vector Machines}
+
+The basic ``trick'' of kernel-base SVM methods is to replace a dot product
+with the kernel function in the assumption that it can be rewritten
+as a dot product of a transformed and expanded feature space:
+\begin{equation}
+	\vectorkernel(\point, \point^\prime) = \expandedspace(\point) \cdot \expandedspace(\point^\prime)
+\end{equation}
+For simplicity we have ommitted the kernel parameters.
+$\expandedspace$ is a vector function of the feature space.
+The simplest example of a kernel function that has a closed, analytical and
+finite-dimensional $\expandedspace$ is the square of the dot product:
+\begin{eqnarray}
+	\vectorkernel(\point, \point^\prime) & = & (\point \cdot \point^\prime)^2 \\ \nonumber
+					 & = & (\coord_1^2, \coord_2^2, \coord_3^2, ..., \sqrt{2} \coord_1 \coord_2, \sqrt{2} \coord_1 \coord_3, ... \sqrt{2} \coord_2 \coord_3, ...) \cdot \\ \nonumber
+      & &	 ({\coord^\prime_1}^2, {\coord^\prime}_2^2, {\coord^\prime}_3^2, ..., \sqrt{2} \coord^\prime_1 \coord^\prime_2, \sqrt{2} \coord^\prime_1 \coord^\prime_3, ... \sqrt{2} \coord^\prime_2 \coord^\prime_3, ...) 
+\end{eqnarray}
+but it should be noted that in more complex cases, 
+there is no need to construct $\expandedspace$ since it is replaced by the 
+kernel function, $\vectorkernel$, in the final analysis.
+
+In a binary SVM classifier, the classes are separated by a single hyper-plane
+defined by $\svmbordervector$ and $\svmborderconst$.
+In a kernel-based SVM, this hyperplane bisects not the regular feature
+space, but the theoretical, transformed space defined by the function,
+$\expandedspace(\point)$.
+The {\it decision value} is calculated via a dot product:
+\begin{equation}
+	\svmdecision(\testpoint)=\svmbordervector \cdot \expandedspace(\testpoint) + \svmborderconst
+	\label{decision_function0}
+\end{equation}
+and the class determined by the sign of the decision value:
+\begin{equation}
+	\class=\frac{\svmdecision}{|\svmdecision|}
+	\label{class_value}
+\end{equation}
+where for convenience, the class labels are given by $c \in \lbrace -1, 1 \rbrace$.
+
+In the first step of the minimization procedure, 
+the magnitude of the border normal, $\svmbordervector$, 
+is minimized subject to the constraint that there are no classification 
+errors:
+\begin{eqnarray}
+	\min_{\svmbordervector, \svmborderconst} \frac{1}{2} | \svmbordervector | \\ \nonumber
+	\svmdecision(\sample_i) \classlabel_i \ge 1
+\end{eqnarray}
+Introducing the coefficients, $\lbrace \svmcoeff_i \rbrace$, 
+as Lagrange multipliers on the constraints:
+\begin{equation}
+	\min_{\svmbordervector, b} \left \lbrace \frac{1}{2} | \svmbordervector | - \sum_i \svmcoeff_i \left [ \svmdecision(\sample_i) \classlabel_i -1 \right ] \right \rbrace
+\end{equation}
+generates the following pair of analytic expressions:
+\begin{eqnarray}
+	\sum_i \svmcoeff_i \classlabel_i & = & 0 \\
+	\svmbordervector & = & \sum_i \svmcoeff_i \classlabel \expandedspace(\sample_i) \label{border_vector_equation}
+\end{eqnarray}
+through setting the derivatives w.r.t. the minimizers to zero.
+Substituting the second equation, (\ref{border_vector_equation}),
+into the decision function in (\ref{decision_function0}) produces the following:
+\begin{equation}
+	\svmdecision(\testpoint) = \sum_i \svmcoeff_i \classlabel_i \vectorkernel (\testpoint, \sample_i) + \svmborderconst
+	\label{svm_decision}
+\end{equation}
+Meanwhile, the final, dual, quadratic optimization problem looks like this:
+\begin{eqnarray}
+	\max_{\lbrace \svmcoeff_i \rbrace} & \sum \svmcoeff_i 
+	- \frac{1}{2} \sum_{i, j} \svmcoeff_i \svmcoeff_j \classlabel_i \classlabel_j \vectorkernel(\sample_i, \sample_j) \\ \nonumber
+	& \svmcoeff_i \ge 0 \\ \nonumber
+	& \sum_i \svmcoeff \classlabel_i = 0 \label{dual_problem}
+\end{eqnarray}
+There are a number of refinements that can be applied to the optimization
+problem in (\ref{dual_problem}), chiefly to reduce over-fitting and to add
+some ``margin'' to the decision border to allow for the possibility of
+classification errors, but mainly we are concerned with the decision
+function in (\ref{svm_decision}) since the initial fitting will be done with
+an external software package, namely LIBSVM \citep{Chang_Lin2011}.
+
+Two things should be noted. First, the function $\expandedspace$ appears in
+neither the final decision function, (\ref{svm_decision}), nor in the
+optimization problem, (\ref{dual_problem}). Second, while the use of
+$\expandedspace$ implies that the time complexity of the decision function 
+could be $O(1)$ as in a parametric statistical model, in actual fact it is
+dependent on the number of non-zero values in $\lbrace \svmcoeff \rbrace$.
+While the coefficient set, $\lbrace \svmcoeff \rbrace$, does tend to be sparse,
+nonetheless in most real problems the number of non-zero coefficients is
+proportional to the number of samples, $\nsample$, producing a time complexity
+of $O(\nsample)$. Thus for large problems, calculating the decision value will
+be slow, just as in other kernel estimation problems.
+
+The advantage of SVM lies chiefly in its accuracy since it is minimizing the
+classification error.
+
+\subsection{Border classification}
+
+In kernel SVM, the decision border exists only implicitly in a hypothetical,
+abstract space. Even in linear SVM, if the software is generalized to 
+recognize the simple dot product as only one among many possible kernels,
+then the decision function may be built up, as in (\ref{svm_decision})
+through a sum of weighted kernels. This is the case for LIBSVM.
+The advantage of an explicit decision border as in (\ref{decision_function0})
+is that it is fast. The problem with a linear border is that, except for a
+small class of problems, it is not very accurate.
+
+In the binary classification method described in \citet{Mills2011},
+a non-linear decision border is built up piece-wise from a collection of linear borders.
+It is essentially a root-finding procedure for a decision function,
+such as $\svmdecision$ in (\ref{svm_decision}).
+Let $\decisionfunction$ be a decision function. In the ideal case, it should
+be an accurate estimator for the difference in conditional probabilities:
+\begin{equation}
+	\decisionfunction(\point) = \diffcondprob(\point) = 
+	\condprob(1|\point) - \condprob(-1|\point)
+\end{equation}
+where $\condprob(\class|\point)$ represents the conditional probabilities of
+a binary classifier having labels $\class \in \lbrace -1, 1 \rbrace$.
+For a simple kernel estimator, for instance, 
+$\diffcondprob$ is estimated as follows:
+\begin{equation}
+	\kerneldecision(\testpoint) = \frac{\sum_i \classlabel_i \vectorkernel(\testpoint, \sample_i)}{\sum_i \vectorkernel(\testpoint, \sample_i)}
+\end{equation}
+where $\classlabel_i \in \lbrace -1, 1 \rbrace$.
+For a variable bandwidth kernel estimator, this works out to:
+\begin{equation}
+	\vbdecision(\testpoint) = \frac{1}{\kernelaverage} \sum_i \classlabel_i \scalarkernel \left (\frac{|\testpoint - \sample_i|}{\bandwidth(\testpoint)} \right )
+	\label{vb_kernel_r}
+\end{equation}
+
+The procedure is as follows: pick a pair of points on either side of the decision
+boundary (the decision function has opposite signs). Good candidates are one
+random training sample from each class. Then, zero the decision function
+along the line between the points. This can be done as many times as needed
+to build up a good representation of the decision boundary.
+We now have a set of points, $\lbrace \bordervector_i \rbrace$, such that
+$\decisionfunction(\bordervector_i)=0$ for every $i=[1..\nborder]$ where
+$\nborder$ is the number of border samples.
+
+Along with the border samples,  $\lbrace \bordervector_i \rbrace$, we also
+collect a series of normal vectors, $\lbrace \bordernormal_i \rbrace$
+such that:
+\begin{equation}
+\bordernormal_i=\nabla_{\point}{\decisionfunction |_{\point=\bordervector_i}}
+\end{equation}
+With this system, determining the class is a two step proces.
+First, the nearest border to the test point is found.
+Second, we define a new decision function, $\borderdecision$, 
+similar to (\ref{decision_function0}), through a dot product with the normal:
+\begin{eqnarray}
+	i & = & \arg \min_j |\testpoint - \bordervector_j| \\ \nonumber
+	\borderdecision(\testpoint) & = & \bordernormal_i \cdot (\testpoint - \bordervector_i)
+	\label{border_decision}
+\end{eqnarray}
+The class is determined by the sign of the decision function as in 
+(\ref{class_value}).
+The time complexity is completely independent of the number
+of training samples, rather it is linearly proportional to the number of
+border vectors, $\nborder$, a tunable parameter. The number required for
+accurate classifications is dependent on the complexity of the decision
+border.
+
+The gradient of the variable-bandwidth kernel estimator in 
+(\ref{vb_kernel_r}) is:
+\begin{equation}
+	\frac{\partial \vbdecision}{\partial \testcoord_j} = 
+	\frac{2 \bandwidth}{\kernelaverage} \sum_i \classlabel_i
+	\scalarkernelderiv \left (\frac{\distance_i}{\bandwidth} \right )
+	\left [\frac{\testcoord_j - \samplecoord_{ij}}{\distance_i} 
+	- \distance_i \frac{\sum_k \scalarkernelderiv \left (\frac{\distance_k}{\bandwidth} \right )
+	\frac{\testcoord_j - \samplecoord_{kj}}{\distance_k}}
+{\sum_k \distance_k \scalarkernelderiv \left (\frac{\distance_k}{\bandwidth} \right )} \right ]
+\end{equation}
+where $\distance_i=|\point - \sample_i|$ is the distance between the 
+test point and the $i$th sample and $\scalarkernelderiv$ is the derivative
+of $\scalarkernel$.
+For a Gaussian kernel, this works out to:
+\begin{equation}
+	\frac{\partial \vbdecision}{\partial \testcoord_j} = 
+	\frac{1}{\bandwidth^2 \kernelaverage} \sum_i \classlabel_i
+	\scalarkernel \left (\frac{\distance_i}{\bandwidth} \right )
+	\left [\samplecoord_{ij} - \testcoord
+	- \distance_i^2 \frac{\sum_k \scalarkernel \left (\frac{\distance_k}{\bandwidth} \right )
+	\left (\samplecoord_{kj} - \testcoord \right )}
+{\sum_k \scalarkernel \left (\frac{\distance_k}{\bandwidth} \right )\frac{1}{\distance_k^2}} \right ]
+\end{equation}
+where $K(x)=\exp(-x^2/2)$ \citep{Mills2011}.
+
+In LIBSVM, conditional probabilities are estimated by applying a
+sigmoid function to
+the raw SVM decision function, $\svmdecision$, in (\ref{svm_decision}):
+\begin{equation}
+	\svmprob(\testpoint) = \tanh \left (\frac{\svmprobcoeffA \svmdecision(\testpoint)+ \svmprobcoeffB}{2} \right )
+\end{equation}
+where $\svmprobcoeffA$ and $\svmprobcoeffB$ are coefficients derived from
+the training data via
+nonlinear least-squares fitting \citep{Lin_etal2007, Chang_Lin2011}.
+
+The gradient of the revised SVM decision function, above, is:
+\begin{equation}
+	\nabla_{\point} {\svmprob} = \left [1 - \svmprob^2(\point) \right ] \sum_i \svmcoeff_i \classlabel_i \nabla_{\point} \vectorkernel(\point, \sample_i)
+\end{equation}
+
+Gradients of the initial decision function are useful not just to derive normals to
+the decision boundary, but also as an aid to root finding when searching for
+border samples. If the decision function used to compute the border samples
+represents an estimator for the
+difference in conditional probabilities, then the raw decision function,
+$\borderdecision$,
+derived from the border sampling technique in (\ref{border_decision})
+can also return estimates of the conditional probabilities with little
+extra effort and little loss of accuracy--also using a sigmoid function \citep{Mills2011}:
+\begin{equation}
+	\borderprob(\testpoint) = \tanh \left [\borderdecision (\testpoint) \right ]
+\end{equation}
+Thus $\borderprob$ is used as an accelerator for $\kerneldecision$,
+$\vbdecision$, $\svmprob$ or any other 
+continuous, differentiable, non-parametric estimator for $\diffcondprob$
+since it has $O(\nborder)$ time complexity instead of $O(\nsample)$ time
+complexity where $\nborder$ is a free parameter. The actual number chosen
+can trade off between speed and accuracy with rapidly diminishing returns
+beyond a certain point. 
+One hundred border samples ($\nborder=100$) is usually sufficient.
+The computation of $\borderprob$ also involves very simple operations--
+floating point addition, multiplication and numerical comparison, with no
+transcendental functions except for the very last step (which can be omitted)--so the coefficient for the time complexity will be small.
+
+\bibliography{../agf_bib}
+
+\end{document}
