@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[11pt]{article}
 
 \bibliographystyle{apa}
 \usepackage{natbib}
@@ -174,7 +174,8 @@ of $O(\nsample)$. Thus for large problems, calculating the decision value will
 be slow, just as in other kernel estimation problems.
 
 The advantage of SVM lies chiefly in its accuracy since it is minimizing the
-classification error.
+classification error whereas a more basic kernel method is more ad hoc
+and does little more than sum the number of samples weighted by distance.
 
 \subsection{Border classification}
 
@@ -203,6 +204,7 @@ For a simple kernel estimator, for instance,
 $\diffcondprob$ is estimated as follows:
 \begin{equation}
 	\kerneldecision(\testpoint) = \frac{\sum_i \classlabel_i \vectorkernel(\testpoint, \sample_i)}{\sum_i \vectorkernel(\testpoint, \sample_i)}
+	\label{kernel_decision}
 \end{equation}
 where $\classlabel_i \in \lbrace -1, 1 \rbrace$.
 For a variable bandwidth kernel estimator, this works out to:
@@ -210,6 +212,9 @@ For a variable bandwidth kernel estimator, this works out to:
 	\vbdecision(\testpoint) = \frac{1}{\kernelaverage} \sum_i \classlabel_i \scalarkernel \left (\frac{|\testpoint - \sample_i|}{\bandwidth(\testpoint)} \right )
 	\label{vb_kernel_r}
 \end{equation}
+A variable bandwidth kernel-density estimator with a Gaussian kernel,
+$\scalarkernel(x)=\exp(-x^2/2)$ we will refer to as an ``Adaptive Gaussian
+Filter'' or AGF for short.
 
 The procedure is as follows: pick a pair of points on either side of the decision
 boundary (the decision function has opposite signs). Good candidates are one
@@ -257,7 +262,7 @@ The gradient of the variable-bandwidth kernel estimator in
 where $\distance_i=|\point - \sample_i|$ is the distance between the 
 test point and the $i$th sample and $\scalarkernelderiv$ is the derivative
 of $\scalarkernel$.
-For a Gaussian kernel, this works out to:
+For AGF, this works out to:
 \begin{equation}
 	\frac{\partial \vbdecision}{\partial \testcoord_j} = 
 	\frac{1}{\bandwidth^2 \kernelaverage} \sum_i \classlabel_i
@@ -274,6 +279,7 @@ sigmoid function to
 the raw SVM decision function, $\svmdecision$, in (\ref{svm_decision}):
 \begin{equation}
 	\svmprob(\testpoint) = \tanh \left (\frac{\svmprobcoeffA \svmdecision(\testpoint)+ \svmprobcoeffB}{2} \right )
+	\label{svm_prob}
 \end{equation}
 where $\svmprobcoeffA$ and $\svmprobcoeffB$ are coefficients derived from
 the training data via
@@ -288,25 +294,75 @@ Gradients of the initial decision function are useful not just to derive normals
 the decision boundary, but also as an aid to root finding when searching for
 border samples. If the decision function used to compute the border samples
 represents an estimator for the
-difference in conditional probabilities, then the raw decision function,
+difference in conditional probabilities, then the raw decision value,
 $\borderdecision$,
 derived from the border sampling technique in (\ref{border_decision})
 can also return estimates of the conditional probabilities with little
-extra effort and little loss of accuracy--also using a sigmoid function \citep{Mills2011}:
+extra effort and little loss of accuracy--also using a sigmoid function:
 \begin{equation}
 	\borderprob(\testpoint) = \tanh \left [\borderdecision (\testpoint) \right ]
+	\label{border_probability}
 \end{equation}
-Thus $\borderprob$ is used as an accelerator for $\kerneldecision$,
-$\vbdecision$, $\svmprob$ or any other 
-continuous, differentiable, non-parametric estimator for $\diffcondprob$
-since it has $O(\nborder)$ time complexity instead of $O(\nsample)$ time
-complexity where $\nborder$ is a free parameter. The actual number chosen
+This assumes that the class posterior probabilities
+($\condprob(\point | c)$) are approximately Gaussian near the border
+\citep{Mills2011}.
+
+The border classification algorithm, returns an estimator,
+$\borderprob$, for the difference in conditional probabilities of
+a binary classifier using
+equations (\ref{border_decision}) and (\ref{border_probability}).
+It can be trained with the functions $\kerneldecision$ in (\ref{kernel_decision}),
+$\vbdecision$ in (\ref{vb_kernel_r}), $\svmprob$ in (\ref{svm_prob}),
+or any other 
+continuous, differentiable, non-parametric estimator for the difference
+in conditional probabilities, $\diffcondprob$.
+At the cost of a small reduction in accuracy,
+it has the potential to drastically reduce classification time for kernel
+estimators and other non-parametric statistical classifiers,
+especially for large training datasets,
+since it has $O(\nborder)$ time complexity instead of $O(\nsample)$
+complexity, where $\nborder$, the number of border samples, is a free parameter.
+The actual number chosen
 can trade off between speed and accuracy with rapidly diminishing returns
 beyond a certain point. 
 One hundred border samples ($\nborder=100$) is usually sufficient.
 The computation of $\borderprob$ also involves very simple operations--
 floating point addition, multiplication and numerical comparison, with no
 transcendental functions except for the very last step (which can be omitted)--so the coefficient for the time complexity will be small.
+
+A border classifier trained with AGF will be referred to as an ``AGF-borders''
+classifier while a border classifier trained with SVM estimates will
+be referred to as an ``SVM-borders'' classifier.
+
+\subsection{Multi-class classification}
+
+The border classification algorithm, like SVM, only works for binary 
+classification problems. It is quite easy to generalize a binary classifier
+to perform multi-class classifications by using several of them and the
+number of ways of doing so grows exponentially with the number of classes.
+Since LIBSVM uses the ``one-versus-the-rest'' method \citep{Hsu_Lin2002} of 
+multi-class classification, this is the one we will adopt. 
+
+A major advantage of the
+borders classifier is that it returns probability estimates.
+These estimates are based on a simple interpolation, however, so they may
+not always be accurate and we are interested in comparing their accuracy
+with that of the original estimates. Therefore, the multi-class method
+should also solve for the conditional probabilities in addition to returning
+the class label.
+
+In a one-vs.-the rest scheme, the multi-class conditional probabilities 
+can be related to those of the binary classifiers as follows:
+\begin{equation}
+	\diffcondprob_{ij}(\point) = \frac{\condprob(j|\point) - \condprob(i|\point)}{\condprob(i|\point) + \condprob(j|\point)}
+\end{equation}
+where $i=[1..\nclass-1]$, $\nclass$ is the number of classes, $j>i$,
+and $\diffcondprob_{ij}$ is the difference in conditional probabilities of
+the binary classifier that discriminates between the $i$th and $j$th classes.
+\citet{Wu_etal2004} transform this problem into a linear system
+that can be solved iteratively so that all the constraints are satisfied.
+
+\section{A simple example}
 
 \bibliography{../agf_bib}
 
