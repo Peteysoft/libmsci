@@ -98,6 +98,7 @@ OBJECT_FILES = 	agf_metric2$(OPT_VER).o \
 		agf_util$(OPT_VER).o \
 		agf_eval$(OPT_VER).o \
 		agf_io$(OPT_VER).o \
+		agf_fconv$(OPT_VER).o \
 		knn_lib$(OPT_VER).o \
 		cluster_lib$(OPT_VER).o \
 		multi_parse$(OPT_VER).o \
@@ -119,6 +120,7 @@ INCLUDE_FILES = agf_util.h \
 		knn_lib.h \
 		cluster_lib.h \
 		agf_io.h \
+		agf_fconv.h \
 		agf_defs.h \
 		agf_two_class.h \
 		sample_class_borders.h \

@@ -10,6 +10,7 @@
 #include "agf_util.h"
 #include "agf_eval.h"
 #include "agf_io.h"
+#include "agf_fconv.h"
 #include "knn_lib.h"
 #include "cluster_lib.h"
 #include "agf_two_class.h"
