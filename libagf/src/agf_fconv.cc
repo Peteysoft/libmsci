@@ -275,18 +275,23 @@ cls_ta * read_lvq_classes(FILE *fs, nel_ta &n, int hflag) {
 
     long n;
     real **vec;			//vectors as read in (may be too short)
-    real **vec2;		//final vectors
     dim_ta *nfeat;		//total number of features in each vector in vec
     int err=0;
 
     char **line;		//raw ascii lines read from file
     int pos;			//position in line
 
+    dim_ta **ind;		//indices of features
+    real **raw;			//raw features data
+
     line=read_ascii_all(ifs, &n);
 
     vec=new real *[n];
     cls=new cls_t[n];
     nfeat=new dim_ta[n];
+
+    ind=new dim_ta*[n];
+    raw=new real*[n]
 
     char fcode0[4];
     char format0[10];
@@ -307,7 +312,7 @@ cls_ta * read_lvq_classes(FILE *fs, nel_ta &n, int hflag) {
         n=i;
         break;
       }
-      cnt2=scan_svm_features(line[i]+pos, ind2, raw);
+      nfeat[i]=scan_svm_features(line[i]+pos, ind[i], raw[i]);
       if (cnt2<=0) {
         fprintf(stderr, "read_svm: error on line %d; skipping\n", i);
         err=FILE_READ_ERROR;
@@ -317,55 +322,34 @@ cls_ta * read_lvq_classes(FILE *fs, nel_ta &n, int hflag) {
         continue;
         //exit(FILE_READ_ERROR);
       } 
-
-      nfeat[i]=0;
-      for (dim_ta j=0; j<cnt2; j++) if (ind2[j]>nfeat[i]) nfeat[i]=ind2[j];
-
-      vec[i]=new real[nfeat[i]];
-      for (dim_ta j=0; j<nfeat[i]; j++) vec[i][j]=missing;
-      //printf("line %d; %d features ...", i, nfeat[i]);
-      for (dim_ta j=0; j<cnt2; j++) {
-        vec[i][ind2[j]-1]=raw[j];
-        //printf(" %d:%g", ind2[j], raw[j]);
-      }
-      //printf("\n");
-      if (nfeat[i]>nvar) nvar=nfeat[i];
-
-      delete [] raw;
-      delete [] ind2;
+      for (dim_ta j=0; j<nfeat[i]; j++) if (ind[i][j]>nvar) nvar=ind[i][j];
       delete [] line[i];
     }
     delete [] line;
 
     //printf("features data: %d X %d\n", n, nvar);
 
-    vec2=new real *[n];
-    vec2[0]=new real[n*nvar];
+    vec=new real *[n];
+    vec[0]=new real[n*nvar];
 
     //fill in missing values:
     for (nel_ta i=0; i<n; i++) {
       //printf("line %d; %d features ...", i, nfeat[i]);
       vec2[i]=vec2[0]+i*nvar;
-      for (dim_ta j=0; j<nvar; j++) {
-        if (j<nfeat[i]) {
-          vec2[i][j]=vec[i][j];
-        } else {
-          vec2[i][j]=missing;
-        }
-        //printf("%g ", vec2[i][j]);
-      }
-      delete [] vec[i];
+      for (dim_ta j=0; j<nvar; j++) vec[i][j]=missing;
+      for (dim_ta j=0; j<nfeat[i]; j++) vec[i][dim[i][j]-1]=raw[i][j];
+      //printf("%g ", vec[i][j]);
+      delete [] ind[i];
+      delete [] raw[i];
       //printf("%d\n", cls[i]);
     }
-    delete [] vec;
-
+    delete [] ind;
+    delete [] raw;
     delete [] nfeat;
-    train=vec2;
 
+    train=vec;
     if (err!=0) n=-n;
-
     return n;
-
   }
 
 template <class real, class cls_t>
