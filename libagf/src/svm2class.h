@@ -5,6 +5,7 @@
 #include "binaryclassifier.h"
 
 namespace libagf {
+
   template <class real, class cls_t>
   class svm2class:public binaryclassifier<real, cls_t> {
     protected:

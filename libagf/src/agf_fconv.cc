@@ -291,7 +291,7 @@ cls_ta * read_lvq_classes(FILE *fs, nel_ta &n, int hflag) {
     nfeat=new dim_ta[n];
 
     ind=new dim_ta*[n];
-    raw=new real*[n]
+    raw=new real*[n];
 
     char fcode0[4];
     char format0[10];
@@ -303,17 +303,15 @@ cls_ta * read_lvq_classes(FILE *fs, nel_ta &n, int hflag) {
 
     //read in the raw data (no preset maximums, lines can have any number of features):
     for (nel_ta i=0; i<n; i++) {
-      real *raw;		//array of raw features data
-      dim_ta *ind2;		//array of feature indices
       long cnt1, cnt2;		//# of indices/ features read in
       //err=sscanf(line[i], "%d%d%n", cls+i, &ind, &pos);
       cnt1=sscanf(line[i], format0, cls+i, &pos);
-      if (err==0) {
+      if (cnt1==0) {
         n=i;
         break;
       }
       nfeat[i]=scan_svm_features(line[i]+pos, ind[i], raw[i]);
-      if (cnt2<=0) {
+      if (nfeat[i]<=0) {
         fprintf(stderr, "read_svm: error on line %d; skipping\n", i);
         err=FILE_READ_ERROR;
         //probably not good form but I don't feel like rewriting the control structure:
@@ -335,9 +333,9 @@ cls_ta * read_lvq_classes(FILE *fs, nel_ta &n, int hflag) {
     //fill in missing values:
     for (nel_ta i=0; i<n; i++) {
       //printf("line %d; %d features ...", i, nfeat[i]);
-      vec2[i]=vec2[0]+i*nvar;
+      vec[i]=vec[0]+i*nvar;
       for (dim_ta j=0; j<nvar; j++) vec[i][j]=missing;
-      for (dim_ta j=0; j<nfeat[i]; j++) vec[i][dim[i][j]-1]=raw[i][j];
+      for (dim_ta j=0; j<nfeat[i]; j++) vec[i][ind[i][j]-1]=raw[i][j];
       //printf("%g ", vec[i][j]);
       delete [] ind[i];
       delete [] raw[i];

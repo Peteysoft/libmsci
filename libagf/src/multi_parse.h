@@ -6,7 +6,7 @@
 
 #include "randomize.h"
 
-#include "agf_lib.h"
+#include "agf_defs.h"
 
 //default stack limit:
 #define MAXNOPTSTACK 10001

@@ -40,5 +40,12 @@ namespace libagf {
 
       virtual cls_t classify(real *x, real *p, real *praw=NULL);
       virtual cls_t class_list(cls_t *cls);
+
+      virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
+      virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
+
   };
 }
+
+#endif
+

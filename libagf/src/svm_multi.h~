@@ -31,6 +31,8 @@ namespace libagf {
       //class labels:
       cls_t *label;
 
+      real ** classify_raw(real *x);
+
     public:
       svm_multi();
       svm_multi(char *file);
@@ -38,5 +40,12 @@ namespace libagf {
 
       virtual cls_t classify(real *x, real *p, real *praw=NULL);
       virtual cls_t class_list(cls_t *cls);
+
+      virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
+      virtual int commands(mult_train_param &param, cls_t **clist, char *fbase);
+
   };
 }
+
+#endif
+

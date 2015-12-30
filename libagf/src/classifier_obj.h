@@ -5,6 +5,7 @@
 #include <gsl/gsl_matrix.h>
 
 #include "agf_defs.h"
+#include "multi_parse.h"
 
 namespace libagf {
   //"abstract" base class (now supplying default behaviour, so i guess it's

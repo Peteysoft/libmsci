@@ -1,9 +1,15 @@
+#include <string.h>
+#include <math.h>
+
 #include <gsl/gsl_linalg.h>
 
 #include "constrained.h"
 #include "read_ascii_all.h"
+#include "error_codes.h"
+
+#include "svmkernel.h"
 #include "svm_multi.h"
-#include "agf_defs.h"
+#include "agf_fconv.h"
 
 using namespace libpetey;
 
@@ -66,7 +72,7 @@ namespace libagf {
     this->ncls=0;
     this->D=0;
     nsv_total=0;
-    nr_sv=NULL;
+    nsv=NULL;
     sv=NULL;
     coef=NULL;
     rho=NULL;
@@ -77,7 +83,7 @@ namespace libagf {
 
   //initialize from LIBSVM model file:
   template <class real, class cls_t>
-  svm_multi<real, cls_t>::svm_multi(FILE *file) {
+  svm_multi<real, cls_t>::svm_multi(char *file) {
     FILE *fs=fopen(file, "r");
     char *line=NULL;
     char **substr=NULL;
@@ -101,7 +107,7 @@ namespace libagf {
 
     if (fs==NULL) {
       fprintf(stderr, "svm2class: failed to open model file, %s\n", file);
-      return UNABLE_TO_OPEN_FILE_FOR_READING;
+      throw UNABLE_TO_OPEN_FILE_FOR_READING;
     }
 
     rho=0;
@@ -133,7 +139,7 @@ namespace libagf {
 	if (this->ncls < 2) {
           fprintf(stderr, "svm_multi: one class classifiers not accepted (file, %s)\n", file);
 	  fclose(fs);
-	  return PARAMETER_OUT_OF_RANGE;
+	  throw PARAMETER_OUT_OF_RANGE;
         }
 	nparam=this->ncls*(this->ncls-1)/2;
       } else if (strcmp(substr[0], "kernel_type")==0) {
@@ -170,7 +176,7 @@ namespace libagf {
 	  throw FILE_READ_ERROR;
 	}
 	nsv=new nel_ta[this->ncls];
-	for (int i=0; i<this->ncls; i++) ncs[i]=atoi(substr[i]);
+	for (int i=0; i<this->ncls; i++) nsv[i]=atoi(substr[i]);
       } else if (strcmp(substr[0], "rho")==0) {
         if (nsub<nparam+1) {
           fprintf(stderr, "svm_multi: error in initialization file: not enough parameters (rho) (file, %s)\n", file);
@@ -203,7 +209,7 @@ namespace libagf {
 	  fclose(fs);
 	  throw FILE_READ_ERROR;
 	}
-        label=new real[this->ncls];
+        label=new cls_t[this->ncls];
 	for (int i=0; i<nparam; i++) label[i]=atoi(substr[i+1]);
       }
     } while (strcmp(substr[0], "SV")!=0);
@@ -220,11 +226,11 @@ namespace libagf {
       int nread;		//number of item scanned
       int pos;			//position in line
       int rel;			//relative position in line
-      int nf;			//number of features read in
-      line=read_line(fs);
+
+      line=fget_line(fs);
       coef[i]=coef[0]+i*(this->ncls-1);
       for (int j=0; j<this->ncls-1; j++) {
-        nread=sscanf(line+pos, format, coeff[i]+j, &rel);
+        nread=sscanf(line+pos, format, coef[i]+j, &rel);
 	if (nread!=1) {
           fprintf(stderr, "svm_multi: error reading coefficients from %s line %d\n", file, lineno+i);
 	  throw FILE_READ_ERROR;
@@ -236,7 +242,7 @@ namespace libagf {
         fprintf(stderr, "svm_multi: error reading support vectors from %s line %d\n", file, lineno+i);
 	throw FILE_READ_ERROR;
       }
-      for (int j=0; j<nf[i]; j++) if (ind[i]>this->D) this->D=ind[i];
+      for (int j=0; j<nf[i]; j++) if (ind[i][j]>this->D) this->D=ind[i][j];
     }
     //transfer to more usual array and fill in missing values:
     real missing=0;
@@ -245,11 +251,11 @@ namespace libagf {
     for (int i=0; i<nsv_total; i++) {
       sv[i]=sv[0]+i*this->D;
       for (int j=0; j<this->D; j++) sv[i][j]=missing;
-      for (int j=0; j<nf[i]; j++) sv[i][dim[i][j]-1]=raw[i][j];
-      delete [] dim[i];
+      for (int j=0; j<nf[i]; j++) sv[i][ind[i][j]-1]=raw[i][j];
+      delete [] ind[i];
       delete [] raw[i];
     }
-    delete [] dim;
+    delete [] ind;
     delete [] raw;
     delete [] line;
 
@@ -257,11 +263,11 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  svm_multi<real, cls_t>::svm_multi() {
+  svm_multi<real, cls_t>::~svm_multi() {
     delete [] sv;
     delete [] coef;
     delete [] rho;
-    delete [] nr_sv;
+    delete [] nsv;
     if (probA!=NULL) delete [] probA;
     if (probB!=NULL) delete [] probB;
     delete [] label;
@@ -274,8 +280,9 @@ namespace libagf {
     real kv[nsv_total];
     nel_ta start[this->ncls];
     int si, sj;
+    int p=0;
 
-    for (int i=0; i<nsv_total; i++) kv[i]=(*kernel)(x, sv[i]);
+    for (int i=0; i<nsv_total; i++) kv[i]=(*kernel)(x, sv[i], this->D, param);
 
     start[0]=0;
     for (int i=1; i<this->ncls; i++) start[i]=start[i-1]+nsv[i-1];
@@ -288,9 +295,10 @@ namespace libagf {
       result[i]=result[0]+i*this->ncls;
       for (int j=i+1; j<this->ncls; j++) {
         result[i][j]=0;
-	for (k=0; k<nsv[i]; k++) result[i][j]+=coef[j-1][si+k]*kv[si+k];
-	for (k=0; k<nsv[j]; k++) result[i][j]+=coef[i][sj+k]*kv[sj+k];
+	for (int k=0; k<nsv[i]; k++) result[i][j]+=coef[j-1][si+k]*kv[si+k];
+	for (int k=0; k<nsv[j]; k++) result[i][j]+=coef[i][sj+k]*kv[sj+k];
 	result[i][j] -= rho[p];
+	p++;
       }
     }
 
@@ -324,8 +332,23 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  cls_t svm_multi<real, cls_t>::class_list(cls *cls) {
+  cls_t svm_multi<real, cls_t>::class_list(cls_t *cls) {
     for (cls_t i=0; i<this->ncls; i++) cls[i]=label[i];
     return this->ncls;
   }
+
+  //we'll fill these in later once we figure out what they're supposed to do...
+  template <class real, class cls_t>
+  void svm_multi<real, cls_t>::print(FILE *fs, char *fbase, int depth) {
+  }
+
+  template <class real, class cls_t>
+  int svm_multi<real, cls_t>::commands(multi_train_param &param, cls_t **clist, char *fbase) {
+    //training to convert LIBSVM model to AGF model?
+  }
+
+  template class svm_multi<real_a, cls_ta>;
+
+
+} //end namespace libagf
 

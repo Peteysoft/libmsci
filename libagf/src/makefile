@@ -49,6 +49,7 @@ EXECUTABLES =	class_borders \
 		classify_b \
 		classify_c \
 		classify_m \
+		classify_s \
 		cls_comp_stats \
 		pdf_knn \
                 pdf_agf \
@@ -109,7 +110,9 @@ OBJECT_FILES = 	agf_metric2$(OPT_VER).o \
 		classifier_obj$(OPT_VER).o \
 		binaryclassifier$(OPT_VER).o \
 		direct_classifier$(OPT_VER).o \
+		svmkernel$(OPT_VER).o \
 		svm2class$(OPT_VER).o \
+		svm_multi$(OPT_VER).o \
 		batch_borders$(OPT_VER).o \
 		solve_cond_prob$(OPT_VER).o
 
@@ -129,7 +132,9 @@ INCLUDE_FILES = agf_util.h \
 		adgaf.h \
 		classifier_obj.h \
 		binaryclassifier.h \
+		svmkernel.h \
 		svm2class.h \
+		svm_multi.h \
 		direct_classifier.h \
 		multi_parse.h \
 		multiclass.h \
