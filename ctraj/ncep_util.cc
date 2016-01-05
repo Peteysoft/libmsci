@@ -54,6 +54,13 @@ int get_ncep_grid(NcFile *nci,			//netcdf file handle
   double tconv;
 
   time_class *time;
+  time_class t0;
+  double toffs=0;
+
+  NcAtt *att;
+  char *timeunits;	//"hours since ..."
+  int slen;
+  int k;
 
   //read in the grids for the NCEP data:
   //ncep longitude grid:
@@ -84,6 +91,16 @@ int get_ncep_grid(NcFile *nci,			//netcdf file handle
   nt=ncv->num_vals();
   traw=new double[nt];
   ncv->get(traw, nt);
+  //figure out the reference date:
+  att=ncv->get_att("units");
+  timeunits=att->as_string(0);
+  slen=strlen(timeunits);
+  for (k=slen-1; k>=0 && timeunits[k]!=' '; k--);
+  k--;
+  for (; k>=0 && timeunits[k]!=' '; k--);
+  t0.read_string(timeunits+k+1, "--- :::");
+  //we've missed two leap-years somewhere between 1 and 1800:
+  if (t0.year()==1) toffs=TOFFS;
 
   //if (nt > 366) tconv=HOURSPERDAY; else tconv=1;
   if (nt > 366) tconv=HOURSPERDAY;
@@ -94,8 +111,9 @@ int get_ncep_grid(NcFile *nci,			//netcdf file handle
   for (long i=0; i<nt; i++) {
     //convert raw times to units of days:
     traw[i]/=tconv;
-    time[i].init(1, 1, 1, 0, 0, 0);
-    time[i].add((traw[i])+TOFFS);
+    time[i]=t0;
+    //time[i].init(1, 1, 1, 0, 0, 0);
+    time[i].add((traw[i])+toffs);
   }
   tgrid=new simple<time_class>(time, nt);
 
@@ -105,10 +123,11 @@ int get_ncep_grid(NcFile *nci,			//netcdf file handle
   data=new float[ndata];
   ncv->get(data, ndata);
   lev=new simple<float>(data, ndata, 0);
-  delete [] data;
 
+  delete [] data;
   delete [] traw;
   delete [] time;
+  delete [] timeunits;
 
 }
 
@@ -124,14 +143,14 @@ int read_ncep_3d(NcVar *ncv,			//netcdf file handle
   NcDim *ncd;
 
   for (int i=0; i<3; i++) {
-    ncd=ncv->get_dim(i);
+    ncd=ncv->get_dim(i+1);
     dim[i]=ncd->size();
   }
 
   n2d=(dim[0])*dim[1];
 
   ncv->set_cur(tind, 0, 0, 0);
-  ncv->get(q, 1, dim[2], dim[1], dim[0]);
+  ncv->get(q, 1, dim[0], dim[1], dim[2]);
 
 }
 
@@ -147,7 +166,7 @@ int read_ncep_2d(NcVar *ncv,			//netcdf variable handle
   NcDim *ncd;
 
   for (int i=0; i<2; i++) {
-    ncd=ncv->get_dim(i);
+    ncd=ncv->get_dim(i+1);
     dim[i]=ncd->size();
   }
 
@@ -155,10 +174,10 @@ int read_ncep_2d(NcVar *ncv,			//netcdf variable handle
 
   if (zind==-1) {
     ncv->set_cur(tind, 0, 0);
-    ncv->get(q, 1, dim[1], dim[0]);
+    ncv->get(q, 1, dim[0], dim[1]);
   } else {
     ncv->set_cur(tind, zind, 0, 0);
-    ncv->get(q, 1, 1, dim[1], dim[0]);
+    ncv->get(q, 1, 1, dim[0], dim[1]);
   }
 
 }
@@ -179,29 +198,27 @@ int read_ncep_3d_old(NcVar *ncv,		//netcdf variable handle
   NcDim *ncd;
 
   for (int i=0; i<3; i++) {
-    ncd=ncv->get_dim(i);
+    ncd=ncv->get_dim(i+1);
     dim[i]=ncd->size();
   }
 
-  n2d=dim[0]*dim[1];
-  ncdata=new short*[dim[2]];
-  ncdata[0]=new short[n2d*dim[2]];
-  for (long i=1; i<dim[2]; i++) ncdata[i]=ncdata[0]+i*n2d;
+  n2d=dim[2]*dim[1];
+  ncdata=new short*[dim[0]];
+  ncdata[0]=new short[n2d*dim[0]];
+  for (long i=1; i<dim[0]; i++) ncdata[i]=ncdata[0]+i*n2d;
 
   att=ncv->get_att("scale_factor");
   qm=att->as_double(0);
   att=ncv->get_att("add_offset");
   q0=att->as_double(0);
 
+  //fprintf(stderr, "%ld %ld %ld\n", dim[0], dim[1], dim[2]);
   ncv->set_cur(tind, 0, 0, 0);
-  ncv->get(ncdata[0], 1, dim[2], dim[1], dim[0]);
+  ncv->get(ncdata[0], 1, dim[0], dim[1], dim[2]);
 
-  for (long k=0; k<n2d; k++) {
-    long i=k%(dim[0]);
-    long j=k/(dim[0]);
-
-    for (long iz=0; iz<dim[2]; iz++) {
-      q[i*n2d+iz]=ncdata[iz][k]*qm+q0;
+  for (long iz=0; iz<dim[0]; iz++) {
+    for (long k=0; k<n2d; k++) {
+      q[iz*n2d+k]=ncdata[iz][k]*qm+q0;
     }
   }
 
@@ -225,11 +242,11 @@ int read_ncep_2d_old(NcVar *ncv,		//netcdf variable handle
   NcDim *ncd;
 
   for (int i=0; i<3; i++) {
-    ncd=ncv->get_dim(i);
+    ncd=ncv->get_dim(i+1);
     dim[i]=ncd->size();
   }
 
-  n2d=(dim[0])*dim[1];
+  n2d=dim[0]*dim[1];
   ncdata=new short[n2d];
 
   att=ncv->get_att("scale_factor");
@@ -239,15 +256,13 @@ int read_ncep_2d_old(NcVar *ncv,		//netcdf variable handle
 
   if (zind==-1) {
     ncv->set_cur(tind, 0, 0);
-    ncv->get(ncdata, 1, dim[1], dim[0]);
+    ncv->get(ncdata, 1, dim[0], dim[1]);
   } else {
     ncv->set_cur(tind, zind, 0, 0);
-    ncv->get(ncdata, 1, 1, dim[1], dim[0]);
+    ncv->get(ncdata, 1, 1, dim[0], dim[1]);
   }
 
   for (long k=0; k<n2d; k++) {
-    long i=k%(dim[0]);
-    long j=k/(dim[0]);
     q[k]=ncdata[k]*qm+q0;
   }
 
@@ -357,6 +372,7 @@ int get_ncep_theta_interp(NcFile *nc_T,		//temperatures
 
   //get 3-D temperature field:
   fprintf(stderr, "%ld %ld %ld\n", dim[0], dim[1], np);
+  ncv=nc_T->get_var("air");
   if (ncv->type() == NC_FLOAT) {
     read_ncep_3d(ncv, tind, nctdata[0]);
   } else if (ncv->type() == NC_SHORT) {
@@ -410,14 +426,8 @@ int get_dthdp(NcFile *nc_T,		//temperatures
 		dependent<float> *dthdp,	//d(theta)/dP
 		float kappa){			//reference pressure
 
-
   NcVar *ncv;
-  NcAtt *att;
-
-  short **nctdata;
-
-  double T0, Tm;
-
+  float **nctdata;
   ind_type dim[2], n2d;		//horizontal dimensions
 
   float *p;			//pressure levels
@@ -439,19 +449,20 @@ int get_dthdp(NcFile *nc_T,		//temperatures
   n2d=(dim[0]-1)*dim[1];
 
   //allocate memory for raw ncep data:
-  nctdata=new short *[np];
-  nctdata[0]=new short[np*n2d];
+  nctdata=new float *[np];
+  nctdata[0]=new float[np*n2d];
   for (long i=1; i<np; i++) nctdata[i]=nctdata[0]+i*n2d;
 
   //get 3-D temperature field:
   ncv=nc_T->get_var("air");
-  att=ncv->get_att("scale_factor");
-  Tm=att->as_double(0);
-  att=ncv->get_att("add_offset");
-  T0=att->as_double(0);
-  ncv->set_cur(tind, 0, 0, 0);
-  fprintf(stderr, "%ld %ld %ld\n", dim[0], dim[1], np);
-  ncv->get(nctdata[0], 1, np, dim[1], dim[0]-1);
+  if (ncv->type() == NC_FLOAT) {
+    read_ncep_3d(ncv, tind, nctdata[0]);
+  } else if (ncv->type() == NC_SHORT) {
+    read_ncep_3d_old(ncv, tind, nctdata[0]);
+  } else {
+    fprintf(stderr, "get_ncep_theta_interp: error in file format; exiting ...\n");
+    throw FILE_READ_ERROR;
+  }
 
   //run through each horizontal grid, calculate theta profile,
   //calculate interpolation coefficient...
@@ -459,11 +470,11 @@ int get_dthdp(NcFile *nc_T,		//temperatures
     ind_type i=k%(dim[0]-1);
     ind_type j=k/(dim[0]-1);
 
-    theta[0]=(nctdata[0][k]*Tm+T0)*pow(1/p[0], kappa);
+    theta[0]=nctdata[0][k]*pow(1/p[0], kappa);
     zloc=-1;
     //printf("Theta levels:\n%f\n", theta[0]);
-    for (ind_type zind=0; zind<np; zind++) {
-      theta[zind]=(nctdata[zind][k]*Tm+T0)*pow(1/p[zind], kappa);
+    for (ind_type zind=1; zind<np; zind++) {
+      theta[zind]=nctdata[zind][k]*pow(1/p[zind], kappa);
       //printf("%f\n", theta[zind]);
       if (theta[zind-1] < theta_level && theta_level < theta[zind]) {
         zloc=zind-1;
@@ -710,6 +721,14 @@ simple<time_class> * get_ncep_tgrid(const char *base,	//base filename (incl. pat
   time_class *t;
   simple<time_class> *tgrid;
 
+  time_class t0;	//reference date
+  double toffs=0;	//calendar correction
+
+  NcAtt *att;		//attribute (time.units)
+  char *timeunits;	//"hours since ..."
+  int slen;		//length of string
+  int k;		//string pointer
+
   NcVar *ncv;		//grid variables
   NcFile *nc;
 
@@ -727,6 +746,7 @@ simple<time_class> * get_ncep_tgrid(const char *base,	//base filename (incl. pat
   //printf("%ld\n", ntyrmax);
   t=new time_class[ntyrmax];
 
+  tconv=HOURSPERDAY;
   nt=0;
 
   //first we get all the time grids and put them in an array:
@@ -742,16 +762,32 @@ simple<time_class> * get_ncep_tgrid(const char *base,	//base filename (incl. pat
     traw=new double[ntyr];
     ncv->get(traw, ntyr);
 
+    //figure out the reference date:
+    att=ncv->get_att("units");
+    timeunits=att->as_string(0);
+    slen=strlen(timeunits);
+    //we assume that the date is the last item in the string:
+    //chop off trailing spaces:
+    for (k=slen-1; k>=0 && timeunits[k]==' '; k--);
+    //date must have a space in the middle:
+    for (; k>=0 && timeunits[k]!=' '; k--);
+    k--;
+    for (; k>=0 && timeunits[k]!=' '; k--);
+    t0.read_string(timeunits+k+1, "--- :::");
+    //we've missed two leap-years somewhere between 1 and 1800:
+    if (t0.year()==1) toffs=TOFFS; else toffs=0;
+    printf("%s\n", timeunits+k);
+    delete [] timeunits;
+
     //if (ntyr > 366) tconv=HOURSPERDAY; else tconv=1;
-    tconv=HOURSPERDAY;
   
     //convert time to our format:
     fprintf(stderr, "Converting time grids...\n");
     for (int32_t i=0; i<ntyr; i++) {
       //convert raw times to units of days:
       traw[i]/=tconv;
-      t[i+nt].init(1, 1, 1, 0, 0, 0);
-      t[i+nt].add((traw[i])+TOFFS);
+      t[i+nt]=t0;
+      t[i+nt].add((traw[i])+toffs);
     }
 
     nt=nt+ntyr;
