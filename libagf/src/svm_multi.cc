@@ -6,6 +6,7 @@
 #include "constrained.h"
 #include "read_ascii_all.h"
 #include "error_codes.h"
+#include "gsl_util.h"
 
 #include "svmkernel.h"
 #include "svm_multi.h"
@@ -53,8 +54,14 @@ namespace libagf {
     gsl_vector_set(b, ncls, 1);
     gsl_matrix_set(Q, ncls, ncls, 0);
 
+    print_gsl_matrix(stdout, Q);
+    gsl_vector_fprintf(stdout, b, "%lg ");
+    printf("\n");
+
     //use SVD solver:
     err=solver(Q, b, x);
+    gsl_vector_fprintf(stdout, x, "%lg ");
+    printf("\n");
 
     //re-assign GSL result back to standard floating point array:
     for (int i=0; i<ncls; i++) p[i]=gsl_vector_get(x, i);
@@ -123,7 +130,7 @@ namespace libagf {
       //for (int i=0; i<nsub; i++) printf("%s ", substr[i]);
       //printf("\n");
       if (nsub == 0) continue;
-      if (strcmp(substr[0], "SV")==0 && nsub<2) {
+      if (strcmp(substr[0], "SV")!=0 && nsub<2) {
         fprintf(stderr, "svm_multi: error in initialization file, %s; unrecognized keywordi (%s)/not enough parameters\n", substr[0], file);
         fclose(fs);
         throw FILE_READ_ERROR;
@@ -170,13 +177,13 @@ namespace libagf {
       } else if (strcmp(substr[0], "total_sv")==0) {
         nsv_total=atoi(substr[1]);
       } else if (strcmp(substr[0], "nr_sv")==0) {
-        if (nsub<this->ncls) {
+        if (nsub<this->ncls+1) {
           fprintf(stderr, "svm_multi: error in initialization file: not enough parameters (nr_sv) (file, %s)\n", file);
 	  fclose(fs);
 	  throw FILE_READ_ERROR;
 	}
 	nsv=new nel_ta[this->ncls];
-	for (int i=0; i<this->ncls; i++) nsv[i]=atoi(substr[i]);
+	for (int i=0; i<this->ncls; i++) nsv[i]=atoi(substr[i+1]);
       } else if (strcmp(substr[0], "rho")==0) {
         if (nsub<nparam+1) {
           fprintf(stderr, "svm_multi: error in initialization file: not enough parameters (rho) (file, %s)\n", file);
@@ -192,7 +199,10 @@ namespace libagf {
 	  throw FILE_READ_ERROR;
 	}
         probA=new real[nparam];
-	for (int i=0; i<nparam; i++) probA[i]=atof(substr[i+1]);
+	for (int i=0; i<nparam; i++) {
+          probA[i]=atof(substr[i+1]);
+          printf("probA[%d]=%g\n", i, probA[i]);
+	}
 	pfound++;
       } else if (strcmp(substr[0], "probB")==0) {
         if (nsub<nparam+1) {
@@ -201,7 +211,10 @@ namespace libagf {
 	  throw FILE_READ_ERROR;
 	}
         probB=new real[nparam];
-	for (int i=0; i<nparam; i++) probB[i]=atof(substr[i+1]);
+	for (int i=0; i<nparam; i++) {
+          probB[i]=atof(substr[i+1]);
+          printf("probB[%d]=%g\n", i, probB[i]);
+	}
 	pfound++;
       } else if (strcmp(substr[0], "label")==0) {
         if (nsub<this->ncls+1) {
@@ -210,7 +223,7 @@ namespace libagf {
 	  throw FILE_READ_ERROR;
 	}
         label=new cls_t[this->ncls];
-	for (int i=0; i<nparam; i++) label[i]=atoi(substr[i+1]);
+	for (int i=0; i<this->ncls; i++) label[i]=atoi(substr[i+1]);
       }
     } while (strcmp(substr[0], "SV")!=0);
     delete [] line;
@@ -222,15 +235,17 @@ namespace libagf {
     coef=new real*[nsv_total];
     coef[0]=new real[nsv_total*(this->ncls-1)];
     this->D=0;
+    fprintf(stderr, "svm_multi: reading in %d support vectors\n", nsv_total);
     for (int i=0; i<nsv_total; i++) {
       int nread;		//number of item scanned
-      int pos;			//position in line
+      int pos=0;		//position in line
       int rel;			//relative position in line
 
       line=fget_line(fs);
       coef[i]=coef[0]+i*(this->ncls-1);
       for (int j=0; j<this->ncls-1; j++) {
         nread=sscanf(line+pos, format, coef[i]+j, &rel);
+	printf("%g ", coef[i][j]);
 	if (nread!=1) {
           fprintf(stderr, "svm_multi: error reading coefficients from %s line %d\n", file, lineno+i);
 	  throw FILE_READ_ERROR;
@@ -242,7 +257,11 @@ namespace libagf {
         fprintf(stderr, "svm_multi: error reading support vectors from %s line %d\n", file, lineno+i);
 	throw FILE_READ_ERROR;
       }
-      for (int j=0; j<nf[i]; j++) if (ind[i][j]>this->D) this->D=ind[i][j];
+      for (int j=0; j<nf[i]; j++) {
+        if (ind[i][j]>this->D) this->D=ind[i][j];
+	printf("%d:%g ", ind[i][j], raw[i][j]);
+      }
+      printf("\n");
     }
     //transfer to more usual array and fill in missing values:
     real missing=0;
@@ -258,6 +277,7 @@ namespace libagf {
     delete [] ind;
     delete [] raw;
     delete [] line;
+    fprintf(stderr, "svm_multi: read in %d support vectors\n", nsv_total);
 
     fclose(fs);
   }
@@ -294,6 +314,8 @@ namespace libagf {
     for (int i=0; i<this->ncls; i++) {
       result[i]=result[0]+i*this->ncls;
       for (int j=i+1; j<this->ncls; j++) {
+        si=start[i];
+	sj=start[j];
         result[i][j]=0;
 	for (int k=0; k<nsv[i]; k++) result[i][j]+=coef[j-1][si+k]*kv[si+k];
 	for (int k=0; k<nsv[j]; k++) result[i][j]+=coef[i][sj+k]*kv[sj+k];
@@ -314,8 +336,10 @@ namespace libagf {
     if (probA!=NULL && probB!=NULL) {
       for (int i=0; i<this->ncls; i++) {
         for (int j=i+1; j<this->ncls; j++) {
-          praw0[i][j]=1/(1+exp(probA[k]*praw0[i][j]+probB[k]));
+	  printf("praw=%g\n", praw0[i][j]);
+          praw0[i][j]=1./(1+exp(probA[k]*praw0[i][j]+probB[k]));
 	  k++;
+	  printf("praw=%g\n", praw0[i][j]);
 	}
       }
       solve_cond_prob_1v1(praw0, this->ncls, p);

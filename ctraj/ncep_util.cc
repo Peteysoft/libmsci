@@ -3,6 +3,7 @@
 
 #include <netcdfcpp.h>
 
+#include "error_codes.h"
 #include "peteys_tmpl_lib.h"
 #include "time_class.h"
 #include "simple_temp.h"
@@ -112,30 +113,80 @@ int get_ncep_grid(NcFile *nci,			//netcdf file handle
 }
 
 //read in a 3-D field for one time index:
-//(don't really need this one at the moment...)
-int get_ncep_t(NcFile *nci,			//netcdf file handle
-		const char *var,
+//(new format: single-precision floating point--real simple)
+//- doesn't wrap the longitude 
+int read_ncep_3d(NcVar *ncv,			//netcdf file handle
 		long tind,			//time index
-		dependent<float> *q){		//field
+		float *q){			//field
 
-  NcVar *ncv;			//netcdf variable handle
+  ind_type dim[3];		//horizontal dimensions
+  long n2d;			//size of horizontal slice
+  NcDim *ncd;
+
+  for (int i=0; i<3; i++) {
+    ncd=ncv->get_dim(i);
+    dim[i]=ncd->size();
+  }
+
+  n2d=(dim[0])*dim[1];
+
+  ncv->set_cur(tind, 0, 0, 0);
+  ncv->get(q, 1, dim[2], dim[1], dim[0]);
+
+}
+
+//read in a 2-D field for one time index at a given vertical level:
+//(new format: single-precision floating point--real simple)
+int read_ncep_2d(NcVar *ncv,			//netcdf variable handle
+		long tind,			//time index
+		long zind,			//vertical index
+		float *q){			//field
+
+  ind_type dim[2];		//horizontal dimensions
+  long n2d;			//size of horizontal slice
+  NcDim *ncd;
+
+  for (int i=0; i<2; i++) {
+    ncd=ncv->get_dim(i);
+    dim[i]=ncd->size();
+  }
+
+  n2d=dim[0]*dim[1];
+
+  if (zind==-1) {
+    ncv->set_cur(tind, 0, 0);
+    ncv->get(q, 1, dim[1], dim[0]);
+  } else {
+    ncv->set_cur(tind, zind, 0, 0);
+    ncv->get(q, 1, 1, dim[1], dim[0]);
+  }
+
+}
+
+//read in a 3-D field for one time index:
+//(old format: data are stored as short integers)
+int read_ncep_3d_old(NcVar *ncv,		//netcdf variable handle
+		long tind,			//time index
+		float *q){		//field
   NcAtt *att;			//attribute handle...
 
   double q0, qm;		//conversion from integer to float...
 
   short int ** ncdata;
+  float qval;
   ind_type dim[3];		//horizontal dimensions
   long n2d;			//size of horizontal slice
+  NcDim *ncd;
 
-  float qval;
+  for (int i=0; i<3; i++) {
+    ncd=ncv->get_dim(i);
+    dim[i]=ncd->size();
+  }
 
-  q->get_dim(dim);
-  n2d=(dim[0]-1)*dim[1];
+  n2d=dim[0]*dim[1];
   ncdata=new short*[dim[2]];
   ncdata[0]=new short[n2d*dim[2]];
   for (long i=1; i<dim[2]; i++) ncdata[i]=ncdata[0]+i*n2d;
-
-  ncv=nci->get_var(var);
 
   att=ncv->get_att("scale_factor");
   qm=att->as_double(0);
@@ -143,22 +194,14 @@ int get_ncep_t(NcFile *nci,			//netcdf file handle
   q0=att->as_double(0);
 
   ncv->set_cur(tind, 0, 0, 0);
-  ncv->get(ncdata[0], 1, dim[2], dim[1], dim[0]-1);
+  ncv->get(ncdata[0], 1, dim[2], dim[1], dim[0]);
 
   for (long k=0; k<n2d; k++) {
-    long i=k%(dim[0]-1);
-    long j=k/(dim[0]-1);
+    long i=k%(dim[0]);
+    long j=k/(dim[0]);
 
     for (long iz=0; iz<dim[2]; iz++) {
-      q->cel(ncdata[iz][k]*qm+q0, i, j, iz);
-    }
-  }
-
-  //wrap the longitude grids:
-  for (long j=0; j<dim[1]; j++) {
-    for (long iz=0; iz<dim[2]; iz++) {
-      q->get(qval, 0, j, iz);
-      q->cel(qval, dim[0]-1, j, iz);
+      q[i*n2d+iz]=ncdata[iz][k]*qm+q0;
     }
   }
 
@@ -166,54 +209,49 @@ int get_ncep_t(NcFile *nci,			//netcdf file handle
   delete [] ncdata;
 }
 
-//surface or flux data...
-int get_ncep_surf_t(NcFile *nci,		//netcdf file handle
-		const char *var,
+//read in a 2-D field for one time index:
+//(old format: data are stored as short integers)
+int read_ncep_2d_old(NcVar *ncv,		//netcdf variable handle
 		long tind,			//time index
-		dependent<float> *q){		//field
-
-  NcVar *ncv;			//netcdf variable handle
-  NcAtt *att;			//attribute handle...
-
+		long zind,			//vertical index
+		float *q){			//field
+  NcAtt *att;			//attribute handle
   double q0, qm;		//conversion from integer to float...
 
   short int * ncdata;
+  float qval;
   ind_type dim[2];		//horizontal dimensions
   long n2d;			//size of horizontal slice
+  NcDim *ncd;
 
-  float qval;
+  for (int i=0; i<3; i++) {
+    ncd=ncv->get_dim(i);
+    dim[i]=ncd->size();
+  }
 
-  q->get_dim(dim);
-  n2d=(dim[0]-1)*dim[1];
+  n2d=(dim[0])*dim[1];
   ncdata=new short[n2d];
-
-  ncv=nci->get_var(var);
 
   att=ncv->get_att("scale_factor");
   qm=att->as_double(0);
   att=ncv->get_att("add_offset");
   q0=att->as_double(0);
 
-  ncv->set_cur(tind, 0, 0, 0);
-  ncv->get(ncdata, 1, dim[1], dim[0]-1);
-
-  for (long k=0; k<n2d; k++) {
-    long i=k%(dim[0]-1);
-    long j=k/(dim[0]-1);
-
-    q->cel(ncdata[k]*qm+q0, i, j);
+  if (zind==-1) {
+    ncv->set_cur(tind, 0, 0);
+    ncv->get(ncdata, 1, dim[1], dim[0]);
+  } else {
+    ncv->set_cur(tind, zind, 0, 0);
+    ncv->get(ncdata, 1, 1, dim[1], dim[0]);
   }
 
-  //wrap the longitude grids:
-  for (long j=0; j<dim[1]; j++) {
-    for (long iz=0; iz<dim[2]; iz++) {
-      q->get(qval, 0, j, iz);
-      q->cel(qval, dim[0]-1, j, iz);
-    }
+  for (long k=0; k<n2d; k++) {
+    long i=k%(dim[0]);
+    long j=k/(dim[0]);
+    q[k]=ncdata[k]*qm+q0;
   }
 
   delete [] ncdata;
-
 }
 
 //read in a 2-D field at a single vertical level on a single time grid:
@@ -224,14 +262,11 @@ int get_ncep_tz(NcFile *nci,			//netcdf file handle
 		dependent<float> *q){		//field
 
   NcVar *ncv;			//netcdf variable handle
-  NcAtt *att;			//attribute handle...
-
-  double q0, qm;		//conversion from integer to float...
 
   long llev;
   double frac;
 
-  short int ** ncdata;
+  float ** ncdata;
   ind_type dim[2];		//horizontal dimensions
   long n2d;			//size of horizontal slice
 
@@ -243,19 +278,22 @@ int get_ncep_tz(NcFile *nci,			//netcdf file handle
 
   q->get_dim(dim);
   n2d=(dim[0]-1)*dim[1];
-  ncdata=new short*[2];
-  ncdata[0]=new short[n2d*2];
+  ncdata=new float*[2];
+  ncdata[0]=new float[n2d*2];
   ncdata[1]=ncdata[0]+n2d;
 
   ncv=nci->get_var(var);
 
-  att=ncv->get_att("scale_factor");
-  qm=att->as_double(0);
-  att=ncv->get_att("add_offset");
-  q0=att->as_double(0);
-
-  ncv->set_cur(tind, llev, 0, 0);
-  ncv->get(ncdata[0], 1, 2, dim[1], dim[0]-1);
+  if (ncv->type() == NC_FLOAT) {
+    read_ncep_2d(ncv, tind, llev, ncdata[0]);
+    read_ncep_2d(ncv, tind, llev+1, ncdata[1]);
+  } else if (ncv->type() == NC_SHORT) {
+    read_ncep_2d_old(ncv, tind, llev, ncdata[0]);
+    read_ncep_2d_old(ncv, tind, llev+1, ncdata[1]);
+  } else {
+    fprintf(stderr, "get_ncep_tz: error in file format; exiting ...\n");
+    throw FILE_READ_ERROR;
+  }
 
   //printf("qval:", qval);
   for (long k=0; k<n2d; k++) {
@@ -265,7 +303,7 @@ int get_ncep_tz(NcFile *nci,			//netcdf file handle
 
     qval=ncdata[0][k]*(1-frac)+ncdata[1][k]*frac;
     //it's all linear, so the order of operations shouldn't matter:
-    qval=qm*qval+q0;
+    //qval=qm*qval+q0;
     q->cel((float) qval, i, j);
     //printf(" %f", qval);
   }
@@ -281,66 +319,6 @@ int get_ncep_tz(NcFile *nci,			//netcdf file handle
   delete [] ncdata;
 }
 
-//read in a 2-level slice at a given vertical level on a single time grid:
-int get_ncep_2lev(NcFile *nci,			//netcdf file handle
-		const char *var, 		//netcdf variabe name
-		long lev,			//z index
-		long tind,			//time index
-		dependent<float> *q){		//field
-
-  NcVar *ncv;			//netcdf variable handle
-  NcAtt *att;			//attribute handle...
-
-  double q0, qm;		//conversion from integer to float...
-
-  long llev;
-  double frac;
-
-  short int ** ncdata;
-  ind_type dim[2];		//horizontal dimensions
-  long n2d;			//size of horizontal slice
-
-  float qval;
-
-  llev=(long) lev;
-  frac=lev-llev;
-
-  q->get_dim(dim);
-  n2d=(dim[0]-1)*dim[1];
-  ncdata=new short*[2];
-  ncdata[0]=new short[n2d*2];
-  ncdata[1]=ncdata[0]+n2d;
-
-  ncv=nci->get_var(var);
-
-  att=ncv->get_att("scale_factor");
-  qm=att->as_double(0);
-  att=ncv->get_att("add_offset");
-  q0=att->as_double(0);
-
-  ncv->set_cur(tind, llev, 0, 0);
-  ncv->get(ncdata[0], 1, 2, dim[0]-1, dim[1]);
-
-  for (long k=0; k<n2d; k++) {
-    long i=k%(dim[0]-1);
-    long j=k/(dim[0]-1);
-
-    q->cel(ncdata[0][k]*qm+q0, i, j, 0);
-    q->cel(ncdata[1][k]*qm+q0, i, j, 1);
-  }
-
-  //wrap the longitude grids:
-  for (long j=0; j<dim[1]; j++) {
-    q->get(qval, 0, j, 0);
-    q->cel(qval, dim[0]-1, j, 0);
-    q->get(qval, 0, j, 1);
-    q->cel(qval, dim[0]-1, j, 1);
-  }
-
-  delete [] ncdata[0];
-  delete [] ncdata;
-}
-
 //calculate interpolation coefficients for theta levels:
 //theta_level is for a reference pressure of 1.
 int get_ncep_theta_interp(NcFile *nc_T,		//temperatures
@@ -350,11 +328,7 @@ int get_ncep_theta_interp(NcFile *nc_T,		//temperatures
 		float kappa){			//reference pressure
 
   NcVar *ncv;
-  NcAtt *att;
-
-  short **nctdata;
-
-  double T0, Tm;
+  float **nctdata;
 
   ind_type dim[2], n2d;		//horizontal dimensions
 
@@ -377,19 +351,20 @@ int get_ncep_theta_interp(NcFile *nc_T,		//temperatures
   n2d=(dim[0]-1)*dim[1];
 
   //allocate memory for raw ncep data:
-  nctdata=new short *[np];
-  nctdata[0]=new short[np*n2d];
+  nctdata=new float *[np];
+  nctdata[0]=new float[np*n2d];
   for (long i=1; i<np; i++) nctdata[i]=nctdata[0]+i*n2d;
 
   //get 3-D temperature field:
-  ncv=nc_T->get_var("air");
-  att=ncv->get_att("scale_factor");
-  Tm=att->as_double(0);
-  att=ncv->get_att("add_offset");
-  T0=att->as_double(0);
-  ncv->set_cur(tind, 0, 0, 0);
   fprintf(stderr, "%ld %ld %ld\n", dim[0], dim[1], np);
-  ncv->get(nctdata[0], 1, np, dim[1], dim[0]-1);
+  if (ncv->type() == NC_FLOAT) {
+    read_ncep_3d(ncv, tind, nctdata[0]);
+  } else if (ncv->type() == NC_SHORT) {
+    read_ncep_3d_old(ncv, tind, nctdata[0]);
+  } else {
+    fprintf(stderr, "get_ncep_theta_interp: error in file format; exiting ...\n");
+    throw FILE_READ_ERROR;
+  }
 
   //run through each horizontal grid, calculate theta profile,
   //calculate interpolation coefficient...
@@ -397,11 +372,11 @@ int get_ncep_theta_interp(NcFile *nc_T,		//temperatures
     ind_type i=k%(dim[0]-1);
     ind_type j=k/(dim[0]-1);
 
-    theta[0]=(nctdata[0][k]*Tm+T0)*pow(1/p[0], kappa);
+    theta[0]=nctdata[0][k]*pow(1./p[0], kappa);
     zloc=-1;
     //printf("Theta levels:\n%f\n", theta[0]);
-    for (ind_type zind=0; zind<np; zind++) {
-      theta[zind]=(nctdata[zind][k]*Tm+T0)*pow(1/p[zind], kappa);
+    for (ind_type zind=1; zind<np; zind++) {
+      theta[zind]=nctdata[zind][k]*pow(1./p[zind], kappa);
       //printf("%f\n", theta[zind]);
       if (theta[zind-1] < theta_level && theta_level < theta[zind]) {
         zloc=zind-1;
@@ -411,7 +386,7 @@ int get_ncep_theta_interp(NcFile *nc_T,		//temperatures
     if (zloc == -1) {
       fprintf(stderr, "Theta level, %f, out of bounds [%f, %f]\n", 
 		      theta_level, theta[0], theta[np-1]);
-      exit(-2);
+      throw PARAMETER_OUT_OF_RANGE;
     }
 
     frac=(theta_level-theta[zloc])/(theta[zloc+1]-theta[zloc]);
@@ -594,11 +569,8 @@ int get_ncep_theta_level(NcFile *nci,
 			dependent<float> *q) {
 
   NcVar *ncv;			//netcdf variable handle
-  NcAtt *att;			//attribute handle...
 
-  double q0, qm;		//conversion from integer to float...
-
-  short int ** ncdata;
+  float ** ncdata;		//"raw" data
   ind_type dim[2];		//horizontal dimensions
   long n2d;			//size of horizontal slice
   long nz;			//vertical dimension
@@ -617,19 +589,20 @@ int get_ncep_theta_level(NcFile *nci,
   ncv=nci->get_var("level");
   nz=ncv->num_vals();
 
-  ncdata=new short*[nz];
-  ncdata[0]=new short[n2d*nz];
+  ncdata=new float*[nz];
+  ncdata[0]=new float[n2d*nz];
   for (long i=1; i<nz; i++) ncdata[i]=ncdata[0]+i*n2d;
 
   ncv=nci->get_var(var);
 
-  att=ncv->get_att("scale_factor");
-  qm=att->as_double(0);
-  att=ncv->get_att("add_offset");
-  q0=att->as_double(0);
-
-  ncv->set_cur(tind, 0, 0, 0);
-  ncv->get(ncdata[0], 1, nz, dim[1], dim[0]-1);
+  if (ncv->type() == NC_FLOAT) {
+    read_ncep_3d(ncv, tind, ncdata[0]);
+  } else if (ncv->type() == NC_SHORT) {
+    read_ncep_3d_old(ncv, tind, ncdata[0]);
+  } else {
+    fprintf(stderr, "get_ncep_theta_interp: error in file format; exiting ...\n");
+    throw FILE_READ_ERROR;
+  }
 
   for (long k=0; k<n2d; k++) {
     long i=k%(dim[0]-1);
@@ -641,7 +614,7 @@ int get_ncep_theta_level(NcFile *nci,
     //printf("%f\n", cval);
     frac=cval-ind;
     val=ncdata[ind][k]*(1-frac)+ncdata[ind+1][k]*frac;
-    q->cel(val*qm+q0, i, j);
+    q->cel(val, i, j);
 
   }
 

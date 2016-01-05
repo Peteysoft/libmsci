@@ -4,7 +4,11 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "time_class.h"
+
 #include "ctraj_vfield_base.h"
+
+using namespace libpetey;
 
 //default values, coefficients and a bunch of other stuff:
 
@@ -81,6 +85,9 @@ namespace ctraj {
   const float P0=1000;			//reference pressure for potential temperature
   const float ABS0=273.2;
   const float TOFFS=-2;
+
+  const time_class NCEP_TREF(1800, 1, 1, 0, 0, 0);
+  const time_class NCEP_TREF_OLD(0, 1, 1, 364, 0, 0);
 
   //where to switch from curvilinear metric to straight Cartesian:
   const float LAT_THRESH=87.5;

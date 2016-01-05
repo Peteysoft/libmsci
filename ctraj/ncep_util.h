@@ -28,17 +28,30 @@ namespace ctraj {
 		simple<time_class> *&tgrid);	//time grid
 
   //read in a 3-D field for one time index:
-  int get_ncep_t(NcFile *nci,			//netcdf file handle
-		const char *var,
+  int read_ncep_3d(NcFile *ncv,			//netcdf file handle
 		long tind,			//time index
-		dependent<float> *q);		//field
+		float *q);			//field
 
-  int get_ncep_surf_t(NcFile *nci,		//netcdf file handle
-		const char *var,
+  //read in a 2-D field for one time index at a given level:
+  int read_ncep_2d(NcFile *ncv,			//netcdf file handle
 		long tind,			//time index
-		dependent<float> *q);		//field
+		long zind,			//vertical index
+				//(-1 for files with no vertical dimension)
+		float *q);			//field
 
-  //read in a 3-D field for one time index:
+  //read in a 3-D field for one time index (old format):
+  int read_ncep_3d_old(NcFile *ncv,		//netcdf file handle
+		long tind,			//time index
+		float *q);			//field
+
+  //read in a 2-D field for one time index at a given level:
+  int read_ncep_2d_old(NcFile *ncv,		//netcdf file handle
+		long tind,			//time index
+		long zind,			//vertical index
+				//(-1 for files with no vertical dimension)
+		float *q);			//field
+
+  //read in a single, 2-D isentropic level for one time index:
   int get_ncep_theta_level(NcFile *nci,			//netcdf file handle
 		const char *var,
 		long tind,			//time index
@@ -52,7 +65,7 @@ namespace ctraj {
 		double zindex,			//z index
 		dependent<float> *q);		//field
 
-  //read in a 2-field for time and theta level:
+  //calculate the interpolation coefficients for a theta level:
   int get_ncep_theta_interp(NcFile *nc_T,		//temperatures
 		float theta_level,		//theta level
 		long tind,			//time index
