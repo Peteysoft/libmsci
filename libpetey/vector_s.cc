@@ -317,10 +317,10 @@ namespace libpetey {
     missing=NAN;
   }
 
-  template <>
-  void vector_s<long>::set_default_missing () {
-    missing=missing_val_signed_int<long>();
-  }
+  //template <>
+  //void vector_s<long>::set_default_missing () {
+  //  missing=missing_val_signed_int<long>();
+  //}
 
   template <>
   void vector_s<int64_t>::set_default_missing () {
@@ -338,7 +338,7 @@ namespace libpetey {
   }
 
   template class vector_s<int32_t>;
-  template class vector_s<long>;
+  //template class vector_s<long>;
   template class vector_s<int64_t>;
   template class vector_s<float>;
   template class vector_s<double>;
