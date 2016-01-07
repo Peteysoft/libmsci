@@ -12,7 +12,6 @@
 #include "ctraj_defaults.h"
 #include "ctraj_vfield_base.h"
 
-#include "coeffs.h"
 #include "az_eq_t.h"
 
 namespace ctraj {
