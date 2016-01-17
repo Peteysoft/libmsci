@@ -111,13 +111,13 @@ int main(int argc, char *argv[]) {
     if (errcode!=0) exit(errcode);
 
     if (classifier->n_feat() != nvar) {
-      fprintf(stderr, "classify_b: Dimensions of classifier (%d) do not match those of test data (%d).\n",
+      fprintf(stderr, "classify_s: Dimensions of classifier (%d) do not match those of test data (%d).\n",
                 classifier->n_feat(), nvar);
       exit(DIMENSION_MISMATCH);
     }
   } else {
     if (classifier->n_feat() != nvar) {
-      fprintf(stderr, "classify_b: Dimension of classifier (%d) do not match dimension of test data (%d).\n",
+      fprintf(stderr, "classify_s: Dimension of classifier (%d) does not match dimension of test data (%d).\n",
                 classifier->n_feat(), nvar);
       exit(DIMENSION_MISMATCH);
     }
@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
   //printf("\n");
 
   //write the results to a file:
-  cls_ta clist[2];
+  cls_ta clist[nclass];
   cls_ta ncls;
   ncls=classifier->class_list(clist);
   assert(nclass==ncls);
@@ -213,7 +213,6 @@ int main(int argc, char *argv[]) {
   }
   
   //clean up:
-  delete classifier;
   delete [] result;
   delete [] con;
   delete [] prob[0];
@@ -227,6 +226,7 @@ int main(int argc, char *argv[]) {
     delete [] ave;
   }
   if (opt_args.normfile!=NULL) delete [] opt_args.normfile;
+  delete classifier;
 
   ran_end();
 

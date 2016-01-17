@@ -54,9 +54,9 @@ namespace libagf {
     gsl_vector_set(b, ncls, 1);
     gsl_matrix_set(Q, ncls, ncls, 0);
 
-    print_gsl_matrix(stdout, Q);
-    gsl_vector_fprintf(stdout, b, "%lg ");
-    printf("\n");
+    //print_gsl_matrix(stdout, Q);
+    //gsl_vector_fprintf(stdout, b, "%lg ");
+    //printf("\n");
 
     //use SVD solver:
     err=solver(Q, b, x);
@@ -170,6 +170,7 @@ namespace libagf {
         }
       } else if (strcmp(substr[0], "gamma")==0) {
         param[0]=atof(substr[1]);
+	printf("gamma=%g\n", param[0]);
       } else if (strcmp(substr[0], "coef0")==0) {
         param[1]=atof(substr[1]);
       } else if (strcmp(substr[0], "degree")==0) {
@@ -184,6 +185,8 @@ namespace libagf {
 	}
 	nsv=new nel_ta[this->ncls];
 	for (int i=0; i<this->ncls; i++) nsv[i]=atoi(substr[i+1]);
+	for (int i=0; i<this->ncls; i++) printf("%d ", nsv[i]);
+	printf("\n");
       } else if (strcmp(substr[0], "rho")==0) {
         if (nsub<nparam+1) {
           fprintf(stderr, "svm_multi: error in initialization file: not enough parameters (rho) (file, %s)\n", file);
@@ -232,8 +235,9 @@ namespace libagf {
     dim_ta **ind=new dim_ta *[nsv_total];	//dimension indices
     real **raw=new real *[nsv_total];		//raw features data
     int nf[nsv_total];
-    coef=new real*[nsv_total];
+    coef=new real*[this->ncls-1];
     coef[0]=new real[nsv_total*(this->ncls-1)];
+    for (int i=1; i<this->ncls-1; i++) coef[i]=coef[0]+i*nsv_total;
     this->D=0;
     fprintf(stderr, "svm_multi: reading in %d support vectors\n", nsv_total);
     for (int i=0; i<nsv_total; i++) {
@@ -242,10 +246,9 @@ namespace libagf {
       int rel;			//relative position in line
 
       line=fget_line(fs);
-      coef[i]=coef[0]+i*(this->ncls-1);
       for (int j=0; j<this->ncls-1; j++) {
-        nread=sscanf(line+pos, format, coef[i]+j, &rel);
-	printf("%g ", coef[i][j]);
+        nread=sscanf(line+pos, format, coef[j]+i, &rel);
+	printf("%g ", coef[j][i]);
 	if (nread!=1) {
           fprintf(stderr, "svm_multi: error reading coefficients from %s line %d\n", file, lineno+i);
 	  throw FILE_READ_ERROR;
@@ -278,6 +281,11 @@ namespace libagf {
     delete [] raw;
     delete [] line;
     fprintf(stderr, "svm_multi: read in %d support vectors\n", nsv_total);
+    printf("param[0]=%g\n", param[0]);
+
+    cls_t cls[nsv_total];
+
+    print_lvq_svm(stdout, sv, cls, nsv_total, this->D, 1);
 
     fclose(fs);
   }
@@ -302,24 +310,32 @@ namespace libagf {
     int si, sj;
     int p=0;
 
-    for (int i=0; i<nsv_total; i++) kv[i]=(*kernel)(x, sv[i], this->D, param);
+    for (int i=0; i<nsv_total; i++) {
+      kv[i]=(*kernel)(x, sv[i], this->D, param);
+      //printf("kv[%d]=%g\n", i, kv[i]);
+    }
 
     start[0]=0;
     for (int i=1; i<this->ncls; i++) start[i]=start[i-1]+nsv[i-1];
 
-    result=new real *[this->ncls-1];
+    result=new real *[this->ncls];
     //wastes space, but it's simpler this way:
     result[0]=new real[this->ncls*this->ncls];
 
     for (int i=0; i<this->ncls; i++) {
       result[i]=result[0]+i*this->ncls;
+      si=start[i];
       for (int j=i+1; j<this->ncls; j++) {
-        si=start[i];
 	sj=start[j];
         result[i][j]=0;
-	for (int k=0; k<nsv[i]; k++) result[i][j]+=coef[j-1][si+k]*kv[si+k];
+	for (int k=0; k<nsv[i]; k++) {
+		result[i][j]+=coef[j-1][si+k]*kv[si+k];
+		//printf("%g ", coef[j-1][si+k]);
+	}
+	//printf("\n");
 	for (int k=0; k<nsv[j]; k++) result[i][j]+=coef[i][sj+k]*kv[sj+k];
 	result[i][j] -= rho[p];
+	//printf("%g\n", result[i][j]);
 	p++;
       }
     }
@@ -336,7 +352,7 @@ namespace libagf {
     if (probA!=NULL && probB!=NULL) {
       for (int i=0; i<this->ncls; i++) {
         for (int j=i+1; j<this->ncls; j++) {
-	  printf("praw=%g\n", praw0[i][j]);
+	  //printf("praw=%g\n", praw0[i][j]);
           praw0[i][j]=1./(1+exp(probA[k]*praw0[i][j]+probB[k]));
 	  k++;
 	  printf("praw=%g\n", praw0[i][j]);
@@ -351,6 +367,8 @@ namespace libagf {
 	}
       }
     }
+    delete [] praw0[0];
+    delete [] praw;
 
     return choose_class(p, this->ncls);
   }
