@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
     return UNABLE_TO_OPEN_FILE_FOR_READING;
   }
 
-  printf("%d test vectors found in file %s\n", ntest, argv[1]);
+  fprintf(stderr, "%d test vectors found in file %s\n", ntest, argv[1]);
 
   //normalization:
   if ((opt_args.uflag || opt_args.normflag) && opt_args.normfile==NULL) {
@@ -180,14 +180,14 @@ int main(int argc, char *argv[]) {
     p2=new real_a[maxcls+1];
     fprintf(fs, "%d\n", maxcls+1);
     for (nel_ta i=0; i<ntest; i++) {
-      con[i]=(nclass*prob[i][result[i]]-1)/(nclass-1);
-      fprintf(fs, "%d", clist[result[i]]);
+      fprintf(fs, "%d", result[i]);
       for (cls_ta j=0; j<nclass; j++) p2[j]=0;
       for (cls_ta j=0; j<nclass; j++) p2[clist[j]]=prob[i][j];
       for (cls_ta j=0; j<nclass; j++) {
         fprintf(fs, " %g", p2[j]);
       }
       fprintf(fs, "\n");
+      con[i]=(nclass*p2[result[i]]-1)/(nclass-1);
     }
     delete [] p2;
     if (opt_args.asciiflag) {

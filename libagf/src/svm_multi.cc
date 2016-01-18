@@ -33,7 +33,7 @@ namespace libagf {
     //off-diagonals:
     for (int i=0; i<ncls; i++) {
       for (int j=i+1; j<ncls; j++) {
-        real val=r[i][j]*(1-r[i][j]);
+        real val=-r[i][j]*(1-r[i][j]);
         gsl_matrix_set(Q, i, j, val);
 	gsl_matrix_set(Q, j, i, val);
       }
@@ -44,7 +44,7 @@ namespace libagf {
       gsl_vector_set(b, i, 0);
       real val=0;
       for (int j=0; j<i; j++) val+=r[j][i]*r[j][i];
-      for (int j=i+1; j<ncls; j++) val+=r[i][j]*r[i][j];
+      for (int j=i+1; j<ncls; j++) val+=(1-r[i][j])*(1-r[i][j]);
       gsl_matrix_set(Q, i, i, val);
       //normality constraint:
       gsl_matrix_set(Q, i, ncls, 1);
@@ -60,8 +60,9 @@ namespace libagf {
 
     //use SVD solver:
     err=solver(Q, b, x);
-    gsl_vector_fprintf(stdout, x, "%lg ");
-    printf("\n");
+
+    //gsl_vector_fprintf(stdout, x, "%lg ");
+    //printf("\n");
 
     //re-assign GSL result back to standard floating point array:
     for (int i=0; i<ncls; i++) p[i]=gsl_vector_get(x, i);
@@ -170,7 +171,7 @@ namespace libagf {
         }
       } else if (strcmp(substr[0], "gamma")==0) {
         param[0]=atof(substr[1]);
-	printf("gamma=%g\n", param[0]);
+	//printf("gamma=%g\n", param[0]);
       } else if (strcmp(substr[0], "coef0")==0) {
         param[1]=atof(substr[1]);
       } else if (strcmp(substr[0], "degree")==0) {
@@ -185,7 +186,7 @@ namespace libagf {
 	}
 	nsv=new nel_ta[this->ncls];
 	for (int i=0; i<this->ncls; i++) nsv[i]=atoi(substr[i+1]);
-	for (int i=0; i<this->ncls; i++) printf("%d ", nsv[i]);
+	//for (int i=0; i<this->ncls; i++) printf("%d ", nsv[i]);
 	printf("\n");
       } else if (strcmp(substr[0], "rho")==0) {
         if (nsub<nparam+1) {
@@ -204,7 +205,7 @@ namespace libagf {
         probA=new real[nparam];
 	for (int i=0; i<nparam; i++) {
           probA[i]=atof(substr[i+1]);
-          printf("probA[%d]=%g\n", i, probA[i]);
+          //printf("probA[%d]=%g\n", i, probA[i]);
 	}
 	pfound++;
       } else if (strcmp(substr[0], "probB")==0) {
@@ -216,7 +217,7 @@ namespace libagf {
         probB=new real[nparam];
 	for (int i=0; i<nparam; i++) {
           probB[i]=atof(substr[i+1]);
-          printf("probB[%d]=%g\n", i, probB[i]);
+          //printf("probB[%d]=%g\n", i, probB[i]);
 	}
 	pfound++;
       } else if (strcmp(substr[0], "label")==0) {
@@ -248,7 +249,7 @@ namespace libagf {
       line=fget_line(fs);
       for (int j=0; j<this->ncls-1; j++) {
         nread=sscanf(line+pos, format, coef[j]+i, &rel);
-	printf("%g ", coef[j][i]);
+	//printf("%g ", coef[j][i]);
 	if (nread!=1) {
           fprintf(stderr, "svm_multi: error reading coefficients from %s line %d\n", file, lineno+i);
 	  throw FILE_READ_ERROR;
@@ -262,9 +263,9 @@ namespace libagf {
       }
       for (int j=0; j<nf[i]; j++) {
         if (ind[i][j]>this->D) this->D=ind[i][j];
-	printf("%d:%g ", ind[i][j], raw[i][j]);
+	//printf("%d:%g ", ind[i][j], raw[i][j]);
       }
-      printf("\n");
+      //printf("\n");
     }
     //transfer to more usual array and fill in missing values:
     real missing=0;
@@ -281,11 +282,11 @@ namespace libagf {
     delete [] raw;
     delete [] line;
     fprintf(stderr, "svm_multi: read in %d support vectors\n", nsv_total);
-    printf("param[0]=%g\n", param[0]);
+    //printf("param[0]=%g\n", param[0]);
 
     cls_t cls[nsv_total];
 
-    print_lvq_svm(stdout, sv, cls, nsv_total, this->D, 1);
+    //print_lvq_svm(stdout, sv, cls, nsv_total, this->D, 1);
 
     fclose(fs);
   }
@@ -355,7 +356,7 @@ namespace libagf {
 	  //printf("praw=%g\n", praw0[i][j]);
           praw0[i][j]=1./(1+exp(probA[k]*praw0[i][j]+probB[k]));
 	  k++;
-	  printf("praw=%g\n", praw0[i][j]);
+	  //printf("praw=%g\n", praw0[i][j]);
 	}
       }
       solve_cond_prob_1v1(praw0, this->ncls, p);
@@ -370,7 +371,7 @@ namespace libagf {
     delete [] praw0[0];
     delete [] praw;
 
-    return choose_class(p, this->ncls);
+    return label[choose_class(p, this->ncls)];
   }
 
   template <class real, class cls_t>
