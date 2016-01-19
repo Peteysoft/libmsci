@@ -11,6 +11,7 @@
 #include "svmkernel.h"
 #include "svm_multi.h"
 #include "agf_fconv.h"
+#include "sample_class_borders.h"
 
 using namespace libpetey;
 
@@ -76,6 +77,47 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  onevone<real, cls_t>::onevone() {
+    this->ncls=0;
+    this->D=0;
+    label=NULL;
+    voteflag=0;
+  }
+
+  template <class real, class cls_t>
+  onevone<real, cls_t>::~onevone() {
+  }
+
+  template <class real, class cls_t>
+  cls_t onevone<real, cls_t>::classify(real *x, real *p, real *praw) {
+    real **praw0;
+    int k=0;
+
+    praw0=classify_raw(x);
+    if (voteflag) {
+      for (int i=0; i<this->ncls; i++) p[i]=0;
+      for (int i=0; i<this->ncls; i++) {
+        for (int j=i+1; j<this->ncls; j++) {
+          if (praw0[i][j]>0) p[i]++; else p[j]++;
+	}
+      }
+    } else {
+      solve_cond_prob_1v1(praw0, this->ncls, p);
+    }
+
+    delete [] praw0[0];
+    delete [] praw;
+
+    return label[choose_class(p, this->ncls)];
+  }
+
+  template <class real, class cls_t>
+  cls_t onevone<real, cls_t>::class_list(cls_t *cls) {
+    for (cls_t i=0; i<this->ncls; i++) cls[i]=label[i];
+    return this->ncls;
+  }
+
+  template <class real, class cls_t>
   svm_multi<real, cls_t>::svm_multi() {
     this->ncls=0;
     this->D=0;
@@ -86,12 +128,12 @@ namespace libagf {
     rho=NULL;
     probA=NULL;
     probB=NULL;
-    label=NULL;
+    this->label=NULL;
   }
 
   //initialize from LIBSVM model file:
   template <class real, class cls_t>
-  svm_multi<real, cls_t>::svm_multi(char *file) {
+  svm_multi<real, cls_t>::svm_multi(char *file, int vflag) {
     FILE *fs=fopen(file, "r");
     char *line=NULL;
     char **substr=NULL;
@@ -112,6 +154,7 @@ namespace libagf {
     
     probA=NULL;
     probB=NULL;
+    this->voteflag=vflag;
 
     if (fs==NULL) {
       fprintf(stderr, "svm2class: failed to open model file, %s\n", file);
@@ -226,8 +269,8 @@ namespace libagf {
 	  fclose(fs);
 	  throw FILE_READ_ERROR;
 	}
-        label=new cls_t[this->ncls];
-	for (int i=0; i<this->ncls; i++) label[i]=atoi(substr[i+1]);
+        this->label=new cls_t[this->ncls];
+	for (int i=0; i<this->ncls; i++) this->label[i]=atoi(substr[i+1]);
       }
     } while (strcmp(substr[0], "SV")!=0);
     delete [] line;
@@ -278,16 +321,18 @@ namespace libagf {
       delete [] ind[i];
       delete [] raw[i];
     }
-    delete [] ind;
-    delete [] raw;
-    delete [] line;
     fprintf(stderr, "svm_multi: read in %d support vectors\n", nsv_total);
     //printf("param[0]=%g\n", param[0]);
 
     cls_t cls[nsv_total];
 
+    if (probA==NULL || probB==NULL) this->voteflag=1;
+
     //print_lvq_svm(stdout, sv, cls, nsv_total, this->D, 1);
 
+    delete [] ind;
+    delete [] raw;
+    delete [] line;
     fclose(fs);
   }
 
@@ -299,10 +344,10 @@ namespace libagf {
     delete [] nsv;
     if (probA!=NULL) delete [] probA;
     if (probB!=NULL) delete [] probB;
-    delete [] label;
+    delete [] this->label;
   }
 
-  //raw decision values, on for each pair of classes:
+  //raw decision values, one for each pair of classes:
   template <class real, class cls_t>
   real ** svm_multi<real, cls_t>::classify_raw(real *x) {
     real **result;
@@ -336,48 +381,13 @@ namespace libagf {
 	//printf("\n");
 	for (int k=0; k<nsv[j]; k++) result[i][j]+=coef[i][sj+k]*kv[sj+k];
 	result[i][j] -= rho[p];
+        if (this->voteflag==0) result[i][j]=1./(1+exp(probA[p]*result[i][j]+probB[p]));
 	//printf("%g\n", result[i][j]);
 	p++;
       }
     }
 
     return result;
-  }
-
-  template <class real, class cls_t>
-  cls_t svm_multi<real, cls_t>::classify(real *x, real *p, real *praw) {
-    real **praw0;
-    int k=0;
-
-    praw0=classify_raw(x);
-    if (probA!=NULL && probB!=NULL) {
-      for (int i=0; i<this->ncls; i++) {
-        for (int j=i+1; j<this->ncls; j++) {
-	  //printf("praw=%g\n", praw0[i][j]);
-          praw0[i][j]=1./(1+exp(probA[k]*praw0[i][j]+probB[k]));
-	  k++;
-	  //printf("praw=%g\n", praw0[i][j]);
-	}
-      }
-      solve_cond_prob_1v1(praw0, this->ncls, p);
-    } else {
-      for (int i=0; i<this->ncls; i++) p[i]=0;
-      for (int i=0; i<this->ncls; i++) {
-        for (int j=i+1; j<this->ncls; j++) {
-          if (praw0[i][j]>0) p[i]++; else p[j]++;
-	}
-      }
-    }
-    delete [] praw0[0];
-    delete [] praw;
-
-    return label[choose_class(p, this->ncls)];
-  }
-
-  template <class real, class cls_t>
-  cls_t svm_multi<real, cls_t>::class_list(cls_t *cls) {
-    for (cls_t i=0; i<this->ncls; i++) cls[i]=label[i];
-    return this->ncls;
   }
 
   //we'll fill these in later once we figure out what they're supposed to do...
@@ -388,6 +398,26 @@ namespace libagf {
   template <class real, class cls_t>
   int svm_multi<real, cls_t>::commands(multi_train_param &param, cls_t **clist, char *fbase) {
     //training to convert LIBSVM model to AGF model?
+  }
+
+  template <class real, class cls_t>
+  borders1v1<real, cls_t>::borders1v1(char *file, int vflag) {
+    //how do we want to store the borders?
+  }
+
+  template <class real, class cls_t>
+  real **borders1v1<real, cls_t>::classify_raw(real *x) {
+    int k;
+    real **result=new real *[this->ncls];
+    result[0]=new real[this->ncls*this->ncls];
+    for (int i=0; i<this->ncls; i++) {
+      result[i]=result[0]+i*this->ncls;
+      for (int j=i+1; j<this->ncls; j++) {
+        result[i][j]=border_classify(bord[k], grad[k], this->D, nsamp[k]);
+	result[i][j]=(1+result[i][j])/2;
+      }
+    }
+    return result;
   }
 
   template class svm_multi<real_a, cls_ta>;
