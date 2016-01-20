@@ -324,10 +324,14 @@ namespace libagf {
     fprintf(stderr, "svm_multi: read in %d support vectors\n", nsv_total);
     //printf("param[0]=%g\n", param[0]);
 
-    cls_t cls[nsv_total];
-
+    //some book-keeping:
     if (probA==NULL || probB==NULL) this->voteflag=1;
 
+    start=new nel_ta[this->ncls];
+    start[0]=0;
+    for (int i=1; i<this->ncls; i++) start[i]=start[i-1]+nsv[i-1];
+
+    //cls_t cls[nsv_total];
     //print_lvq_svm(stdout, sv, cls, nsv_total, this->D, 1);
 
     delete [] ind;
@@ -345,6 +349,7 @@ namespace libagf {
     if (probA!=NULL) delete [] probA;
     if (probB!=NULL) delete [] probB;
     delete [] this->label;
+    delete [] start;
   }
 
   //raw decision values, one for each pair of classes:
@@ -352,7 +357,6 @@ namespace libagf {
   real ** svm_multi<real, cls_t>::classify_raw(real *x) {
     real **result;
     real kv[nsv_total];
-    nel_ta start[this->ncls];
     int si, sj;
     int p=0;
 
@@ -360,9 +364,6 @@ namespace libagf {
       kv[i]=(*kernel)(x, sv[i], this->D, param);
       //printf("kv[%d]=%g\n", i, kv[i]);
     }
-
-    start[0]=0;
-    for (int i=1; i<this->ncls; i++) start[i]=start[i-1]+nsv[i-1];
 
     result=new real *[this->ncls];
     //wastes space, but it's simpler this way:
@@ -382,7 +383,7 @@ namespace libagf {
 	for (int k=0; k<nsv[j]; k++) result[i][j]+=coef[i][sj+k]*kv[sj+k];
 	result[i][j] -= rho[p];
         if (this->voteflag==0) result[i][j]=1./(1+exp(probA[p]*result[i][j]+probB[p]));
-	//printf("%g\n", result[i][j]);
+	printf("%g %g\n", result[i][j], (1-R(x, i, j))/2);
 	p++;
       }
     }
@@ -398,6 +399,105 @@ namespace libagf {
   template <class real, class cls_t>
   int svm_multi<real, cls_t>::commands(multi_train_param &param, cls_t **clist, char *fbase) {
     //training to convert LIBSVM model to AGF model?
+  }
+
+  //raw decision value for a given pair of classes:
+  template <class real, class cls_t>
+  real svm_multi<real, cls_t>::R(real *x, cls_t i, cls_t j) {
+    real result;
+    real kv;
+    int si, sj;
+    cls_t swp;
+    int sgn=1;
+    int p=0;
+
+    if (i==j) throw PARAMETER_OUT_OF_RANGE;
+
+    if (i>j) {
+      swp=i;
+      i=j;
+      j=i;
+      sgn=-1;
+    }
+
+    si=start[i];
+    sj=start[j];
+
+    result=0;
+    for (int k=0; k<nsv[i]; k++) {
+      kv=(*kernel)(x, sv[si+k], this->D, param);
+      result+=coef[j-1][si+k]*kv;
+    }
+    for (int k=0; k<nsv[j]; k++) {
+      kv=(*kernel)(x, sv[sj+k], this->D, param);
+      result+=coef[i][sj+k]*kv;
+    }
+    //p=this->ncls*(this->ncls-1)/2-(this->ncls-i)*(this->ncls-i-1)/2+j;
+    p=i*(2*this->ncls-i-1)/2+j-i-1;
+    printf("%d %d %d\n", i, j, p);
+    result -= rho[p];
+    if (this->voteflag==0) result=1./(1+exp(probA[p]*result+probB[p]));
+
+    return sgn*(1-2*result);
+  }
+
+  //raw decision value for a given pair of classes:
+  template <class real, class cls_t>
+  real svm_multi<real, cls_t>::R_deriv(real *x, cls_t i, cls_t j, real *drdx) {
+    real result;
+    real kv;
+    int si, sj;
+    cls_t swp;
+    int sgn=1;
+    int p=0;
+    real t1, t2;
+    real deriv[this->D];
+    real drdx1[this->D];
+    real drdx2[this->D];
+
+    if (i==j) throw PARAMETER_OUT_OF_RANGE;
+
+    if (i>j) {
+      swp=i;
+      i=j;
+      j=i;
+      sgn=-1;
+    }
+
+    si=start[i];
+    sj=start[j];
+
+    result=0;
+    for (dim_ta k=0; k<this->D; k++) drdx1[j]=0;
+    for (int k=0; k<nsv[i]; k++) {
+      kv=(*kernel_deriv)(x, sv[si+k], this->D, param, deriv);
+      result+=coef[j-1][si+k]*kv;
+      for (dim_ta m=0; m<this->D; m++) drdx1[m]+=coef[j-1][si+k]*deriv[m];
+    }
+    for (int k=0; k<nsv[j]; k++) {
+      kv=(*kernel_deriv)(x, sv[sj+k], this->D, param, deriv);
+      result+=coef[i][sj+k]*kv;
+      for (dim_ta m=0; m<this->D; m++) drdx1[m]+=coef[i][sj+k]*deriv[m];
+    }
+    //p=this->ncls*(this->ncls-1)/2-(this->ncls-i)*(this->ncls-i-1)/2+j;
+    p=i*(2*this->ncls-i-1)/2+j-i-1;
+    result -= rho[p];
+    if (this->voteflag==0) {
+      t1=exp(result*probA[p]+probB[p]);
+      t2=probA[p]*t1/(1+t1)/(1+t1);		//derivative of sigmoid function
+      for (dim_ta k=0; k<this->D; k++) drdx1[k]*=2*t2;
+      result=1-2/(1+t1);
+    }
+
+    for (dim_ta k=0; k<this->D; k++) drdx[k]=sgn*drdx1[k];
+
+    return sgn*result;
+  }
+
+  template <class real, class cls_t>
+  svm2class<real, cls_t> * svm_multi<real, cls_t>::tobinary(cls_t i, cls_t j) {
+    svm2class<real, cls_t> *result;
+    result=new svm2class<real, cls_t>();
   }
 
   template <class real, class cls_t>

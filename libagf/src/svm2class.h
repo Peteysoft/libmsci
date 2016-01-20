@@ -7,7 +7,13 @@
 namespace libagf {
 
   template <class real, class cls_t>
+  class svm_multi;
+
+  template <class real, class cls_t>
   class svm2class:public binaryclassifier<real, cls_t> {
+    //*sniff*, *sniff*...
+    friend svm_multi<real, cls_t>;
+
     protected:
       real **sv;		//support vectors
       real *coef;		//coefficients

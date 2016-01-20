@@ -1,7 +1,7 @@
 #ifndef __LIBAGF_SVM_MULTI_H__DEFINED__
 #define __LIBAGF_SVM_MULTI_H__DEFINED__
 
-#include "classifier_obj.h"
+#include "svm2class.h"
 
 namespace libagf {
   template <class real>
@@ -25,7 +25,6 @@ namespace libagf {
 
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0)=0;
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase)=0;
-
   };
 
   //we can unify this at some later time with "svm2class" binary classifier
@@ -36,6 +35,7 @@ namespace libagf {
       real **coef;		//coefficients
       nel_ta nsv_total;		//total number of support vectors
       nel_ta *nsv;		//number of support vectors
+      nel_ta *start;
       real *rho;		//constant terms
 
           //kernel function:
@@ -58,6 +58,11 @@ namespace libagf {
 
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
+
+      real R(real *x, cls_t i, cls_t j);
+      real R_deriv(real *x, cls_t i, cls_t j, real *drdx);
+
+      svm2class<real, cls_t> * tobinary(cls_t i, cls_t j);
 
   };
 
