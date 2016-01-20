@@ -13,175 +13,56 @@ namespace libagf {
 
   template <class real, class cls_t>
   svm2class<real, cls_t>::svm2class() {
-    sv=NULL;
-    nsv=0;
-    coef=NULL;
-    param=NULL;
-    this->mat=NULL;
-    this->b=NULL;
-    this->id=-1;
-    this->D=0;
-    this->D1=0;
+    classifier=NULL;
+    ttype=0;
+    dflag=0;
   }
 
   template <class real, class cls_t>
   svm2class<real, cls_t>::svm2class(char *modfile, int tc) {
-    int err=init(modfile, tc);
-    if (err!=0) throw err;
+    ttype=tc;
+    cls_t *clist;
+    classifier=new svm_multi<real, cls_t>(modfile);
+    this->ncls=classifier->n_class();
+    if (this->ncls != 2) {
+      fprintf(stderr, "svm2class: only binary classifiers accepted (file, %s)\n", modfile);
+      throw PARAMETER_OUT_OF_RANGE;
+    }
+    dflag=1;
+    ind1=0;
+    ind2=1;
+    clist=new cls_t[this->ncls];
+    classifier->class_list(clist);
+    label1=clist[0];
+    label2=clist[1];
+    delete [] clist;
+  }
+
+  template <class real, class cls_t>
+  svm2class<real, cls_t>::svm2class(svm_multi<real, cls_t> *other, cls_t i, cls_t j, int cflag) {
+    cls_t *clist;
+    cls_t oncls=other->n_class();
+    if (cflag) {
+      classifier=new svm_multi<real, cls_t>(other);
+      dflag=1;
+    } else {
+      classifier=other;
+      dflag=0;
+    }
+    this->ncls=2;
+    if (i==j || i>=oncls || j>=oncls) throw PARAMETER_OUT_OF_RANGE;
+    ind1=i;
+    ind2=j;
+    clist=new cls_t[this->ncls];
+    classifier->class_list(clist);
+    label1=clist[i];
+    label2=clist[j];
+    delete [] clist;
   }
 
   template <class real, class cls_t>
   svm2class<real, cls_t>::~svm2class() {
-    delete [] sv[0];
-    delete [] sv;
-    delete [] param;
-    delete [] coef;
-  }
-
-  template <class real, class cls_t>
-  int svm2class<real, cls_t>::init(char *modfile, int tc) {
-    FILE *fs=fopen(modfile, "r");
-    char *line=NULL;
-    char **substr=NULL;
-    int nsub;
-    int nsv1;		//should agree with nsv...
-    int pfound=0;	//number of parameters for probability estimation read in (should be 2)
-
-    this->mat=NULL;
-    this->b=NULL;
-    this->id=-1;
-    ttype=tc;
-
-    if (fs==NULL) {
-      fprintf(stderr, "svm2class: failed to open model file, %s\n", modfile);
-      return UNABLE_TO_OPEN_FILE_FOR_READING;
-    }
-
-    rho=0;
-    param=new real[3];
-
-    do {
-      if (line!=NULL) delete [] line;
-      if (substr!=NULL) delete [] substr;
-      line=fget_line(fs, 1);
-      substr=split_string_destructive(line, nsub);
-      //printf("svm2class: nsub=%d\n", nsub);
-      //for (int i=0; i<nsub; i++) printf("%s ", substr[i]);
-      //printf("\n");
-      if (strcmp(substr[0], "svm_type")==0) {
-        if (strcmp(substr[1], "c_svc")!=0 && strcmp(substr[1], "nu-svc")!=0) {
-          fprintf(stderr, "svm2class: not a classifier SVM in file, %s (%s)\n", modfile, substr[1]);
-	  fclose(fs);
-	  return PARAMETER_OUT_OF_RANGE;
-        }
-      } else if (strcmp(substr[0], "nr_class")==0) {
-        this->ncls=atoi(substr[1]);
-	if (this->ncls != 2) {
-          fprintf(stderr, "svm2class: only binary classifiers accepted (file, %s)\n", modfile);
-	  fclose(fs);
-	  return PARAMETER_OUT_OF_RANGE;
-        }
-      } else if (strcmp(substr[0], "kernel_type")==0) {
-        if (strcmp(substr[1], "linear")==0) {
-	  kernel=&linear_basis<real>;
-	  kernel_deriv=&linear_basis_deriv<real>;
-	  param=NULL;
-        } else if (strcmp(substr[1], "polynomial")==0) {
-          kernel=&polynomial_basis<real>;
-          kernel_deriv=&polynomial_basis_deriv<real>;
-	} else if (strcmp(substr[1], "rbf")==0) {
-          kernel=&radial_basis<real>;
-          kernel_deriv=&radial_basis_deriv<real>;
-	} else if (strcmp(substr[1], "sigmoid")==0) {
-          kernel=&sigmoid_basis<real>;
-          kernel_deriv=&sigmoid_basis_deriv<real>;
-	} else {
-          fprintf(stderr, "svm2class: basis function, %s, not recognized (file, %s)\n", substr[1], modfile);
-	  fclose(fs);
-	  return PARAMETER_OUT_OF_RANGE;
-        }
-      } else if (strcmp(substr[0], "gamma")==0) {
-        param[0]=atof(substr[1]);
-      } else if (strcmp(substr[0], "coef0")==0) {
-        param[1]=atof(substr[1]);
-      } else if (strcmp(substr[0], "degree")==0) {
-        param[2]=atof(substr[1]);
-      } else if (strcmp(substr[0], "total_sv")==0) {
-        nsv1=atoi(substr[1]);
-      } else if (strcmp(substr[0], "rho")==0) {
-        rho=atof(substr[1]);
-      } else if (strcmp(substr[0], "probA")==0) {
-        probA=atof(substr[1]);
-	pfound++;
-      } else if (strcmp(substr[0], "probB")==0) {
-        probB=atof(substr[1]);
-	pfound++;
-      } else if (strcmp(substr[0], "label")==0) {
-        label1=atoi(substr[1]);
-        label2=atoi(substr[2]);
-      }
-    } while (strcmp(substr[0], "SV")!=0);
-    delete [] line;
-    delete [] substr;
-
-    if (pfound!=2) {
-      fprintf(stderr, "svm2class: probability estimates must be supported (in file, %s)\n", modfile);
-      fclose(fs);
-      return FILE_READ_ERROR;
-    }
-
-    nsv=read_svm(fs, sv, coef, this->D);
-
-    if (nsv!=nsv1) {
-      fprintf(stderr, "svm2class: warning, number of support vectors read in does not match stated (%d vs. %d) (file: %s)\n", nsv, nsv1, modfile);
-    }
-
-    //if the labels are in the wrong order, sort them!
-    this->D1=this->D;
-    if (label1>label2) {
-      cls_t ls=label1;
-      label1=label2;
-      label2=ls;
-      for (nel_ta i=0; i<nsv; i++) coef[i]=-coef[i];
-      rho=-rho;
-    }
-
-    this->D1=this->D;
-
-    fclose(fs);
-  }
-
-  template <class real, class cls_t>
-  real svm2class<real, cls_t>::R(real *x, real *praw) {
-    real sum=0;
-    real r;
-    real *x1=this->do_xtran(x);
-
-    for (nel_ta i=0; i<nsv; i++) {
-      sum+=coef[i]*(*kernel)(x1, sv[i], this->D1, param);
-    }
-    sum-=rho;
-    switch (ttype) {
-      case (-1):
-        r=-sum;
-	break;
-      case (0):
-        r=1-2/(1+exp(sum*probA+probB));
-	break;
-      case (1):
-	r=-tanh(sum);
-	break;
-      default:
-        r=1-2/(1+exp(sum*probA+probB));
-	break;
-    }
-    if (this->id>=0 && praw!=NULL) praw[this->id]=sum;
-    if (this->mat!=NULL) delete [] x1;
-    //printf("R: x=");
-    //for (dim_ta i=0; i<this->D; i++) printf(" %g", x[i]);
-    //printf("\n");
-
-    return r;
+    if (dflag) delete classifier;
   }
 
   //some book-keeping:
@@ -192,6 +73,7 @@ namespace libagf {
     return this->ncls;
   }
 
+  /*
   template <class real, class cls_t>
   void svm2class<real, cls_t>::R_deriv_num(real *x, real dx, real *drdx) {
     real x1[this->D];
@@ -213,57 +95,12 @@ namespace libagf {
       x1[i]=x[i];
       x2[i]=x[i];
     }
-    /*
     printf("\n");
     printf("R_d_num: x=");
     for (dim_ta i=0; i<this->D; i++) printf(" %g", x[i]);
     printf("\n");
-    */
   }
-
-  template <class real, class cls_t>
-  real svm2class<real, cls_t>::R_deriv(real *x, real *drdx) {
-    real sum=0;
-    real t1, t2;		//temporaries
-    real deriv[this->D1];
-    real drdx1[this->D1];
-    real drdx2[this->D];
-    real r;
-    real *x1=this->do_xtran(x);
-
-    for (dim_ta j=0; j<this->D1; j++) drdx1[j]=0;
-    for (nel_ta i=0; i<nsv; i++) {
-      sum+=coef[i]*(*kernel_deriv)(x1, sv[i], this->D1, param, deriv);
-      for (dim_ta j=0; j<this->D1; j++) drdx1[j]+=coef[i]*deriv[j];
-    }
-    sum-=rho;
-
-    t1=exp(sum*probA+probB);
-    t2=probA*t1/(1+t1)/(1+t1);		//derivative of sigmoid function
-    for (dim_ta j=0; j<this->D1; j++) drdx1[j]*=2*t2;
-    r=1-2/(1+t1);
-
-    if (this->mat!=NULL) {
-      delete [] x1;
-      //grad_x(f(Ax))=grad_y(f(y)*A
-      vector_mult(this->mat, drdx1, drdx, this->D, this->D1);
-    } else {
-      for (dim_ta j=0; j<this->D; j++) drdx[j]=drdx1[j];
-    }
-
-    return r;
-
-    //basic sanity check:
-    R_deriv_num(x, 0.00001, drdx2);
-    printf("%g : ", r);
-    //printf("%g : ", sum);
-    for (dim_ta i=0; i<this->D; i++) printf(" %g", drdx[i]);
-    printf("\n");
-    printf("%g : ", R(x));
-    for (dim_ta i=0; i<this->D; i++) printf(" %g", drdx2[i]);
-    printf("\n");
-
-  }
+  */
 
   template <class real, class cls_t>
   cls_t svm2class<real, cls_t>::classify(real *x, real *p, real *praw) {

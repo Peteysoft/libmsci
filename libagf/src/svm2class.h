@@ -3,40 +3,20 @@
 
 #include "agf_defs.h"
 #include "binaryclassifier.h"
+#include "svm_multi.h"
 
 namespace libagf {
 
   template <class real, class cls_t>
-  class svm_multi;
-
-  template <class real, class cls_t>
   class svm2class:public binaryclassifier<real, cls_t> {
-    //*sniff*, *sniff*...
-    friend svm_multi<real, cls_t>;
-
     protected:
-      real **sv;		//support vectors
-      real *coef;		//coefficients
-      nel_ta nsv;		//number of support vectors
-      real rho;			//constant term
-
-      //kernel function:
-      real (* kernel) (real *, real *, dim_ta, void *);
-      //parameters for kernel function:
-      real *param;
-      //kernel function with derivatives:
-      real (* kernel_deriv) (real *, real *, dim_ta, void *, real *);
-
-      //for calculating probabilities:
-      real probA;
-      real probB;
-
-      //book-keeping:
-      cls_t label1;
+      svm_multi<real, cls_t> *classifier;
+      int ttype;		//is it worth adding back in?
+      int dflag;		//whether or not to delete the classifier when done
+      cls_t ind1;
+      cls_t ind2;
+      cls_t label1;		//stupid bookkeeping...
       cls_t label2;
-
-      //type of transformation for decision value:
-      int ttype;
     public:
       svm2class();
       svm2class(char *modfile, 		//file containing LIBSVM model
@@ -44,8 +24,12 @@ namespace libagf {
       					//-1: f (return raw decision value)
       					//0:  1 - 2/(1+exp(A*f+B)
 					//1:  -tanh(f)
+      //convert 1 vs. 1 multi-class classifier into binary classifier:
+      svm2class(svm_multi<real, cls_t> *other, 		//1 vs. 1 multi-class classifier
+		      cls_t i, 				//index of first class
+		      cls_t j,				//index of second class
+		      int cflag=0);			//copy the multi-class classifier?
       virtual ~svm2class();
-      int init(char *modfile, int tc=0);
 
       virtual real R(real *x, real *praw=NULL);
       virtual cls_t classify(real *x, real *p, real *praw=NULL);
@@ -62,6 +46,16 @@ namespace libagf {
 		      real *drdx);		//approximate gradient of R
 
   };
+
+  template <class real, class cls_t>
+  inline real svm2class<real, cls_t>::R(real *x, real *praw) {
+    return classifier->R(x, ind1, ind2, praw);
+  }
+
+  template <class real, class cls_t>
+  inline real svm2class<real, cls_t>::R_deriv(real *x, real *drdx) {
+    return classifier->R_deriv(x, ind1, ind2, drdx);
+  }
 
   //for training class borders:
   template <class real, class cls_t>

@@ -7,11 +7,9 @@
 #include "read_ascii_all.h"
 #include "error_codes.h"
 #include "gsl_util.h"
+#include "full_util.h"
 
-#include "svmkernel.h"
-#include "svm_multi.h"
-#include "agf_fconv.h"
-#include "sample_class_borders.h"
+#include "agf_lib.h"
 
 using namespace libpetey;
 
@@ -105,8 +103,18 @@ namespace libagf {
       solve_cond_prob_1v1(praw0, this->ncls, p);
     }
 
+    k=0;
+    if (praw!=NULL) {
+      for (int i=0; i<this->ncls; i++) {
+        for (int j=i+1; j<this->ncls; j++) {
+          praw[k]=praw0[i][j];
+	  k++;
+	}
+      }
+    }
+
     delete [] praw0[0];
-    delete [] praw;
+    delete [] praw0;
 
     return label[choose_class(p, this->ncls)];
   }
@@ -340,6 +348,53 @@ namespace libagf {
     fclose(fs);
   }
 
+  //copy constructor:
+  template <class real, class cls_t>
+  svm_multi<real, cls_t>::svm_multi(svm_multi<real, cls_t> *other) {
+    int nmod;			//number of binary classifiers
+    this->ncls=other->ncls;
+    nmod=this->ncls*(this->ncls-1)/2;
+    this->D=other->D;
+    //number of support vectors:
+    nsv_total=other->nsv_total;
+    nsv=new nel_ta[this->ncls];
+    for (int i=0; i<this->ncls; i++) nsv[i]=other->nsv[i];
+    //support vectors themselves:
+    sv=new real *[nsv_total];
+    sv[0]=new real[nsv_total*this->D];
+    for (int i=0; i<nsv_total; i++) {
+      sv[i]=sv[0]+i*this->D;
+      for (int j=0; j<this->D; j++) sv[i][j]=other->sv[i][j];
+    }
+    //coefficients:
+    coef=new real *[this->ncls-1];
+    coef[0]=new real[nsv_total*(this->ncls-1)];
+    for (int i=0; i<this->ncls-1; i++) {
+      coef[i]=coef[0]+i*nsv_total;
+      for (int j=0; j<nsv_total; j++) coef[i][j]=other->coef[i][j];
+    }
+    //constant term:
+    rho=new real[nmod];
+    for (int i=0; i<nmod; i++) rho[i]=other->rho[i];
+    //coefficients for determining probabilities:
+    if (other->probA!=NULL && other->probB!=NULL) {
+      probA=new real[nmod];
+      probB=new real[nmod];
+      for (int i=0; i<nmod; i++) {
+        probA[i]=other->probA[i];
+        probB[i]=other->probB[i];
+      }
+    }
+    //class labels (why aren't they in order??):
+    this->label=new cls_t[this->ncls];
+    for (int i=0; i<this->ncls; i++) this->label[i]=other->label[i];
+    //book-keeping:
+    start=new nel_ta[this->ncls];
+    start[0]=0;
+    for (int i=1; i<this->ncls; i++) start[i]=start[i-1]+nsv[i-1];
+    this->voteflag=other->voteflag;
+  }
+
   template <class real, class cls_t>
   svm_multi<real, cls_t>::~svm_multi() {
     delete [] sv;
@@ -403,7 +458,7 @@ namespace libagf {
 
   //raw decision value for a given pair of classes:
   template <class real, class cls_t>
-  real svm_multi<real, cls_t>::R(real *x, cls_t i, cls_t j) {
+  real svm_multi<real, cls_t>::R(real *x, cls_t i, cls_t j, real *praw) {
     real result;
     real kv;
     int si, sj;
@@ -436,6 +491,7 @@ namespace libagf {
     p=i*(2*this->ncls-i-1)/2+j-i-1;
     printf("%d %d %d\n", i, j, p);
     result -= rho[p];
+    if (praw!=NULL) praw[0]=result;
     if (this->voteflag==0) result=1./(1+exp(probA[p]*result+probB[p]));
 
     return sgn*(1-2*result);
@@ -495,14 +551,90 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  svm2class<real, cls_t> * svm_multi<real, cls_t>::tobinary(cls_t i, cls_t j) {
-    svm2class<real, cls_t> *result;
-    result=new svm2class<real, cls_t>();
+  borders1v1<real, cls_t>::borders1v1(char *file, int vflag) {
+    //how do we want to store the borders?
   }
 
   template <class real, class cls_t>
-  borders1v1<real, cls_t>::borders1v1(char *file, int vflag) {
-    //how do we want to store the borders?
+  borders1v1<real, cls_t>::borders1v1(svm_multi<real, cls_t> *svm,
+		  real **x, cls_t *cls, dim_ta nvar, nel_ta ntrain,
+		  nel_ta ns, real var[2], nel_ta k, real W, real tol) {
+    int nmod;
+    int m=0;
+    svm2class<real, cls_t> *svmbin;
+    bordparam<real> param;
+    real *xsort[ntrain];		//sort training data
+    cls_t csel[ntrain];			//selected classes
+    nel_ta *clind;			//indices for sorted classes
+    nel_ta ntrain2;
+    int (*sfunc) (void *, real_a *, real_a *);		//sampling function
+
+
+    this->ncls=svm->n_class();
+    this->D=svm->n_feat();
+
+    nmod=this->ncls*(this->ncls-1)/2;
+
+    bord=new real**[nmod];
+    grad=new real**[nmod];
+    nsamp=new nel_ta[nmod];
+    for (int i=0; i<nmod; i++) nsamp[i]=ns;
+
+    for (int i=0; i<this->ncls; i++) {
+      for (int j=i+1; j<this->ncls; j++) {
+	//select out pair of classes:
+        svmbin=new svm2class<real, cls_t>(svm, i, j);
+	for (nel_ta k=0; k<ntrain; k++) {
+          if (cls[k]==i) {
+            csel[k]=0;
+	  } else if (cls[k]==j) {
+            csel[k]=1;
+	  } else {
+            csel[k]=-1;
+	  }
+	  xsort[k]=x[k];
+	}
+        //sort the classes:
+	clind=sort_classes(xsort, ntrain, csel, this->ncls);
+	ntrain2=clind[2]-clind[0];
+
+	//initialize parameters:
+        if (nsamp[m]/(ntrain2-clind[1])/clind[1] > 0.25) {
+          //for small datasets:
+          bordparam_init(&param, xsort+clind[0], nvar, ntrain2, clind[1], 1);
+          sfunc=&oppositesample_small<real_a>;
+        } else {
+          //for large datasets:
+          bordparam_init(&param, xsort+clind[0], nvar, ntrain2, clind[1]);
+          sfunc=&oppositesample<real_a>;
+        }
+	param.rparam=svmbin;
+
+        //allocate the arrays for holding the results:
+        bord[m]=allocate_matrix<real, nel_ta>(nsamp[m], nvar);
+        grad[m]=allocate_matrix<real, nel_ta>(nsamp[m], nvar);
+
+        //find class borders:
+        nsamp[m]=sample_class_borders(&svmrfunc<real, cls_t>, sfunc, &param, 
+		nsamp[m], nvar, tol, agf_global_borders_maxiter, 
+		bord[m], grad[m]);
+	m++;
+
+	delete svmbin;
+	delete [] clind;
+      }
+    }
+  }
+
+  template <class real, class cls_t>
+  borders1v1<real, cls_t>::~borders1v1() {
+    for (int i=0; i<this->ncls*(this->ncls-1)/2; i++) {
+      delete [] bord[i][0];
+      delete [] bord[i];
+      delete [] grad[i][0];
+      delete [] grad[i];
+    }
+    delete [] nsamp;
   }
 
   template <class real, class cls_t>
@@ -515,6 +647,7 @@ namespace libagf {
       for (int j=i+1; j<this->ncls; j++) {
         result[i][j]=border_classify(bord[k], grad[k], this->D, nsamp[k]);
 	result[i][j]=(1+result[i][j])/2;
+	k++;
       }
     }
     return result;

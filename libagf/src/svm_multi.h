@@ -1,8 +1,6 @@
 #ifndef __LIBAGF_SVM_MULTI_H__DEFINED__
 #define __LIBAGF_SVM_MULTI_H__DEFINED__
 
-#include "svm2class.h"
-
 namespace libagf {
   template <class real>
   int solve_cond_prob_1v1(real **r, int ncls, real *p);
@@ -54,16 +52,14 @@ namespace libagf {
     public:
       svm_multi();
       svm_multi(char *file, int vflag=0);
+      svm_multi(svm_multi<real, cls_t> *other);
       virtual ~svm_multi();
 
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
 
-      real R(real *x, cls_t i, cls_t j);
+      real R(real *x, cls_t i, cls_t j, real *praw=NULL);
       real R_deriv(real *x, cls_t i, cls_t j, real *drdx);
-
-      svm2class<real, cls_t> * tobinary(cls_t i, cls_t j);
-
   };
 
   template <class real, class cls_t>
@@ -77,6 +73,16 @@ namespace libagf {
     public:
       borders1v1();
       borders1v1(char *file, int vflag=0);
+      borders1v1(svm_multi<real, cls_t> *other, 
+		      real **x,			//training samples
+		      cls_t *cls,		//class data
+		      dim_ta nvar,		//number of variables
+		      nel_ta ntrain,		//number of training samples
+		      nel_ta nsamp,		//number of border samples
+		      real var[2],		//filter variance brackets
+		      nel_ta k,			//number of nearest neighbours
+		      real W,			//total weight
+		      real tol);		//tolerance of border samples
       virtual ~borders1v1();
 
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
