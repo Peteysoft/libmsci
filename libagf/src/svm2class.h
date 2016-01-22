@@ -2,7 +2,6 @@
 #define _LIBAGF__SVM2CLASS__H_
 
 #include "agf_defs.h"
-#include "binaryclassifier.h"
 #include "svm_multi.h"
 
 namespace libagf {

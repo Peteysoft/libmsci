@@ -558,15 +558,12 @@ namespace libagf {
   template <class real, class cls_t>
   borders1v1<real, cls_t>::borders1v1(svm_multi<real, cls_t> *svm,
 		  real **x, cls_t *cls, dim_ta nvar, nel_ta ntrain,
-		  nel_ta ns, real var[2], nel_ta k, real W, real tol) {
+		  nel_ta ns, real tol) {
     int nmod;
     int m=0;
     svm2class<real, cls_t> *svmbin;
     bordparam<real> param;
-    real *xsort[ntrain];		//sort training data
     cls_t csel[ntrain];			//selected classes
-    nel_ta *clind;			//indices for sorted classes
-    nel_ta ntrain2;
     int (*sfunc) (void *, real_a *, real_a *);		//sampling function
 
     this->ncls=svm->n_class();
@@ -574,17 +571,25 @@ namespace libagf {
     this->D=this->D1;
 
     nmod=this->ncls*(this->ncls-1)/2;
-    classifier=new agf2class*[nmod];
+    classifier=new agf2class<real, cls_t>*[nmod];
 
     for (int i=0; i<this->ncls; i++) {
       for (int j=i+1; j<this->ncls; j++) {
 	//select out pair of classes:
+        for (nel_ta k=0; k<ntrain; k++) {
+          if (cls[k]==i) {
+            csel[k]=0;
+          } else if (cls[k]==j) {
+            csel[k]=1;
+          } else {
+            csel[k]=-1;
+          }
+        }
         svmbin=new svm2class<real, cls_t>(svm, i, j);
-	classifier[m]=new agf2class<real, cls_t>(svmbin, x, cls, nvar, ntrain,
-			ns, var, k, W, tol);
+	classifier[m]=new agf2class<real, cls_t>(svmbin, x, csel, nvar, ntrain,
+			ns, tol);
 	m++;
 	delete svmbin;
-	delete [] clind;
       }
     }
   }
@@ -594,7 +599,6 @@ namespace libagf {
     for (int i=0; i<this->ncls*(this->ncls-1)/2; i++) {
       delete [] classifier[i];
     }
-    delete [] nsamp;
   }
 
   template <class real, class cls_t>

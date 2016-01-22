@@ -1,7 +1,13 @@
 #ifndef __LIBAGF_SVM_MULTI_H__DEFINED__
 #define __LIBAGF_SVM_MULTI_H__DEFINED__
 
+#include "binaryclassifier.h"
+
 namespace libagf {
+  //forward declaration to resolve large circular dependency:
+  //template <class real, class cls_t>
+  //class agf2class;
+
   template <class real>
   int solve_cond_prob_1v1(real **r, int ncls, real *p);
 
@@ -55,7 +61,7 @@ namespace libagf {
       svm_multi(svm_multi<real, cls_t> *other);
       virtual ~svm_multi();
 
-      virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
+      //virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
 
@@ -79,13 +85,10 @@ namespace libagf {
 		      dim_ta nvar,		//number of variables
 		      nel_ta ntrain,		//number of training samples
 		      nel_ta nsamp,		//number of border samples
-		      real var[2],		//filter variance brackets
-		      nel_ta k,			//number of nearest neighbours
-		      real W,			//total weight
 		      real tol);		//tolerance of border samples
       virtual ~borders1v1();
 
-      virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
+      //virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
 

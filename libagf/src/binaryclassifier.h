@@ -10,9 +10,10 @@
 
 #include "agf_defs.h"
 
-#include "classifier_obj.h"
-
 namespace libagf {
+  template <class real, class cls_t>
+  class svm2class;
+
   //general 2-class classifier (non-abstract) class:
   template <class real, class cls_t>
   class binaryclassifier:public classifier_obj<real, cls_t> {
@@ -117,9 +118,6 @@ namespace libagf {
 		      dim_ta nvar,		//number of variables
 		      nel_ta ntrain,		//number of training samples
 		      nel_ta nsamp,		//number of border samples
-		      real var[2],		//filter variance brackets
-		      nel_ta k,			//number of nearest neighbours
-		      real W,			//total weight
 		      real tol);		//tolerance of border samples
 
       virtual ~agf2class();

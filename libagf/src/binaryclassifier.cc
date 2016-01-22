@@ -489,12 +489,12 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  int agf2class<real, cls_t>::agf2class(svm2class<real, cls_t> *svm,
+  agf2class<real, cls_t>::agf2class(svm2class<real, cls_t> *svm,
 		  real **x, cls_t *cls, dim_ta nvar, nel_ta ntrain,
-		  nel_ta ns, real var[2], nel_ta k, real W, real tol) {
+		  nel_ta ns, real tol) {
     bordparam<real> param;
     real *xsort[ntrain];		//sort training data
-    cls_t csel[ntrain];			//selected classes
+    cls_t csel[ntrain];
     nel_ta *clind;			//indices for sorted classes
     nel_ta ntrain2;
     int (*sfunc) (void *, real_a *, real_a *);		//sampling function
@@ -506,16 +506,9 @@ namespace libagf {
     //this->mat=svm->mat;
     //this->b=svm->b;
 
-    //select out pair of classes:
-    svmbin=new svm2class<real, cls_t>(svm, i, j);
+    //remove side effects:
     for (nel_ta k=0; k<ntrain; k++) {
-      if (cls[k]==i) {
-        csel[k]=0;
-      } else if (cls[k]==j) {
-        csel[k]=1;
-      } else {
-        csel[k]=-1;
-      }
+      csel[k]=cls[k];
       xsort[k]=x[k];
     }
     //sort the classes:
@@ -523,7 +516,7 @@ namespace libagf {
     ntrain2=clind[2]-clind[0];
 
     //initialize parameters:
-    if (nsamp[m]/(ntrain2-clind[1])/clind[1] > 0.25) {
+    if (ns/(ntrain2-clind[1])/clind[1] > 0.25) {
       //for small datasets:
       bordparam_init(&param, xsort+clind[0], nvar, ntrain2, clind[1], 1);
       sfunc=&oppositesample_small<real_a>;
@@ -535,8 +528,8 @@ namespace libagf {
     param.rparam=svm;
 
     //allocate the arrays for holding the results:
-    brd=allocate_matrix<real, nel_ta>(nsamp[m], nvar);
-    grd=allocate_matrix<real, nel_ta>(nsamp[m], nvar);
+    brd=allocate_matrix<real, nel_ta>(ns, nvar);
+    grd=allocate_matrix<real, nel_ta>(ns, nvar);
 
     //find class borders:
     n=sample_class_borders(&svmrfunc<real, cls_t>, sfunc, &param, 
