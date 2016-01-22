@@ -379,6 +379,7 @@ namespace libagf {
       }
     }
     if (this->mat==NULL) {
+      this->D1=0;
       this->D=n_feat();
     }
     return err;
@@ -738,6 +739,7 @@ namespace libagf {
     cls_t D2;
 
     if (this->D1<=0) {
+      fprintf(stderr, "multiclass: checking dimensions of children\n");
       this->D1=twoclass[0]->n_feat();
       //printf("multiclass: partition %d has %d features\n", 0, D1);
       for (cls_t i=1; i<nmodel; i++) {

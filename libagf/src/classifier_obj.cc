@@ -39,6 +39,7 @@ namespace libagf {
 
   template <class real, class cls_t>
   dim_ta classifier_obj<real, cls_t>::n_feat_t() {
+    if (mat==NULL) D=n_feat();
     return D;
   }
 
@@ -96,24 +97,20 @@ namespace libagf {
   int classifier_obj<real, cls_t>::ltran(real **mat1, real *b1, dim_ta d1, dim_ta d2, int flag) {
     int err2=0;
 
-    //err2=read_stats(normfile, ave, std, D);
+    //find out the "raw" dimensions: 
+    if (mat==NULL) D=n_feat();
+    //we don't necessarily know offhand what the dimensionality of the problem is: 
+    printf("ltran: d1=%d; d2=%d\n", d1, d2);
+    if (flag) err2=ltran_model(mat1, b1, d1, d2);
     mat=mat1;
     b=b1;
-
-    //find out the "raw" dimensions: 
-    D=n_feat();
-    //we don't necessarily know offhand what the dimensionality of the problem is: 
     if (d2!=D && D!=-1) {
       fprintf(stderr, "classifier_obj: second dimension of trans. mat. does not that of borders data: %d vs. %d\n", d2, D);
       return DIMENSION_MISMATCH;
     }
     //this is very clear:
-    D1=D;
-
     D1=d2;
     D=d1;
-
-    if (flag) err2=ltran_model(mat, b, d1, d2);
 
     return err2;
   }
@@ -148,7 +145,7 @@ namespace libagf {
     cls_t c;
     real *xtran;
     xtran=do_xtran(x);
-    c=classify(x, p, praw);
+    c=classify(xtran, p, praw);
     if (mat!=NULL) delete [] xtran;
     return c;
   }
@@ -158,7 +155,7 @@ namespace libagf {
     cls_t c;
     real *xtran;
     xtran=do_xtran(x);
-    c=classify(x, p, praw);
+    c=classify(xtran, p, praw);
     if (mat!=NULL) delete [] xtran;
     return c;
   }
@@ -235,6 +232,9 @@ namespace libagf {
       p[i][0]=1;
     }
   }
+
+  template <class real, class cls_t>
+  int oneclass<real, cls_t>::ltran_model(real **mat1, real *b1, dim_ta d1, dim_ta d2) {return 0;}
 
   template <class real, class cls_t>
   cls_t oneclass<real, cls_t>::class_list(cls_t *cls1) {

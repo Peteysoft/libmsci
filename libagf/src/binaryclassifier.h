@@ -19,12 +19,8 @@ namespace libagf {
   class binaryclassifier:public classifier_obj<real, cls_t> {
     protected:
       real **mat;		//transformation matrix
-      real *b;			//translation vector
-      nel_ta D1;		//dimension after transformation
-
       int id;			//unique index simply them  
 				//in the order in which they divide the classes
-
     public:
       binaryclassifier();
       binaryclassifier(char *nm);	//have to give it a name!

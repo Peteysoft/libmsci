@@ -120,15 +120,15 @@ int main(int argc, char *argv[]) {
     errcode=classifier->ltran(mat, ave, nvar1, nvar2, opt_args.uflag);
     if (errcode!=0) exit(errcode);
 
-    if (classifier->n_feat() != nvar) {
+    if (classifier->n_feat_t() != nvar) {
       fprintf(stderr, "classify_b: Dimensions of classifier (%d) do not match those of test data (%d).\n",
-                classifier->n_feat(), nvar);
+                classifier->n_feat_t(), nvar);
       exit(DIMENSION_MISMATCH);
     }
   } else {
-    if (classifier->n_feat() != nvar) {
+    if (classifier->n_feat_t() != nvar) {
       fprintf(stderr, "classify_b: Dimension of classifier (%d) do not match dimension of test data (%d).\n",
-                classifier->n_feat(), nvar);
+                classifier->n_feat_t(), nvar);
       exit(DIMENSION_MISMATCH);
     }
   }

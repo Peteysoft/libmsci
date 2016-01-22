@@ -406,6 +406,7 @@ namespace libagf {
       }
     }
     if (this->mat==NULL) {
+      this->D1=0;
       this->D=n_feat();
     }
     return err;
@@ -427,24 +428,25 @@ namespace libagf {
   template <class real, class cls_t>
   dim_ta multiclass_hier<real, cls_t>::n_feat() {
     cls_t nchild;
-    cls_t D1, D2;
+    cls_t D2;
 
-    if (this->D<=0) {
+    if (this->D1<=0) {
+      fprintf(stderr, "multiclass_hier: checking dimensions of children\n");
       nchild=classifier->n_class();
-      D1=classifier->n_feat();
+      this->D1=classifier->n_feat();
       for (cls_t i=0; i<nchild; i++) {
         if (children[i]->max_depth() == 0) continue;
         D2=children[i]->n_feat();
-        if (D2!=D1) {
+        if (D2!=this->D1) {
           fprintf(stderr, "multiclass_hier: number of features in classifier does not mathc that in child %d", i);
-          fprintf(stderr, "                 %d vs. %d\n", D1, D2);
+          fprintf(stderr, "                 %d vs. %d\n", this->D1, D2);
           exit(DIMENSION_MISMATCH);
         }
       }
-      this->D=D1;
+      printf("D=%d; D1=%d\n", this->D, this->D1);
     }
 
-    return this->D;
+    return this->D1;
   }
 
   template <class real, class cls_t>

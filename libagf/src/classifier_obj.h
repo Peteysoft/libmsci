@@ -128,6 +128,7 @@ namespace libagf {
       virtual ~oneclass();
       virtual cls_t classify(real *x, real &p, real *praw=NULL);
       virtual cls_t classify(real *x, real *p, real *praw=NULL);
+      virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
       virtual cls_t class_list(cls_t *cls);
       virtual int max_depth(int cur=0);
       virtual void batch_classify(real **x, cls_t *cls, real *p, nel_ta n, dim_ta nvar);

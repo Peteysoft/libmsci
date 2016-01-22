@@ -145,7 +145,7 @@ int main (int argc, char **argv) {
     fprintf(helpfs, "  <partition_list> ::= <partition> | <partition_list> <partition>\n");
     fprintf(helpfs, "  <partition>      ::= <OPTIONS> <class_list> \" %c \" <class_list> \";\"\n", PARTITION_SYMBOL);
     fprintf(helpfs, "  <class_list>     ::= <CLASS> | <class_list> <CLASS>\n\n");
-    fprintf(helpfs, "  <OPTIONS>        ::= \"\"\"\"\"\" | \"\"\".\"\"\" | \"\"\" \"\"\"\n");
+    fprintf(helpfs, "  <OPTIONS>        ::= \"\"\"\" | \"\".\"\" | \"\" \"\"\n");
     fprintf(helpfs, "                      | \"\"\"[\"-v\" <vmin>] [\"-V\" <vmax>] [\"-W\" <W>]\n");
     fprintf(helpfs, "                        [\"-s\" <n>] [\"-t\" <tol>] ...\"\"\"\n");
     fprintf(helpfs, "  <CLASS>          ::= 0 | 1 | 2 | 3 ... | <ncls-1>\n\n");
