@@ -569,57 +569,20 @@ namespace libagf {
     nel_ta ntrain2;
     int (*sfunc) (void *, real_a *, real_a *);		//sampling function
 
-
     this->ncls=svm->n_class();
-    this->D=svm->n_feat();
+    this->D1=svm->n_feat();
+    this->D=this->D1;
 
     nmod=this->ncls*(this->ncls-1)/2;
-
-    bord=new real**[nmod];
-    grad=new real**[nmod];
-    nsamp=new nel_ta[nmod];
-    for (int i=0; i<nmod; i++) nsamp[i]=ns;
+    classifier=new agf2class*[nmod];
 
     for (int i=0; i<this->ncls; i++) {
       for (int j=i+1; j<this->ncls; j++) {
 	//select out pair of classes:
         svmbin=new svm2class<real, cls_t>(svm, i, j);
-	for (nel_ta k=0; k<ntrain; k++) {
-          if (cls[k]==i) {
-            csel[k]=0;
-	  } else if (cls[k]==j) {
-            csel[k]=1;
-	  } else {
-            csel[k]=-1;
-	  }
-	  xsort[k]=x[k];
-	}
-        //sort the classes:
-	clind=sort_classes(xsort, ntrain, csel, this->ncls);
-	ntrain2=clind[2]-clind[0];
-
-	//initialize parameters:
-        if (nsamp[m]/(ntrain2-clind[1])/clind[1] > 0.25) {
-          //for small datasets:
-          bordparam_init(&param, xsort+clind[0], nvar, ntrain2, clind[1], 1);
-          sfunc=&oppositesample_small<real_a>;
-        } else {
-          //for large datasets:
-          bordparam_init(&param, xsort+clind[0], nvar, ntrain2, clind[1]);
-          sfunc=&oppositesample<real_a>;
-        }
-	param.rparam=svmbin;
-
-        //allocate the arrays for holding the results:
-        bord[m]=allocate_matrix<real, nel_ta>(nsamp[m], nvar);
-        grad[m]=allocate_matrix<real, nel_ta>(nsamp[m], nvar);
-
-        //find class borders:
-        nsamp[m]=sample_class_borders(&svmrfunc<real, cls_t>, sfunc, &param, 
-		nsamp[m], nvar, tol, agf_global_borders_maxiter, 
-		bord[m], grad[m]);
+	classifier[m]=new agf2class<real, cls_t>(svmbin, x, cls, nvar, ntrain,
+			ns, var, k, W, tol);
 	m++;
-
 	delete svmbin;
 	delete [] clind;
       }
@@ -629,10 +592,7 @@ namespace libagf {
   template <class real, class cls_t>
   borders1v1<real, cls_t>::~borders1v1() {
     for (int i=0; i<this->ncls*(this->ncls-1)/2; i++) {
-      delete [] bord[i][0];
-      delete [] bord[i];
-      delete [] grad[i][0];
-      delete [] grad[i];
+      delete [] classifier[i];
     }
     delete [] nsamp;
   }
@@ -645,7 +605,7 @@ namespace libagf {
     for (int i=0; i<this->ncls; i++) {
       result[i]=result[0]+i*this->ncls;
       for (int j=i+1; j<this->ncls; j++) {
-        result[i][j]=border_classify(bord[k], grad[k], this->D, nsamp[k]);
+        result[i][j]=classifier[k]->classify(x);
 	result[i][j]=(1+result[i][j])/2;
 	k++;
       }

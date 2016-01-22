@@ -55,21 +55,21 @@ namespace libagf {
       svm_multi(svm_multi<real, cls_t> *other);
       virtual ~svm_multi();
 
+      virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
 
       real R(real *x, cls_t i, cls_t j, real *praw=NULL);
       real R_deriv(real *x, cls_t i, cls_t j, real *drdx);
+
   };
 
   template <class real, class cls_t>
   class borders1v1:public onevone<real, cls_t> {
     protected:
-      real ***bord;
-      real ***grad;
-      nel_ta *nsamp;
-      virtual real ** classify_raw(real *x);
+      agf2class<real, cls_t> **classifier;
 
+      virtual real ** classify_raw(real *x);
     public:
       borders1v1();
       borders1v1(char *file, int vflag=0);
@@ -85,6 +85,7 @@ namespace libagf {
 		      real tol);		//tolerance of border samples
       virtual ~borders1v1();
 
+      virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
 

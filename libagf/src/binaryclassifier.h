@@ -110,6 +110,18 @@ namespace libagf {
 						//3=atan
       agf2class (const char *fbase, 		//base name of model files
 		SIGFUN_TYPE (*sigfun)(SIGFUN_TYPE));	//function to transform decision values
+      //convert from svm binary classifier:
+      agf2class(svm2class<real, cls_t> *other, 
+		      real **x,			//training samples
+		      cls_t *cls,		//class data
+		      dim_ta nvar,		//number of variables
+		      nel_ta ntrain,		//number of training samples
+		      nel_ta nsamp,		//number of border samples
+		      real var[2],		//filter variance brackets
+		      nel_ta k,			//number of nearest neighbours
+		      real W,			//total weight
+		      real tol);		//tolerance of border samples
+
       virtual ~agf2class();
       int init(const char *fbase, SIGFUN_TYPE (*sigfun)(SIGFUN_TYPE));
       //transformation matrix is not copied, only the pointer is stored
