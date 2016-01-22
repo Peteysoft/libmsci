@@ -390,22 +390,24 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  int multiclass_hier<real, cls_t>::ltran(real **mat, real *b, dim_ta d1, dim_ta d2, int flag) {
+  int multiclass_hier<real, cls_t>::ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2) {
     int err=0;
 
-    err=classifier->ltran(mat, b, d1, d2, flag);
+    err=classifier->ltran_model(mat, b, d1, d2);
     if (err!=0) {
-      fprintf(stderr, "multiclass_hier::ltran: an error occurred transforming partition classifier\n");
+      fprintf(stderr, "multiclass_hier::ltran_model: an error occurred transforming partition classifier\n");
       return err;
     }
     for (int i=0; i<classifier->n_class(); i++) {
-      err=children[i]->ltran(mat, b, d1, d2, flag);
+      err=children[i]->ltran_model(mat, b, d1, d2);
       if (err!=0) {
-        fprintf(stderr, "multiclass_hier::ltran: an error occurred transforming child #%d\n", i);
+        fprintf(stderr, "multiclass_hier::ltran_model: an error occurred transforming child #%d\n", i);
         return err;
       }
     }
-    this->D=-1;
+    if (this->mat==NULL) {
+      this->D=n_feat();
+    }
     return err;
   }
 

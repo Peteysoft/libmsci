@@ -17,18 +17,11 @@ namespace libagf {
       cls_t *cls;		//classes of samples
       nel_ta ntrain;		//number of samples
 
-      //transformations:
-      real **tran;		//transformation matrix
-      real *offset;		//offset portion of transformation
-      cls_t D1;			//transformed dimension
-
       //info.:
       char type;		//A=AGF; K=KNN; G=general (external)
       char *options;		//options/command name
       int Mflag;	//(we've let features bleed in from higher level)
       				//LIBSVM ASCII format
-
-      real *do_xtran(real *x);		//perform transformation test point
     public:
       direct_classifier();
       direct_classifier(cls_t nc, char *opts, char t, int mf=0);
@@ -38,11 +31,10 @@ namespace libagf {
 
       //linear transformation on features (plus translation...):
       //(transformations are not copied but stored as references)
-      virtual int ltran(real **mat, 	//tranformation matrix
+      virtual int ltran_model(real **mat, 	//tranformation matrix
 		real *b,		//constant term
 		dim_ta d1,		//first dimension of trans. mat.
-		dim_ta d2, 		//second 	"
-		int flag);		//transform model?
+		dim_ta d2); 		//second 	"
 
       //we're roping these classes in to do double duty:
       virtual void print(FILE *fs, 		//output file stream
@@ -104,6 +96,7 @@ namespace libagf {
       virtual ~general_classifier();
       virtual cls_t classify(real *x, real *p, real *praw=NULL);
       virtual void batch_classify(real **x, cls_t *cls, real **p, nel_ta n, dim_ta nvar);
+      virtual dim_ta n_feat();
   };
 
 }

@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include "linked.h"
 #include "full_util.h"
@@ -14,8 +15,8 @@ namespace libagf {
   direct_classifier<real, cls_t>::direct_classifier() {
     train=NULL;
     cls=NULL;
-    tran=NULL;
-    offset=NULL;
+    this->mat=NULL;
+    this->b=NULL;
     this->name=NULL;
   }
 
@@ -24,8 +25,8 @@ namespace libagf {
     this->ncls=nc;
     train=NULL;
     cls=NULL;
-    tran=NULL;
-    offset=NULL;
+    this->mat=NULL;
+    this->b=NULL;
     this->name=NULL;
     this->options=new char[strlen(opts)+1];
     strcpy(this->options, opts);
@@ -42,46 +43,36 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  int direct_classifier<real, cls_t>::ltran(real **mat, real *b, dim_ta d1,
-			dim_ta d2, int flag) {
+  int direct_classifier<real, cls_t>::ltran_model(real **mat, real *b, dim_ta d1,
+			dim_ta d2) {
     int err=0;
     real **train2;
 
-    tran=mat;
-    offset=b;
-
-    if (flag) {
-      real **train2;
-      if (d1!=this->D) {
-        fprintf(stderr, "direct_classifier: first dimension (%d) of trans. mat. does not agree with that of borders data (%d)\n", d1, this->D);
-        return DIMENSION_MISMATCH;
-      }
-      fprintf(stderr, "direct_classifier: Normalising the border samples...\n");
-      //from the outside, the classifier looks like it has the same number of
-      //features as before normalization:
-      D1=d2;
-
-      //apply constant factor:
-      for (nel_ta i=0; i<ntrain; i++) {
-        for (dim_ta j=0; j<D1; j++) {
-          train[i][j]=train[i][j]-offset[j];
-        }
-      }
-
-      train2=matrix_mult(train, tran, ntrain, this->D, D1);
-      delete_matrix(train);
-      train=train2;
-    } else {
-      if (d2!=this->D) {
-        fprintf(stderr, "direct_classifier: second dimension of trans. mat. does not that of borders data: %d vs. %d\n", d2, this->D);
-        return DIMENSION_MISMATCH;
-      }
-      //this is very clear:
-      D1=this->D;
-      this->D=d1;
-      //from the outside, the classifier looks like it has the same number of
-      //features as before normalization:
+    if (d1!=this->D) {
+      fprintf(stderr, "direct_classifier: first dimension (%d) of trans. mat. does not agree with that of borders data (%d)\n", d1, this->D);
+      return DIMENSION_MISMATCH;
     }
+    fprintf(stderr, "direct_classifier: Normalising the border samples...\n");
+    if (this->mat==NULL) {
+      this->D=d2;
+      this->D1=d2;
+    } else {
+      assert(mat==this->mat && b==this->b);
+      //from the outside, the classifier looks like it has the same number of
+      //features as before normalization:
+      assert(this->D1==d2);
+    }
+
+    //apply constant factor:
+    for (nel_ta i=0; i<ntrain; i++) {
+      for (dim_ta j=0; j<this->D1; j++) {
+        train[i][j]=train[i][j]-b[j];
+      }
+    }
+
+    train2=matrix_mult(train, this->mat, ntrain, this->D, this->D1);
+    delete_matrix(train);
+    train=train2;
 
     return err;
   }
@@ -95,26 +86,6 @@ namespace libagf {
     this->ncls=1;
     for (nel_ta i=0; i<ntrain; i++) if (cls[i]>this->ncls) this->ncls=cls[i]+1;
     return 0;
-  }
-
-  //it's a repeat, but, oh well...
-  template <class real, class cls_t>
-  real * direct_classifier<real, cls_t>::do_xtran(real *x) {
-    real *xtran;
-    if (tran!=NULL) {
-      real tmp;
-      xtran=new real[D1];
-      //linearly transform the test point:
-      for (dim_ta j=0; j<D1; j++) xtran[j]=0;
-      for (dim_ta i=0; i<this->D; i++) {
-        tmp=x[i]-offset[i];
-        for (dim_ta j=0; j<D1; j++) xtran[j]=xtran[j]+tmp*tran[i][j];
-      }
-      //xtran=left_vec_mult(x, mat, this->D, D1);
-    } else {
-      xtran=x;
-    }
-    return xtran;
   }
 
   template <class real, class cls_t>
@@ -307,13 +278,11 @@ namespace libagf {
     cls_t c;
     agf_diag_param diag;
 
-    x=this->do_xtran(x);
-
     if (k==-1) {
-      c=agf_classify(this->train, this->D, this->cls, this->ntrain,
+      c=agf_classify(this->train, this->D1, this->cls, this->ntrain,
 		      this->ncls, x, var, W, p, &diag);
     } else {
-      c=agf_classify(this->train, this->D, this->cls, this->ntrain, 
+      c=agf_classify(this->train, this->D1, this->cls, this->ntrain, 
 		      this->ncls, x, var, k, W, p, &diag);
       if (ntrial_k==0) min_f=diag.f;
       if (diag.f < min_f) min_f=diag.f;
@@ -335,7 +304,6 @@ namespace libagf {
     total_W+=diag.W;
     ntrial++;
 
-    if (this->tran!=NULL) delete [] x;
     return c;
   }
 
@@ -416,10 +384,8 @@ namespace libagf {
   template <class real, class cls_t>
   cls_t knn_classifier<real, cls_t>::classify(real *x, real *p, real *praw) {
     cls_t c;
-    x=this->do_xtran(x);
-    c=knn(global_metric2, this->train, this->D, this->ntrain, this->cls, this->ncls, 
+    c=knn(global_metric2, this->train, this->D1, this->ntrain, this->cls, this->ncls, 
 		    x, k, p);
-    if (this->tran!=NULL) delete [] x;
     return c;
   }
 
@@ -444,9 +410,7 @@ namespace libagf {
   template <class real, class cls_t>
   cls_t general_classifier<real, cls_t>::classify(real *x, real *p, real *praw) {
     cls_t c;
-    x=this->do_xtran(x);
     batch_classify(&x, &c, &p, 1, this->D1);
-    if (this->tran!=NULL) delete [] x;
     return c;
   }
 
@@ -464,9 +428,6 @@ namespace libagf {
     char format[20];
     char fcode[4];
 
-    real *xtran;		//use local variable for transformed x
-				//to keep things thread-safe
-
     if (n==0) return;
 
     //need different format strings depending upon what floating types
@@ -480,20 +441,18 @@ namespace libagf {
     fs=fopen(infile, "w");
     if (this->Mflag==0) fprintf(fs, "%d\n", nvar);
     for (nel_ta i=0; i<n; i++) {
-      xtran=this->do_xtran(x[i]);
       cls[i]=0;			//clear class data
       //we write to the input file:
       if (this->Mflag) {
         sprintf(format, " %%d:%%.12%s", fcode);
         fprintf(fs, "%d", cls[i]);
-        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, j+1, xtran[j]);
+        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, j+1, x[j]);
         fprintf(fs, "\n");
       } else {
         sprintf(format, "%%.12%s ", fcode);
-        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, xtran[j]);
+        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, x[j]);
         fprintf(fs, "%d\n", cls[i]);
       }
-      if (this->tran!=NULL) delete [] xtran;
     }
     fclose(fs);
 
@@ -546,6 +505,11 @@ namespace libagf {
 
     delete [] syscall;
       
+  }
+
+  template <class real, class cls_t>
+  dim_ta general_classifier<real, cls_t>::n_feat() {
+    return -1;
   }
 
   template class direct_classifier<real_a, cls_ta>;

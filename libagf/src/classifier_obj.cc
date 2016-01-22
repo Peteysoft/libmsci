@@ -19,6 +19,9 @@ namespace libagf {
   classifier_obj<real, cls_t>::classifier_obj() {
     ncls=0;
     D=0;
+    D1=0;
+    mat=NULL;
+    b=NULL;
   }
 
   template <class real, class cls_t>
@@ -31,6 +34,11 @@ namespace libagf {
 
   template <class real, class cls_t>
   dim_ta classifier_obj<real, cls_t>::n_feat() {
+    return D1;
+  }
+
+  template <class real, class cls_t>
+  dim_ta classifier_obj<real, cls_t>::n_feat_t() {
     return D;
   }
 
@@ -85,7 +93,95 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  int classifier_obj<real, cls_t>::ltran(real **mat, real *b, dim_ta d1, dim_ta d2, int flag) {return 0;}
+  int classifier_obj<real, cls_t>::ltran(real **mat1, real *b1, dim_ta d1, dim_ta d2, int flag) {
+    int err2=0;
+
+    //err2=read_stats(normfile, ave, std, D);
+    mat=mat1;
+    b=b1;
+
+    //find out the "raw" dimensions: 
+    D=n_feat();
+    //we don't necessarily know offhand what the dimensionality of the problem is: 
+    if (d2!=D && D!=-1) {
+      fprintf(stderr, "classifier_obj: second dimension of trans. mat. does not that of borders data: %d vs. %d\n", d2, D);
+      return DIMENSION_MISMATCH;
+    }
+    //this is very clear:
+    D1=D;
+
+    D1=d2;
+    D=d1;
+
+    if (flag) err2=ltran_model(mat, b, d1, d2);
+
+    return err2;
+  }
+
+  template <class real, class cls_t>
+  int classifier_obj<real, cls_t>::ltran_model(real **mat1, real *b1, dim_ta d1, dim_ta d2) {
+     fprintf(stderr, "classifier_obj: you tried to allocate the abstract base class\n");
+     throw PARAMETER_OUT_OF_RANGE;
+  }
+
+  template <class real, class cls_t>
+  real * classifier_obj<real, cls_t>::do_xtran(real *x) {
+    real *xtran;
+    if (mat!=NULL) {
+      real tmp;
+      xtran=new real[D1];
+      //linearly transform the test point:
+      for (dim_ta j=0; j<D1; j++) xtran[j]=0;
+      for (dim_ta i=0; i<D; i++) {
+        tmp=x[i]-b[i];
+        for (dim_ta j=0; j<D1; j++) xtran[j]=xtran[j]+tmp*mat[i][j];
+      }
+      //xtran=left_vec_mult(x, mat, this->D, D1);
+    } else {
+      xtran=x;
+    }
+    return xtran;
+  }
+
+  template <class real, class cls_t>
+  cls_t classifier_obj<real, cls_t>::classify_t(real *x, real &p, real *praw) {
+    cls_t c;
+    real *xtran;
+    xtran=do_xtran(x);
+    c=classify(x, p, praw);
+    if (mat!=NULL) delete [] xtran;
+    return c;
+  }
+
+  template <class real, class cls_t>
+  cls_t classifier_obj<real, cls_t>::classify_t(real *x, real *p, real *praw) {
+    cls_t c;
+    real *xtran;
+    xtran=do_xtran(x);
+    c=classify(x, p, praw);
+    if (mat!=NULL) delete [] xtran;
+    return c;
+  }
+
+  template <class real, class cls_t>
+  void classifier_obj<real, cls_t>::batch_classify_t(real **x, cls_t *c, real *p, nel_ta n, dim_ta nvar) {
+    real **xtran;
+    xtran=new real*[n];
+    for (int i=0; i<n; i++) xtran[i]=do_xtran(x[i]);
+    batch_classify(xtran, c, p, n, nvar);
+    if (mat!=NULL) for (nel_ta i=0; i<n; i++) delete [] xtran[i];
+    delete [] xtran;
+  }
+
+  template <class real, class cls_t>
+  void classifier_obj<real, cls_t>::batch_classify_t(real **x, cls_t *c, real **p, nel_ta n, dim_ta nvar) {
+    real **xtran;
+    xtran=new real*[n];
+    for (int i=0; i<n; i++) xtran[i]=do_xtran(x[i]);
+    batch_classify(xtran, c, p, n, nvar);
+    if (mat!=NULL) for (nel_ta i=0; i<n; i++) delete [] xtran[i];
+    delete [] xtran;
+  }
 
   template <class real, class cls_t>
   int classifier_obj<real, cls_t>::max_depth(int cur) {return 1;}

@@ -84,7 +84,7 @@ namespace libagf {
 
       //some waste here, since we use neither the conditional probabilities,
       //nor the class result:
-      cls=this->classify(x, p, raw);
+      cls=this->classify_t(x, p, raw);
 
       for (int i=0; i<this->ncls; i++) printf("%g ", raw[i]);
       printf("\n");
@@ -116,7 +116,7 @@ namespace libagf {
       real gd2=1;
       int ng=0;
 
-      cls=this->classify(x, p, raw);
+      cls=this->classify_t(x, p, raw);
 
       //least squares by hand:
       a12=0;

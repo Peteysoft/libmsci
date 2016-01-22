@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
 
   for (nel_ta i=0; i<ntest; i++) {
     prob[i]=prob[0]+i*nclass;
-    result[i]=classifier->classify(test[i], prob[i]);
+    result[i]=classifier->classify_t(test[i], prob[i]);
   }
 
   //printf("\n");

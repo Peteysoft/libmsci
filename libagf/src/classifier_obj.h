@@ -15,8 +15,16 @@ namespace libagf {
     protected:
       char *name;		//the file in which it is contained etc.
 
-      cls_t ncls;			//number of classes
-      dim_ta D;				//number of dimensions in test points
+      cls_t ncls;		//number of classes
+      dim_ta D;			//number of dimensions in test points (for transformed system only)
+
+      real **mat;		//transformation matrix
+      real *b;			//translation vector
+      nel_ta D1;		//dimension of transformed system
+
+      //real *xtran;		//transformed feature vector
+      real* do_xtran(real *x);	//transforms the feature vector
+
     public:
       classifier_obj();
       virtual ~classifier_obj();
@@ -33,11 +41,28 @@ namespace libagf {
 
       //linear transformation on features (plus translation...):
       //(transformations are not copied but stored as references)
-      virtual int ltran(real **mat, 	//tranformation matrix
+      int ltran(real **mat, 		//tranformation matrix
 		real *b,		//constant term
 		dim_ta d1,		//first dimension of trans. mat.
 		dim_ta d2, 		//second 	"
 		int flag);		//transform model?
+
+      //transform the model:
+      virtual int ltran_model(real **mat, 	//tranformation matrix
+		real *b,		//constant term
+		dim_ta d1,		//first dimension of trans. mat.
+		dim_ta d2); 		//second 	"
+
+      //classification including linear transformation of feature space:
+      cls_t classify_t(real *x, 		//test point
+		real *p,		//returned conditional probabilities
+		real *praw=NULL);	//returned "raw" conditional probabilities
+
+      //classification returning conditional prob:
+      //(including linear transformation of feature space)
+      cls_t classify_t(real *x, 	//test point
+		real &p,		//returned winning conditional probability
+		real *praw=NULL);	//returned "raw" conditional probabilities
 
       //return list of classes (default is 0..n_cls-1):
       virtual cls_t class_list(cls_t *cls);
@@ -46,7 +71,8 @@ namespace libagf {
       virtual int max_depth(int cur=0);
 
       virtual cls_t n_class();		//return number of classes (default is ncls)
-      virtual dim_ta n_feat();		//return number of features (default is D)
+      virtual dim_ta n_feat();		//return number of features for transformed problem (default is D1)
+      dim_ta n_feat_t();		//return number of features for non-transformed problem
 
       //for use with an external command:
       //only winning probability is returned:
@@ -57,6 +83,21 @@ namespace libagf {
 		dim_ta nvar);			//number of variables 
       //one probability is returned for each class:
       virtual void batch_classify(real **x, 
+		cls_t *cls, 
+		real **p, 		//pre-allocated matrix of probabilities
+		nel_ta n, 
+		dim_ta nvar);
+
+      //only winning probability is returned:
+      //test point is linearly transformed first
+      void batch_classify_t(real **x, 		//list of test points
+		cls_t *cls, 			//returned classes
+		real *p, 			//returned probabilities
+		nel_ta n, 			//number of test points
+		dim_ta nvar);			//number of variables 
+      //one probability is returned for each class:
+      //test point is linearly transformed first
+      void batch_classify_t(real **x, 
 		cls_t *cls, 
 		real **p, 		//pre-allocated matrix of probabilities
 		nel_ta n, 

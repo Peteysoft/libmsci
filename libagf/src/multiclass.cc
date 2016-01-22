@@ -368,17 +368,19 @@ namespace libagf {
 
   //load a linear transformation to apply to the test points:
   template <class real, class cls_t>
-  int multiclass<real, cls_t>::ltran(real **mat, real *b, dim_ta d1, dim_ta d2, int flag) {
+  int multiclass<real, cls_t>::ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2) {
     int err=0;
     //just pass it to the binary classifiers:
     for (int i=0; i<nmodel; i++) {
-      err=twoclass[i]->ltran(mat, b, d1, d2, flag);
+      err=twoclass[i]->ltran_model(mat, b, d1, d2);
       if (err!=0) {
         fprintf(stderr, "multiclass::ltran: an error occured transforming partition #%d\n", i);
         return err;
       }
     }
-    this->D=-1;
+    if (this->mat==NULL) {
+      this->D=n_feat();
+    }
     return err;
   }
 
@@ -733,25 +735,24 @@ namespace libagf {
 
   template <class real, class cls_t>
   dim_ta multiclass<real, cls_t>::n_feat() {
-    cls_t nchild;
-    cls_t D1, D2;
+    cls_t D2;
 
-    if (this->D<=0) {
-      D1=twoclass[0]->n_feat();
+    if (this->D1<=0) {
+      this->D1=twoclass[0]->n_feat();
       //printf("multiclass: partition %d has %d features\n", 0, D1);
       for (cls_t i=1; i<nmodel; i++) {
         D2=twoclass[i]->n_feat();
         //printf("multiclass: partition %d has %d features\n", i, D2);
-        if (D2!=D1) {
+        if (D2!=this->D1) {
           fprintf(stderr, "multiclass: number of features in classifier %d does not match that in child %d", 0, i);
-          fprintf(stderr, "                 %d vs. %d\n", D1, D2);
+          fprintf(stderr, "                 %d vs. %d\n", this->D1, D2);
           exit(DIMENSION_MISMATCH);
         }
       }
-      this->D=D1;
+      if (this->mat==NULL) this->D=this->D1;
     }
 
-    return this->D;
+    return this->D1;
   }
 
   template <class real, class cls_t>

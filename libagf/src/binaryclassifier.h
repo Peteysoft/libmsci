@@ -21,9 +21,6 @@ namespace libagf {
       real *b;			//translation vector
       nel_ta D1;		//dimension after transformation
 
-      //real *xtran;		//transformed feature vector
-      real* do_xtran(real *x);	//transforms the feature vector
-
       int id;			//unique index simply them  
 				//in the order in which they divide the classes
 
@@ -31,16 +28,18 @@ namespace libagf {
       binaryclassifier();
       binaryclassifier(char *nm);	//have to give it a name!
       virtual ~binaryclassifier();
-      //transformation matrix is not copied, only the pointer is stored
-      //--do not delete original before classifier class instance:
-      virtual int ltran(real **mat1, real *b1, dim_ta d1, dim_ta d2, int flag);
       //returns the difference in cond. prob.
       virtual real R(real *x, 		//test point
 		real *praw=NULL); 	//sticks R in correct location
+      //linearly transform test point before performing classification:
+      real R_t(real *x, 		//test point
+		real *praw=NULL); 	//sticks R in correct location
       //the next two are defined from R:
-      virtual void batchR(real **x, real *R, nel_ta n, dim_ta nvar);
       virtual cls_t classify(real *x, real &p, real *praw=NULL);
       virtual cls_t classify(real *x, real *p, real *praw=NULL);
+      virtual void batchR(real **x, real *R, nel_ta n, dim_ta nvar);
+      //linearly transform test point before performing classification:
+      void batchR_t(real **x, real *R, nel_ta n, dim_ta nvar);
       //these two are defined from batchR:
       virtual void batch_classify(real **x, cls_t *cls, real *p, nel_ta n, dim_ta nvar);
       virtual void batch_classify(real **x, cls_t *cls, real **p, nel_ta n, dim_ta nvar);
@@ -80,6 +79,8 @@ namespace libagf {
       virtual void batch_classify(real **x, cls_t *cls, real **p, nel_ta n, dim_ta nvar);
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
+      virtual dim_ta n_feat();		//always -1 since classifications are
+      					//done by calling an external executable
   };
 
   template <class real>
@@ -113,7 +114,7 @@ namespace libagf {
       int init(const char *fbase, SIGFUN_TYPE (*sigfun)(SIGFUN_TYPE));
       //transformation matrix is not copied, only the pointer is stored
       //--do not delete original before classifier class instance:
-      virtual int ltran(real **mat1, real *b1, dim_ta d1, dim_ta d2, int flag);
+      virtual int ltran_model(real **mat1, real *b1, dim_ta d1, dim_ta d2);
       virtual real R(real *x, real *praw=NULL);
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
   };

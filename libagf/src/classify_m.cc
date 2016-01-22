@@ -223,7 +223,7 @@ int main(int argc, char *argv[]) {
 
       //perform the classifications:
       for (nel_ta i=0; i<ntest; i++) {
-        result[i]=classifier->classify(test[i], pdf1);
+        result[i]=classifier->classify_t(test[i], pdf1);
         for (cls_ta j=0; j<ncls; j++) pdf[clist[j]]=pdf1[j];
         //result[i]=clist[result[i]];
 
@@ -245,7 +245,7 @@ int main(int argc, char *argv[]) {
       for (nel_ta i=1; i<ntest; i++) p[i]=p[0]+i*ncls; 
 
       //perform the classifications:
-      classifier->batch_classify(test, result, p, ntest, nvar);
+      classifier->batch_classify_t(test, result, p, ntest, nvar);
 
       //output results in same format as LIBSVM:
       fs=fopen(outfile, "w");
@@ -279,11 +279,11 @@ int main(int argc, char *argv[]) {
     con=new real_a[ntest];
     if (opt_args.multicommand==NULL) {
       for (nel_ta i=0; i<ntest; i++) {
-        result[i]=classifier->classify(test[i], con[i]);
+        result[i]=classifier->classify_t(test[i], con[i]);
         con[i]=(ncls*con[i]-1)/(ncls-1);
       }
     } else {
-      classifier->batch_classify(test, result, con, ntest, nvar);
+      classifier->batch_classify_t(test, result, con, ntest, nvar);
       fs=fopen(outfile, "w");
       for (nel_ta i=0; i<ntest; i++) {
         fprintf(fs, "%d %g\n", result[i], con[i]);

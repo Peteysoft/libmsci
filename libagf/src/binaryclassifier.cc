@@ -39,59 +39,21 @@ namespace libagf {
     delete [] this->name;
   }
 
-  //flag is ignored
-  template <class real, class cls_t>
-  int binaryclassifier<real, cls_t>::ltran(real **mat1, real *b1, dim_ta d1, dim_ta d2, int flag) {
-    int err2=0;
-
-    //err2=read_stats(normfile, ave, std, D);
-    mat=mat1;
-    b=b1;
- 
-    //we don't know offhand what the dimensionality of the problem is: 
-    /*if (d2!=this->D) {
-      fprintf(stderr, "agf2class: second dimension of trans. mat. does not that of borders data: %d vs. %d\n", d2, this->D);
-      return DIMENSION_MISMATCH;
-    }
-    //this is very clear:
-    D1=this->D;
-    */
-
-    D1=d2;
-    this->D=d1;
-
-    //from the outside, the classifier looks like it has the same number of
-    //features as before normalization:
-    //xtran=new real[D1];
-
-    return err2;
-  }
-
-  template <class real, class cls_t>
-  real * binaryclassifier<real, cls_t>::do_xtran(real *x) {
-    real *xtran;
-    if (mat!=NULL) {
-      real tmp;
-      xtran=new real[D1];
-      //linearly transform the test point:
-      for (dim_ta j=0; j<D1; j++) xtran[j]=0;
-      for (dim_ta i=0; i<this->D; i++) {
-        tmp=x[i]-b[i];
-        for (dim_ta j=0; j<D1; j++) xtran[j]=xtran[j]+tmp*mat[i][j];
-      }
-      //xtran=left_vec_mult(x, mat, this->D, D1);
-    } else {
-      xtran=x;
-    }
-    return xtran;
-  }
-
   template <class real, class cls_t>
   real binaryclassifier<real, cls_t>::R(real *x, real *praw) {
     //want to make this do a direct classifications using the options listed
     //in name!
   }
 
+  template <class real, class cls_t>
+  real binaryclassifier<real, cls_t>::R_t(real *x, real *praw) {
+    real r;
+    real *xtran;
+    xtran=this->do_xtran(x);
+    r=R(xtran, praw);
+    if (this->mat!=NULL) delete [] xtran;
+    return r;
+  }
 
   //next five function definitions are defaults which rely on R being defined:
   template <class real, class cls_t>
@@ -111,6 +73,14 @@ namespace libagf {
   template <class real, class cls_t>
   void binaryclassifier<real, cls_t>::batchR(real **x, real *r, nel_ta n, dim_ta nvar) {
     for (nel_ta i=0; i<n; i++) r[i]=R(x[i]);
+  }
+
+  template <class real, class cls_t>
+  void binaryclassifier<real, cls_t>::batchR_t(real **x, real *r, nel_ta n, dim_ta nvar) {
+    real *xtran[n];
+    for (nel_ta i=0; i<n; i++) xtran[i]=this->do_xtran(x[i]);
+    batchR(xtran, r, n, nvar);
+    if (this->mat!=NULL) for (nel_ta i=0; i<n; i++) delete [] xtran[i];
   }
 
   template <class real, class cls_t>
@@ -262,15 +232,8 @@ namespace libagf {
   template <class real, class cls_t>
   real general2class<real, cls_t>::R(real *x, real *praw) {
     real r;
-    real *xtran;
-
-    xtran=this->do_xtran(x);
-
-    batchR(&xtran, &r, 1, this->D1);
+    batchR(&x, &r, 1, this->D1);
     if (praw!=NULL && this->id>=0) praw[this->id]=r;
-
-    if (this->mat!=NULL) delete [] xtran;
-
     return r;
   }
 
@@ -324,9 +287,6 @@ namespace libagf {
     char format[20];
     char fcode[4];
 
-    real *xtran;		//use local variable for transformed x
-				//to keep things thread-safe
-
     if (n==0) return;
 
     //need different format strings depending upon what floating types
@@ -340,20 +300,18 @@ namespace libagf {
     fs=fopen(infile, "w");
     if (Mflag==0) fprintf(fs, "%d\n", nvar);
     for (nel_ta i=0; i<n; i++) {
-      xtran=this->do_xtran(x[i]);
       cls[i]=0;			//clear class data
       //we write to the input file:
       if (Mflag) {
         sprintf(format, " %%d:%%.12%s", fcode);
         fprintf(fs, "%d", cls[i]);
-        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, j+1, xtran[j]);
+        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, j+1, x[j]);
         fprintf(fs, "\n");
       } else {
         sprintf(format, "%%.12%s ", fcode);
-        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, xtran[j]);
+        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, x[j]);
         fprintf(fs, "%d\n", cls[i]);
       }
-      if (this->mat!=NULL) delete [] xtran;
     }
     fclose(fs);
 
@@ -439,6 +397,14 @@ namespace libagf {
     fprintf(param.commandfs, "\n");
 
     return 2;
+  }
+
+  //if we are using svm-predict, can't even figure it out by passing different
+  //sized test data since missing dimensions are just treated as zero
+  //(svm-predict won't complain if dimensions are missing)
+  template <class real, class cls_t>
+  dim_ta general2class<real, cls_t>::n_feat() {
+    return -1;
   }
 
   template <class real>
@@ -532,115 +498,104 @@ namespace libagf {
 
   //if flag, then border vectors are stored un-normalized
   template <class real, class cls_t>
-  int agf2class<real, cls_t>::ltran(real **mat1, real *b1, dim_ta d1, dim_ta d2, int flag) {
+  int agf2class<real, cls_t>::ltran_model(real **mat1, real *b1, dim_ta d1, dim_ta d2) {
     int err2=0;
 
     real **brd2;
     real **grd2;
 
-    //err2=read_stats(normfile, ave, std, D);
-    this->mat=mat1;
-    this->b=b1;
-  
-    if (flag) {
-      gsl_matrix *u;
-      gsl_vector *s;
-      gsl_matrix *vt;
-      gsl_vector *work;
-      if (d1!=this->D) {
-        fprintf(stderr, "agf2class: first dimension (%d) of trans. mat. does not agree with that of borders data (%d)\n", d1, this->D);
-        return DIMENSION_MISMATCH;
-      }
-      fprintf(stderr, "agf2class: Normalising the border samples...\n");
-      //from the outside, the classifier looks like it has the same number of
-      //features as before normalization:
-      this->D1=d2;
+    gsl_matrix *u;
+    gsl_vector *s;
+    gsl_matrix *vt;
+    gsl_vector *work;
 
-      //apply constant factor:
-      for (nel_ta i=0; i<n; i++) {
-        for (dim_ta j=0; j<this->D; j++) {
-          brd[i][j]=brd[i][j]-this->b[j];
-        }
-      }
-
-      brd2=matrix_mult(brd, this->mat, n, this->D, this->D1);
-      grd2=allocate_matrix<real, int32_t>(n, this->D1);
-
-      //gradients do NOT transform the same as the vectors:
-      u=gsl_matrix_alloc(this->D, this->D1);
-      for (dim_ta i=0; i<this->D; i++) {
-        for (dim_ta j=0; j<this->D1; j++) {
-          gsl_matrix_set(u, i, j, this->mat[i][j]);
-	}
-      }
-      s=gsl_vector_alloc(this->D1);
-      vt=gsl_matrix_alloc(this->D1, this->D1);
-      work=gsl_vector_alloc(this->D1);
-      gsl_linalg_SV_decomp(u, vt, s, work);
-      gsl_vector_free(work);
-      for (nel_ta i=0; i<n; i++) {
-        double tmp_g;
-        for (dim_ta j=0; j<this->D1; j++) {
-          grd2[i][j]=0;
-          for (dim_ta k=0; k<this->D1; k++) {
-            double vt_el;
-            double s_k=gsl_vector_get(s, k);
-            if (s_k == 0) continue;
-            tmp_g=0;
-            for (dim_ta l=0; l<this->D; l++) {
-	      double u_el=gsl_matrix_get(u, l, k);
-              tmp_g+=u_el*grd[i][l];
-            }
-            vt_el=gsl_matrix_get(vt, j, k);
-            grd2[i][j]+=tmp_g*vt_el/s_k;
-          }
-        }
-      }
-
-      gsl_matrix_free(u);
-      gsl_vector_free(s);
-      gsl_matrix_free(vt);
-
-      delete_matrix(brd);
-      delete_matrix(grd);
-      brd=brd2;
-      grd=grd2;
-
-      //have to recalculate all the gradient lengths, dammit:
-      for (nel_ta i=0; i<n; i++) {
-        gd[i]=0;
-        for (dim_ta j=0; j<this->D1; j++) gd[i]+=grd[i][j]*grd[i][j];
-        gd[i]=sqrt(gd[i]);
-      }
-    } else {
-      if (d2!=this->D) {
-        fprintf(stderr, "agf2class: second dimension of trans. mat. does not that of borders data: %d vs. %d\n", d2, this->D);
-        return DIMENSION_MISMATCH;
-      }
-      //this is very clear:
-      this->D1=this->D;
-      this->D=d1;
-      //from the outside, the classifier looks like it has the same number of
-      //features as before normalization:
+    if (d1!=this->D) {
+      fprintf(stderr, "agf2class: first dimension (%d) of trans. mat. does not agree with that of borders data (%d)\n", d1, this->D);
+      return DIMENSION_MISMATCH;
     }
-    //this->xtran=new real[this->D1];
+    if (this->mat == NULL) {
+      //the classifier now has a different number of features:
+      this->D1=d2;
+      this->D=d2;
+    } else {
+      assert(mat1==this->mat && b1==this->b);
+      //from the outside, the classifier looks like it has the same number of
+      //features as before normalization:
+      assert(this->D1==d2);
+    }
+    fprintf(stderr, "agf2class: Normalising the border samples...\n");
+
+    //apply constant factor:
+    for (nel_ta i=0; i<n; i++) {
+      for (dim_ta j=0; j<this->D; j++) {
+        brd[i][j]=brd[i][j]-this->b[j];
+      }
+    }
+
+    brd2=matrix_mult(brd, this->mat, n, this->D, this->D1);
+    grd2=allocate_matrix<real, int32_t>(n, this->D1);
+
+    //gradients do NOT transform the same as the vectors:
+    u=gsl_matrix_alloc(this->D, this->D1);
+    for (dim_ta i=0; i<this->D; i++) {
+      for (dim_ta j=0; j<this->D1; j++) {
+        gsl_matrix_set(u, i, j, this->mat[i][j]);
+      }
+    }
+    s=gsl_vector_alloc(this->D1);
+    vt=gsl_matrix_alloc(this->D1, this->D1);
+    work=gsl_vector_alloc(this->D1);
+    gsl_linalg_SV_decomp(u, vt, s, work);
+    gsl_vector_free(work);
+    for (nel_ta i=0; i<n; i++) {
+      double tmp_g;
+      for (dim_ta j=0; j<this->D1; j++) {
+        grd2[i][j]=0;
+        for (dim_ta k=0; k<this->D1; k++) {
+          double vt_el;
+          double s_k=gsl_vector_get(s, k);
+          if (s_k == 0) continue;
+          tmp_g=0;
+          for (dim_ta l=0; l<this->D; l++) {
+            double u_el=gsl_matrix_get(u, l, k);
+            tmp_g+=u_el*grd[i][l];
+          }
+          vt_el=gsl_matrix_get(vt, j, k);
+          grd2[i][j]+=tmp_g*vt_el/s_k;
+        }
+      }
+    }
+
+    gsl_matrix_free(u);
+    gsl_vector_free(s);
+    gsl_matrix_free(vt);
+
+    delete_matrix(brd);
+    delete_matrix(grd);
+    brd=brd2;
+    grd=grd2;
+
+    //have to recalculate all the gradient lengths, dammit:
+    for (nel_ta i=0; i<n; i++) {
+      gd[i]=0;
+      for (dim_ta j=0; j<this->D1; j++) gd[i]+=grd[i][j]*grd[i][j];
+      gd[i]=sqrt(gd[i]);
+    }
+
     return err2;
   }
 
   template <class real, class cls_t>
   real agf2class<real, cls_t>::R(real *x, real *praw) {
     real r;
-    real *xtran;
     nel_ta k;		//intermediate values in the calculation
     real d;		//may be useful for continuum generalization
 
-    xtran=this->do_xtran(x);
-    r=border_classify0(brd, grd, this->D1, n, xtran, k, d);
+    r=border_classify0(brd, grd, this->D1, n, x, k, d);
     if (this->id>=0 && praw!=NULL) {
       praw[this->id]=r;
       //printf("r=%g\n" , praw[this->id]);
     }
-    if (this->mat!=NULL) delete [] xtran;
     if (sigmoid_func != NULL) r=(*sigmoid_func) (r);
 
     return r;

@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
   nclass=classifier->n_class();
 
   for (nel_ta i=0; i<ntest; i++) {
-    result[i]=classifier->classify(test[i], con[i]);
+    result[i]=classifier->classify_t(test[i], con[i]);
     con[i]=(nclass*con[i]-1)/(nclass-1);
   }
 

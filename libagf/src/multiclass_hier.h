@@ -62,7 +62,7 @@ namespace libagf {
 
       //transformation matrix is not copied, only the pointer is stored
       //--do not delete original before classifier class instance:
-      virtual int ltran(real **mat, real *b, dim_ta d1, dim_ta d2, int flag);
+      virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
 
       //classification:
       virtual cls_t classify(real *x, real &p, real *praw=NULL);
