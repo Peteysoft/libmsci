@@ -1,5 +1,6 @@
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 #include <gsl/gsl_linalg.h>
 
@@ -551,6 +552,40 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  int svm_multi<real, cls_t>::ltran_model(real **mat1, real *b1, dim_ta d1, dim_ta d2) {
+    real **sv2;
+    if (d1!=this->D1) {
+      fprintf(stderr, "svm_multi: first dimension (%d) of trans. mat. does not agree with that of borders data (%d)\n", d1, this->D1);
+      return DIMENSION_MISMATCH;
+    }
+    //apply constant factor:
+    for (nel_ta i=0; i<nsv_total; i++) {
+      for (dim_ta j=0; j<this->D; j++) {
+        sv[i][j]=sv[i][j]-b1[j];
+      }
+    }
+
+    sv2=matrix_mult(sv, mat1, nsv_total, d1, d2);
+
+    if (this->mat == NULL) {
+      //the classifier now has a different number of features:
+      this->D1=d2;
+      this->D=d2;
+    } else {
+      //assert(mat1==this->mat && b1==this->b);
+      //from the outside, the classifier looks like it has the same number of
+      //features as before normalization:
+      assert(this->D1==d2);
+    }
+
+    delete [] sv[0];
+    delete [] sv;
+    sv=sv2;
+
+    return 0;
+  }
+
+  template <class real, class cls_t>
   borders1v1<real, cls_t>::borders1v1(char *file, int vflag) {
     //how do we want to store the borders?
   }
@@ -617,8 +652,28 @@ namespace libagf {
     return result;
   }
 
-  template class svm_multi<real_a, cls_ta>;
+  template <class real, class cls_t>
+  int borders1v1<real, cls_t>::ltran_model(real **mat1, real *b1, dim_ta d1, dim_ta d2) {
+    int nmod;
+    nmod=this->ncls*(this->ncls-1)/2;
+    for (int i=0; i<nmod; i++) {
+      classifier[i]->ltran_model(mat1, b1, d1, d2);
+    }
+    if (this->mat == NULL) {
+      //the classifier now has a different number of features:
+      this->D1=d2;
+      this->D=d2;
+    } else {
+      //assert(mat1==this->mat && b1==this->b);
+      //from the outside, the classifier looks like it has the same number of
+      //features as before normalization:
+      assert(this->D1==d2);
+    }
 
+    return 0;
+  }
+
+  template class svm_multi<real_a, cls_ta>;
 
 } //end namespace libagf
 

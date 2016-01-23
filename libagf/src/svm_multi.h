@@ -61,7 +61,7 @@ namespace libagf {
       svm_multi(svm_multi<real, cls_t> *other);
       virtual ~svm_multi();
 
-      //virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
+      virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
 
@@ -88,7 +88,7 @@ namespace libagf {
 		      real tol);		//tolerance of border samples
       virtual ~borders1v1();
 
-      //virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
+      virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
 

@@ -35,6 +35,8 @@ namespace libagf {
       virtual cls_t classify(real *x, real &p, real *praw=NULL);
       virtual cls_t class_list(cls_t *cls);
 
+      virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
+
       //return difference in conditional prob. (R=P(2|x)-P(1|x)) plus derivative:
       real R_deriv(real *x, 			//test point
 		      real *drdx);		//gradient of R

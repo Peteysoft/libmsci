@@ -459,9 +459,7 @@ namespace libagf {
 	 	SIGFUN_TYPE (* sigfun)(SIGFUN_TYPE)) {
     int err;
 
-    //ave=NULL;
     this->mat=NULL;
-    //this->xtran=NULL;
     this->id=-1;
 
     sigmoid_func=sigfun;
@@ -475,7 +473,6 @@ namespace libagf {
     fprintf(stderr, "agf2class: %d border samples found in model, %s\n", n, fbase);
     this->D1=this->D;
     this->ncls=2;
-    fprintf(stderr, "agf2class: D=%d; D1=%d\n", this->D, this->D1);
 
     //calculate and store the lengths of all the gradient vectors for possible
     //use later on:
@@ -561,44 +558,44 @@ namespace libagf {
     gsl_matrix *vt;
     gsl_vector *work;
 
-    if (d1!=this->D) {
-      fprintf(stderr, "agf2class: first dimension (%d) of trans. mat. does not agree with that of borders data (%d)\n", d1, this->D);
+    if (d1!=this->D1) {
+      fprintf(stderr, "agf2class: first dimension (%d) of trans. mat. does not agree with that of borders data (%d)\n", d1, this->D1);
       return DIMENSION_MISMATCH;
     }
     fprintf(stderr, "agf2class: Normalising the border samples...\n");
 
     //apply constant factor:
     for (nel_ta i=0; i<n; i++) {
-      for (dim_ta j=0; j<this->D; j++) {
+      for (dim_ta j=0; j<d1; j++) {
         brd[i][j]=brd[i][j]-b1[j];
       }
     }
 
-    brd2=matrix_mult(brd, mat1, n, this->D, this->D1);
-    grd2=allocate_matrix<real, int32_t>(n, this->D1);
+    brd2=matrix_mult(brd, mat1, n, d1, d2);
+    grd2=allocate_matrix<real, int32_t>(n, d2);
 
     //gradients do NOT transform the same as the vectors:
-    u=gsl_matrix_alloc(this->D, this->D1);
-    for (dim_ta i=0; i<this->D; i++) {
-      for (dim_ta j=0; j<this->D1; j++) {
+    u=gsl_matrix_alloc(d1, d2);
+    for (dim_ta i=0; i<d1; i++) {
+      for (dim_ta j=0; j<d2; j++) {
         gsl_matrix_set(u, i, j, mat1[i][j]);
       }
     }
-    s=gsl_vector_alloc(this->D1);
-    vt=gsl_matrix_alloc(this->D1, this->D1);
-    work=gsl_vector_alloc(this->D1);
+    s=gsl_vector_alloc(d2);
+    vt=gsl_matrix_alloc(d2, d2);
+    work=gsl_vector_alloc(d2);
     gsl_linalg_SV_decomp(u, vt, s, work);
     gsl_vector_free(work);
     for (nel_ta i=0; i<n; i++) {
       double tmp_g;
-      for (dim_ta j=0; j<this->D1; j++) {
+      for (dim_ta j=0; j<d2; j++) {
         grd2[i][j]=0;
-        for (dim_ta k=0; k<this->D1; k++) {
+        for (dim_ta k=0; k<d2; k++) {
           double vt_el;
           double s_k=gsl_vector_get(s, k);
           if (s_k == 0) continue;
           tmp_g=0;
-          for (dim_ta l=0; l<this->D; l++) {
+          for (dim_ta l=0; l<d1; l++) {
             double u_el=gsl_matrix_get(u, l, k);
             tmp_g+=u_el*grd[i][l];
           }
@@ -613,10 +610,10 @@ namespace libagf {
       this->D1=d2;
       this->D=d2;
     } else {
-      assert(mat1==this->mat && b1==this->b);
+      //assert(mat1==this->mat && b1==this->b);
       //from the outside, the classifier looks like it has the same number of
       //features as before normalization:
-      assert(this->D1==d2);
+      assert(this->D1==d2);		//(doesn't really make sense given test above...)
     }
 
     gsl_matrix_free(u);

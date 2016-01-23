@@ -381,6 +381,8 @@ namespace libagf {
     if (this->mat==NULL) {
       this->D1=0;
       this->D=n_feat();
+    } else {
+      assert(n_feat()==d2);
     }
     return err;
   }
@@ -739,12 +741,9 @@ namespace libagf {
     cls_t D2;
 
     if (this->D1<=0) {
-      fprintf(stderr, "multiclass: checking dimensions of children\n");
       this->D1=twoclass[0]->n_feat();
-      //printf("multiclass: partition %d has %d features\n", 0, D1);
       for (cls_t i=1; i<nmodel; i++) {
         D2=twoclass[i]->n_feat();
-        //printf("multiclass: partition %d has %d features\n", i, D2);
         if (D2!=this->D1) {
           fprintf(stderr, "multiclass: number of features in classifier %d does not match that in child %d", 0, i);
           fprintf(stderr, "                 %d vs. %d\n", this->D1, D2);

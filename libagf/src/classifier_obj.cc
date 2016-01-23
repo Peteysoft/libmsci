@@ -98,14 +98,14 @@ namespace libagf {
     int err2=0;
 
     //find out the "raw" dimensions: 
-    if (mat==NULL) D=n_feat();
+    if (mat==NULL) n_feat();
     //we don't necessarily know offhand what the dimensionality of the problem is: 
-    printf("ltran: d1=%d; d2=%d\n", d1, d2);
+    //printf("ltran: d1=%d; d2=%d\n", d1, d2);
     if (flag) err2=ltran_model(mat1, b1, d1, d2);
     mat=mat1;
     b=b1;
-    if (d2!=D && D!=-1) {
-      fprintf(stderr, "classifier_obj: second dimension of trans. mat. does not that of borders data: %d vs. %d\n", d2, D);
+    if (d2!=D1 && D1!=-1) {
+      fprintf(stderr, "classifier_obj: second dimension of trans. mat. does not that of borders data: %d vs. %d\n", d2, D1);
       return DIMENSION_MISMATCH;
     }
     //this is very clear:

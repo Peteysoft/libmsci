@@ -125,6 +125,11 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  int svm2class<real, cls_t>::ltran_model(real **mat1, real *b1, dim_ta d1, dim_ta d2) {
+    return classifier->ltran_model(mat1, b1, d1, d2);
+  }
+
+  template <class real, class cls_t>
   real svmrfunc(real *x, void *param, real *deriv) {
     bordparam<real> *p1=(bordparam<real> *) param;
     svm2class<real, cls_t> *p2=(svm2class<real, cls_t> *) p1->rparam;

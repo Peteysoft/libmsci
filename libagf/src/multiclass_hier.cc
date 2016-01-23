@@ -408,6 +408,8 @@ namespace libagf {
     if (this->mat==NULL) {
       this->D1=0;
       this->D=n_feat();
+    } else {
+      assert(n_feat()==d2);
     }
     return err;
   }
@@ -431,7 +433,7 @@ namespace libagf {
     cls_t D2;
 
     if (this->D1<=0) {
-      fprintf(stderr, "multiclass_hier: checking dimensions of children\n");
+      //fprintf(stderr, "multiclass_hier: checking dimensions of children\n");
       nchild=classifier->n_class();
       this->D1=classifier->n_feat();
       for (cls_t i=0; i<nchild; i++) {
@@ -443,7 +445,6 @@ namespace libagf {
           exit(DIMENSION_MISMATCH);
         }
       }
-      printf("D=%d; D1=%d\n", this->D, this->D1);
     }
 
     return this->D1;
