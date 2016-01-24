@@ -489,20 +489,37 @@ namespace libagf {
   template <class real, class cls_t>
   agf2class<real, cls_t>::agf2class(svm2class<real, cls_t> *svm,
 		  real **x, cls_t *cls, dim_ta nvar, nel_ta ntrain,
-		  nel_ta ns, real tol) {
+		  nel_ta ns, real tol, int tflag) {
     bordparam<real> param;
     real *xsort[ntrain];		//sort training data
     cls_t csel[ntrain];
     nel_ta *clind;			//indices for sorted classes
     nel_ta ntrain2;
     int (*sfunc) (void *, real_a *, real_a *);		//sampling function
+    real **xtran;
 
     this->ncls=svm->n_class();
     this->D1=svm->n_feat();
-    this->D=this->D1;
-    //is this allowed?
-    //this->mat=svm->mat;
-    //this->b=svm->b;
+    if (tflag) {
+      if (this->copy_ltran(svm)) {
+        assert(this->D==nvar);
+        xtran=allocate_matrix<real, int32_t>(ntrain, this->D1);
+        for (nel_ta i=0; i<ntrain; i++) {
+          for (dim_ta j=0; j<this->D1; j++) {
+            xtran[i][j]=0;
+            for (dim_ta k=0; k<this->D; k++) {
+              real diff=x[i][k]-this->b[k];
+              xtran[i][j]+=diff*this->mat[k][j];
+            }
+	  }
+        }
+      }
+    } else {
+      assert(this->D1==nvar);
+      this->D=this->D1;
+      xtran=x;
+    }
+
 
     //remove side effects:
     for (nel_ta k=0; k<ntrain; k++) {
@@ -531,10 +548,15 @@ namespace libagf {
 
     //find class borders:
     n=sample_class_borders(&svmrfunc<real, cls_t>, sfunc, &param, 
-		ns, nvar, tol, agf_global_borders_maxiter, 
+		ns, this->D1, tol, agf_global_borders_maxiter, 
 		brd, grd);
 
     delete [] clind;
+    if (tflag && this->mat!=NULL) {
+      delete [] xtran[0];
+      delete [] xtran;
+    }
+
   }
 
   template <class real, class cls_t>
@@ -659,6 +681,28 @@ namespace libagf {
     } else {
       fprintf(fs, "%s", fbase);
     }
+  }
+
+  template <class real, class cls_t>
+  int agf2class<real, cls_t>::load(FILE *fs) {
+    int32_t n1, n2;
+    int32_t nvar1, nvar2;
+    int err=0;
+    brd=scan_matrix<real, int32_t>(fs, n1, nvar1);
+    grd=scan_matrix<real, int32_t>(fs, n2, nvar2);
+    if (brd==NULL || grd==NULL) err=FILE_READ_ERROR;
+    if (n1!=n2 || nvar1!=nvar2) err=SAMPLE_COUNT_MISMATCH;
+    this->D1=nvar1;
+    n=n1;
+    this->D=this->D1;
+    return err;
+  }
+
+  template <class real, class cls_t>
+  int agf2class<real, cls_t>::save(FILE *fs) {
+    print_matrix(fs, brd, n, this->D1);
+    print_matrix(fs, grd, n, this->D1);
+    return 0;
   }
 
   template float logistic_function<float>(float);

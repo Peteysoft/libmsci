@@ -122,6 +122,19 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  int classifier_obj<real, cls_t>::copy_ltran(classifier_obj<real, cls_t> *other) {
+    if (other->mat==NULL) {
+      return 0;
+    } else {
+      assert(D1==other->D1);
+      mat=other->mat;
+      b=other->b;
+      D=other->D;
+      return 1;
+    }
+  }
+
+  template <class real, class cls_t>
   real * classifier_obj<real, cls_t>::do_xtran(real *x) {
     real *xtran;
     if (mat!=NULL) {

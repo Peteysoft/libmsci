@@ -39,14 +39,14 @@ int main(int argc, char *argv[]) {
 
   opt_args.algtype=0;
   //errcode=agf_parse_command_opts(argc, argv, "a:c:nuAEMUZ", &opt_args);
-  errcode=agf_parse_command_opts(argc, argv, "AEMU", &opt_args);
+  errcode=agf_parse_command_opts(argc, argv, "a:nuAEMU", &opt_args);
   if (errcode==FATAL_COMMAND_OPTION_PARSE_ERROR) return errcode;
 
   //parse the command line arguments:
   if (argc != 3) {
     printf("Syntax:   classify_s \\\n");
     printf("                  [-A [-M [-E missing]]] \\\n");
-    //printf("                  [-n] [-u] [-a normfile] \\\n");
+    printf("                  [-n] [-u] [-a normfile] \\\n");
     printf("                  modelfile test output\n");
     printf("\n");
     printf("where:\n");
@@ -56,9 +56,9 @@ int main(int argc, char *argv[]) {
     printf("                .cls for classes, .con for confidence ratings\n");
     printf("\n");
     printf("options:\n");
-    //printf("  -n          option to normalise the data\n");
-    //printf("  -u          normalize borders data (stored in un-normalized coords)\n");
-    //printf("  -a normfile file containing normalization data\n");
+    printf("  -n          option to normalise the data\n");
+    printf("  -u          normalize borders data (stored in un-normalized coords)\n");
+    printf("  -a normfile file containing normalization data\n");
     printf("  -A          ASCII format for test data and output\n");
     printf("  -M          LIBSVM format for test data and output\n");
     printf("  -E missing  missing value for LIBSVM features data\n");
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
   if (opt_args.normfile!=NULL) {
     mat=read_stats2(opt_args.normfile, ave, nvar1, nvar2);
 
-    //errcode=classifier->ltran(mat, ave, nvar1, nvar2, opt_args.uflag);
+    errcode=classifier->ltran(mat, ave, nvar1, nvar2, opt_args.uflag);
     if (errcode!=0) exit(errcode);
 
     if (classifier->n_feat() != nvar) {

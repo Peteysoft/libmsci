@@ -53,6 +53,9 @@ namespace libagf {
 		dim_ta d1,		//first dimension of trans. mat.
 		dim_ta d2); 		//second 	"
 
+      //copy transformation from another classifier:
+      int copy_ltran(classifier_obj<real, cls_t> *other);
+
       //classification including linear transformation of feature space:
       cls_t classify_t(real *x, 		//test point
 		real *p,		//returned conditional probabilities

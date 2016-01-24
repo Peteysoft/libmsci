@@ -588,22 +588,67 @@ namespace libagf {
   template <class real, class cls_t>
   borders1v1<real, cls_t>::borders1v1(char *file, int vflag) {
     //how do we want to store the borders?
+    int err=0;
+    FILE *fs=fopen(file, "r");
+    if (fs==NULL) throw UNABLE_TO_OPEN_FILE_FOR_READING;
+    char *line=fget_line(fs);
+    sscanf(line, "%d", &this->ncls);
+    delete [] line;
+    int nmod=this->ncls*(this->ncls-1)/2;
+    classifier=new agf2class<real, cls_t>*[nmod];
+    for (int i=0; i<nmod; i++) {
+      classifier[i]=new agf2class<real, cls_t>();
+      err=classifier[i]->load(fs);
+      if (err!=0) throw err;
+    }
+    fclose(fs);
+  }
+
+  template <class real, class cls_t>
+  int borders1v1<real, cls_t>::save(FILE *fs) {
+    int err=0;
+    int nmod=this->ncls*(this->ncls-1)/2;
+    fprintf(fs, "%d\n", this->ncls);
+    for (int i=0; i<nmod; i++) {
+      err=classifier->save(fs);
+      if (err!=0) return err;
+    }
+    return err;
   }
 
   template <class real, class cls_t>
   borders1v1<real, cls_t>::borders1v1(svm_multi<real, cls_t> *svm,
 		  real **x, cls_t *cls, dim_ta nvar, nel_ta ntrain,
-		  nel_ta ns, real tol) {
+		  nel_ta ns, real tol, int tflag) {
     int nmod;
     int m=0;
     svm2class<real, cls_t> *svmbin;
     bordparam<real> param;
     cls_t csel[ntrain];			//selected classes
     int (*sfunc) (void *, real_a *, real_a *);		//sampling function
+    real **xtran;			//transformed training data
 
     this->ncls=svm->n_class();
     this->D1=svm->n_feat();
-    this->D=this->D1;
+    if (tflag) {
+      if (this->copy_ltran(svm)) {
+        assert(this->D==nvar);
+        xtran=allocate_matrix<real, int32_t>(ntrain, this->D1);
+        for (nel_ta i=0; i<ntrain; i++) {
+          for (dim_ta j=0; j<this->D1; j++) {
+            xtran[i][j]=0;
+            for (dim_ta k=0; k<this->D; k++) {
+              real diff=x[i][k]-this->b[k];
+              xtran[i][j]+=diff*this->mat[k][j];
+            }
+          }
+	}
+      }
+    } else {
+      assert(this->D1==nvar);
+      this->D=this->D1;
+      xtran=x;
+    }
 
     nmod=this->ncls*(this->ncls-1)/2;
     classifier=new agf2class<real, cls_t>*[nmod];
@@ -621,11 +666,16 @@ namespace libagf {
           }
         }
         svmbin=new svm2class<real, cls_t>(svm, i, j);
-	classifier[m]=new agf2class<real, cls_t>(svmbin, x, csel, nvar, ntrain,
-			ns, tol);
+	classifier[m]=new agf2class<real, cls_t>(svmbin, xtran, csel, this->D1, 
+			ntrain,	ns, tol);
 	m++;
 	delete svmbin;
       }
+    }
+
+    if (tflag && this->mat!=NULL) {
+      delete [] xtran[0];
+      delete [] xtran;
     }
   }
 

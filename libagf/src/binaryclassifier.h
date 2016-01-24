@@ -114,7 +114,8 @@ namespace libagf {
 		      dim_ta nvar,		//number of variables
 		      nel_ta ntrain,		//number of training samples
 		      nel_ta nsamp,		//number of border samples
-		      real tol);		//tolerance of border samples
+		      real tol,			//tolerance of border samples
+		      int tflag);		//copy transformation
 
       virtual ~agf2class();
       int init(const char *fbase, SIGFUN_TYPE (*sigfun)(SIGFUN_TYPE));
@@ -123,6 +124,10 @@ namespace libagf {
       virtual int ltran_model(real **mat1, real *b1, dim_ta d1, dim_ta d2);
       virtual real R(real *x, real *praw=NULL);
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
+
+      //load and save all in one as ASCII:
+      int load(FILE *fs);
+      int save(FILE *fs);
   };
 
 }
