@@ -49,6 +49,9 @@ namespace libagf {
       classifier=other;
       dflag=0;
     }
+    //a lot of book-keeping, dammit:
+    this->D=other->n_feat_t();
+    this->D1=other->n_feat();
     this->ncls=2;
     if (i==j || i>=oncls || j>=oncls) throw PARAMETER_OUT_OF_RANGE;
     ind1=i;

@@ -40,6 +40,11 @@ namespace libagf {
       //these two are defined from batchR:
       virtual void batch_classify(real **x, cls_t *cls, real *p, nel_ta n, dim_ta nvar);
       virtual void batch_classify(real **x, cls_t *cls, real **p, nel_ta n, dim_ta nvar);
+     //return numerical derivative to validate above:
+     void R_deriv_num(real *x, 			//test point
+		      real dx, 			//absolute different in x
+		      				//(dr/dx=(R(x+dx)-R(x))/dx)
+		      real *drdx);		//approximate gradient of R
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
       virtual void set_id(cls_t *id1);

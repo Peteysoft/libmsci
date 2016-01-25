@@ -114,14 +114,14 @@ int main(int argc, char *argv[]) {
     err=classifier->ltran(mat, ave, nvar1, nvar2, opt_args.uflag);
     if (err!=0) exit(err);
 
-    if (classifier->n_feat() != nvar) {
-      fprintf(stderr, "classify_s: Dimensions of classifier (%d) do not match those of test data (%d).\n",
-                classifier->n_feat(), nvar);
+    if (classifier->n_feat_t() != nvar) {
+      fprintf(stderr, "svm_accelerate: Dimensions of classifier (%d) do not match those of training data (%d).\n",
+                classifier->n_feat_t(), nvar);
       exit(DIMENSION_MISMATCH);
     }
   } else {
     if (classifier->n_feat() != nvar) {
-      fprintf(stderr, "classify_s: Dimension of classifier (%d) does not match dimension of test data (%d).\n",
+      fprintf(stderr, "svm_accelerate: Dimension of classifier (%d) does not match dimension of training data (%d).\n",
                 classifier->n_feat(), nvar);
       exit(DIMENSION_MISMATCH);
     }

@@ -112,6 +112,33 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  void binaryclassifier<real, cls_t>::R_deriv_num(real *x, real dx, real *drdx) {
+    real x1[this->D1];
+    real x2[this->D1];
+    real r1, r2;
+    for (dim_ta i=0; i<this->D1; i++) {
+      x1[i]=x[i];
+      x2[i]=x[i];
+    }
+    for (dim_ta i=0; i<this->D1; i++) {
+      x1[i]-=dx;
+      x2[i]+=dx;
+      r1=R(x1);
+      r2=R(x2);
+      //printf("r1=%g; r2=%g\n", r1, r2);
+      //printf("x1[%d]=%g; x2[%d]=%g\n", i, x1[i], i, x2[i]);
+      drdx[i]=(r2-r1)/dx/2;
+      //printf("%g ", drdx[i]);
+      x1[i]=x[i];
+      x2[i]=x[i];
+    }
+    printf("\n");
+    printf("R_d_num: x=");
+    for (dim_ta i=0; i<this->D1; i++) printf(" %g", x[i]);
+    printf("\n");
+  }
+
+  template <class real, class cls_t>
   int binaryclassifier<real, cls_t>::commands(multi_train_param &param, 
 		cls_t **clist, char *fbase) {
     char *tmpname;
@@ -501,6 +528,7 @@ namespace libagf {
     int (*sfunc) (void *, real_a *, real_a *);		//sampling function
     real **xtran;
 
+    sigmoid_func=&tanh;
     this->ncls=svm->n_class();
     this->D1=svm->n_feat();
     if (tflag) {
@@ -536,11 +564,11 @@ namespace libagf {
     //initialize parameters:
     if (ns/(ntrain2-clind[1])/clind[1] > 0.25) {
       //for small datasets:
-      bordparam_init(&param, xsort+clind[0], nvar, ntrain2, clind[1], 1);
+      bordparam_init(&param, xsort+clind[0], nvar, ntrain2, clind[1]-clind[0], 1);
       sfunc=&oppositesample_small<real_a>;
     } else {
       //for large datasets:
-      bordparam_init(&param, xsort+clind[0], nvar, ntrain2, clind[1]);
+      bordparam_init(&param, xsort+clind[0], nvar, ntrain2, clind[1]-clind[0]);
       sfunc=&oppositesample<real_a>;
     }
     param.rparam=svm;
@@ -710,6 +738,7 @@ namespace libagf {
     this->D1=nvar1;
     n=n1;
     this->D=this->D1;
+    sigmoid_func=&tanh;
     return err;
   }
 

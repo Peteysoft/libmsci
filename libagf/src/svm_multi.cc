@@ -314,7 +314,7 @@ namespace libagf {
 	throw FILE_READ_ERROR;
       }
       for (int j=0; j<nf[i]; j++) {
-        if (ind[i][j]>this->D) this->D=ind[i][j];
+        if (ind[i][j]>this->D1) this->D1=ind[i][j];
 	//printf("%d:%g ", ind[i][j], raw[i][j]);
       }
       //printf("\n");
@@ -322,10 +322,10 @@ namespace libagf {
     //transfer to more usual array and fill in missing values:
     real missing=0;
     sv=new real*[nsv_total];
-    sv[0]=new real[nsv_total*this->D];
+    sv[0]=new real[nsv_total*this->D1];
     for (int i=0; i<nsv_total; i++) {
-      sv[i]=sv[0]+i*this->D;
-      for (int j=0; j<this->D; j++) sv[i][j]=missing;
+      sv[i]=sv[0]+i*this->D1;
+      for (int j=0; j<this->D1; j++) sv[i][j]=missing;
       for (int j=0; j<nf[i]; j++) sv[i][ind[i][j]-1]=raw[i][j];
       delete [] ind[i];
       delete [] raw[i];
@@ -335,13 +335,14 @@ namespace libagf {
 
     //some book-keeping:
     if (probA==NULL || probB==NULL) this->voteflag=1;
+    this->D=this->D1;
 
     start=new nel_ta[this->ncls];
     start[0]=0;
     for (int i=1; i<this->ncls; i++) start[i]=start[i-1]+nsv[i-1];
 
     //cls_t cls[nsv_total];
-    //print_lvq_svm(stdout, sv, cls, nsv_total, this->D, 1);
+    //print_lvq_svm(stdout, sv, cls, nsv_total, this->D1, 1);
 
     delete [] ind;
     delete [] raw;
@@ -355,6 +356,7 @@ namespace libagf {
     int nmod;			//number of binary classifiers
     this->ncls=other->ncls;
     nmod=this->ncls*(this->ncls-1)/2;
+    this->D1=other->D1;
     this->D=other->D;
     //number of support vectors:
     nsv_total=other->nsv_total;
@@ -362,10 +364,10 @@ namespace libagf {
     for (int i=0; i<this->ncls; i++) nsv[i]=other->nsv[i];
     //support vectors themselves:
     sv=new real *[nsv_total];
-    sv[0]=new real[nsv_total*this->D];
+    sv[0]=new real[nsv_total*this->D1];
     for (int i=0; i<nsv_total; i++) {
-      sv[i]=sv[0]+i*this->D;
-      for (int j=0; j<this->D; j++) sv[i][j]=other->sv[i][j];
+      sv[i]=sv[0]+i*this->D1;
+      for (int j=0; j<this->D1; j++) sv[i][j]=other->sv[i][j];
     }
     //coefficients:
     coef=new real *[this->ncls-1];
@@ -417,7 +419,7 @@ namespace libagf {
     int p=0;
 
     for (int i=0; i<nsv_total; i++) {
-      kv[i]=(*kernel)(x, sv[i], this->D, param);
+      kv[i]=(*kernel)(x, sv[i], this->D1, param);
       //printf("kv[%d]=%g\n", i, kv[i]);
     }
 
@@ -471,11 +473,11 @@ namespace libagf {
 
     result=0;
     for (int k=0; k<nsv[i]; k++) {
-      kv=(*kernel)(x, sv[si+k], this->D, param);
+      kv=(*kernel)(x, sv[si+k], this->D1, param);
       result+=coef[j-1][si+k]*kv;
     }
     for (int k=0; k<nsv[j]; k++) {
-      kv=(*kernel)(x, sv[sj+k], this->D, param);
+      kv=(*kernel)(x, sv[sj+k], this->D1, param);
       result+=coef[i][sj+k]*kv;
     }
     //p=this->ncls*(this->ncls-1)/2-(this->ncls-i)*(this->ncls-i-1)/2+j;
@@ -498,9 +500,9 @@ namespace libagf {
     int sgn=1;
     int p=0;
     real t1, t2;
-    real deriv[this->D];
-    real drdx1[this->D];
-    real drdx2[this->D];
+    real deriv[this->D1];
+    real drdx1[this->D1];
+    real drdx2[this->D1];
 
     if (i==j) throw PARAMETER_OUT_OF_RANGE;
 
@@ -515,16 +517,16 @@ namespace libagf {
     sj=start[j];
 
     result=0;
-    for (dim_ta k=0; k<this->D; k++) drdx1[j]=0;
+    for (dim_ta k=0; k<this->D1; k++) drdx1[j]=0;
     for (int k=0; k<nsv[i]; k++) {
-      kv=(*kernel_deriv)(x, sv[si+k], this->D, param, deriv);
+      kv=(*kernel_deriv)(x, sv[si+k], this->D1, param, deriv);
       result+=coef[j-1][si+k]*kv;
-      for (dim_ta m=0; m<this->D; m++) drdx1[m]+=coef[j-1][si+k]*deriv[m];
+      for (dim_ta m=0; m<this->D1; m++) drdx1[m]+=coef[j-1][si+k]*deriv[m];
     }
     for (int k=0; k<nsv[j]; k++) {
-      kv=(*kernel_deriv)(x, sv[sj+k], this->D, param, deriv);
+      kv=(*kernel_deriv)(x, sv[sj+k], this->D1, param, deriv);
       result+=coef[i][sj+k]*kv;
-      for (dim_ta m=0; m<this->D; m++) drdx1[m]+=coef[i][sj+k]*deriv[m];
+      for (dim_ta m=0; m<this->D1; m++) drdx1[m]+=coef[i][sj+k]*deriv[m];
     }
     //p=this->ncls*(this->ncls-1)/2-(this->ncls-i)*(this->ncls-i-1)/2+j;
     p=i*(2*this->ncls-i-1)/2+j-i-1;
@@ -532,11 +534,17 @@ namespace libagf {
     if (this->voteflag==0) {
       t1=exp(result*probA[p]+probB[p]);
       t2=probA[p]*t1/(1+t1)/(1+t1);		//derivative of sigmoid function
-      for (dim_ta k=0; k<this->D; k++) drdx1[k]*=2*t2;
+      for (dim_ta k=0; k<this->D1; k++) drdx1[k]*=2*t2;
       result=1-2/(1+t1);
     }
 
-    for (dim_ta k=0; k<this->D; k++) drdx[k]=sgn*drdx1[k];
+    //printf("drdx=");
+    for (dim_ta k=0; k<this->D1; k++) {
+      drdx[k]=sgn*drdx1[k];
+      //printf("%g ", drdx[k]);
+    }
+    //printf("\nr=%g\n");
+
 
     return sgn*result;
   }
@@ -550,7 +558,7 @@ namespace libagf {
     }
     //apply constant factor:
     for (nel_ta i=0; i<nsv_total; i++) {
-      for (dim_ta j=0; j<this->D; j++) {
+      for (dim_ta j=0; j<this->D1; j++) {
         sv[i][j]=sv[i][j]-b1[j];
       }
     }
@@ -581,9 +589,24 @@ namespace libagf {
     int err=0;
     FILE *fs=fopen(file, "r");
     if (fs==NULL) throw UNABLE_TO_OPEN_FILE_FOR_READING;
+    //read in number of classes:
     char *line=fget_line(fs);
     sscanf(line, "%d", &this->ncls);
     delete [] line;
+    this->label=new cls_t[this->ncls];
+    //read in class labels:
+    line=fget_line(fs);
+    char **sub;
+    int nsub;
+    sub=split_string_destructive(line, nsub);
+    if (nsub<this->ncls) {
+      fprintf(stderr, "borders1v1: Not enough labels found in initialization file, %s\n", file);
+      fprintf(stderr, "  %d vs. %d\n", this->ncls, nsub);
+      throw SAMPLE_COUNT_MISMATCH;
+    }
+    for (cls_t i=0; i<this->ncls; i++) this->label[i]=atoi(sub[i]);
+    delete [] line;
+    //read in individual binary classifiers:
     int nmod=this->ncls*(this->ncls-1)/2;
     classifier=new agf2class<real, cls_t>*[nmod];
     for (int i=0; i<nmod; i++) {
@@ -592,6 +615,19 @@ namespace libagf {
       if (err!=0) throw err;
     }
     fclose(fs);
+    //book-keeping--check dimensions and make sure they are all the same:
+    dim_ta D1, D;
+    this->D1=classifier[0]->n_feat();
+    this->D=classifier[0]->n_feat_t();
+    for (int i=1; i<nmod; i++) {
+      D1=classifier[i]->n_feat();
+      D=classifier[i]->n_feat_t();
+      if (D1!=this->D1 || D!=this->D) {
+        fprintf(stderr, "borders1v1: Dimension of classifier %d does not match that of first one in file, %s\n", i, file);
+        fprintf(stderr, "  %d vs. %d\n", this->D1, D1);
+        throw DIMENSION_MISMATCH;
+      }
+    }
   }
 
   template <class real, class cls_t>
@@ -599,6 +635,8 @@ namespace libagf {
     int err=0;
     int nmod=this->ncls*(this->ncls-1)/2;
     fprintf(fs, "%d\n", this->ncls);
+    for (cls_t i=0; i<this->ncls; i++) fprintf(fs, "%d ", this->label[i]);
+    fprintf(fs, "\n");
     for (int i=0; i<nmod; i++) {
       err=classifier[i]->save(fs);
       if (err!=0) return err;
@@ -617,9 +655,12 @@ namespace libagf {
     cls_t csel[ntrain];			//selected classes
     int (*sfunc) (void *, real_a *, real_a *);		//sampling function
     real **xtran;			//transformed training data
+    int ntest=20;
 
     this->ncls=svm->n_class();
     this->D1=svm->n_feat();
+    this->label=new cls_t[this->ncls];
+    svm->class_list(this->label);
     if (tflag) {
       if (this->copy_ltran(svm)) {
         assert(this->D==nvar);
@@ -658,6 +699,14 @@ namespace libagf {
         svmbin=new svm2class<real, cls_t>(svm, i, j);
 	classifier[m]=new agf2class<real, cls_t>(svmbin, xtran, csel, this->D1, 
 			ntrain,	ns, tol);
+        //lets test the result:
+	for (int ti=0; ti<ntest; ti++) {
+          real r1, r2;
+	  int ind=ranu()*ntrain;
+	  r1=svmbin->R(xtran[ind]);
+	  r2=classifier[m]->R(xtran[ind]);
+	  printf("%g %g\n", r1, r2);
+	}
 	m++;
 	delete svmbin;
       }
@@ -674,6 +723,7 @@ namespace libagf {
     for (int i=0; i<this->ncls*(this->ncls-1)/2; i++) {
       delete [] classifier[i];
     }
+    delete [] classifier;
   }
 
   template <class real, class cls_t>
@@ -681,11 +731,12 @@ namespace libagf {
     int k;
     real **result=new real *[this->ncls];
     result[0]=new real[this->ncls*this->ncls];
+    k=0;
     for (int i=0; i<this->ncls; i++) {
       result[i]=result[0]+i*this->ncls;
       for (int j=i+1; j<this->ncls; j++) {
         result[i][j]=classifier[k]->R(x);
-	result[i][j]=(1+result[i][j])/2;
+	result[i][j]=(1-result[i][j])/2;
 	k++;
       }
     }

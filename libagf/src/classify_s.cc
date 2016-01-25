@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
   char *confile;		//output confidences
   FILE *fs;
 
-  svm_multi<real_a, cls_ta> *classifier;
+  onevone<real_a, cls_ta> *classifier;
 
   //transformation matrix:
   real_a **mat=0;
@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 
   opt_args.algtype=0;
   //errcode=agf_parse_command_opts(argc, argv, "a:c:nuAEMUZ", &opt_args);
-  errcode=agf_parse_command_opts(argc, argv, "a:nuAEMU", &opt_args);
+  errcode=agf_parse_command_opts(argc, argv, "a:nuAEMUZ", &opt_args);
   if (errcode==FATAL_COMMAND_OPTION_PARSE_ERROR) return errcode;
 
   //parse the command line arguments:
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     printf("                  modelfile test output\n");
     printf("\n");
     printf("where:\n");
-    printf("  modelfile   file containing LIBSVM classification model\n");
+    printf("  modelfile   file containing 1 vs. 1 classification model\n");
     printf("  test        file containing vector data to be classified\n");
     printf("  output      files containing the results of the classification:\n");
     printf("                .cls for classes, .con for confidence ratings\n");
@@ -62,15 +62,20 @@ int main(int argc, char *argv[]) {
     printf("  -A          ASCII format for test data and output\n");
     printf("  -M          LIBSVM format for test data and output\n");
     printf("  -E missing  missing value for LIBSVM features data\n");
+    printf("  -Z          use \"in-house\" SVM codes\n");
     printf("\n");
     return INSUFFICIENT_COMMAND_ARGS;
   }
 
   ran_init();			//random numbers resolve ties
 
-  //read in class borders:
-  //"in-house" SVM predictor:
-  classifier=new svm_multi<real_a, cls_ta>(argv[0]);
+  if (opt_args.Zflag) {
+    //"in-house" SVM predictor:
+    classifier=new svm_multi<real_a, cls_ta>(argv[0]);
+  } else {
+    //read in class borders:
+    classifier=new borders1v1<real_a, cls_ta>(argv[0]);
+  }
   //printf("%d border vectors found: %s\n", ntrain, argv[0]);
 
   if (opt_args.asciiflag) {
