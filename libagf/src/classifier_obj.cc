@@ -194,6 +194,18 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  void classifier_obj<real, cls_t>::print(FILE *fs, char *fbase, int depth) {
+    fprintf(stderr, "classifier_obj: you tried to use the print method in a derived class that doesn't support it\n");
+    throw INTERNAL_ERROR;
+  }
+
+  template <class real, class cls_t>
+  int classifier_obj<real, cls_t>::commands(multi_train_param &p, cls_t **list, char *f) {
+    fprintf(stderr, "classifier_obj: you tried to use the commands method in a derived class that doesn't support it\n");
+    throw INTERNAL_ERROR;
+  }
+
+  template <class real, class cls_t>
   int classifier_obj<real, cls_t>::max_depth(int cur) {return 1;}
 
   //does butt-kiss--want to pass that on to the "oneclass" object:

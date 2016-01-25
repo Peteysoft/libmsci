@@ -94,7 +94,9 @@ namespace libagf {
       //function to transform decision value to approximate probabilities:
       SIGFUN_TYPE (*sigmoid_func) (SIGFUN_TYPE);
       //real *ave;		//need these to condtion the test data
+      void calc_grad_len();
     public:
+      agf2class();
       //initialized from a pair of files
       //(<fbase>.brd contains border samples, <fbase>.bgd contains 
       //corresponding gradients):
@@ -115,7 +117,7 @@ namespace libagf {
 		      nel_ta ntrain,		//number of training samples
 		      nel_ta nsamp,		//number of border samples
 		      real tol,			//tolerance of border samples
-		      int tflag);		//copy transformation
+		      int tflag=0);		//copy transformation
 
       virtual ~agf2class();
       int init(const char *fbase, SIGFUN_TYPE (*sigfun)(SIGFUN_TYPE));

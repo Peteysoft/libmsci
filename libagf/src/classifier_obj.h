@@ -109,11 +109,11 @@ namespace libagf {
       //we're roping these classes in to do double duty:
       virtual void print(FILE *fs, 		//output file stream
 		char *fbase=NULL,		//base name of model files
-		int depth=0)=0;			//for pretty, indented output
+		int depth=0);			//for pretty, indented output
       //generate commands for training:
       virtual int commands(multi_train_param &param, //see structure in multi_parse.h
 		cls_t **clist, 			//list of classes, partioned if necessary
-		char *fbase)=0;			//base name of model files
+		char *fbase);			//base name of model files
 
       //for extension to continuum retrievals (setting raw prob.):
       virtual void set_id(cls_t *id);

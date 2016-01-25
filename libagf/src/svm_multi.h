@@ -27,8 +27,6 @@ namespace libagf {
       virtual cls_t classify(real *x, real *p, real *praw=NULL);
       virtual cls_t class_list(cls_t *cls);
 
-      virtual void print(FILE *fs, char *fbase=NULL, int depth=0)=0;
-      virtual int commands(multi_train_param &param, cls_t **clist, char *fbase)=0;
   };
 
   //we can unify this at some later time with "svm2class" binary classifier
@@ -62,8 +60,8 @@ namespace libagf {
       virtual ~svm_multi();
 
       virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
-      virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
-      virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
+      //virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
+      //virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
 
       real R(real *x, cls_t i, cls_t j, real *praw=NULL);
       real R_deriv(real *x, cls_t i, cls_t j, real *drdx);
@@ -86,12 +84,12 @@ namespace libagf {
 		      nel_ta ntrain,		//number of training samples
 		      nel_ta nsamp,		//number of border samples
 		      real tol,			//tolerance of border samples
-		      int tflag);		//copy transform?
+		      int tflag=0);		//copy transform?
       virtual ~borders1v1();
 
       virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
-      virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
-      virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
+      //virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
+      //virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
 
       int save(FILE *fs);
 

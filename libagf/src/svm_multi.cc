@@ -447,16 +447,6 @@ namespace libagf {
     return result;
   }
 
-  //we'll fill these in later once we figure out what they're supposed to do...
-  template <class real, class cls_t>
-  void svm_multi<real, cls_t>::print(FILE *fs, char *fbase, int depth) {
-  }
-
-  template <class real, class cls_t>
-  int svm_multi<real, cls_t>::commands(multi_train_param &param, cls_t **clist, char *fbase) {
-    //training to convert LIBSVM model to AGF model?
-  }
-
   //raw decision value for a given pair of classes:
   template <class real, class cls_t>
   real svm_multi<real, cls_t>::R(real *x, cls_t i, cls_t j, real *praw) {
@@ -610,7 +600,7 @@ namespace libagf {
     int nmod=this->ncls*(this->ncls-1)/2;
     fprintf(fs, "%d\n", this->ncls);
     for (int i=0; i<nmod; i++) {
-      err=classifier->save(fs);
+      err=classifier[i]->save(fs);
       if (err!=0) return err;
     }
     return err;
@@ -694,7 +684,7 @@ namespace libagf {
     for (int i=0; i<this->ncls; i++) {
       result[i]=result[0]+i*this->ncls;
       for (int j=i+1; j<this->ncls; j++) {
-        result[i][j]=classifier[k]->classify(x);
+        result[i][j]=classifier[k]->R(x);
 	result[i][j]=(1+result[i][j])/2;
 	k++;
       }
@@ -724,6 +714,7 @@ namespace libagf {
   }
 
   template class svm_multi<real_a, cls_ta>;
+  template class borders1v1<real_a, cls_ta>;
 
 } //end namespace libagf
 

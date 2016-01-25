@@ -419,6 +419,14 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  agf2class<real, cls_t>::agf2class() {
+    brd=NULL;
+    grd=NULL;
+    n=0;
+    gd=NULL;
+  }
+
+  template <class real, class cls_t>
   agf2class<real, cls_t>::agf2class(const char *fbase, int sigtype) {
     int err;
     SIGFUN_TYPE (*sigfun) (SIGFUN_TYPE);
@@ -474,14 +482,9 @@ namespace libagf {
     this->D1=this->D;
     this->ncls=2;
 
-    //calculate and store the lengths of all the gradient vectors for possible
-    //use later on:
-    gd=new real[n];
-    for (nel_ta i=0; i<n; i++) {
-      gd[i]=0;
-      for (dim_ta j=0; j<this->D; j++) gd[i]+=grd[i][j]*grd[i][j];
-      gd[i]=sqrt(gd[i]);
-    }
+    //(don't) calculate and store the lengths of all the gradient vectors for possible
+    //use later on: (we'll get them when we need them...)
+    gd=NULL;
 
     return err;
   }
@@ -501,6 +504,7 @@ namespace libagf {
     this->ncls=svm->n_class();
     this->D1=svm->n_feat();
     if (tflag) {
+      //is this necessary? shouldn't the training data be transformed already?
       if (this->copy_ltran(svm)) {
         assert(this->D==nvar);
         xtran=allocate_matrix<real, int32_t>(ntrain, this->D1);
@@ -519,7 +523,6 @@ namespace libagf {
       this->D=this->D1;
       xtran=x;
     }
-
 
     //remove side effects:
     for (nel_ta k=0; k<ntrain; k++) {
@@ -557,6 +560,7 @@ namespace libagf {
       delete [] xtran;
     }
 
+    gd=NULL;
   }
 
   template <class real, class cls_t>
@@ -564,7 +568,19 @@ namespace libagf {
     delete_matrix(brd);
     delete_matrix(grd);
     //delete [] this->name;
-    delete [] gd;
+    if (gd!=NULL) delete [] gd;
+  }
+
+  template <class real, class cls_t>
+  void agf2class<real, cls_t>::calc_grad_len() {
+    //calculate and store the lengths of all the gradient vectors for possible
+    //use later on:
+    gd=new real[n];
+    for (nel_ta i=0; i<n; i++) {
+      gd[i]=0;
+      for (dim_ta j=0; j<this->D; j++) gd[i]+=grd[i][j]*grd[i][j];
+      gd[i]=sqrt(gd[i]);
+    }
   }
 
   //if flag, then border vectors are stored un-normalized
@@ -648,10 +664,9 @@ namespace libagf {
     grd=grd2;
 
     //have to recalculate all the gradient lengths, dammit:
-    for (nel_ta i=0; i<n; i++) {
-      gd[i]=0;
-      for (dim_ta j=0; j<this->D1; j++) gd[i]+=grd[i][j]*grd[i][j];
-      gd[i]=sqrt(gd[i]);
+    if (gd!=NULL) {
+      delete [] gd;
+      calc_grad_len();
     }
 
     return err2;

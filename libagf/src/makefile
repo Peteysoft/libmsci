@@ -50,6 +50,7 @@ EXECUTABLES =	class_borders \
 		classify_c \
 		classify_m \
 		classify_s \
+		svm_accelerate \
 		cls_comp_stats \
 		pdf_knn \
                 pdf_agf \
