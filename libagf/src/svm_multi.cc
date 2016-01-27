@@ -441,7 +441,7 @@ namespace libagf {
 	for (int k=0; k<nsv[j]; k++) result[i][j]+=coef[i][sj+k]*kv[sj+k];
 	result[i][j] -= rho[p];
         if (this->voteflag==0) result[i][j]=1./(1+exp(probA[p]*result[i][j]+probB[p]));
-	printf("%g %g\n", result[i][j], (1-R(x, i, j))/2);
+	//printf("%g %g\n", result[i][j], (1-R(x, i, j))/2);
 	p++;
       }
     }
@@ -482,7 +482,7 @@ namespace libagf {
     }
     //p=this->ncls*(this->ncls-1)/2-(this->ncls-i)*(this->ncls-i-1)/2+j;
     p=i*(2*this->ncls-i-1)/2+j-i-1;
-    printf("%d %d %d\n", i, j, p);
+    //printf("%d %d %d\n", i, j, p);
     result -= rho[p];
     if (praw!=NULL) praw[0]=result;
     if (this->voteflag==0) result=1./(1+exp(probA[p]*result+probB[p]));
@@ -517,7 +517,7 @@ namespace libagf {
     sj=start[j];
 
     result=0;
-    for (dim_ta k=0; k<this->D1; k++) drdx1[j]=0;
+    for (dim_ta k=0; k<this->D1; k++) drdx1[k]=0;
     for (int k=0; k<nsv[i]; k++) {
       kv=(*kernel_deriv)(x, sv[si+k], this->D1, param, deriv);
       result+=coef[j-1][si+k]*kv;
@@ -543,8 +543,7 @@ namespace libagf {
       drdx[k]=sgn*drdx1[k];
       //printf("%g ", drdx[k]);
     }
-    //printf("\nr=%g\n");
-
+    //printf("\nr=%g\n", result);
 
     return sgn*result;
   }
@@ -611,7 +610,7 @@ namespace libagf {
     classifier=new agf2class<real, cls_t>*[nmod];
     for (int i=0; i<nmod; i++) {
       classifier[i]=new agf2class<real, cls_t>();
-      err=classifier[i]->load(fs);
+      err=classifier[i]->load(fs, vflag);
       if (err!=0) throw err;
     }
     fclose(fs);
@@ -628,6 +627,7 @@ namespace libagf {
         throw DIMENSION_MISMATCH;
       }
     }
+    this->voteflag=vflag;
   }
 
   template <class real, class cls_t>
@@ -661,17 +661,15 @@ namespace libagf {
     this->D1=svm->n_feat();
     this->label=new cls_t[this->ncls];
     svm->class_list(this->label);
-    if (tflag) {
-      if (this->copy_ltran(svm)) {
-        assert(this->D==nvar);
-        xtran=allocate_matrix<real, int32_t>(ntrain, this->D1);
-        for (nel_ta i=0; i<ntrain; i++) {
-          for (dim_ta j=0; j<this->D1; j++) {
-            xtran[i][j]=0;
-            for (dim_ta k=0; k<this->D; k++) {
-              real diff=x[i][k]-this->b[k];
-              xtran[i][j]+=diff*this->mat[k][j];
-            }
+    if (tflag && this->copy_ltran(svm)) {
+      assert(this->D==nvar);
+      xtran=allocate_matrix<real, int32_t>(ntrain, this->D1);
+      for (nel_ta i=0; i<ntrain; i++) {
+        for (dim_ta j=0; j<this->D1; j++) {
+          xtran[i][j]=0;
+          for (dim_ta k=0; k<this->D; k++) {
+            real diff=x[i][k]-this->b[k];
+            xtran[i][j]+=diff*this->mat[k][j];
           }
 	}
       }
@@ -735,8 +733,8 @@ namespace libagf {
     for (int i=0; i<this->ncls; i++) {
       result[i]=result[0]+i*this->ncls;
       for (int j=i+1; j<this->ncls; j++) {
-        result[i][j]=classifier[k]->R(x);
-	result[i][j]=(1-result[i][j])/2;
+        result[i][j]=-classifier[k]->R(x);
+	if (this->voteflag!=1) result[i][j]=(result[i][j]-1)/2;
 	k++;
       }
     }

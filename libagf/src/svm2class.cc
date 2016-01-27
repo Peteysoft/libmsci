@@ -76,35 +76,6 @@ namespace libagf {
     return this->ncls;
   }
 
-  /*
-  template <class real, class cls_t>
-  void svm2class<real, cls_t>::R_deriv_num(real *x, real dx, real *drdx) {
-    real x1[this->D];
-    real x2[this->D];
-    real r1, r2;
-    for (dim_ta i=0; i<this->D; i++) {
-      x1[i]=x[i];
-      x2[i]=x[i];
-    }
-    for (dim_ta i=0; i<this->D; i++) {
-      x1[i]-=dx;
-      x2[i]+=dx;
-      r1=R(x1);
-      r2=R(x2);
-      //printf("r1=%g; r2=%g\n", r1, r2);
-      //printf("x1[%d]=%g; x2[%d]=%g\n", i, x1[i], i, x2[i]);
-      drdx[i]=(r2-r1)/dx/2;
-      //printf("%g ", drdx[i]);
-      x1[i]=x[i];
-      x2[i]=x[i];
-    }
-    printf("\n");
-    printf("R_d_num: x=");
-    for (dim_ta i=0; i<this->D; i++) printf(" %g", x[i]);
-    printf("\n");
-  }
-  */
-
   template <class real, class cls_t>
   cls_t svm2class<real, cls_t>::classify(real *x, real *p, real *praw) {
     real r;

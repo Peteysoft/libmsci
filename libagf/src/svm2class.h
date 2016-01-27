@@ -50,14 +50,16 @@ namespace libagf {
 
   template <class real, class cls_t>
   inline real svm2class<real, cls_t>::R_deriv(real *x, real *drdx) {
-    real drdx2[this->D1];
+    //real drdx2[this->D1];
     real r=classifier->R_deriv(x, ind1, ind2, drdx);
+    /*
     real r2=R(x);
-    this->R_deriv_num(x, 0.0001, drdx2);
+    this->R_deriv_num(x, 0.005, drdx2);
     printf("%g %g\n", r, r2);
     for (int i=0; i<this->D1; i++) {
       printf("%g %g\n", drdx[i], drdx2[i]);
     }
+    */
     return r;
   }
 

@@ -36,7 +36,6 @@ namespace libagf {
 
   template <class real, class cls_t>
   binaryclassifier<real, cls_t>::~binaryclassifier() {
-    delete [] this->name;
   }
 
   template <class real, class cls_t>
@@ -531,18 +530,16 @@ namespace libagf {
     sigmoid_func=&tanh;
     this->ncls=svm->n_class();
     this->D1=svm->n_feat();
-    if (tflag) {
+    if (tflag && this->copy_ltran(svm)) {
       //is this necessary? shouldn't the training data be transformed already?
-      if (this->copy_ltran(svm)) {
-        assert(this->D==nvar);
-        xtran=allocate_matrix<real, int32_t>(ntrain, this->D1);
-        for (nel_ta i=0; i<ntrain; i++) {
-          for (dim_ta j=0; j<this->D1; j++) {
-            xtran[i][j]=0;
-            for (dim_ta k=0; k<this->D; k++) {
-              real diff=x[i][k]-this->b[k];
-              xtran[i][j]+=diff*this->mat[k][j];
-            }
+      assert(this->D==nvar);
+      xtran=allocate_matrix<real, int32_t>(ntrain, this->D1);
+      for (nel_ta i=0; i<ntrain; i++) {
+        for (dim_ta j=0; j<this->D1; j++) {
+          xtran[i][j]=0;
+          for (dim_ta k=0; k<this->D; k++) {
+            real diff=x[i][k]-this->b[k];
+            xtran[i][j]+=diff*this->mat[k][j];
 	  }
         }
       }
@@ -727,7 +724,7 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  int agf2class<real, cls_t>::load(FILE *fs) {
+  int agf2class<real, cls_t>::load(FILE *fs, int vflag) {
     int32_t n1, n2;
     int32_t nvar1, nvar2;
     int err=0;
@@ -738,7 +735,7 @@ namespace libagf {
     this->D1=nvar1;
     n=n1;
     this->D=this->D1;
-    sigmoid_func=&tanh;
+    if (vflag) sigmoid_func=NULL; else sigmoid_func=&tanh;
     return err;
   }
 

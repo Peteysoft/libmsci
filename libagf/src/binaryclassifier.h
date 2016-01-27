@@ -133,7 +133,7 @@ namespace libagf {
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
 
       //load and save all in one as ASCII:
-      int load(FILE *fs);
+      int load(FILE *fs, int vflag=0);
       int save(FILE *fs);
   };
 

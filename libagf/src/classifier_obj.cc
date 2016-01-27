@@ -22,10 +22,13 @@ namespace libagf {
     D1=0;
     mat=NULL;
     b=NULL;
+    name=NULL;
   }
 
   template <class real, class cls_t>
-  classifier_obj<real, cls_t>::~classifier_obj() {  }
+  classifier_obj<real, cls_t>::~classifier_obj() {
+    if (name!=NULL) delete [] name;
+  }
 
   template <class real, class cls_t>
   cls_t classifier_obj<real, cls_t>::n_class() {

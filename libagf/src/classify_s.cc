@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 
   opt_args.algtype=0;
   //errcode=agf_parse_command_opts(argc, argv, "a:c:nuAEMUZ", &opt_args);
-  errcode=agf_parse_command_opts(argc, argv, "a:nuAEMUZ", &opt_args);
+  errcode=agf_parse_command_opts(argc, argv, "a:nuAEMQ:UZ", &opt_args);
   if (errcode==FATAL_COMMAND_OPTION_PARSE_ERROR) return errcode;
 
   //parse the command line arguments:
@@ -61,8 +61,9 @@ int main(int argc, char *argv[]) {
     printf("  -a normfile file containing normalization data\n");
     printf("  -A          ASCII format for test data and output\n");
     printf("  -M          LIBSVM format for test data and output\n");
-    printf("  -E missing  missing value for LIBSVM features data\n");
     printf("  -Z          use \"in-house\" SVM codes\n");
+    printf("  -E missing  missing value for LIBSVM features data\n");
+    printf("  -Q alg      0 = invert probabilites; 1 = class determined by voting\n");
     printf("\n");
     return INSUFFICIENT_COMMAND_ARGS;
   }
@@ -71,10 +72,10 @@ int main(int argc, char *argv[]) {
 
   if (opt_args.Zflag) {
     //"in-house" SVM predictor:
-    classifier=new svm_multi<real_a, cls_ta>(argv[0]);
+    classifier=new svm_multi<real_a, cls_ta>(argv[0], opt_args.Qtype==1);
   } else {
     //read in class borders:
-    classifier=new borders1v1<real_a, cls_ta>(argv[0]);
+    classifier=new borders1v1<real_a, cls_ta>(argv[0], opt_args.Qtype==1);
   }
   //printf("%d border vectors found: %s\n", ntrain, argv[0]);
 
