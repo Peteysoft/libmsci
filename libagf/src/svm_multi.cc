@@ -286,8 +286,8 @@ namespace libagf {
     delete [] line;
     delete [] substr;
 
-    dim_ta **ind=new dim_ta *[nsv_total];	//dimension indices
-    real **raw=new real *[nsv_total];		//raw features data
+    dim_ta *ind[nsv_total];		//dimension indices
+    real *raw[nsv_total];		//raw features data
     int nf[nsv_total];
     coef=new real*[this->ncls-1];
     coef[0]=new real[nsv_total*(this->ncls-1)];
@@ -319,6 +319,7 @@ namespace libagf {
 	//printf("%d:%g ", ind[i][j], raw[i][j]);
       }
       //printf("\n");
+      delete [] line;
     }
     //transfer to more usual array and fill in missing values:
     real missing=0;
@@ -345,9 +346,6 @@ namespace libagf {
     //cls_t cls[nsv_total];
     //print_lvq_svm(stdout, sv, cls, nsv_total, this->D1, 1);
 
-    delete [] ind;
-    delete [] raw;
-    delete [] line;
     fclose(fs);
   }
 
