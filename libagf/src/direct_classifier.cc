@@ -446,11 +446,11 @@ namespace libagf {
       if (this->Mflag) {
         sprintf(format, " %%d:%%.12%s", fcode);
         fprintf(fs, "%d", cls[i]);
-        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, j+1, x[j]);
+        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, j+1, x[i][j]);
         fprintf(fs, "\n");
       } else {
         sprintf(format, "%%.12%s ", fcode);
-        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, x[j]);
+        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, x[i][j]);
         fprintf(fs, "%d\n", cls[i]);
       }
     }

@@ -324,18 +324,21 @@ namespace libagf {
     //write directly to the file to save a little space:
     sprintf(infile, "in.%u.tmp", uid);
     fs=fopen(infile, "w");
-    if (Mflag==0) fprintf(fs, "%d\n", nvar);
+    if (Mflag) {
+      sprintf(format, " %%d:%%.12%s", fcode);
+    } else {
+      fprintf(fs, "%d\n", nvar);
+      sprintf(format, "%%.12%s ", fcode);
+    }
     for (nel_ta i=0; i<n; i++) {
       cls[i]=0;			//clear class data
       //we write to the input file:
       if (Mflag) {
-        sprintf(format, " %%d:%%.12%s", fcode);
         fprintf(fs, "%d", cls[i]);
-        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, j+1, x[j]);
+        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, j+1, x[i][j]);
         fprintf(fs, "\n");
       } else {
-        sprintf(format, "%%.12%s ", fcode);
-        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, x[j]);
+        for (dim_ta j=0; j<nvar; j++) fprintf(fs, format, x[i][j]);
         fprintf(fs, "%d\n", cls[i]);
       }
     }
@@ -348,7 +351,7 @@ namespace libagf {
     err=system(syscall);
     if (err!=0) {
       fprintf(stderr, "general2class->batch_classify: external command,\n  %s\nreturned error code, %d, exiting\n", syscall, err);
-      exit(err);
+      throw err;
     }
 
     //delete input file:
@@ -364,7 +367,7 @@ namespace libagf {
     fs=fopen(outfile, "r");
     if (fs==NULL) {
       fprintf(stderr, "general2class->batch_classify: error opening output file, exiting\n");
-      exit(FILE_READ_ERROR);
+      throw FILE_READ_ERROR;
     }
     err=read_svmout(fs, cls, p, ncls, n);
     fclose(fs);
@@ -379,12 +382,12 @@ namespace libagf {
 
     if (ncls!=2) {
       fprintf(stderr, "general2class: found %d classes in output file, expecting 2\n", ncls);
-      exit(PARAMETER_OUT_OF_RANGE);
+      throw PARAMETER_OUT_OF_RANGE;
     }
 
     if (err!=n) {
       fprintf(stderr, "general2class: error reading output file, %s, exiting\n", outfile);
-      exit(FILE_READ_ERROR);
+      throw FILE_READ_ERROR;
     }
       
   }

@@ -178,22 +178,18 @@ namespace libagf {
 
   template <class real, class cls_t>
   void classifier_obj<real, cls_t>::batch_classify_t(real **x, cls_t *c, real *p, nel_ta n, dim_ta nvar) {
-    real **xtran;
-    xtran=new real*[n];
+    real *xtran[n];
     for (int i=0; i<n; i++) xtran[i]=do_xtran(x[i]);
     batch_classify(xtran, c, p, n, nvar);
     if (mat!=NULL) for (nel_ta i=0; i<n; i++) delete [] xtran[i];
-    delete [] xtran;
   }
 
   template <class real, class cls_t>
   void classifier_obj<real, cls_t>::batch_classify_t(real **x, cls_t *c, real **p, nel_ta n, dim_ta nvar) {
-    real **xtran;
-    xtran=new real*[n];
+    real *xtran[n];
     for (int i=0; i<n; i++) xtran[i]=do_xtran(x[i]);
     batch_classify(xtran, c, p, n, nvar);
     if (mat!=NULL) for (nel_ta i=0; i<n; i++) delete [] xtran[i];
-    delete [] xtran;
   }
 
   template <class real, class cls_t>

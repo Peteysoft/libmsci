@@ -43,8 +43,8 @@ namespace libagf {
     for (int i=0; i<ncls; i++) {
       gsl_vector_set(b, i, 0);
       real val=0;
-      for (int j=0; j<i; j++) val+=r[j][i]*r[j][i];
-      for (int j=i+1; j<ncls; j++) val+=(1-r[i][j])*(1-r[i][j]);
+      for (int j=0; j<i; j++) val+=(1-r[j][i])*(1-r[j][i]);
+      for (int j=i+1; j<ncls; j++) val+=r[i][j]*r[i][j];
       gsl_matrix_set(Q, i, i, val);
       //normality constraint:
       gsl_matrix_set(Q, i, ncls, 1);
@@ -97,7 +97,8 @@ namespace libagf {
       for (int i=0; i<this->ncls; i++) p[i]=0;
       for (int i=0; i<this->ncls; i++) {
         for (int j=i+1; j<this->ncls; j++) {
-          if (praw0[i][j]>0) p[i]++; else p[j]++;
+          //sign is reversed relative to LIBSVM implementation:
+          if (praw0[i][j]<0) p[i]++; else p[j]++;
 	}
       }
     } else {
@@ -440,6 +441,8 @@ namespace libagf {
 	//printf("\n");
 	for (int k=0; k<nsv[j]; k++) result[i][j]+=coef[i][sj+k]*kv[sj+k];
 	result[i][j] -= rho[p];
+	//sign is reversed relative to LIBSVM implementation:
+	result[i][j] = - result[i][j];
         if (this->voteflag==0) result[i][j]=1./(1+exp(probA[p]*result[i][j]+probB[p]));
 	//printf("%g %g\n", result[i][j], (1-R(x, i, j))/2);
 	p++;
@@ -456,7 +459,7 @@ namespace libagf {
     real kv;
     int si, sj;
     cls_t swp;
-    int sgn=1;
+    int sgn=-1;		//sign is reversed relative to LIBSVM implementation
     int p=0;
 
     if (i==j) throw PARAMETER_OUT_OF_RANGE;
@@ -464,8 +467,8 @@ namespace libagf {
     if (i>j) {
       swp=i;
       i=j;
-      j=i;
-      sgn=-1;
+      j=swp;
+      sgn=1;
     }
 
     si=start[i];
@@ -487,7 +490,7 @@ namespace libagf {
     if (praw!=NULL) praw[0]=result;
     if (this->voteflag==0) result=1./(1+exp(probA[p]*result+probB[p]));
 
-    return sgn*(1-2*result);
+    return sgn*(2*result-1);
   }
 
   //raw decision value for a given pair of classes:
@@ -497,7 +500,7 @@ namespace libagf {
     real kv;
     int si, sj;
     cls_t swp;
-    int sgn=1;
+    int sgn=-1;
     int p=0;
     real t1, t2;
     real deriv[this->D1];
@@ -509,8 +512,8 @@ namespace libagf {
     if (i>j) {
       swp=i;
       i=j;
-      j=i;
-      sgn=-1;
+      j=swp;
+      sgn=1;
     }
 
     si=start[i];
@@ -534,8 +537,8 @@ namespace libagf {
     if (this->voteflag==0) {
       t1=exp(result*probA[p]+probB[p]);
       t2=probA[p]*t1/(1+t1)/(1+t1);		//derivative of sigmoid function
-      for (dim_ta k=0; k<this->D1; k++) drdx1[k]*=2*t2;
-      result=1-2/(1+t1);
+      for (dim_ta k=0; k<this->D1; k++) drdx1[k]*=-2*t2;
+      result=2/(1+t1)-1;
     }
 
     //printf("drdx=");
@@ -733,8 +736,8 @@ namespace libagf {
     for (int i=0; i<this->ncls; i++) {
       result[i]=result[0]+i*this->ncls;
       for (int j=i+1; j<this->ncls; j++) {
-        result[i][j]=-classifier[k]->R(x);
-	if (this->voteflag!=1) result[i][j]=(result[i][j]-1)/2;
+        result[i][j]=classifier[k]->R(x);
+	if (this->voteflag!=1) result[i][j]=(result[i][j]+1)/2;
 	k++;
       }
     }
