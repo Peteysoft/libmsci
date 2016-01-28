@@ -19,7 +19,6 @@ namespace libagf {
 
   template <class real, class cls_t>
   binaryclassifier<real, cls_t>::binaryclassifier() {
-    this->name=NULL;
     id=-1;
     this->ncls=2;
     //xtran=NULL;

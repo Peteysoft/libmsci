@@ -18,7 +18,6 @@ namespace libagf {
   template <class real, class cls_t>
   class binaryclassifier:public classifier_obj<real, cls_t> {
     protected:
-      real **mat;		//transformation matrix
       int id;			//unique index simply them  
 				//in the order in which they divide the classes
     public:

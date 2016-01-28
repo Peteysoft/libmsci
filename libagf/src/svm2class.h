@@ -10,7 +10,6 @@ namespace libagf {
   class svm2class:public binaryclassifier<real, cls_t> {
     protected:
       svm_multi<real, cls_t> *classifier;
-      int ttype;		//is it worth adding back in?
       int dflag;		//whether or not to delete the classifier when done
       cls_t ind1;
       cls_t ind2;
@@ -18,11 +17,7 @@ namespace libagf {
       cls_t label2;
     public:
       svm2class();
-      svm2class(char *modfile, 		//file containing LIBSVM model
-		      int tc=0);	//how to transform decision value:
-      					//-1: f (return raw decision value)
-      					//0:  1 - 2/(1+exp(A*f+B)
-					//1:  -tanh(f)
+      svm2class(char *modfile); 		//file containing LIBSVM model
       //convert 1 vs. 1 multi-class classifier into binary classifier:
       svm2class(svm_multi<real, cls_t> *other, 		//1 vs. 1 multi-class classifier
 		      cls_t i, 				//index of first class

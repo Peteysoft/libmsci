@@ -76,7 +76,7 @@ namespace libagf {
 
     p2=new real *[n];
     p2[0]=new real[n*ncls];
-    for (nel_ta i=0; i<n; i++) p2[i]=p2[0]+i*ncls;
+    for (nel_ta i=1; i<n; i++) p2[i]=p2[0]+i*ncls;
     batch_classify(x, c, p2, n, nvar);
     for (nel_ta i=0; i<n; i++) {
       if (c[i]>=0 && c[i]<=ncls-1) {

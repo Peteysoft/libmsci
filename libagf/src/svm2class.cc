@@ -14,13 +14,11 @@ namespace libagf {
   template <class real, class cls_t>
   svm2class<real, cls_t>::svm2class() {
     classifier=NULL;
-    ttype=0;
     dflag=0;
   }
 
   template <class real, class cls_t>
-  svm2class<real, cls_t>::svm2class(char *modfile, int tc) {
-    ttype=tc;
+  svm2class<real, cls_t>::svm2class(char *modfile) {
     cls_t *clist;
     classifier=new svm_multi<real, cls_t>(modfile);
     this->ncls=classifier->n_class();

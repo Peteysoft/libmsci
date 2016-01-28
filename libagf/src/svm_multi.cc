@@ -85,6 +85,7 @@ namespace libagf {
 
   template <class real, class cls_t>
   onevone<real, cls_t>::~onevone() {
+    delete [] label;
   }
 
   template <class real, class cls_t>
@@ -378,6 +379,11 @@ namespace libagf {
     //constant term:
     rho=new real[nmod];
     for (int i=0; i<nmod; i++) rho[i]=other->rho[i];
+    //kernel functions:
+    param=new real[3];
+    for (int i=0; i<nmod; i++) param[i]=other->param[i];
+    kernel=other->kernel;
+    kernel_deriv=other->kernel_deriv;
     //coefficients for determining probabilities:
     if (other->probA!=NULL && other->probB!=NULL) {
       probA=new real[nmod];
@@ -405,8 +411,8 @@ namespace libagf {
     delete [] nsv;
     if (probA!=NULL) delete [] probA;
     if (probB!=NULL) delete [] probB;
-    delete [] this->label;
     delete [] start;
+    delete [] param;
   }
 
   //raw decision values, one for each pair of classes:
