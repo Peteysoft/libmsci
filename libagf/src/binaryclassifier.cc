@@ -21,7 +21,6 @@ namespace libagf {
   binaryclassifier<real, cls_t>::binaryclassifier() {
     id=-1;
     this->ncls=2;
-    //xtran=NULL;
   }
 
   template <class real, class cls_t>
@@ -594,7 +593,6 @@ namespace libagf {
   agf2class<real, cls_t>::~agf2class() {
     delete_matrix(brd);
     delete_matrix(grd);
-    //delete [] this->name;
     if (gd!=NULL) delete [] gd;
   }
 
@@ -610,7 +608,7 @@ namespace libagf {
     }
   }
 
-  //if flag, then border vectors are stored un-normalized
+  //transform border vectors and gradients: (are stored in original coords)
   template <class real, class cls_t>
   int agf2class<real, cls_t>::ltran_model(real **mat1, real *b1, dim_ta d1, dim_ta d2) {
     int err2=0;
@@ -738,6 +736,7 @@ namespace libagf {
     n=n1;
     this->D=this->D1;
     if (vflag) sigmoid_func=NULL; else sigmoid_func=&tanh;
+    gd=NULL;
     return err;
   }
 

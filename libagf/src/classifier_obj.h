@@ -16,7 +16,7 @@ namespace libagf {
       char *name;		//the file in which it is contained etc.
 
       cls_t ncls;		//number of classes
-      dim_ta D;			//number of dimensions in test points (for transformed system only)
+      dim_ta D;			//number of dimensions in test points (for original, non-transformed system only)
 
       real **mat;		//transformation matrix
       real *b;			//translation vector

@@ -97,7 +97,6 @@ namespace libagf {
       nel_ta n;			//number of samples
       //function to transform decision value to approximate probabilities:
       SIGFUN_TYPE (*sigmoid_func) (SIGFUN_TYPE);
-      //real *ave;		//need these to condtion the test data
       void calc_grad_len();
     public:
       agf2class();
