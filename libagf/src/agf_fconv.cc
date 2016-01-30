@@ -286,7 +286,6 @@ cls_ta * read_lvq_classes(FILE *fs, nel_ta &n, int hflag) {
 
     line=read_ascii_all(ifs, &n);
 
-    vec=new real *[n];
     cls=new cls_t[n];
     nfeat=new dim_ta[n];
 
@@ -352,7 +351,7 @@ cls_ta * read_lvq_classes(FILE *fs, nel_ta &n, int hflag) {
 
 template <class real, class cls_t>
 nel_ta read_svm(FILE *fs, real **&train, cls_t *&cls, dim_ta &nvar, real missing, int Uflag) {
-  cls_t ncls;			//number of classes
+  cls_t ncls=0;			//number of classes
   nel_ta result;
   //real *ord;
 

@@ -132,8 +132,8 @@ int main(int argc, char **argv) {
 
     delete [] con;
     delete [] pdf2;
-
     for (nel_ta i=n+1; i<nline; i++) delete [] line[i];
+    delete [] label_list;
   } else if (isdigit(line[0][strptr])) {
     n=nline;
     cls=new cls_ta[n];

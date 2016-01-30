@@ -585,6 +585,7 @@ namespace libagf {
       delete [] xtran[0];
       delete [] xtran;
     }
+    bordparam_clean(&param);
 
     gd=NULL;
   }

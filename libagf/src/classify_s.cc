@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 
   agf_command_opts opt_args;
 
-  opt_args.algtype=0;
+  opt_args.Qtype=0;
   //errcode=agf_parse_command_opts(argc, argv, "a:c:nuAEMUZ", &opt_args);
   errcode=agf_parse_command_opts(argc, argv, "a:nuAEMQ:UZ", &opt_args);
   if (errcode==FATAL_COMMAND_OPTION_PARSE_ERROR) return errcode;

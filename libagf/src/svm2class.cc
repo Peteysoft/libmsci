@@ -54,7 +54,7 @@ namespace libagf {
     if (i==j || i>=oncls || j>=oncls) throw PARAMETER_OUT_OF_RANGE;
     ind1=i;
     ind2=j;
-    clist=new cls_t[this->ncls];
+    clist=new cls_t[classifier->n_class()];
     classifier->class_list(clist);
     label1=clist[i];
     label2=clist[j];

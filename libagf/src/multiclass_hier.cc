@@ -90,7 +90,6 @@ namespace libagf {
     param.lineno=0;
 
     err=init(param);
-    fclose(fs);
     delete [] param.commandname;
 
     return err;
@@ -130,7 +129,6 @@ namespace libagf {
     init(param);
 
     //clean up:
-    fclose(fs);
     for (int i=0; i<param.maxnstack; i++) {
       if (param.optstack[i]!=NULL) delete [] param.optstack[i];
     }

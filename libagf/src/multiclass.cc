@@ -97,6 +97,13 @@ namespace libagf {
     init(name, part, nmodel, param.trainflag, param.commandname, 
 		    param.Mflag, param.Kflag, param.sigcode);
 
+    //clean up:
+    for (int i=0; i<nmodel; i++) {
+      delete [] name[i];
+      delete [] part[2*i];
+      delete [] part[2*i+1];
+    }
+
     //check for a mapping:
     flag=0;
     do {
@@ -223,6 +230,10 @@ namespace libagf {
     if (imap!=NULL) {
       delete [] imap[0];
       delete [] imap;
+    }
+    if (cnorm!=NULL) {
+      gsl_matrix_free(cnorm);
+      gsl_vector_free(cthresh);
     }
   }
 
@@ -629,6 +640,7 @@ namespace libagf {
         p[ind]-=p[j];
       }
       gsl_vector_free(p2);
+      gsl_vector_free(bt);
       gsl_matrix_free(at);
     }
 

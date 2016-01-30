@@ -141,6 +141,7 @@ int main(int argc, char *argv[]) {
   //clean up:
   delete [] test[0];
   delete [] test;
+  delete [] cls;
   if (mat!=NULL) {
     delete_matrix(mat);
     delete [] ave;

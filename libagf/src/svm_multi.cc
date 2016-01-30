@@ -405,7 +405,9 @@ namespace libagf {
 
   template <class real, class cls_t>
   svm_multi<real, cls_t>::~svm_multi() {
+    delete [] sv[0];
     delete [] sv;
+    delete [] coef[0];
     delete [] coef;
     delete [] rho;
     delete [] nsv;
@@ -612,6 +614,7 @@ namespace libagf {
     }
     for (cls_t i=0; i<this->ncls; i++) this->label[i]=atoi(sub[i]);
     delete [] line;
+    delete [] sub;
     //read in individual binary classifiers:
     int nmod=this->ncls*(this->ncls-1)/2;
     classifier=new agf2class<real, cls_t>*[nmod];
@@ -726,7 +729,7 @@ namespace libagf {
   template <class real, class cls_t>
   borders1v1<real, cls_t>::~borders1v1() {
     for (int i=0; i<this->ncls*(this->ncls-1)/2; i++) {
-      delete [] classifier[i];
+      delete classifier[i];
     }
     delete [] classifier;
   }
