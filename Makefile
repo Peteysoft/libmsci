@@ -18,8 +18,8 @@ OPT=-g
 # C++ compiler:
 CPP = g++
 
-BASE_PATH = /home/lenovo
-#BASE_PATH = /mnt/sdc1/home2/pete
+#BASE_PATH = /home/lenovo
+BASE_PATH = /mnt/sdc1/home2/pete
 #BASE_PATH = /home/pmills
 
 LIB_PATH = $(BASE_PATH)/lib

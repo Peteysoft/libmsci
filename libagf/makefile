@@ -13,8 +13,8 @@ OPT_VER=-g
 
 CC = g++
 
-#BASE_PATH = /mnt/sda1/home2/pete
-BASE_PATH = /home/lenovo
+BASE_PATH = /mnt/sdc1/home2/pete
+#BASE_PATH = /home/lenovo
 
 LIB_PATH = $(BASE_PATH)/lib
 BIN_PATH = $(BASE_PATH)/bin
