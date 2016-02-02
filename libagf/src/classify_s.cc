@@ -11,15 +11,17 @@ using namespace std;
 using namespace libagf;
 using namespace libpetey;
 
+typedef double calc_t;
+
 int main(int argc, char *argv[]) {
   char *outfile;		//output classes
   char *confile;		//output confidences
   FILE *fs;
 
-  onevone<real_a, cls_ta> *classifier;
+  onevone<calc_t, cls_ta> *classifier;
 
   //transformation matrix:
-  real_a **mat=0;
+  real_a **mat=NULL;
   real_a *ave;
   dim_ta nvar1, nvar2;
 
@@ -30,8 +32,12 @@ int main(int argc, char *argv[]) {
   real_a **test;		//test data vectors
   cls_ta *result;		//results of classification
 
-  real_a **prob;		//estimated probabilities
+  calc_t **prob;		//estimated probabilities
   real_a *con;			//estimated confidence
+
+  //do calculations in double precision:
+  calc_t **mat2;
+  calc_t *b2;
 
   int errcode;
 
@@ -72,10 +78,10 @@ int main(int argc, char *argv[]) {
 
   if (opt_args.Zflag) {
     //"in-house" SVM predictor:
-    classifier=new svm_multi<real_a, cls_ta>(argv[0], opt_args.Qtype==1);
+    classifier=new svm_multi<calc_t, cls_ta>(argv[0], opt_args.Qtype==1);
   } else {
     //read in class borders:
-    classifier=new borders1v1<real_a, cls_ta>(argv[0], opt_args.Qtype==1);
+    classifier=new borders1v1<calc_t, cls_ta>(argv[0], opt_args.Qtype==1);
   }
   //printf("%d border vectors found: %s\n", ntrain, argv[0]);
 
@@ -87,7 +93,7 @@ int main(int argc, char *argv[]) {
       ntest=read_lvq(argv[1], test, dum, nvar);
     }
   } else {
-    test=read_vecfile(argv[1], ntest, nvar);
+    test=read_vecfile<real_a>(argv[1], ntest, nvar);
   }
   if (nvar == -1) {
     fprintf(stderr, "Error reading input file: %s\n", argv[1]);
@@ -113,7 +119,15 @@ int main(int argc, char *argv[]) {
   if (opt_args.normfile!=NULL) {
     mat=read_stats2(opt_args.normfile, ave, nvar1, nvar2);
 
-    errcode=classifier->ltran(mat, ave, nvar1, nvar2, opt_args.uflag);
+    mat2=allocate_matrix<calc_t, int32_t>(nvar1, nvar2);
+    b2=new calc_t[nvar1];
+
+    for (int i=0; i<nvar1; i++) {
+      b2[i]=ave[i];
+      for (int j=0; j<nvar2; j++) mat2[i][j]=mat[i][j];
+    }
+
+    errcode=classifier->ltran(mat2, b2, nvar1, nvar2, opt_args.uflag);
     if (errcode!=0) exit(errcode);
 
     if (classifier->n_feat_t() != nvar) {
@@ -141,12 +155,14 @@ int main(int argc, char *argv[]) {
   result=new cls_ta[ntest];
   con=new real_a[ntest];
   nclass=classifier->n_class();
-  prob=new real_a*[ntest];
-  prob[0]=new real_a[ntest*nclass];
+  prob=new calc_t*[ntest];
+  prob[0]=new calc_t[ntest*nclass];
 
   for (nel_ta i=0; i<ntest; i++) {
+    calc_t test2[nvar];
     prob[i]=prob[0]+i*nclass;
-    result[i]=classifier->classify_t(test[i], prob[i]);
+    for (dim_ta j=0; j<nvar; j++) test2[j]=test[i][j];
+    result[i]=classifier->classify_t(test2, prob[i]);
   }
 
   //printf("\n");
@@ -167,7 +183,7 @@ int main(int argc, char *argv[]) {
     fprintf(fs, "\n");
     for (nel_ta i=0; i<ntest; i++) {
       fprintf(fs, "%d", clist[result[i]]);
-      for (cls_ta j=0; j<ncls; j++) fprintf(fs, " %g", prob[i][j]);
+      for (cls_ta j=0; j<ncls; j++) fprintf(fs, " %lg", prob[i][j]);
       fprintf(fs, "\n");
     }
   } else {
@@ -230,6 +246,8 @@ int main(int argc, char *argv[]) {
   if (mat!=NULL) {
     delete_matrix(mat);
     delete [] ave;
+    delete_matrix(mat2);
+    delete [] b2;
   }
   if (opt_args.normfile!=NULL) delete [] opt_args.normfile;
   delete classifier;

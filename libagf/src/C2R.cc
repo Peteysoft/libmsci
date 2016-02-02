@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
   //printf("%s; %s\n", confile, clsfile);
 
   if (flag[0]) {
-    r=read_datfile(rfile, n1);
+    r=read_datfile<real_a>(rfile, n1);
     cls=new cls_ta[n1];
     con=new real_a[n1];
     for (nel_ta i=0; i<n1; i++) {
@@ -87,8 +87,8 @@ int main(int argc, char **argv) {
     fwrite(con, sizeof(real_a), n1, fs);
     fclose(fs);
   } else {
-    cls=read_clsfile(clsfile, n1);
-    con=read_datfile(confile, n2);
+    cls=read_clsfile<cls_ta>(clsfile, n1);
+    con=read_datfile<real_a>(confile, n2);
 
     if (n1!=n2) {
       fprintf(stderr, "C2R: sample count mismatch: %d elements in %s\n", 

@@ -259,7 +259,7 @@ int main(int argc, char *argv[]) {
         sprintf(outcls, "%s.cls", outbase);
       }
 
-      ord=(void *) read_clsfile(clsfile, ntrain2);
+      ord=(void *) read_clsfile<cls_ta>(clsfile, ntrain2);
       if (ntrain2 == -1) {
         fprintf(stderr, "agf_preprocess: Error reading file: %s\n", clsfile);
         exit(FILE_READ_ERROR);

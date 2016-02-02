@@ -94,7 +94,7 @@ int main(int argc, char ** argv) {
 
   //read in the training data:
   if (argc >= 1) {
-    vec=read_vecfile(vecfile, n, nvar);
+    vec=read_vecfile<real_a>(vecfile, n, nvar);
   } else {
     int32_t nt1, nv1;
     vec=read_matrix<real_a, int32_t>(stdin, nt1, nv1);
@@ -138,13 +138,13 @@ int main(int argc, char ** argv) {
   if (opts.Cflag==0) {
     nel_ta n1;
     if (opts.Lflag) {
-      ord=read_datfile(clsfile, n1);
+      ord=read_datfile<real_a>(clsfile, n1);
       if (ord==NULL) {
         fprintf(stderr, "agf2ascii: unable to open file, %s, for reading\n", clsfile);
         exit(UNABLE_TO_OPEN_FILE_FOR_READING);
       }
     } else {
-      cls=read_clsfile(clsfile, n1);
+      cls=read_clsfile<cls_ta>(clsfile, n1);
       if (cls==NULL) {
         fprintf(stderr, "agf2ascii: unable to open file, %s, for reading\n", clsfile);
         exit(UNABLE_TO_OPEN_FILE_FOR_READING);

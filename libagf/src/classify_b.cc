@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
       ntest=read_lvq(argv[1], test, dum, nvar);
     }
   } else {
-    test=read_vecfile(argv[1], ntest, nvar);
+    test=read_vecfile<real_a>(argv[1], ntest, nvar);
   }
   if (nvar == -1) {
     fprintf(stderr, "Error reading input file: %s\n", argv[1]);

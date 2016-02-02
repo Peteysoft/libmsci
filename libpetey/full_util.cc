@@ -325,7 +325,7 @@ void print_matrix(FILE *fptr, double **mat, integer m, integer n) {
   fprintf(fptr, "%d %d\n", (int32_t) m, (int32_t) n);
   for (integer i=0; i<m; i++) {
     for (integer j=0; j<n; j++) {
-      fprintf(fptr, "%lg ", mat[i][j]);
+      fprintf(fptr, "%20.12lg ", mat[i][j]);
     }
     fprintf(fptr, "\n");
   }

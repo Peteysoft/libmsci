@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
   outfile=argv[2];
 
   //read in the training data:
-  train=read_vecfile(trainfile, ntrain, nvar);
+  train=read_vecfile<real_a>(trainfile, ntrain, nvar);
   if (nvar == -1) {
     fprintf(stderr, "Error reading file: %s\n", trainfile);
     return FILE_READ_ERROR;
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
     return PARAMETER_OUT_OF_RANGE;
   }
 
-  test=read_vecfile(testfile, ntest, nvar1);
+  test=read_vecfile<real_a>(testfile, ntest, nvar1);
   if (nvar == -1) {
     fprintf(stderr, "Error reading file: %s\n", testfile);
     return FILE_READ_ERROR;

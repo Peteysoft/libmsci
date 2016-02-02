@@ -27,9 +27,10 @@ namespace libagf {
 //-returns null pointer on failure
 //-dimension is -1 if this is a bad value
 //-sample number is -1 if there is an allocation failure
-real_a ** read_vecfile(const char *filename, nel_ta &m, dim_ta &n) {
+template <typename real>
+real ** read_vecfile(const char *filename, nel_ta &m, dim_ta &n) {
   FILE *fs;
-  real_a **data;
+  real **data;
   nel_ta n1;			//dimensions have to be same type for matrix routines
 
   fs=fopen(filename, "r");
@@ -39,7 +40,7 @@ real_a ** read_vecfile(const char *filename, nel_ta &m, dim_ta &n) {
   }
 
   //just piggy-back off the matrix routines:
-  data=read_matrix<real_a, nel_ta>(fs, m, n1);
+  data=read_matrix<real, nel_ta>(fs, m, n1);
   n=n1;
 
   fclose(fs);
@@ -47,9 +48,10 @@ real_a ** read_vecfile(const char *filename, nel_ta &m, dim_ta &n) {
   return data;
 }
 
-cls_ta * read_clsfile(const char *filename, nel_ta &n) {
+template <typename cls_t>
+cls_t * read_clsfile(const char *filename, nel_ta &n) {
   FILE *fs;
-  cls_ta *data;
+  cls_t *data;
 
   fs=fopen(filename, "r");
   if (fs == NULL) {
@@ -67,18 +69,19 @@ cls_ta * read_clsfile(const char *filename, nel_ta &n) {
   n=n/sizeof(cls_ta);
   fseek(fs, 0, SEEK_SET);
 
-  data=new cls_ta [n];
+  data=new cls_t [n];
 
-  fread(data, sizeof(cls_ta), n, fs);
+  fread(data, sizeof(cls_t), n, fs);
 
   fclose(fs);
 
   return data;
 }
 
-real_a * read_datfile(const char *filename, nel_ta &n) {
+template <typename real>
+real * read_datfile(const char *filename, nel_ta &n) {
   FILE *fs;
-  real_a *data;
+  real *data;
 
   fs=fopen(filename, "r");
   if (fs == NULL) {
@@ -88,7 +91,7 @@ real_a * read_datfile(const char *filename, nel_ta &n) {
 
   fseek(fs, 0, SEEK_END);
   n=ftell(fs);
-  if (n % sizeof(real_a) != 0) { //check for consistency
+  if (n % sizeof(real) != 0) { //check for consistency
     n=-1;
     fclose(fs);
     return NULL;
@@ -97,7 +100,7 @@ real_a * read_datfile(const char *filename, nel_ta &n) {
   n=n/sizeof(real_a);
   fseek(fs, 0, SEEK_SET);
 
-  data=new real_a [n];
+  data=new real [n];
   if (data==NULL) {
     //doesn't c++ throw bad allocs anyway??
     n=-1;
@@ -105,7 +108,7 @@ real_a * read_datfile(const char *filename, nel_ta &n) {
     return data;
   }
 
-  fread(data, sizeof(real_a), n, fs);
+  fread(data, sizeof(real), n, fs);
 
   fclose(fs);
 
@@ -133,9 +136,10 @@ int read_stats(const char *filename, real_a *ave, real_a *std, dim_ta ndim) {
   return 0;
 }
 
-real_a ** read_stats2(const char *filename, real_a *&ave, dim_ta &m, dim_ta &n) {
+template <typename real>
+real ** read_stats2(const char *filename, real *&ave, dim_ta &m, dim_ta &n) {
   FILE *fs;
-  real_a **mat;
+  real **mat;
   dim_ta ivar;
   char *header=NULL;
   char **line=NULL;
@@ -153,8 +157,8 @@ real_a ** read_stats2(const char *filename, real_a *&ave, dim_ta &m, dim_ta &n) 
     line=read_ascii_all(fs, &nline, 1);
     if (line==NULL || nline<=0) goto fail;
     n=nline;
-    ave=new real_a[n];
-    mat=allocate_matrix<real_a, nel_ta>(n, n);
+    ave=new real[n];
+    mat=allocate_matrix<real, nel_ta>(n, n);
     for (dim_ta i=0; i<n; i++) {
       if (strlen(line[i])==0) {
         n=i+1;
@@ -172,9 +176,9 @@ real_a ** read_stats2(const char *filename, real_a *&ave, dim_ta &m, dim_ta &n) 
     goto fail;
   } else {
     fseek(fs, 0, SEEK_SET);
-    mat=read_matrix<real_a, nel_ta>(fs, m, n);
+    mat=read_matrix<real, nel_ta>(fs, m, n);
     if (mat==NULL || m<=0 || n<=0) goto fail;
-    ave=new real_a[m];
+    ave=new real[m];
     //printf("read_stats2: constant term:\n");
     n--;
     for (dim_ta i=0; i<m; i++) {
@@ -206,16 +210,24 @@ real_a ** read_stats2(const char *filename, real_a *&ave, dim_ta &m, dim_ta &n) 
   return NULL;
 }
 
-int print_stats(FILE *fs, real_a *ave, real_a *std, dim_ta ndim) {
+int print_stats(FILE *fs, float *ave, float *std, dim_ta ndim) {
   fprintf(fs, STATS_HEADER);
   for (dim_ta i=0; i<ndim; i++) {
     fprintf(fs, "%3d %10.6g %10.6g\n", i, ave[i], std[i]);
   }
-
   return 0;
 }
 
-int agf_read_train(const char *fbase, real_a **&train, cls_ta *&cls, nel_ta &n, dim_ta &nvar) {
+int print_stats(FILE *fs, double *ave, double *std, dim_ta ndim) {
+  fprintf(fs, STATS_HEADER);
+  for (dim_ta i=0; i<ndim; i++) {
+    fprintf(fs, "%4d %12.8lg %12.8lg\n", i, ave[i], std[i]);
+  }
+  return 0;
+}
+
+template <typename real, typename cls_t>
+int agf_read_train(const char *fbase, real **&train, cls_t *&cls, nel_ta &n, dim_ta &nvar) {
   char *vecfile=NULL;
   char *classfile=NULL;
   nel_ta n1;
@@ -231,7 +243,7 @@ int agf_read_train(const char *fbase, real_a **&train, cls_ta *&cls, nel_ta &n, 
   sprintf(classfile, "%s.cls", fbase);
 
   //read in the training data:
-  train=read_vecfile(vecfile, n, nvar);
+  train=read_vecfile<real>(vecfile, n, nvar);
   if (nvar <= 0 || n <= 0) {
     fprintf(stderr, "Error reading file: %s\n", vecfile);
     err=FILE_READ_ERROR;
@@ -243,7 +255,7 @@ int agf_read_train(const char *fbase, real_a **&train, cls_ta *&cls, nel_ta &n, 
     goto fail;
   }
 
-  cls=read_clsfile(classfile, n1);
+  cls=read_clsfile<cls_t>(classfile, n1);
 
   if (n1 <= 0) {
     fprintf(stderr, "Error reading file: %s\n", classfile);
@@ -269,7 +281,8 @@ int agf_read_train(const char *fbase, real_a **&train, cls_ta *&cls, nel_ta &n, 
   return err;
 }	     
 
-int agf_read_borders(const char *fbase, real_a **&brd, real_a **&grd, nel_ta &n, dim_ta &nvar) {
+template <typename real>
+int agf_read_borders(const char *fbase, real **&brd, real **&grd, nel_ta &n, dim_ta &nvar) {
   char *brdfile;
   char *grdfile;
   nel_ta n1;
@@ -288,7 +301,7 @@ int agf_read_borders(const char *fbase, real_a **&brd, real_a **&grd, nel_ta &n,
   strcat(grdfile, ".bgd");
 
   //read in the decision surface data:
-  brd=read_vecfile(brdfile, n, nvar);
+  brd=read_vecfile<real>(brdfile, n, nvar);
   if (nvar <= 0 || n <= 0) {
     fprintf(stderr, "Error reading file: %s\n", brdfile);
     err=FILE_READ_ERROR;
@@ -300,7 +313,7 @@ int agf_read_borders(const char *fbase, real_a **&brd, real_a **&grd, nel_ta &n,
     goto fail;
   }
 
-  grd=read_vecfile(grdfile, n1, nvar1);
+  grd=read_vecfile<real>(grdfile, n1, nvar1);
 
   if (nvar1 <= 0 || n1 <= 0) {
     fprintf(stderr, "Error reading file: %s\n", grdfile);
@@ -360,9 +373,10 @@ char *compile_precommand(const char *fname, agf_command_opts *optargs) {
 }
 
 //increasingly I'm finding this bit really brain-dead:
-real_a **agf_get_features(const char *fbase, agf_command_opts *opt_args, nel_ta &n, dim_ta &nvar, flag_a sufflag)
+template <typename real>
+real **agf_get_features(const char *fbase, agf_command_opts *opt_args, nel_ta &n, dim_ta &nvar, flag_a sufflag)
 {
-  real_a **train;
+  real **train;
   char *vecfile;
 
   vecfile=new char[strlen(fbase)+5];
@@ -394,13 +408,13 @@ real_a **agf_get_features(const char *fbase, agf_command_opts *opt_args, nel_ta 
     sprintf(command+strlen(command), " %s", vecfile);
     fprintf(stderr, "%s\n", command);
     fs=popen(command, "r");
-    train=read_matrix<real_a, nel_ta>(fs, n, nvar1);
+    train=read_matrix<real, nel_ta>(fs, n, nvar1);
     nvar=nvar1;
     pclose(fs);
     delete [] command;
   } else {
     //read in the training data:
-    train=read_vecfile(vecfile, n, nvar);
+    train=read_vecfile<real>(vecfile, n, nvar);
   }
   if (nvar <= 0 || n <= 0) {
     fprintf(stderr, "Error reading file: %s\n", vecfile);
@@ -415,6 +429,26 @@ real_a **agf_get_features(const char *fbase, agf_command_opts *opt_args, nel_ta 
   return train;
 
 }
+
+template float **read_vecfile<float>(const char *, dim_ta &, nel_ta &);
+template double **read_vecfile<double>(const char *, dim_ta &, nel_ta &);
+
+template cls_ta *read_clsfile<cls_ta>(const char *, nel_ta &);
+
+template float *read_datfile<float>(const char *, nel_ta &);
+template double *read_datfile<double>(const char *, nel_ta &);
+
+template float **read_stats2<float>(const char *, float*&, dim_ta &, dim_ta &);
+template double **read_stats2<double>(const char *, double*&, dim_ta &, dim_ta &);
+
+template int agf_read_train<float, cls_ta>(const char *, float **&, cls_ta *&, nel_ta &, dim_ta &);
+template int agf_read_train<double, cls_ta>(const char *, double **&, cls_ta *&, nel_ta &, dim_ta &);
+
+template int agf_read_borders<float>(const char *, float **&, float **&, nel_ta &, dim_ta &);
+template int agf_read_borders<double>(const char *, double **&, double **&, nel_ta &, dim_ta &);
+
+template float **agf_get_features<float>(const char *, agf_command_opts *, nel_ta &, dim_ta &, flag_a);
+template double **agf_get_features<double>(const char *, agf_command_opts *, nel_ta &, dim_ta &, flag_a);
 
 } //end namespace libagf
 

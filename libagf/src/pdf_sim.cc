@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
   outfile=argv[1];
 
   //read in the training data:
-  train=read_vecfile(trainfile, ntrain, nvar);
+  train=read_vecfile<real_a>(trainfile, ntrain, nvar);
   if (nvar == -1) {
     fprintf(stderr, "Error reading file: %s\n", trainfile);
     return FILE_READ_ERROR;

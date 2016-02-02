@@ -11,11 +11,15 @@ using namespace std;
 using namespace libagf;
 using namespace libpetey;
 
+//do calculations in double-precision:
+typedef double calc_t;
+
 int main(int argc, char *argv[]) {
   FILE *fs;
 
-  svm_multi<real_a, cls_ta> *classifier;
-  borders1v1<real_a, cls_ta> *accel;
+  //do all the calculations in double-precision:
+  svm_multi<calc_t, cls_ta> *classifier;
+  borders1v1<calc_t, cls_ta> *accel;
 
   //transformation matrix:
   real_a **mat=0;
@@ -30,6 +34,11 @@ int main(int argc, char *argv[]) {
   cls_ta *cls;
 
   int err;
+
+  //do calculations in double-precision:
+  calc_t **test2;		//test data vectors
+  calc_t **mat2;
+  calc_t *b2;
 
   agf_command_opts opt_args;
 
@@ -74,7 +83,7 @@ int main(int argc, char *argv[]) {
 
   //read in class borders:
   //"in-house" SVM predictor:
-  classifier=new svm_multi<real_a, cls_ta>(argv[0]);
+  classifier=new svm_multi<calc_t, cls_ta>(argv[0]);
   //printf("%d border vectors found: %s\n", ntrain, argv[0]);
 
   if (opt_args.asciiflag) {
@@ -111,7 +120,15 @@ int main(int argc, char *argv[]) {
   if (opt_args.normfile!=NULL) {
     mat=read_stats2(opt_args.normfile, ave, nvar1, nvar2);
 
-    err=classifier->ltran(mat, ave, nvar1, nvar2, opt_args.uflag);
+    mat2=allocate_matrix<calc_t, int32_t>(nvar1, nvar2);
+    b2=new calc_t[nvar1];
+
+    for (int i=0; i<nvar1; i++) {
+      b2[i]=ave[i];
+      for (int j=0; j<nvar2; j++) mat2[i][j]=mat[i][j];
+    }
+
+    err=classifier->ltran(mat2, b2, nvar1, nvar2, opt_args.uflag);
     if (err!=0) exit(err);
 
     if (classifier->n_feat_t() != nvar) {
@@ -127,7 +144,12 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  accel=new borders1v1<real_a, cls_ta>(classifier, test, cls, nvar, ntest,
+  test2=allocate_matrix<calc_t, int32_t>(ntest, nvar);
+  for (nel_ta i=0; i<ntest; i++) {
+    for (dim_ta j=0; j<nvar; j++) test2[i][j]=test[i][j];
+  }
+
+  accel=new borders1v1<calc_t, cls_ta>(classifier, test2, cls, nvar, ntest,
 		  opt_args.n, opt_args.tol);
 
   fs=fopen(argv[2], "w");
@@ -145,10 +167,14 @@ int main(int argc, char *argv[]) {
   if (mat!=NULL) {
     delete_matrix(mat);
     delete [] ave;
+    delete_matrix(mat2);
+    delete [] b2;
   }
   if (opt_args.normfile!=NULL) delete [] opt_args.normfile;
   delete classifier;
   delete accel;
+
+  delete_matrix(test2);
 
   ran_end();
 

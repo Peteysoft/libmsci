@@ -540,12 +540,17 @@ nel_ta read_svmout(FILE *ifs, cls_t *&cls, real **&p, cls_t &ncls, nel_ta n) {
 
 template nel_ta read_svm<double, double>(FILE *fs, double **&, double *&, dim_ta &, double);
 template nel_ta read_svm<float, float>(FILE *fs, float **&, float *&, dim_ta &, float);
-template nel_ta read_svm<real_a, cls_ta>(FILE *fs, real_a **&, cls_ta *&, dim_ta &, real_a);
-template nel_ta read_svm<real_a, cls_ta>(FILE *fs, real_a **&, cls_ta *&, dim_ta&, real_a, int);
-template nel_ta read_svm<real_a, cls_ta>(const char *, real_a **&, cls_ta *&, dim_ta &, real_a, int);
+template nel_ta read_svm<float, cls_ta>(FILE *fs, float **&, cls_ta *&, dim_ta &, float);
+template nel_ta read_svm<double, cls_ta>(FILE *fs, double **&, cls_ta *&, dim_ta &, double);
+template nel_ta read_svm<float, cls_ta>(FILE *fs, float **&, cls_ta *&, dim_ta&, float, int);
+template nel_ta read_svm<double, cls_ta>(FILE *fs, double **&, cls_ta *&, dim_ta&, double, int);
+template nel_ta read_svm<float, cls_ta>(const char *, float **&, cls_ta *&, dim_ta &, float, int);
+template nel_ta read_svm<double, cls_ta>(const char *, double **&, cls_ta *&, dim_ta &, double, int);
 
-template void print_lvq_svm<cls_ta, real_a>(FILE *fs, real_a **, cls_ta *, nel_ta, dim_ta, int, int);
-template nel_ta read_svmout<cls_ta, real_a>(FILE *ifs, cls_ta *&, real_a **&, cls_ta &, nel_ta);
+template void print_lvq_svm<cls_ta, float>(FILE *fs, float **, cls_ta *, nel_ta, dim_ta, int, int);
+template void print_lvq_svm<cls_ta, double>(FILE *fs, double **, cls_ta *, nel_ta, dim_ta, int, int);
+template nel_ta read_svmout<cls_ta, float>(FILE *ifs, cls_ta *&, float **&, cls_ta &, nel_ta);
+template nel_ta read_svmout<cls_ta, double>(FILE *ifs, cls_ta *&, double **&, cls_ta &, nel_ta);
 
 
 } //end namespace libagf

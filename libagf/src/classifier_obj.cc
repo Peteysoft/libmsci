@@ -281,7 +281,8 @@ namespace libagf {
     return class_list(*clist);
   }
 
-  template class classifier_obj<real_a, cls_ta>;
+  template class classifier_obj<float, cls_ta>;
+  template class classifier_obj<double, cls_ta>;
   template class oneclass<real_a, cls_ta>;
 
 }

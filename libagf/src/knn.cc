@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
   }
 
   //get the training co-ordinate data, pre-process if necessary
-  train=agf_get_features(argv[1], &opt_args, ntrain, nvar);
+  train=agf_get_features<real_a>(argv[1], &opt_args, ntrain, nvar);
 
   fprintf(logfs, "%d training vectors found: %s.vec\n", ntrain, argv[1]);
 
@@ -129,7 +129,7 @@ int main(int argc, char **argv) {
   }
 
   //read test data:
-  test=read_vecfile(argv[2], ntest, nvar1);
+  test=read_vecfile<real_a>(argv[2], ntest, nvar1);
   if (nvar1 == -1) {
     fprintf(stderr, "Error reading input file: %s\n", argv[2]);
     return FILE_READ_ERROR;
@@ -180,14 +180,14 @@ int main(int argc, char **argv) {
       sprintf(resultfile, "%s.cls", argv[3]);
       sprintf(confile, "%s.con", argv[3]);
       sprintf(ordfile, "%s.cls", argv[1]);
-      ord=read_clsfile(ordfile, n1);
+      ord=read_clsfile<cls_ta>(ordfile, n1);
       ressize=sizeof(cls_ta);
       break;
     case 1:
       sprintf(resultfile, "%s.dat", argv[3]);
       sprintf(confile, "%s.err", argv[3]);
       sprintf(ordfile, "%s.dat", argv[1]);
-      ord=read_datfile(ordfile, n1);
+      ord=read_datfile<real_a>(ordfile, n1);
       ressize=sizeof(real_a);
       break;
     case 2:
