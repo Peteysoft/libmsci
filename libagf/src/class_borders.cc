@@ -204,7 +204,7 @@ int main(int argc, char *argv[]) {
   if (opt_args.asciiflag==0) {
     classfile=new char[strlen(argv[0])+5];
     sprintf(classfile, "%s.cls", argv[0]);
-    cls=read_clsfile(classfile, n1);
+    cls=read_clsfile<cls_ta>(classfile, n1);
     if (n1 == -1) {
       fprintf(stderr, "class_borders: Error reading data file, %s\n", classfile);
       exit(FILE_READ_ERROR);

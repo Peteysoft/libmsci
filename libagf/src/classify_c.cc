@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
     strcpy(confile, argv[2]);
     strcat(confile, ".err");
 
-    test=read_vecfile(testfile, ntest, nvar);
+    test=read_vecfile<real_a>(testfile, ntest, nvar);
     if (nvar == -1 || ntest==-1) {
       fprintf(stderr, "Error reading input file: %s\n", testfile);
       exit(FILE_READ_ERROR);

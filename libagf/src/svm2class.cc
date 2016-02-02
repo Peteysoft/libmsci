@@ -108,8 +108,10 @@ namespace libagf {
     return p2->R_deriv(x, deriv);
   }
 
-  template class svm2class<real_a, cls_ta>;
+  template class svm2class<float, cls_ta>;
+  template class svm2class<double, cls_ta>;
 
-  template real_a svmrfunc<real_a, cls_ta>(real_a *, void *, real_a *);
+  template float svmrfunc<float, cls_ta>(float *, void *, float *);
+  template double svmrfunc<double, cls_ta>(double *, void *, double *);
 
 }

@@ -75,7 +75,7 @@ int main(int argc, char ** argv) {
   strcpy(confile, argv[1]);
   strcat(confile, ".con");
 
-  class1=read_clsfile(tfile, n1);
+  class1=read_clsfile<cls_ta>(tfile, n1);
   if (n1 < 0) {
     fprintf(stderr, "Error reading input file: %s\n", tfile);
     return ALLOCATION_FAILURE;
@@ -85,7 +85,7 @@ int main(int argc, char ** argv) {
     return UNABLE_TO_OPEN_FILE_FOR_READING;
   }
   
-  class2=read_clsfile(clsfile, n2);
+  class2=read_clsfile<cls_ta>(clsfile, n2);
   if (n2 < 0) {
     fprintf(stderr, "Error reading input file: %s\n", clsfile);
     return ALLOCATION_FAILURE;
@@ -113,7 +113,7 @@ int main(int argc, char ** argv) {
     class_eval(class1, class2, n1);
 
     //check accuracy of confidence ratings:
-    con=read_datfile(confile, n2);
+    con=read_datfile<real_a>(confile, n2);
     if (con!=NULL) {
       if (n1!=n2) {
         fprintf(stderr, "cls_comp_stats: number of confidence ratings (%d) does not match the number of classes (%d)\n", n2, n1);

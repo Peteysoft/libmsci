@@ -97,14 +97,14 @@ int main(int argc, char **argv) {
 	  tmpnam(opt_args.normfile);
 	  rmflag=1;
         }
-	x=agf_get_features(argv[0], &opt_args, D, ntrain, 1);
+	x=agf_get_features<real_a>(argv[0], &opt_args, D, ntrain, 1);
 	if (x==NULL || ntrain<=0) {
           fprintf(stderr, "Error reading input file, %s.vec\n", argv[0]);
 	  exit(FILE_READ_ERROR);
 	}
 	fname=new char[strlen(argv[0])+5];
 	sprintf(fname, "%s.cls", argv[0]);
-        cls=read_clsfile(fname, n1);
+        cls=read_clsfile<cls_ta>(fname, n1);
 	if (cls==NULL || n1<=0) {
           fprintf(stderr, "Error reading input file, %s\n", fname);
 	  exit(FILE_READ_ERROR);

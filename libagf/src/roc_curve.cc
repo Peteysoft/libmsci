@@ -137,7 +137,7 @@ int main(int argc, char **argv) {
   fname=new char[baselen+5];
   if (Dflag==0) {
     sprintf(fname, "%s.dat", fbase);
-    data=read_datfile(fname, nel);
+    data=read_datfile<real_a>(fname, nel);
     if (data==NULL) {
       fprintf(stderr, "Unable to open file, %s, for reading\n", fname);
       return UNABLE_TO_OPEN_FILE_FOR_READING;
@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
     //for (nel_ta i=0; i<nel; i++) printf("%f ", data[i]);
   } else {
     sprintf(fname, "%s.cls", fbase);
-    truth=read_clsfile(fname, nel);
+    truth=read_clsfile<cls_ta>(fname, nel);
   }
 
   if (flag[0]==0 || flag[1]==0) {
@@ -194,9 +194,9 @@ int main(int argc, char **argv) {
     err=system(command);
     if (err!=0) exit(err);
     sprintf(outname, "%s.cls", outbase0);
-    ret0=read_clsfile(outname, nel);
+    ret0=read_clsfile<cls_ta>(outname, nel);
     sprintf(outname, "%s.con", outbase0);
-    con=read_datfile(outname, nel);
+    con=read_datfile<real_a>(outname, nel);
     ret1=new cls_ta[nel];
   }
 
@@ -256,7 +256,7 @@ int main(int argc, char **argv) {
     }
 
     sprintf(outname, "%s.cls", outbase[i]);
-    ret=read_clsfile(outname, nel);
+    ret=read_clsfile<cls_ta>(outname, nel);
     
     n0=0;
     n1=0;

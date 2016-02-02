@@ -23,8 +23,8 @@ int main(int argc, char **argv) {
     exit(-1);
   }
 
-  con1=read_datfile(argv[1], n1);
-  con2=read_datfile(argv[2], n2);
+  con1=read_datfile<real_a>(argv[1], n1);
+  con2=read_datfile<real_a>(argv[2], n2);
   assert(n1 == n2);
 
   ave1=0;

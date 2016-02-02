@@ -676,9 +676,6 @@ namespace libpetey {
 
     gsl_error_handler_t *old_handler=gsl_set_error_handler(&gsl_throw_handler);
 
-    p=gsl_vector_alloc(x->size);
-    find_interior(v, c, p, 0.5);
-
     //if the matrix is square, we can use the more efficient method:
     //if (a->size1 == a->size2) {
     //there is actually no advantage to doing it this way:

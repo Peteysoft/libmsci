@@ -196,8 +196,8 @@ int main(int argc, char *argv[]) {
     strcpy(ordname, basename);
     strcat(ordname, ".dat");
 
-    train=read_vecfile(vecname, nsamp, nvar);
-    ord=read_datfile(ordname, n1);
+    train=read_vecfile<real_a>(vecname, nsamp, nvar);
+    ord=read_datfile<real_a>(ordname, n1);
 
     if (nsamp!=n1) {
       fprintf(stderr, "Sample count mismatch: %s, n=%d; %s, n=%d\n", 

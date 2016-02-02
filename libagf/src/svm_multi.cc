@@ -665,7 +665,7 @@ namespace libagf {
     cls_t csel[ntrain];			//selected classes
     int (*sfunc) (void *, real_a *, real_a *);		//sampling function
     real **xtran;			//transformed training data
-    int ntest=20;
+    int ntest=50;
 
     this->ncls=svm->n_class();
     this->D1=svm->n_feat();
@@ -772,8 +772,10 @@ namespace libagf {
     return 0;
   }
 
-  template class svm_multi<real_a, cls_ta>;
-  template class borders1v1<real_a, cls_ta>;
+  template class svm_multi<float, cls_ta>;
+  template class svm_multi<double, cls_ta>;
+  template class borders1v1<float, cls_ta>;
+  template class borders1v1<double, cls_ta>;
 
 } //end namespace libagf
 

@@ -525,7 +525,7 @@ namespace libagf {
     cls_t csel[ntrain];
     nel_ta *clind;			//indices for sorted classes
     nel_ta ntrain2;
-    int (*sfunc) (void *, real_a *, real_a *);		//sampling function
+    int (*sfunc) (void *, real *, real *);		//sampling function
     real **xtran;
 
     sigmoid_func=&tanh;
@@ -563,11 +563,11 @@ namespace libagf {
     if (ns/(ntrain2-clind[1])/clind[1] > 0.25) {
       //for small datasets:
       bordparam_init(&param, xsort+clind[0], nvar, ntrain2, clind[1]-clind[0], 1);
-      sfunc=&oppositesample_small<real_a>;
+      sfunc=&oppositesample_small<real>;
     } else {
       //for large datasets:
       bordparam_init(&param, xsort+clind[0], nvar, ntrain2, clind[1]-clind[0]);
-      sfunc=&oppositesample<real_a>;
+      sfunc=&oppositesample<real>;
     }
     param.rparam=svm;
 
@@ -754,9 +754,13 @@ namespace libagf {
   template float atan_norm<float>(float);
   template double atan_norm<double>(double);
 
-  template class binaryclassifier<real_a, cls_ta>;
-  template class general2class<real_a, cls_ta>;
-  template class agf2class<real_a, cls_ta>;
+  template class binaryclassifier<float, cls_ta>;
+  template class general2class<float, cls_ta>;
+  template class agf2class<float, cls_ta>;
+
+  template class binaryclassifier<double, cls_ta>;
+  template class general2class<double, cls_ta>;
+  template class agf2class<double, cls_ta>;
 
 }
 
