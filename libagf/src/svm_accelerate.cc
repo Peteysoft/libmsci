@@ -12,7 +12,7 @@ using namespace libagf;
 using namespace libpetey;
 
 //do calculations in double-precision:
-typedef double calc_t;
+typedef float calc_t;
 
 int main(int argc, char *argv[]) {
   FILE *fs;

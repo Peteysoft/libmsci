@@ -10,7 +10,7 @@
 
   Download the source from Sourceforge.net.  Unzip and unpack the tarball to the desired directory.  Modify the makefile with the appropriate directories, compiler names and compiler flags.  Type \verb"make" from inside the libagf directory to perform the build and \verb"make install" to copy the executables, libraries and include files to the appropriate directories.
 
-  A configure script is not supplied: please refer to the Peteysoft coding standards (http://peteysoft.org/coding_standards.txt).
+  A configure script is not supplied: please refer to the Peteysoft coding standards (http://peteysoft.org/coding\_standards.txt).
 
   Make sure the following macros have been set properly in the make file:
 
@@ -23,9 +23,9 @@
 
 \verb/CC/ = name of your C++ compiler
 
-  There are two ways to change the optimisation of the binaries.  If you would like multiple versions with different levels of optimisation, be sure to change the OPT_VER macro.  This will append the optimisation flag to all the object files, libraries and executables.  If you only want one version, then modify the CFLAGS macro in the usual manner.
+  There are two ways to change the optimisation of the binaries.  If you would like multiple versions with different levels of optimisation, be sure to change the OPT\_VER macro.  This will append the optimisation flag to all the object files, libraries and executables.  If you only want one version, then modify the CFLAGS macro in the usual manner.
 
-  To test the resulting executables, type, "make test".  To see the resulting comparison summary, it may be necessary to type it twice.  Overall accuracies of all the classification algorithms should be around 90 % and the uncertainty coefficients should be over 0.5, while the confidence ratings should roughly match the accuracies.  When comparing one algorithm to another, accuracies should be around 99\% and uncertainty coefficients around 0.92, while the confidence ratings should be 1. or close to it, regardless of accuracy.  Probability density comparisons should be around $r=\lbrace 0.98, 0.99, 0.97, 0.99 \rbrace$ for KNN and AGF for the first class and KNN and AGF for the second class, respectively.
+  To test the resulting executables, type, "make test".  To see the resulting comparison summary, it may be necessary to type it twice.  Overall accuracies of all the classification algorithms should be around 90 \% and the uncertainty coefficients should be over 0.5, while the confidence ratings should roughly match the accuracies.  When comparing one algorithm to another, accuracies should be around 99\% and uncertainty coefficients around 0.92, while the confidence ratings should be 1. or close to it, regardless of accuracy.  Probability density comparisons should be around $r=\lbrace 0.98, 0.99, 0.97, 0.99 \rbrace$ for KNN and AGF for the first class and KNN and AGF for the second class, respectively.
 
 \section{FILE FORMATS}
 
@@ -184,7 +184,7 @@ Most of the commands have the following syntax:
 command [options] model [test_data] output
 \end{verbatim}
 
-where model is the base name of the files containing either a set of training data or a pre-trained model, test_data is the file containing test data and output is the base name of the files in which to store the final estimates.  
+where model is the base name of the files containing either a set of training data or a pre-trained model, \verb/test_data/ is the file containing test data and output is the base name of the files in which to store the final estimates.  
 
 To get a summary of the syntax and parameters, simply type the command name with no arguments, e.g.:
 
@@ -212,85 +212,87 @@ options:
 
 Here is a list of all the options, although not all commands support all options:
 
-\begin{verbatim}
-Option & Function 
-
---		Command for multi-borders classification.
--+		Extra options to pass to multi-borders command.
--^		Command to partition class labels.
--0		Read from stdin.
--1		Write to stdout.
--a		Name of file containing normalization data.
--A		Use ASCII files instead of binary.
--b		Short output (cls_comp_stats)
--B		Sort by class/ordinate.
--c		Algorithm selection:
-                  nfold cross-validation:
-			0=AGF borders (default) classification
-			1=AGF classification
-			2=KNN classification
-			3=AGF interpolation
-			4=KNN interpolation
-			5=AGF borders multi-class
-		  PDF validation:
-			6=AGF PDF estimation
-			7=KNN PDF estimation
-		  optimal AGF: how to calculate the filter variances
-			0=halving max filter variance (default);
-			1=filter variance min and max;
-			2=total weight min and max
--C		No class data.
--d		Number of divisions in cross-validation scheme.
--D		Generate ROC curve by varying the discrimination border.
--e		Return error estimates.
--E		Value for missing data.
--f		For validation schemes:  fraction of training data to use for 
-		  testing.
--F		Select features.
--g		Use lograthmic progression.
--h		Relative difference for calculating numerical derivatives. 
--H		Omit header data.
--i		Class borders: maximum number of iterations in supernewton.
--I		Weights calculation: maximum number of iterations in supernewton.
--j		Print joint instead of conditional probabilities to stdout.
--k		Number of k-nearest-neighbours to use in the estimate
--K		Keep temporary files (do not delete on exit).
--l		Tolerance of W.
--L		Floating point ordinates.
--m		Type of metric to use.  Only works for knn classification.
--M		Get min. and max./LIBSVM format.
--n		Takes averages and standard deviations of the training data and 
-		  normalizes both the training and test data.
--N		Maximum number of iterations in supernewton.
--o		Name of log file.
--O		Command to make a single classification prediction.
--p		Threshold density in clustering algorithm.
--P		Calculate correlation/covariance matrix.
--q		Number of trials/divisions.
--Q		Algorithm selection:
-		  optimal AGF: how to calculate the filter variances
-			0=halving max filter variance (default);
-			1=filter variance min and max;
-			2=total weight min and max
-		  non-hierarchical multi-class classification:
-			0=solve conditional probabilities by matrix inversion
-			1=estimate class by voting
--r		Class borders: value of conditional prob. at discrimination border.
--R		For random sampling.
--s		Number of times to sample the class border.
--S		Singular value decomposition: number of singular values to keep.
--t		Desired tolerance when searching for class borders.
--T		Class threshold for class-borders calculation.
--u		Store borders data in non-normalized coordinates.
--U		Re-label classes to go from $[0, nc)$.
--v		First filter variance bracket.
--V		Second filter variance bracket/initial filter variance.
--w		Lower bound for W in AGF optimal/constraint weight
--W		Parameter Wc--equivalent to k in a k-nearest-neighbours scheme.
-		  See paper describing the theory.
--X		Ratio between sizes of sample classes ($P(2)/P(1)$).
--z		Randomize data.
-\end{verbatim}
+\begin{table}
+	\begin{tabular}{ll}
+Option & Function \\
+\hline
+-- & Command for multi-borders classification.\\
+-+ & Extra options to pass to multi-borders command.\\
+-\^ & Command to partition class labels.\\
+-0 & Read from stdin.\\
+-1 & Write to stdout.\\
+-a & Name of file containing normalization data.\\
+-A & Use ASCII files instead of binary.\\
+-b & Short output (\verb/cls_comp_stats/)\\
+-B & Sort by class/ordinate.\\
+-c		Algorithm selection:\\
+& nfold cross-validation:\\
+&			0=AGF borders (default) classification\\
+&			1=AGF classification\\
+&			2=KNN classification\\
+&			3=AGF interpolation\\
+&			4=KNN interpolation\\
+&			5=AGF borders multi-class\\
+&		  PDF validation:\\
+&			6=AGF PDF estimation\\
+&			7=KNN PDF estimation\\
+&		  optimal AGF: how to calculate the filter variances\\
+&			0=halving max filter variance (default);\\
+&			1=filter variance min and max;\\
+&			2=total weight min and max\\
+-C & No class data.\\
+-d & Number of divisions in cross-validation scheme.\\
+-D&		Generate ROC curve by varying the discrimination border.\\
+-e&		Return error estimates.\\
+-E&		Value for missing data.\\
+-f&		For validation schemes:  fraction of training data to use for \\
+  &		  testing.\\
+-F&		Select features.\\
+-g&		Use lograthmic progression.\\
+-h&		Relative difference for calculating numerical derivatives.\\
+-H&		Omit header data.\\
+-i&		Class borders: maximum number of iterations in supernewton.\\
+-I&		Weights calculation: maximum number of iterations in supernewton.\\
+-j&		Print joint instead of conditional probabilities to stdout.\\
+-k&		Number of k-nearest-neighbours to use in the estimate\\
+-K&		Keep temporary files (do not delete on exit).\\
+-l&		Tolerance of W.\\
+-L	&	Floating point ordinates.\\
+-m	&	Type of metric to use.  Only works for knn classification.\\
+-M	&	Get min. and max./LIBSVM format.\\
+-n	&	Takes averages and standard deviations of the training data and \\
+	  &	  normalizes both the training and test data.\\
+-N	&	Maximum number of iterations in supernewton.\\
+-o	&	Name of log file.\\
+-O	&	Command to make a single classification prediction.\\
+-p	&	Threshold density in clustering algorithm.\\
+-P	&	Calculate correlation/covariance matrix.\\
+-q	&	Number of trials/divisions.\\
+-Q	&	Algorithm selection:\\
+	  &	  optimal AGF: how to calculate the filter variances\\
+	  &		0=halving max filter variance (default);\\
+	  &		1=filter variance min and max;\\
+	  &		2=total weight min and max\\
+	  &	  non-hierarchical multi-class classification:\\
+	  &		0=solve conditional probabilities by matrix inversion\\
+	  &		1=estimate class by voting\\
+-r	&	Class borders: value of conditional prob. at discrimination border.\\
+-R	&	For random sampling.\\
+-s	&	Number of times to sample the class border.\\
+-S	&	Singular value decomposition: number of singular values to keep.\\
+-t	&	Desired tolerance when searching for class borders.\\
+-T	&	Class threshold for class-borders calculation.\\
+-u	&	Store borders data in non-normalized coordinates.\\
+-U	&	Re-label classes to go from $[0, nc)$.\\
+-v	&	First filter variance bracket.\\
+-V	&	Second filter variance bracket/initial filter variance.\\
+-w	&	Lower bound for W in AGF optimal/constraint weight\\
+-W	&	Parameter Wc--equivalent to k in a k-nearest-neighbours scheme.\\
+	  &	  See paper describing the theory.\\
+-X	&	Ratio between sizes of sample classes ($P(2)/P(1)$).\\
+-z	&	Randomize data.\\
+\end{tabular}
+\end{table}
 
 
 \section{COMMAND LINE EXECUTABLES}
@@ -301,8 +303,10 @@ This is a list of commands and their function:
 
 Direct, non-parametric classification, interpolation/regression, pdf estimation using variable-bandwidth kernel estimation:
 
-  agf			Uses adaptive Gaussian filtering
-  knn			Uses k-nearest neighbours
+begin{tabular}{ll}
+\verb/agf/ & Uses adaptive Gaussian filtering\\
+\verb/knn/ & Uses k-nearest neighbours
+\end{tabular}
 
   All the direct kernel estimation operations have been collected into two executables: one for AGF called, "agf", and one for k-nearest-neighbours called, "knn".  Both of them take an extra argument which specifies which operation to perform: "classify", "interpol" or "pdf".
 
@@ -310,17 +314,17 @@ Direct, non-parametric classification, interpolation/regression, pdf estimation 
 
 Two-class classification by training a model:
 
-  class_borders:	Searches for the class borders using AGF.
-  classify_b:		Performs classifications using a set of border samples.
+  \verb/class_borders/:	Searches for the class borders using AGF.
+  \verb/classify_b/:		Performs classifications using a set of border samples.
 
 \subsection{Multi-class classification}
 
 Multi-class classification using a series of class-borders:
 
-  multi_borders:	Trains a multi-class model based on a control file.
-  classify_m:		Performs classifications using model output from multi_borders.
+  \verb/multi_borders/:	Trains a multi-class model based on a control file.
+  \verb/classify_m/:		Performs classifications using model output from \verb/multi_borders/.
 
-  Multi-borders classification represents a significant step forward with this library.  The operation of these programs, called from the command line using "multi_borders" and "classify_m" is quite involved and is described in detail in bottom section, entitled MULTI-BORDERS TRAINING.
+  Multi-borders classification represents a significant step forward with this library.  The operation of these programs, called from the command line using \verb/multi_borders/ and \verb/classify_m/ is quite involved and is described in detail in Section, \ref{MULTI_BORDERS_CLASSIFICATION}entitled MULTI-BORDERS TRAINING.
 
 \subsection{Testing/validation}
 
@@ -434,7 +438,7 @@ total number of calls: 1430
 
   The tolerance of the samples only applies when searching for class borders.  It shows how close the value of $R=P(2|\vec x)-P(1|\vec x)$ (difference in conditional probabilities) is to zero at each border sample.  This is set using the -t option and the diagnostic should be close to the set value.  It is sometimes larger because the convergence test of the root-finding routine looks at tolerance along the independent variable as well as the dependent variable--whichever is better.
 
-  To best understand how to interpret the diagnostics and use these to set the operational parameters, be sure to read the paper entitled, "Adaptive Guassian Filters: a powerful new method for supervised learning," in the doc/ sub-directory of this installation or Mills (2011) which is a more fleshed-out version of it.
+  To best understand how to interpret the diagnostics and use these to set the operational parameters, be sure to read the paper entitled, "Adaptive Guassian Filters: a powerful new method for supervised learning," in the doc/ sub-directory of this installation or \citet{Mills_2011} which is a more fleshed-out version of it.
 
 
 \section{EXAMPLES}
@@ -443,7 +447,7 @@ total number of calls: 1430
 
 \subsection{examples/class_borders}
 
-  The directory examples/class_borders includes a number of routines for testing the algorithms and comparing them with other, popular classification algorithms.  The validation exercise is performed on a pair of two-dimensional, synthetic test classes and is described in Mills (2011).  To test the classification algorithms, type, "make test".  To test the pdf estimation routines, type, "make test_pdf".  To test both from the bottom level directory, type "make test".  All tests are done on a pair of synthetic test classes, described in the paper.  To generate samples and analytical estimates for these classes, use the following commands:
+The directory examples/class_borders includes a number of routines for testing the algorithms and comparing them with other, popular classification algorithms.  The validation exercise is performed on a pair of two-dimensional, synthetic test classes and is described in \citet{Mills_2011}.  To test the classification algorithms, type, "make test".  To test the pdf estimation routines, type, "make test_pdf".  To test both from the bottom level directory, type "make test".  All tests are done on a pair of synthetic test classes, described in the paper.  To generate samples and analytical estimates for these classes, use the following commands
 
   sample_class:	Generates random samples of the synthetic test classes.
   classify_sc:	Returns class estimates using analytic/semi-analytic estimates of the class pdfs; classifications should therefore be close to the best possible for any supervised algorithm.
@@ -456,7 +460,7 @@ total number of calls: 1430
 
 \subsection{examples/humidity_data}
 
-The test suite in examples/humidity_data tests the multi-borders paradigm on a discretized sub-set of the satellite humidity data described in Mills (2009).  Use this directory for examples on how to use the multi-borders multi-class classification method.
+The test suite in examples/humidity_data tests the multi-borders paradigm on a discretized sub-set of the satellite humidity data described in \citet{Mills_2009}.  Use this directory for examples on how to use the multi-borders multi-class classification method.
 
 \subsection{examples/Landsat}
 
@@ -465,15 +469,18 @@ In the Landsat directory there are a number of scripts for performing surface cl
 
 \section{MULTI-BORDERS CLASSIFICATION}
 
-  Multi-borders is an algorithm that generalizes the AGF-borders binary classification algorithm to multiple classes.  It is a means of specifying the configuration of the class borders using a recursive control language.  The "multi_borders" command is used for training a multi-borders model and has the following syntax:
+\label{MULTI_BORDERS_CLASSIFICATION}
 
-  multi_borders [<options>] <control-in> <train> <model> <control-out>
+  Multi-borders is an algorithm that generalizes the AGF-borders binary classification algorithm to multiple classes.  It is a means of specifying the configuration of the class borders using a recursive control language.  The \verb/multi_borders/ command is used for training a multi-borders model and has the following syntax:
 
-where: 
-  <control-in> is the input or training control file, 
-  <train> is the base-name of the binary files containing the training data
-  <model> is the base-name for the files that will contain each of the binary classification models and 
-  <control-out> is the output or classification control file which is passed to the classification program, "classify_m".  
+  \verb/multi_borders/ [<options>] <control-in> <train> <model> <control-out>
+
+where:
+\begin{list}
+\item<control-in> is the input or training control file, 
+\item<train> is the base-name of the binary files containing the training data
+\item<model> is the base-name for the files that will contain each of the binary classification models and 
+\item<control-out> is the output or classification control file which is passed to the classification program, \verb/classify_m/.  
 
 Consider the following control file:
 
@@ -489,7 +496,7 @@ Consider the following control file:
 }
 \end{verbatim}
 
-When passed to multi_borders as follows:
+When passed to \verb/multi_borders/ as follows:
 
 \begin{verbatim}
 $>multi_borders -n -s 125 test_multi5.txt foo bar foobar.txt > script.sh
@@ -651,23 +658,13 @@ $>classify_m foobar2.txt test.vec output
 
 Running the commands, \verb"multi_borders", \verb"classify_m", and \verb"class_borders" without arguments prints a generous help screen including a description of most of the features explained in this section.  There is also an example contained in the second half of the makefile under the \verb"examples/humidity_data" directory (see, EXAMPLES, above).
 
+\nocite{Chang_Lin2001}
+\nocite{Kohonen2000}
+\nocite{Michie_etal1994}
+\nocite{Terrell_Scott1992}
+\nocite{Mills2014}
 
-BIBLIOGRAPHY
-
-Chih-Chung Chang and Chih-Jen Li (2001), "LIBSVM: A library for support vector machines." ACM Transactions on Intelligent Systems and Technology 2 (3): 27:1--27:27.
-
-Teuvo Kohonen (2000), Self-Organizing Maps. Springer-Verlag.
-
-D. Michie, D. J. Spiegelhalter and C. C. Tayler (1994), Machine Learning, Neural and Statistical Classification.  Ellis Horwood Series in Artificial Intelligence, Prentice Hall, Upper Saddle River NJ. http://www.amsta.leeds.ac.uk/~charles/statlog/
-
-Peter Mills (2009), "Isoline retrieval: An optimal method for validation of advected contours." Computers & Geosciences 35 (11): 2020-2031.
-
-Peter Mills (2011), "Efficient statistical classification of satellite measurements." International Journal of Remote Sensing 32 (21): 6109-6132.
-
-Peter Mills (2014), "Multi-borders classification."  arxiv:1404.4095v3
-
-D. G. Terrell and D. W. Scott (1992), "Variable kernel density estimation."  Annals of Statistics 20: 1236-1265.
-
+\bibliography{agf_bib}
 
 \end{document}
 

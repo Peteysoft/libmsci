@@ -27,8 +27,8 @@ namespace libagf {
       throw PARAMETER_OUT_OF_RANGE;
     }
     dflag=1;
-    ind1=0;
-    ind2=1;
+    ind1=1;
+    ind2=0;
     clist=new cls_t[this->ncls];
     classifier->class_list(clist);
     label1=clist[0];
@@ -56,8 +56,8 @@ namespace libagf {
     ind2=j;
     clist=new cls_t[classifier->n_class()];
     classifier->class_list(clist);
-    label1=clist[i];
-    label2=clist[j];
+    label2=clist[i];
+    label1=clist[j];
     delete [] clist;
   }
 

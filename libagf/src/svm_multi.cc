@@ -115,7 +115,13 @@ namespace libagf {
 	}
       }
     }
+/*
+    for (int i=0; i<this->ncls; i++) {
+      for (int j=0; j<i+1; j++) praw0[i][j]=0;
+    }
 
+    print_matrix(stdout, praw0, this->ncls, this->ncls);
+*/
     delete [] praw0[0];
     delete [] praw0;
 
@@ -448,9 +454,16 @@ namespace libagf {
 	for (int k=0; k<nsv[j]; k++) result[i][j]+=coef[i][sj+k]*kv[sj+k];
 	result[i][j] -= rho[p];
 	//sign is reversed relative to LIBSVM implementation:
-	result[i][j] = - result[i][j];
-        if (this->voteflag==0) result[i][j]=1./(1+exp(probA[p]*result[i][j]+probB[p]));
-	//printf("%g %g\n", result[i][j], (1-R(x, i, j))/2);
+        if (this->voteflag) {
+          result[i][j]=-result[i][j];
+	} else {
+          result[i][j]=1-1./(1+exp(probA[p]*result[i][j]+probB[p]));
+	}
+	//printf("%d %d %d\n", i, j, p);
+	//real deriv[this->D1];
+	//svm2class<real, cls_t> svm(this, i, j);
+	//printf("%g %g\n", result[i][j], (1-svm.R(x))/2);
+	//printf("%g %g\n", result[i][j], (1-svm.R_deriv(x, deriv))/2);
 	p++;
       }
     }
@@ -465,7 +478,7 @@ namespace libagf {
     real kv;
     int si, sj;
     cls_t swp;
-    int sgn=-1;		//sign is reversed relative to LIBSVM implementation
+    int sgn=1;		//sign is reversed relative to LIBSVM implementation
     int p=0;
 
     if (i==j) throw PARAMETER_OUT_OF_RANGE;
@@ -474,7 +487,7 @@ namespace libagf {
       swp=i;
       i=j;
       j=swp;
-      sgn=1;
+      sgn=-1;
     }
 
     si=start[i];
@@ -506,7 +519,7 @@ namespace libagf {
     real kv;
     int si, sj;
     cls_t swp;
-    int sgn=-1;
+    int sgn=1;
     int p=0;
     real t1, t2;
     real deriv[this->D1];
@@ -519,7 +532,7 @@ namespace libagf {
       swp=i;
       i=j;
       j=swp;
-      sgn=1;
+      sgn=-1;
     }
 
     si=start[i];
@@ -651,6 +664,12 @@ namespace libagf {
       err=classifier[i]->save(fs);
       if (err!=0) return err;
     }
+    for (int i=0; i<this->ncls; i++) {
+      for (int j=i+1; j<this->ncls; j++) {
+        fprintf(fs, "%d vs %d ", this->label[i], this->label[j]);
+      }
+      fprintf(fs, "\n");
+    }
     return err;
   }
 
@@ -665,7 +684,7 @@ namespace libagf {
     cls_t csel[ntrain];			//selected classes
     int (*sfunc) (void *, real_a *, real_a *);		//sampling function
     real **xtran;			//transformed training data
-    int ntest=50;
+    int ntest=0;
 
     this->ncls=svm->n_class();
     this->D1=svm->n_feat();
@@ -743,7 +762,7 @@ namespace libagf {
     for (int i=0; i<this->ncls; i++) {
       result[i]=result[0]+i*this->ncls;
       for (int j=i+1; j<this->ncls; j++) {
-        result[i][j]=classifier[k]->R(x);
+        result[i][j]=-classifier[k]->R(x);
 	if (this->voteflag!=1) result[i][j]=(result[i][j]+1)/2;
 	k++;
       }

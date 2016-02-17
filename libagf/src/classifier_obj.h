@@ -117,6 +117,10 @@ namespace libagf {
 
       //for extension to continuum retrievals (setting raw prob.):
       virtual void set_id(cls_t *id);
+
+      //load and save files all in one as ASCII:
+      virtual int load(FILE *fs);
+      virtual int save(FILE *fs);
   };
 
   //lame, doesn't really do anything, but makes a lot of the methods in 
@@ -139,6 +143,8 @@ namespace libagf {
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, 
 		cls_t **clist, char *fbase);
+      virtual int load(FILE *fs);
+      virtual int save(FILE *fs);
 
   };
 

@@ -11,7 +11,7 @@ using namespace std;
 using namespace libagf;
 using namespace libpetey;
 
-typedef double calc_t;
+typedef float calc_t;
 
 int main(int argc, char *argv[]) {
   char *outfile;		//output classes

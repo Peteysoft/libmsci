@@ -281,6 +281,18 @@ namespace libagf {
     return class_list(*clist);
   }
 
+  //doesn't do much, but makes code more elegant:
+  template <class real, class cls_t>
+  int oneclass<real, cls_t>::load(FILE *fs) {
+    return (fscanf(fs, "%d", &cls)==1);
+  }
+
+  //doesn't do much, but makes code more elegant:
+  template <class real, class cls_t>
+  int oneclass<real, cls_t>::save(FILE *fs) {
+    return (fprintf(fs, "%d", cls)==1);
+  }
+
   template class classifier_obj<float, cls_ta>;
   template class classifier_obj<double, cls_ta>;
   template class oneclass<real_a, cls_ta>;

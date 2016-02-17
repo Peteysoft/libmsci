@@ -553,7 +553,7 @@ namespace libagf {
     //remove side effects:
     for (nel_ta k=0; k<ntrain; k++) {
       csel[k]=cls[k];
-      xsort[k]=x[k];
+      xsort[k]=xtran[k];
     }
     //sort the classes:
     clind=sort_classes(xsort, ntrain, csel, this->ncls);

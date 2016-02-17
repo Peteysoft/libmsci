@@ -629,7 +629,7 @@ a_{ii} & = & 0 \\
 a_{ij}+a_{ji} & = & 0
 \end{eqnarray}
 
-Meanwhile, $R$ is a rotation.  All the singular values of $R$ will be either $i$ or $1$:
+Meanwhile, $R$ is a rotation.  All the singular values of $R$ will be $1$:
 \begin{equation}
 	\vec q \cdot R^T \cdot R \cdot \vec q = \vec q \cdot \vec q \label{length_conservation}
 \end{equation}
@@ -638,6 +638,10 @@ This implies:
 R^T \cdot R \cdot \vec v & = & s^2 \vec v \nonumber \\
 	s & = & 1 \label{ortho_eigen}
 \end{eqnarray}
+or perhaps more simply:
+\begin{equation}
+	R^T \cdot R \cdot \vec v = I \vec v = s^2 \vec v \\
+\end{equation}
 Because it is a rotation, it will be orthonormal with a determinant of 1.
 
 The tracer mapping, $Q$, as defined in 
