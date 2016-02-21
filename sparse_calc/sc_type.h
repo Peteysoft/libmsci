@@ -25,15 +25,17 @@ class sc_t {
     int tflag;
 
     //universal operators:
-    virtual sc_t * mult(sc_t *cand);
-    virtual sc_t * add(sc_t *b);
-    virtual void neg()=0;
-    virtual sc_t * norm();
+    virtual sc_t * mult(sc_t *cand);		//multiplication
+    virtual sc_t * add(sc_t *b);		//addition
+    virtual void neg()=0;			//negation
+    virtual sc_t * norm();			//norm
 
     //operators specific to certain types:
-    virtual sc_t *sub(sc_t *sub);
-    virtual sc_t *sub(sc_t *sub, sc_t *sub);
-    virtual sc_t *cprod(sc_t *cand);
+    virtual sc_t *sub(sc_t *sub);		//1-d subscript	
+    						//matrix | vector + vector | scalar)
+    virtual sc_t *sub(sc_t *sub, sc_t *sub);	//2-d subscript 
+    						//matrix + (vector + vector) | (scalar + scalar) (doesn't allow mixed subscripts)
+    virtual sc_t *cprod(sc_t *cand);		//running product (sparse-array + (matrix | vector)
 
     virtual int load(FILE *fs);
     virtual int save(FILE *fs);
