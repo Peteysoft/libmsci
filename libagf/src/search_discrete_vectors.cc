@@ -59,14 +59,14 @@ int main(int argc, char **argv) {
   maxvec[nvar]=cls[0];
   for (nel_ta i=0; i<ntrain; i++) {
     if (cls[i]>=ncls) ncls=cls[i]+1;
-    vec[i].resize(nvar+1);
+    vec[i].resize(nvar);
     //vec0[i]=new vector<int>(nvar+1);
     for (dim_ta j=0; j<nvar; j++) {
       vec[i][j]=floor(train[i][j]);
       if (train[i][j]<minvec[j]) minvec[j]=train[i][j];
       		else if (train[i][j]>maxvec[j]) maxvec[j]=train[i][j];
     }
-    vec[i][nvar]=cls[i];
+    //vec[i][nvar]=cls[i];
     if (cls[i]<minvec[nvar]) minvec[nvar]=cls[i];
 		else if (cls[i]>maxvec[nvar]) maxvec[nvar]=cls[i];
   }
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
   fs=fopen(argv[2], "r");
   ntest=read_lvq(fs, test, testcls, nvar2);
   if (fs!=stdout) fclose(fs);
-  assert(nvar2<=nvar);
+  assert(nvar2==nvar);
 
   for (nel_ta i=0; i<ntest; i++) {
     for (dim_ta j=0; j<nvar2; j++) {
@@ -99,23 +99,41 @@ int main(int argc, char **argv) {
   for (nel_ta i=0; i<ntest; i++) {
     long lastind=-1;
 
-    tvec[i].resize(nvar+1, 0);
+    tvec[i].resize(nvar, 0);
     for (dim_ta j=0; j<nvar; j++) tvec[i][j]=floor(test[i][j]);
     //takes nearest one that's smaller by lexical ordering:
     ind=bin_search(vec, ntrain, tvec[i], lastind);
-    nmatch=0;
-    for (dim_ta j=0; j<ncls; j++) p[j]=0;
-    for (nel_ta k=ind; k<ntrain && vec[k]==tvec[i]; k++) {
-      //for (dim_ta j=0; j<nvar; j++) fprintf(fs, "%g ", train[k][j]);
-      //fprintf(fs, "%d\n", cls[k]);
-      p[cls[k]]++;
-      nmatch++;
-    }
-    for (nel_ta k=ind-1; k>=0 && vec[k]<=tvec[i]; k--) {
-      //for (dim_ta j=0; j<nvar; j++) fprintf(fs, "%g ", train[k][j]);
-      //fprintf(fs, "%d\n", cls[k]);
-      p[cls[k]]++;
-      nmatch++;
+    if (vec[ind]!=tvec[i]) {
+      //if we don't have an exact match, eliminate the least significant
+      //element until we do:
+      long ind1, ind2;
+      for (int j=nvar-1; j>=0; j--) {
+        tvec[i][j]=floor(minvec[j])-1;
+	ind1=bin_search(vec, ntrain, tvec[i], lastind);
+        tvec[i][j]=floor(maxvec[j])+1;
+	ind2=bin_search(vec, ntrain, tvec[i], lastind);
+	if (ind1!=ind2) break;
+      }
+      for (dim_ta j=0; j<ncls; j++) p[j]=0;
+      for (nel_ta k=ind1+1; k<=ind2; k++) {
+        p[cls[k]]++;
+      }
+      nmatch=ind2-ind1;
+    } else {
+      nmatch=0;
+      for (dim_ta j=0; j<ncls; j++) p[j]=0;
+      for (nel_ta k=ind; k<ntrain && vec[k]==tvec[i]; k++) {
+        //for (dim_ta j=0; j<nvar; j++) fprintf(fs, "%g ", train[k][j]);
+        //fprintf(fs, "%d\n", cls[k]);
+        p[cls[k]]++;
+        nmatch++;
+      }
+      for (nel_ta k=ind-1; k>=0 && vec[k]==tvec[i]; k--) {
+        //for (dim_ta j=0; j<nvar; j++) fprintf(fs, "%g ", train[k][j]);
+        //fprintf(fs, "%d\n", cls[k]);
+        p[cls[k]]++;
+        nmatch++;
+      }
     }
     result[i]=choose_class(p, ncls);
     for (dim_ta j=1; j<ncls; j++) {

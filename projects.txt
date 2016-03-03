@@ -1,0 +1,27 @@
+- How to optimize transformation of binary classifiers into multi-class
+classifiers
+  - review plus ideas for improvement
+
+- Can we optimize the error in a balloon kernel-density estimate using
+ estimates of bias and mean square error?
+
+- Improved sparse matrix calculator (lists, user functions, control
+  structures)
+
+- Scientific database/programming language based on non-normalized relations
+
+- Derive ozone isolines from GOME data and compare with contour advection
+  simulations
+
+- Quantify errors in PC proxy and use to select parameters
+
+- Understanding chaotic mixing: relation to diffusion and diffusivity; tracer
+  correlation
+
+- Wave scattering from Gaspard-Rice system
+
+- Improve software:
+  - more testing: unit tests where applicable, black box tests elsewhere
+  - remove and replace components duplicated by STL
+  - documentation especially friendly tutorials and user guides
+
