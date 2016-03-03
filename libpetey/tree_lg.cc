@@ -1,9 +1,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <vector_s.h>
+
+#include <vector>
 
 #include "tree_lg.h"
+
+using namespace std;
 
 namespace libpetey {
 
@@ -237,11 +240,14 @@ void tree_lg<type>::print(FILE *fs, tree_lg_el<type> *t, long depth) {
 }
 
 template <>
-void tree_lg<vector_s<int> >::print(FILE *fs, tree_lg_el<vector_s<int> > *t, long depth) {
+void tree_lg<vector<int> >::print(FILE *fs, tree_lg_el<vector<int> > *t, long depth) {
   if (t==NULL) return;
   print(fs, t->left, depth+1);
-  for (long i=0; i<depth; i++) fprintf(fs, "  ");
-  t->value.print(fs);
+  for (int i=0; i<t->value.size(); i++) {
+    for (long j=0; j<depth; j++) fprintf(fs, "  ");
+    fprintf(fs, "%d ", t->value[i]);
+  }
+  //fprintf(fs, "\n");
   fprintf(fs, "\n");
   print(fs, t->right, depth+1);
 }
@@ -254,6 +260,6 @@ void tree_lg<type>::print(FILE *fs) {
 template class tree_lg<float>;
 template class tree_lg<double>;
 template class tree_lg<int64_t>;
-template class tree_lg<vector_s<int> >;
+template class tree_lg<vector<int> >;
 
 } //end namespace libpetey

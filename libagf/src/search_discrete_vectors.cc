@@ -2,14 +2,16 @@
 #include <assert.h>
 #include <string.h>
 
+#include <vector>
+
 #include "agf_lib.h"
 
-#include "vector_s.h"
 #include "peteys_tmpl_lib.h"
 #include "randomize.h"
 
 using namespace libpetey;
 using namespace libagf;
+using namespace std;
 
 int main(int argc, char **argv) {
   char *outfile;
@@ -19,7 +21,7 @@ int main(int argc, char **argv) {
   dim_ta nvar;
   real_a **train;
   cls_ta *cls;
-  vector_s<int> *vec;
+  vector<int> *vec;
 
   real_a *minvec;
   real_a *maxvec;
@@ -28,7 +30,7 @@ int main(int argc, char **argv) {
 
   real_a **test;
   cls_ta *testcls;
-  vector_s<int> *tvec;
+  vector<int> *tvec;
   dim_ta nvar2;
   nel_ta ntest;
 
@@ -46,7 +48,7 @@ int main(int argc, char **argv) {
   ntrain=read_lvq(fs, train, cls, nvar);
   if (fs!=stdin) fclose(fs);
 
-  vec=new vector_s<int>[ntrain];
+  vec=new vector<int>[ntrain];
   minvec=new real_a[nvar+1];
   maxvec=new real_a[nvar+1];
   for (dim_ta j=0; j<nvar; j++) {
@@ -58,7 +60,7 @@ int main(int argc, char **argv) {
   for (nel_ta i=0; i<ntrain; i++) {
     if (cls[i]>=ncls) ncls=cls[i]+1;
     vec[i].resize(nvar+1);
-    //vec0[i]=new vector_s<int>(nvar+1);
+    //vec0[i]=new vector<int>(nvar+1);
     for (dim_ta j=0; j<nvar; j++) {
       vec[i][j]=floor(train[i][j]);
       if (train[i][j]<minvec[j]) minvec[j]=train[i][j];
@@ -90,23 +92,17 @@ int main(int argc, char **argv) {
   for (dim_ta j=0; j<nvar; j++) fprintf(stderr, "%g %g\n", minvec[j], maxvec[j]);
 
   fs=stdout;
-  tvec=new vector_s<int>[ntest];
+  tvec=new vector<int>[ntest];
   p=new real_a[ncls];
   result=new cls_ta[ntest];
   con=new real_a[ntest];
   for (nel_ta i=0; i<ntest; i++) {
     long lastind=-1;
-    dim_ta vused=nvar;
 
-    tvec[i].resize(nvar+1, min-2);
-    for (dim_ta j=0; j<nvar; j++) {
-      if (tvec[i][j]!=NAN) tvec[i][j]=floor(test[i][j]);
-    }
-    do {
-      tvec[i][vused]=tvec[i].missing;
-      ind=bin_search(vec, ntrain, tvec[i], lastind);
-      vused--;
-    } while (tvec[i]!=vec[ind] && vused>=0);
+    tvec[i].resize(nvar+1, 0);
+    for (dim_ta j=0; j<nvar; j++) tvec[i][j]=floor(test[i][j]);
+    //takes nearest one that's smaller by lexical ordering:
+    ind=bin_search(vec, ntrain, tvec[i], lastind);
     nmatch=0;
     for (dim_ta j=0; j<ncls; j++) p[j]=0;
     for (nel_ta k=ind; k<ntrain && vec[k]==tvec[i]; k++) {
@@ -115,7 +111,7 @@ int main(int argc, char **argv) {
       p[cls[k]]++;
       nmatch++;
     }
-    for (nel_ta k=ind-1; k>=0 && vec[k]==tvec[i]; k--) {
+    for (nel_ta k=ind-1; k>=0 && vec[k]<=tvec[i]; k--) {
       //for (dim_ta j=0; j<nvar; j++) fprintf(fs, "%g ", train[k][j]);
       //fprintf(fs, "%d\n", cls[k]);
       p[cls[k]]++;

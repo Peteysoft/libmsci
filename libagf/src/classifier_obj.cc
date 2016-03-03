@@ -218,6 +218,18 @@ namespace libagf {
     return ncls;
   }
 
+  template <class real, class cls_t>
+  int classifier_obj<real, cls_t>::load(FILE *file) {
+    fprintf(stderr, "classifier_obj:load method not defined for this subclass\n");
+    throw INTERNAL_ERROR;
+  }
+
+  template <class real, class cls_t>
+  int classifier_obj<real, cls_t>::save(FILE *file) {
+    fprintf(stderr, "classifier_obj:save method not defined for this subclass\n");
+    throw INTERNAL_ERROR;
+  }
+
   //a whole bunch of nothing:
   template <class real, class cls_t>
   oneclass<real, cls_t>::oneclass(cls_t cl) {

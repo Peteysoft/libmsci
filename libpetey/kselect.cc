@@ -6,6 +6,8 @@
 #include "quicksort.h"
 #include "kselect.h"
 
+using namespace std;
+
 namespace libpetey {
 
   //lets have a showdown:
@@ -117,14 +119,14 @@ namespace libpetey {
   template <class type>
   kselect_quick<type>::kselect_quick(long k1) {
     this->k=k1;
-    data=new vector_s<type>(this->k);
+    data=new vector<type>(this->k);
     ncur=0;
   }
 
   template <class type>
   kselect_quick<type>::kselect_quick(long k1, long n) {
     this->k=k1;
-    data=new vector_s<type>(n);
+    data=new vector<type>(n);
     ncur=0;
   }
 
@@ -146,7 +148,9 @@ namespace libpetey {
   void kselect_quick<type>::get(type *kleast) {
     type *d2;
     long n;
-    d2=(type *) *data;
+    //either one will work, but the second is less complex:
+    //d2=&((*data)[0]);
+    d2=data->data();
     n=data->size();
     kleast_quick(d2, n, this->k);
     for (long i=0; i<this->k; i++) kleast[i]=d2[i];
@@ -376,16 +380,16 @@ namespace libpetey {
   template <class type>
   kiselect_quick<type>::kiselect_quick(long k1) {
     this->k=k1;
-    data=new vector_s<type>(this->k);
-    ind=new vector_s<long>(this->k);
+    data=new vector<type>(this->k);
+    ind=new vector<long>(this->k);
     this->ncur=0;
   }
 
   template <class type>
   kiselect_quick<type>::kiselect_quick(long k1, long n) {
     this->k=k1;
-    data=new vector_s<type>(n);
-    ind=new vector_s<long>(n);
+    data=new vector<type>(n);
+    ind=new vector<long>(n);
     this->ncur=0;
   }
 
@@ -416,8 +420,8 @@ namespace libpetey {
     type *d2;
     long *ind1;
     n=data->size();
-    d2=(type *) *data;
-    ind1=(long *) *ind;
+    d2=data->data();
+    ind1=ind->data();
     n=data->size();
     kleast_quick(d2, n, this->k, ind1, 0, n-1);
     for (long i=0; i<this->k; i++) {

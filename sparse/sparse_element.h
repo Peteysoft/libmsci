@@ -2,7 +2,6 @@
 #define SPARSE_ELEMENT_H
 
 #include "sparse.h"
-#include "vector_s.h"
 
 namespace libpetey {
   namespace libsparse {

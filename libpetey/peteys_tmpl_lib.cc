@@ -5,17 +5,17 @@
 // a single file
 //
 #include <stdint.h>
+#include <vector>
 
 #include "time_class.h"
 #include "string_petey.h"
-#include "vector_s.h"
 
 #include "bin_search.cc"
 #include "heapsort_tmpl.cc"
 #include "rk_dumb_tmpl.cc"
 #include "treesort.cpp"
 
-#pragma interface
+using namespace std;
 
 namespace libpetey {
 
@@ -26,7 +26,7 @@ template long bin_search_g<int64_t>(int64_t *, long, int64_t, long);
 template long bin_search_g<double>(double *, long, double, long);
 template long bin_search_g<time_class>(time_class *, long, time_class, long);
 template long bin_search_g<string_petey>(string_petey *, long, string_petey, long);
-template long bin_search<vector_s<int> >(vector_s<int> *, long, vector_s<int>,
+template long bin_search<vector<int> >(vector<int> *, long, vector<int>,
 long);
 //template long bin_search<int>(int *, long, int, long);
 
@@ -53,7 +53,7 @@ template long * heapsort<int64_t>(int64_t *, long);
 template long * heapsort<double>(double *, long);
 template long * heapsort<time_class>(time_class *, long);
 template long * heapsort<string_petey>(string_petey *, long);
-template long * heapsort<vector_s<int> >(vector_s<int> *, long);
+template long * heapsort<vector<int> >(vector<int> *, long);
 
 template long * heapsort<void *>(void **, long);
 

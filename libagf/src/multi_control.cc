@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <math.h>
 
+#include <vector>
+
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
@@ -14,7 +16,6 @@
 #include "error_codes.h"
 #include "randomize.h"
 #include "tree_lg.h"
-#include "vector_s.h"
 
 #include "agf_lib.h"
 
@@ -176,8 +177,8 @@ namespace libagf {
 
   //need to design a version of this for larger n:
   int ** random_coding_matrix(int ncls, int &ntrial, int strictflag) {
-    tree_lg<vector_s<int> > used;
-    vector_s<int> row(ncls);
+    tree_lg<vector<int> > used;
+    vector<int> row(ncls);
     int **coding_matrix;
     int err1, err2;
     double nperm=pow(3-strictflag, ncls);
@@ -227,8 +228,8 @@ namespace libagf {
 
   //generate orthogonal coding matrix:
   int ** ortho_coding_matrix_nqbf(int n, int strictflag, int toprow1) {
-    tree_lg<vector_s<int> > list0;
-    vector_s<int> trial0(n);
+    tree_lg<vector<int> > list0;
+    vector<int> trial0(n);
     double nperm0=pow(3-strictflag, n);
     int **coding_matrix;
     double eps=1e-12;
@@ -263,7 +264,7 @@ namespace libagf {
 
       for (i=1; i<n; i++) {
         //list of partial vectors already tried:
-        tree_lg<vector_s<int> > *list=new tree_lg<vector_s<int> >;
+        tree_lg<vector<int> > *list=new tree_lg<vector<int> >;
         long ntried;		//number of vectors tried
         //allocate GSL data structures for linear system:
         gsl_matrix *a=gsl_matrix_alloc(i, i);
@@ -274,7 +275,7 @@ namespace libagf {
         gsl_vector *s=gsl_vector_alloc(i);
         gsl_vector *work=gsl_vector_alloc(i);
         //allocate partial trial vector:
-        vector_s<int> *trial=new vector_s<int>(n-i);
+        vector<int> *trial=new vector<int>(n-i);
         //maximum number of permutations:
         double nperm=pow(3-strictflag, n-i);
 	//have to decide which columns to select so that matrix is
@@ -283,9 +284,9 @@ namespace libagf {
 	//permutations of the classes:
 	long *perm=NULL;
 	long inv[n];			//inverse mapping
-	vector_s<int> selvec;		//selection vector
+	vector<int> selvec;		//selection vector
 	//list of selection vectors to avoid repeats:
-	tree_lg<vector_s<int> > *selist=new tree_lg<vector_s<int> >;
+	tree_lg<vector<int> > *selist=new tree_lg<vector<int> >;
 
         //create linear system to solve:
         do {

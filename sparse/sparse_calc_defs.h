@@ -1,10 +1,10 @@
 #include <sys/types.h>
 
 #include <bitset>
+#include <vector>
 //#include "bit_array.h"
 
 #include "../libpetey/linked.cc"
-#include "vector_s.h"
 #include "string_petey.h"
 #include "symbol_table.h"
 #include "sparse_array.h"
@@ -21,6 +21,7 @@
 
 using namespace libpetey;
 using namespace libsparse;
+using namespace std;
 
 namespace sparse_calc {
 
@@ -52,8 +53,8 @@ struct vector_t {
 #define DEF_NEV 5
 
 extern symbol_table<string_petey> symtab;
-extern vector_s<integer> vartyp;
-extern vector_s<real> scaltab;
+extern vector<integer> vartyp;
+extern vector<real> scaltab;
 //extern bit_array delflag;
 extern std::bitset<SC_NSYM> delflag;
 extern char *path;

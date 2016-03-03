@@ -18,6 +18,10 @@ OPT=-g
 # C++ compiler:
 CPP = g++
 
+#executable extension:
+EXE_EXT = .exe
+
+# paths -- library, include, binary executables
 BASE_PATH = /home/lenovo
 #BASE_PATH = /mnt/sda1/home2/pete
 #BASE_PATH = /home/pmills
@@ -71,8 +75,6 @@ INCLUDE = peteys_tmpl_lib.h \
 		error_codes.h \
 		read_ascii_all.h \
 		petey_pointer.h \
-		vector_s.h \
-		vector_e.h \
 		symbol_table.h \
 		full_util.h \
 		kselect.h \
@@ -102,8 +104,6 @@ OBJECT =	symbol_table$(OPT).o \
 		string_petey$(OPT).o \
 		full_util$(OPT).o \
 		kselect$(OPT).o \
-		vector_e$(OPT).o \
-		vector_s$(OPT).o \
 		grammar_t$(OPT).o \
 		erfinv$(OPT).o \
 		roots_mins$(OPT).o \

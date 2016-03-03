@@ -612,6 +612,11 @@ namespace libagf {
     if (fs==NULL) throw UNABLE_TO_OPEN_FILE_FOR_READING;
     //read in number of classes:
     char *line=fget_line(fs);
+    if (strcmp(line, "1v1")!=0) {
+      fprintf(stderr, "borders1v1: file, %s, wrong type (%s)\n", file, line);
+      throw PARAMETER_OUT_OF_RANGE;
+    }
+    delete [] line;
     sscanf(line, "%d", &this->ncls);
     delete [] line;
     this->label=new cls_t[this->ncls];
@@ -657,6 +662,7 @@ namespace libagf {
   int borders1v1<real, cls_t>::save(FILE *fs) {
     int err=0;
     int nmod=this->ncls*(this->ncls-1)/2;
+    fprintf(fs, "1v1\n");
     fprintf(fs, "%d\n", this->ncls);
     for (cls_t i=0; i<this->ncls; i++) fprintf(fs, "%d ", this->label[i]);
     fprintf(fs, "\n");

@@ -1,7 +1,6 @@
 #ifndef KSELECT_H__DEFINED
 
 #include <vector>
-#include "vector_s.h"
 #include "tree_lg.h"
 #include "tree_lgi.h"
 
@@ -62,7 +61,7 @@ namespace libpetey {
   template <class type>
   class kselect_quick:public kselect_base<type> {
     protected:
-      vector_s<type> *data;
+      vector<type> *data;
       long ncur;
     public:
       kselect_quick(long k1);
@@ -146,8 +145,8 @@ namespace libpetey {
   template <class type>
   class kiselect_quick:public kiselect_base<type> {
     protected:
-      vector_s<type> *data;
-      vector_s<long> *ind;
+      vector<type> *data;
+      vector<long> *ind;
     public:
       kiselect_quick(long k1);
       //since quick-sort version must store all the data, pre-sets data structure to size n:

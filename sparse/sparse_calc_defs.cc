@@ -18,8 +18,8 @@ using namespace libsparse;
 namespace sparse_calc {
 
 symbol_table<string_petey> symtab;
-vector_s<integer> vartyp(SC_NSYM);
-vector_s<real> scaltab(SC_NSYM);
+vector<integer> vartyp(SC_NSYM);
+vector<real> scaltab(SC_NSYM);
 //bit_array delflag(SC_NSYM);
 std::bitset<SC_NSYM> delflag;
 char *path;

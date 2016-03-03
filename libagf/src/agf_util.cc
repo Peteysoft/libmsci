@@ -7,9 +7,10 @@
 #include <string.h>
 #include <sys/timeb.h>
 
+#include <vector>
+
 #include "kextreme.h"
 #include "quicksort.h"
-#include "vector_s.h"
 //#include "coeffs.h"
 //#include "nr.h"
 #include "peteys_tmpl_lib.h"
@@ -689,17 +690,17 @@ template <class real, class cls_t>
 real ** remove_duplicates(real **mat, dim_ta m, nel_ta n, cls_t *cls, real *wt, nel_ta &nnew) {
   long *sind;
   long ind[n];
-  vector_s<real> *mat2;
+  vector<real> *mat2;
   real wtnew[n];
   real **result;
   nel_ta lastind;
 
-  mat2=new vector_s<real> *[n];
+  mat2=new vector<real> *[n];
 
   //preparation:
   //-move data into a sortable array (including class values)
   for (nel_ta i=0; i<n; i++) {
-    mat2[i]=new vector_s<real>(m+1);
+    mat2[i]=new vector<real>(m+1);
     for (dim_ta j=0; j<m; j++) mat2[i][j]=mat[i][j];
     mat2[i][m]=cls[i];
     wtnew[i]=0;

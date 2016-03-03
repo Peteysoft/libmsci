@@ -21,7 +21,7 @@ using namespace sparse_calc;
 %}
 
 %union {
-  real scalar;
+  sparse_calc::real scalar;
   char *symbol;
   vector_t vector;
   matrix_t *matrix;
@@ -740,7 +740,7 @@ vector_exp: VEC {
       delete [] $1.data;
     }
   | matrix_exp LEFT_SUB scalar_exp RIGHT_SUB {
-      real *vec;
+      sparse_calc::real *vec;
       integer m, n;
 
       $1->dimensions(m, n);
@@ -780,7 +780,7 @@ vector_exp: VEC {
     }
   | EMPTY LEFT_BRAC scalar_exp RIGHT_BRAC {
       $$.n=(integer) $3;
-      $$.data=new real[$$.n];
+      $$.data=new sparse_calc::real[$$.n];
       for (integer i=0; i<$$.n; i++) $$.data[i]=0;
     }
   | READ LEFT_BRAC VECTOR_T COMMA LITERAL RIGHT_BRAC {
@@ -796,17 +796,17 @@ vector_exp: VEC {
       n=(integer) $3 - (integer) $1;
       if (n<0) {
         $$.n=1-n;
-        $$.data=new real[$$.n];
+        $$.data=new sparse_calc::real[$$.n];
         for (integer i=0; i<$$.n; i++) $$.data[i]=$1-i;
       } else {
         $$.n=n+1;
-        $$.data=new real[$$.n];
+        $$.data=new sparse_calc::real[$$.n];
         for (integer i=0; i<$$.n; i++) $$.data[i]=i+$1;
       }
     }
   | vector_exp LEFT_SUB vector_exp RIGHT_SUB {
       $$.n=$3.n;
-      $$.data=new real[$$.n];
+      $$.data=new sparse_calc::real[$$.n];
       for (integer i=0; i<$3.n; i++) {
         if ($3.data[i] < 0 || $3.data[i] >= $1.n) {
           fprintf(stderr, "Subscript, %7.0g, out-of-range [%d, %d)\n", $3.data[i], 0, $1.n);
@@ -832,7 +832,7 @@ vector_exp: VEC {
         YYERROR;
       }
       $$.n=$3.n;
-      $$.data=new real[$$.n];
+      $$.data=new sparse_calc::real[$$.n];
       for (integer i=0; i<$3.n; i++) {
         if ($3.data[i] < 0 || $3.data[i] >= m || $5.data[i] < 0 || $5.data[i] >= n) {
           fprintf(stderr, "Subscript, [%7.0g, %7.0g], out-of-range\n", $3.data[i], $5.data[i]);
@@ -871,7 +871,7 @@ vector_exp: VEC {
     }
   | SIZE LEFT_BRAC scalar_exp RIGHT_BRAC {
       $$.n=5;
-      $$.data=new real[5];
+      $$.data=new sparse_calc::real[5];
       $$.data[0]=1;
       $$.data[1]=1;
       $$.data[2]=1;
@@ -880,7 +880,7 @@ vector_exp: VEC {
     }
   | SIZE LEFT_BRAC vector_exp RIGHT_BRAC {
       $$.n=5;
-      $$.data=new real[5];
+      $$.data=new sparse_calc::real[5];
       $$.data[0]=$3.n;
       $$.data[1]=1;
       $$.data[2]=$3.n;
@@ -893,7 +893,7 @@ vector_exp: VEC {
       integer mt;
       $3->dimensions(m, n);
       $$.n=5;
-      $$.data=new real[5];
+      $$.data=new sparse_calc::real[5];
       $$.data[0]=m*n;
       $$.data[1]=m;
       $$.data[2]=n;

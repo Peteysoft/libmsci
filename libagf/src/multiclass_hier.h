@@ -45,7 +45,6 @@ namespace libagf {
       multiclass_hier(FILE *fs, int argc, char **argv, 
 		int maxstacksize=MAXNOPTSTACK);
 
-
       virtual ~multiclass_hier();
 
       //move initialization to special methods:
