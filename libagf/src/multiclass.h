@@ -24,9 +24,6 @@ namespace libagf {
       gsl_matrix *cnorm;
       gsl_vector *cthresh;
 
-      //empirically derived mapping (from raw to final):
-      real **imap;
-
       //internal routines:
       void raw_classify(real *x, gsl_vector *b);
       cls_t classify_basic(gsl_vector *b, real *p);
@@ -34,9 +31,10 @@ namespace libagf {
       cls_t vote_pdf(gsl_vector *b, real *tly);
       cls_t vote_pdf2(gsl_vector *b, real *tly);
       cls_t solve_class(gsl_vector *b, real *p1);
+      cls_t classify_1vR(gsl_vector *b, real *p);
+      cls_t classify_1v1(gsl_vector *b, real *p);
 
       //more experimental versions:
-      cls_t classify_map(gsl_vector *b, real *p);
       cls_t classify_scratch(gsl_vector *b, real *p);
       cls_t classify_special(gsl_vector *b, real *p);
 
@@ -52,6 +50,8 @@ namespace libagf {
       //weight for normalization constraint:
       real constraint_weight;
 
+      //"polarity" of each binary classifier:
+      int *pol;
     protected:
       //the partitions:
       binaryclassifier<real, cls_t> **twoclass;
@@ -67,7 +67,6 @@ namespace libagf {
       //initialized from a control file:
       multiclass(const char *file, 	//control file
 		int clstyp=0,		//type of classification result
-					// -1=derived ("empirical") mapping
 					//  0=constrained inverse;
 					//  1=raw inverse;
 					//  2=voting from probabilities; 
@@ -75,6 +74,12 @@ namespace libagf {
 					//  4=inverse/voting from probabilities
 					//  5=inverse/voting from classes
 					//  6=inverse weighted by raw prob.
+					//  7=constrained inverse (may be inefficient)
+					//  8=voting from pdf, corrected and normalized
+					//    (designed for orthogonal coding matrix)
+					// 10=special for 1 v rest
+					// 11=special for 1 v. 1
+					// 12=special for adjacent
 		real cw=1.,		//constraint weight (sum of cond. prob.)
 		const char *com=NULL,	//command for binary classifier
 		int Mflag=0,		//LIBSVM format for external classifiers
@@ -99,11 +104,6 @@ namespace libagf {
  		int Kflag=0,		//keep temporary files
 		int sigcode=0);		//code for sigmoid trans. func.
 
-      //use actual examples to train the mapping:
-      int train_map(real **train, cls_t *cls, nel_ta n);
-      int write_map(FILE *fs);
-      int load_map(FILE *fs);
-
       //transformation matrix is not copied, only the pointer is stored
       //--do not delete original before classifier class instance:
       virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
@@ -120,6 +120,14 @@ namespace libagf {
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
 
       virtual void set_id(cls_t *id); 		//set id's of each binary classifier
+
+      int detect_type();	//detects if it is one of the special cases:
+      				//0 = 1v1
+				//1 = 1 vs. rest
+				//2 = adjacent
+
+      virtual int load(FILE *fs);
+      virtual int save(FILE *fs);
   };
 
 }

@@ -5,6 +5,8 @@
 #include <string.h>
 #include <assert.h>
 
+#include <vector>
+
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
@@ -12,7 +14,8 @@
 #include "constrained.h"
 #include "full_util.h"
 #include "gsl_util.h"
-//#include "peteys_tmpl_lib.h"
+#include "read_ascii_all.h"
+#include "peteys_tmpl_lib.h"
 
 #include "agf_lib.h"
 
@@ -32,11 +35,13 @@ namespace libagf {
     vt=NULL;
     s=NULL;
     map=NULL;
-    imap=NULL;
 
     //set number parameters to 0:
     nmodel=0;
     this->ncls=0;
+
+    //"polarity":
+    pol=NULL;
   }
 
   template <class real, class cls_t>
@@ -72,8 +77,11 @@ namespace libagf {
     //clean up:
     delete [] param.commandname;
 
+    //classification method:
     type=clstyp;
 
+    //"polarity":
+    pol=NULL;
   }
 
   template <class real, class cls_t>
@@ -82,7 +90,6 @@ namespace libagf {
     cls_t *part[MAXNPART*2];
     int c1;
     char c2;
-    int flag;
     int err=0;
 
     nmodel=parse_multi_partitions(&param, name, part, MAXNPART);
@@ -104,57 +111,7 @@ namespace libagf {
       delete [] part[2*i+1];
     }
 
-    //check for a mapping:
-    flag=0;
-    do {
-      c1=fgetc(param.infs);
-      if (c1==EOF) break;
-      c2=(char) c1;
-      //printf("1.(%c)\n", c2);
-      if (c2=='\n') param.lineno++;
-      //filename has to start with a letter:
-      if (c2=='[') {
-        flag=1;
-        break;
-      }
-    } while (isspace(c1));
-
-    if (flag) {
-      int32_t m1, n1;
-      imap=scan_matrix<real, int32_t>(param.infs, m1, n1);
-      if (imap==NULL) {
-        fprintf(stderr, "multiclass::init: error parsing mapping; skipping\n");
-	err=FILE_READ_ERROR;
-      }
-      if (m1 != this->ncls || n1 != nmodel) {
-        fprintf(stderr, "multiclass::init: map has wrong dimensions: [%d*%d]; [%d*%d] expected\n", m1, n1, this->ncls, nmodel);
-	delete_matrix(imap);
-	err=SAMPLE_COUNT_MISMATCH;
-      }
-
-      //find closing bracket:
-      flag=0;
-      do {
-        c1=fgetc(param.infs);
-        if (c1==EOF) break;
-        c2=(char) c1;
-        //printf("1.(%c)\n", c2);
-        if (c2=='\n') param.lineno++;
-        //filename has to start with a letter:
-        if (c2==']') {
-          flag=1;
-          break;
-        }
-      } while (isspace(c1));
-
-      if (flag!=1) {
-        fprintf(stderr, "multiclass::init: syntax error on line %d;\n", param.lineno);
-        fprintf(stderr, "     no closing bracket for mapping; exiting...\n");
-	exit(SYNTAX_ERROR);
-      }
-    } else {
-      fseek(param.infs, -1, SEEK_CUR);
-    }
+    fseek(param.infs, -1, SEEK_CUR);
 
     return err;
 
@@ -227,14 +184,12 @@ namespace libagf {
     gsl_matrix_free(vt);
     gsl_matrix_free(u);
 
-    if (imap!=NULL) {
-      delete [] imap[0];
-      delete [] imap;
-    }
     if (cnorm!=NULL) {
       gsl_matrix_free(cnorm);
       gsl_vector_free(cthresh);
     }
+
+    if (pol!=NULL) delete [] pol;
   }
 
   //find the singular value decomposition of the coding matrix:
@@ -284,97 +239,6 @@ namespace libagf {
       gsl_vector_set_all(&lastrow.vector, -1);
       gsl_vector_set(cthresh, this->ncls-1, -1);
     }
-  }
-
-  //train mapping with actual data:
-  template <class real, class cls_t>
-  int multiclass<real, cls_t>::train_map(real **train, cls_t *cls, nel_ta n) {
-    gsl_matrix *a;
-    gsl_vector *b;
-    gsl_vector *p;
-    gsl_vector *x;
-
-    gsl_matrix *vt2;
-    gsl_vector *s2;
-    gsl_vector *work;
-    cls_t weight[this->ncls];
-    real_a sump[nmodel];
-
-    for (cls_t i=0; i<this->ncls; i++) weight[i]=0;
-    for (cls_t i=0; i<nmodel; i++) sump[i]=0;
-    for (nel_ta i=0; i<n; i++) weight[cls[i]]++;
-
-    a=gsl_matrix_alloc(n*(this->ncls+1)+this->ncls, nmodel*this->ncls);
-    b=gsl_vector_alloc(n*(this->ncls+1)+this->ncls);
-    p=gsl_vector_alloc(nmodel+1);
-    for (nel_ta i=0; i<n; i++) {
-      raw_classify(train[i], p);
-      for (cls_ta j=0; j<this->ncls; j++) {
-        for (cls_ta k=0; k<nmodel; k++) {
-          gsl_matrix_set(a, i*(this->ncls+1)+j, j*nmodel+k, 
-			  gsl_vector_get(p, k)/weight[j]);
-	  gsl_matrix_set(a, i*(this->ncls+1)+this->ncls, j*nmodel+k, 
-			  gsl_vector_get(p, k));
-        }
-        if (cls[i]==j) {
-          gsl_vector_set(b, i*(this->ncls+1)+j, 1./weight[j]);
-        } else {
-          gsl_vector_set(b, i*(this->ncls+1)+j, 0);
-        }
-	gsl_vector_set(b, i*(this->ncls+1)+this->ncls, 1.);
-      }
-      for (cls_ta k=0; k<nmodel; k++) {
-        sump[k]+=gsl_vector_get(p, k);
-      }
-    }
-
-    //constraint: <p_i>=n_i/n
-    for (int i=0; i<this->ncls; i++) {
-      for (int j=0; j<nmodel; j++) {
-        gsl_matrix_set(a, n*(this->ncls+1)+i, i*nmodel+j, sump[j]/weight[i]);
-      }
-      gsl_vector_set(b, n*(this->ncls+1)+i, 1.);
-    }
-
-    print_gsl_matrix(stdout, a);
-
-    //solve the linear system:
-    x=gsl_vector_alloc(nmodel*this->ncls);
-    vt2=gsl_matrix_alloc(nmodel*this->ncls, nmodel*this->ncls);
-    s2=gsl_vector_alloc(nmodel*this->ncls);
-    work=gsl_vector_alloc(nmodel*this->ncls);
-
-    gsl_linalg_SV_decomp(a, vt2, s2, work);
-    gsl_linalg_SV_solve(a, vt2, s2, b, x);
-
-    imap=allocate_matrix<real, int>(this->ncls, nmodel);
-    for (cls_t i=0; i<this->ncls; i++) {
-      for (cls_t j=0; j<nmodel; j++) {
-        imap[i][j]=gsl_vector_get(x, i*nmodel+j);
-      }
-    }
-    //need some error checking here...
-    return 0;
-  }
-
-  template <class real, class cls_t>
-  int multiclass<real, cls_t>::write_map(FILE *fs) {
-    return write_matrix<real, int32_t>(fs, imap, nmodel, this->ncls);
-  }
-
-  template <class real, class cls_t>
-  int multiclass<real, cls_t>::load_map(FILE *fs) {
-    int32_t m1, n1;
-    if (imap!=NULL) delete_matrix(imap);
-    imap=read_matrix<real, int32_t>(fs, m1, n1);
-    if (imap==NULL) return FILE_READ_ERROR;
-    if (m1!=nmodel || n1!=this->ncls) {
-      fprintf(stderr, "multiclass::load_map: failed to load map;\n");
-      fprintf(stderr, "     dimensions incorrect: [%d * %d]; expected [%d * %d]\n",
-		      m1, n1, nmodel, this->ncls);
-      return SAMPLE_COUNT_MISMATCH;
-    }
-    return 0;
   }
 
   //load a linear transformation to apply to the test points:
@@ -510,16 +374,6 @@ namespace libagf {
     return cls;
   }
 
-  //classify from a mapping (inverse) constructed earlier:
-  template <class real, class cls_t>
-  cls_t multiclass<real, cls_t>::classify_map(gsl_vector *b, real *p) {
-    for (cls_t i=0; i<this->ncls; i++) {
-      p[i]=0;
-      for (cls_t j=0; j<nmodel; j++) p[i]+=gsl_vector_get(b, j)*imap[i][j];
-    }
-    return choose_class(p, this->ncls);
-  }
-
   //solve matrix equation from scratch so we can apply regularizations to it:
   template <class real, class cls_t>
   cls_t multiclass<real, cls_t>::classify_scratch(gsl_vector *b, real *p) {
@@ -651,6 +505,61 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  cls_t multiclass<real, cls_t>::classify_1vR(gsl_vector *b, real *p) {
+    int ind[this->ncls];		//still being worked on
+    int nwork;				//how many prob. still being worked on
+    int k=ranu()*this->ncls;		//omit random classifier
+    int dflag;
+
+    for (cls_t i=0; i<this->ncls; i++) p[i]=pol[i]*(1-gsl_vector_get(b, i))/2;
+
+    for (cls_t i=0; i<k; i++) ind[i]=i;
+    for (cls_t i=k+1; i<this->ncls; i++) ind[i-1]=i;
+    nwork=this->ncls-1;
+
+    do {
+      real pt;
+      dflag=1;
+      for (cls_t i=0; i<nwork; i++) {
+        if (p[ind[i]]<0) {
+          p[ind[i]]=0;
+	  for (cls_t j=i+1; i<nwork; j++) ind[i-1]=ind[i];
+	  nwork--;
+	  dflag=0;
+	  break;
+	}
+      }
+      if (nwork==0) break;
+      pt=0;
+      for (cls_t i=0; i<nwork; i++) pt+=p[ind[i]];
+      if (pt>1) {
+        for (cls_t i=0; i<nwork; i++) p[ind[i]]=p[ind[i]]/pt;
+	dflag=0;
+      }
+    } while (dflag==0);
+
+    p[k]=1;
+    for (int i=0; i<nwork; i++) p[k]-=p[ind[i]];
+
+    return choose_class(p, this->ncls);
+  }
+
+  template <class real, class cls_t>
+  cls_t multiclass<real, cls_t>::classify_1v1(gsl_vector *b, real *p) {
+    real **praw=allocate_matrix<real, int32_t>(this->ncls, this->ncls);
+    int k=0;
+    for (cls_t i=0; i<this->ncls; i++) {
+      for (cls_t j=0; i<this->ncls; i++) {
+        praw[i][j]=pol[k]*gsl_vector_get(b, k);
+	k++;
+      }
+    }
+    solve_cond_prob_1v1(praw, this->ncls, p);
+    delete_matrix(praw);
+    return choose_class(p, this->ncls);
+  }
+
+  template <class real, class cls_t>
   cls_t multiclass<real, cls_t>::solve_class(gsl_vector *b, real *pdf) {
     cls_t cls1, cls2;
     real pt;		//total of conditional probability estimates
@@ -663,9 +572,6 @@ namespace libagf {
 
     //printf("classification type=%d\n", type);
     switch(type) {
-      case (-1):
-        cls1=classify_map(b, pdf);
-        break;
       case (0):
 	cls1=classify_special(b, pdf);
 	break;
@@ -694,6 +600,12 @@ namespace libagf {
 	break;
       case (8):
         cls1=vote_pdf2(b, pdf);
+	break;
+      case (10):
+	cls1=classify_1vR(b, pdf);
+	break;
+      case (11):
+	cls1=classify_1v1(b, pdf);
 	break;
       default:
         cls1=classify_special(b, pdf);
@@ -828,13 +740,6 @@ namespace libagf {
       if (i!=nmodel-1) fprintf(fs, "\n");
     }
 
-    if (imap!=NULL) {
-      //screw it, lets just write the map directly into the control file:
-      fprintf(fs, "\n[");
-      print_matrix(fs, imap, this->ncls, nmodel);
-      fprintf(fs, "]");
-    }
-
     if (fbase2!=NULL) delete [] fbase2;
   }
 
@@ -899,6 +804,212 @@ namespace libagf {
     delete [] clist2;
 
     return this->ncls;
+  }
+
+  //converts matrix to a sorted array of STL vectors:
+  template <typename scalar>
+  void matrix2sorted(scalar **mat,		//original matrix
+			int m,
+			int n, 
+			vector<scalar> *sd,	//vector of sorted arrays
+			long *sind) {		//sorting indices
+    vector<scalar> sd2[m];
+
+    for (int i=0; i<m; i++) {
+      for (int j=0; j<n; j++) sd[i][j]=mat[i][j];
+    }
+
+    heapsort(sd, sind, m);
+
+    for (int i=0; i<m; i++) sd2[i]=sd[sind[i]];
+    for (int i=0; i<m; i++) sd[i]=sd2[i];
+  }
+
+  template <typename real, typename cls_t>
+  int multiclass<real, cls_t>::detect_type() {
+    int spec_type;		//0=1 v. rest; 1=1 v. 1; 2=adj.
+    int **code;				//coding matrix (as integers)
+    int **proto;			//prototype to compare against
+    long sind[this->nmodel];
+    long dum[nmodel];
+    vector<int> sd[nmodel];
+    vector<int> p2[nmodel];
+
+    code=allocate_matrix<int, int32_t>(nmodel, this->ncls);
+    for (int i=0; i<nmodel; i++) {
+      for (int j=0; j<this->ncls; j++) code[i][j]=gsl_matrix_get(map, i, j);
+    }
+
+    matrix2sorted(code, nmodel, this->ncls, sd, sind);
+
+    spec_type=-1;			//which type is it?
+    pol=new int[nmodel];
+    for (int tc=0; tc<3; tc++) {
+      int nm;			//required number of binary classifiers
+      switch (tc) {
+        case(0):
+          //check for 1 v rest:
+          proto=one_against_all(this->ncls);
+	  nm=this->ncls;
+	  break;
+        case(1):
+          //check for 1 v 1:
+          proto=one_against_one(this->ncls);
+	  nm=this->ncls*(this->ncls-1)/2;
+	  break;
+        case(2):
+	  //check for adjacent partitioning:
+          proto=partition_adjacent(this->ncls);
+	  nm=this->ncls-1;
+	  break;
+      }
+      if (nmodel==nm) {
+        matrix2sorted(proto, this->nmodel, this->ncls, p2, dum);
+        spec_type=tc;
+        for (int i=0; i<this->ncls; i++) {
+          if (code[i]!=proto[i]) {
+            for (int j=0; j<this->ncls; j++) proto[i][j]=-proto[i][j];
+            if (code[i]!=proto[i]) {
+              spec_type=-1;
+              break;
+            } else {
+              pol[i]=-1;
+	    }
+          } else {
+            pol[i]=1;
+	  }
+	}
+      }
+      delete [] proto[0];
+      delete [] proto;
+      if (spec_type==-1) {
+        delete [] pol;
+	pol=NULL;
+        break;
+      }
+    }
+    if (spec_type!=-1) {
+      //rearrange the coding matrix and binary classifiers so they're in
+      //the "right" order:
+      gsl_matrix *newmap=gsl_matrix_alloc(nmodel+1, this->ncls);
+      binaryclassifier<real, cls_t> **twoclass2=new binaryclassifier<real, cls_t>*[nmodel];
+      for (int i=0; i<nmodel; i++) {
+        for (int j=0; j<this->ncls; j++) {
+          gsl_matrix_set(newmap, dum[i], j, gsl_matrix_get(map, sind[i], j));
+        }
+	twoclass2[dum[i]]=twoclass2[sind[i]];
+      }
+      for (int j=0; j<this->ncls; j++) {
+        gsl_matrix_set(newmap, nmodel, j, gsl_matrix_get(map, nmodel, j));
+      }
+      gsl_matrix_free(map);
+      delete [] twoclass;
+      map=newmap;
+      twoclass=twoclass2;
+      type=10+spec_type;
+    }
+
+    //clean up:
+    delete [] code[0];
+    delete [] code;
+      
+    return spec_type;
+  }
+
+  template <typename real, typename cls_t>
+  int multiclass<real, cls_t>::load(FILE *fs) {
+    int err=0;
+    int **code;				//coding matrix (as integer)
+    char **sub;
+    int nsub;
+    char *typestr=fget_line(fs);
+    char *line=fget_line(fs);
+    sscanf(line, "%d", &this->ncls);
+    delete [] line;
+    //type specific stuff:
+    if (strcmp(typestr, "1vR")==0) {
+      nmodel=this->ncls;
+      code=one_against_all(this->ncls);
+      type=10;
+    } else if (strcmp(typestr, "1v1")) {
+      nmodel=this->ncls*(this->ncls-1)/2;
+      code=one_against_all(this->ncls);
+      type=11;
+    } else if (strcmp(typestr, "ADJ")) {
+      nmodel=this->ncls-1;
+      code=partition_adjacent(this->ncls);
+      type=12;
+    } else {
+      fprintf(stderr, "multiclass::load: type, %s, not recognized\n", typestr);
+      throw PARAMETER_OUT_OF_RANGE;
+    }
+    line=fget_line(fs);
+    //don't need labels:
+    delete [] line;
+    //"polarity":
+    line=fget_line(fs);
+    sub=split_string_destructive(line, nsub);
+    if (nsub<nmodel) {
+      fprintf(stderr, "multiclass::load: Not enough \"polarities\" found in initialization file\n");
+      fprintf(stderr, "  %d vs. %d\n", this->ncls, nsub);
+      throw SAMPLE_COUNT_MISMATCH;
+    }
+    pol=new int[nmodel];
+    for (int i=0; i<nmodel; i++) {
+      pol[i]=atoi(sub[i]);
+      for (int j=0; j<this->ncls; j++) code[i][j]=pol[i]*code[i][j];
+    }
+    delete [] line;
+    delete [] sub;
+
+    //read in binary classifiers:
+    twoclass=new binaryclassifier<real, cls_t>*[nmodel];
+    for (int i=0; i<nmodel; i++) {
+      twoclass[i]=new agf2class<real, cls_t>();
+      err=twoclass[i]->load(fs);
+      if (err!=0) throw err;
+    }
+
+    //convert integer coding matrix to floating point, GSL compatible one:
+    map=gsl_matrix_alloc(nmodel+1, this->ncls);
+    for (int i=0; i<nmodel; i++) {
+      for (int j=0; j<this->ncls; j++) gsl_matrix_set(map, i, j, code[i][j]);
+    }
+    for (int j=0; j<this->ncls; j++) gsl_matrix_set(map, nmodel, j, 1);
+    constraint_weight=1;
+    
+    return err;
+  }
+
+  template <typename real, typename cls_t>
+  int multiclass<real, cls_t>::save(FILE *fs) {
+    int err=0;
+    detect_type();
+    switch (type) {
+      case(10):
+        fprintf(fs, "1vR");
+	break;
+      case(11):
+	fprintf(fs, "1v1");
+	break;
+      case(12):
+	fprintf(fs, "ADJ");
+	break;
+      default:
+	fprintf(stderr, "multiclass::save: not a recognized type\n");
+	throw PARAMETER_OUT_OF_RANGE;
+    }
+    fprintf(fs, "%d\n", this->ncls);
+    //need place filler for labels (how are we going to do this?):
+    for (int i=0; i<this->ncls; i++) fprintf(fs, "%4d", i);
+    fprintf(fs, "\n");
+    for (int i=0; i<nmodel; i++) fprintf(fs, "%d ", pol[i]);
+    fprintf(fs, "\n");
+    for (int i=0; i<nmodel; i++) {
+      err=twoclass[i]->save(fs);
+      if (err!=0) throw err;
+    }
+    return err;
   }
 
   template class multiclass<real_a, cls_ta>;

@@ -51,18 +51,27 @@ template long * heapsort<float>(float *, long);
 template long * heapsort<int32_t>(int32_t *, long);
 template long * heapsort<int64_t>(int64_t *, long);
 template long * heapsort<double>(double *, long);
+
 template long * heapsort<time_class>(time_class *, long);
 template long * heapsort<string_petey>(string_petey *, long);
+
 template long * heapsort<vector<int> >(vector<int> *, long);
+template long * heapsort<vector<float> >(vector<float> *, long);
+template long * heapsort<vector<double> >(vector<double> *, long);
 
 template long * heapsort<void *>(void **, long);
 
-template void heapsort<float>(float *data, long *ind, long n);
-template void heapsort<int32_t>(int32_t *data, long *ind, long n);
-template void heapsort<int64_t>(int64_t *data, long *ind, long n);
-template void heapsort<double>(double *data, long *ind, long n);
-template void heapsort<time_class>(time_class *data, long *ind, long n);
-template void heapsort<string_petey>(string_petey *data, long *ind, long n);
+template void heapsort<float>(float *data, long *, long);
+template void heapsort<int32_t>(int32_t *data, long *, long);
+template void heapsort<int64_t>(int64_t *data, long *, long);
+template void heapsort<double>(double *data, long *, long);
+
+template void heapsort<time_class>(time_class *data, long *, long);
+template void heapsort<string_petey>(string_petey *data, long *, long);
+
+template void heapsort<vector<int> >(vector<int> *, long *, long);
+template void heapsort<vector<float> >(vector<float> *, long *, long);
+template void heapsort<vector<double> >(vector<double> *, long *, long);
 
 template void heapsort<void *>(void **data, long *ind, long n);
 

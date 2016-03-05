@@ -391,6 +391,17 @@ real matrix_norm(real **mat, integer m, integer n) {
   return sqrt(result);
 }
 
+template float ** allocate_matrix<float, int16_t>(int16_t, int16_t);
+template float ** allocate_matrix<float, int32_t>(int32_t, int32_t);
+template float ** allocate_matrix<float, int64_t>(int64_t, int64_t);
+
+template double ** allocate_matrix<double, int16_t>(int16_t, int16_t);
+template double ** allocate_matrix<double, int32_t>(int32_t, int32_t);
+template double ** allocate_matrix<double, int64_t>(int64_t, int64_t);
+
+template int32_t ** allocate_matrix<int32_t, int32_t>(int32_t, int32_t);
+template int64_t ** allocate_matrix<int64_t, int32_t>(int32_t, int32_t);
+
 template void zero_matrix<float, int16_t>(float **, int16_t, int16_t);
 template void zero_matrix<float, int32_t>(float **, int32_t, int32_t);
 template void zero_matrix<float, int64_t>(float **, int64_t, int64_t);
@@ -425,6 +436,9 @@ template double ** identity_matrix<double, int64_t>(int64_t, int64_t);
 
 template void delete_matrix<float>(float **);
 template void delete_matrix<double>(double **);
+
+template void delete_matrix<int32_t>(int32_t **);
+template void delete_matrix<int64_t>(int64_t **);
 
 template float ** copy_matrix<float, int16_t>(float **, int16_t, int16_t);
 template float ** copy_matrix<float, int32_t>(float **, int32_t, int32_t);

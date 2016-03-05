@@ -323,43 +323,6 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  int multiclass_hier<real, cls_t>::train_map(real **train, cls_t *cls, nel_ta n) {
-    cls_t nchild=classifier->n_class();
-    if (typeid(*classifier)==typeid(multiclass<real, cls_t>)) {
-      cls_t cls2[n];
-      cls_t *cls_map;
-      cls_t maxcls;	//regretably, class labels don't have to be ordered!
-      cls_t cls_list[this->ncls];
-      cls_t ncls_child;
-
-      //map class labels from global to local:
-      class_list(cls_list);
-      maxcls=0;
-      for (cls_t i=0; i<this->ncls; i++) if (cls_list[i]>maxcls) maxcls=cls_list[i];
-      cls_map=new cls_t[maxcls+1];
-      for (cls_t i=0; i<nchild; i++) {
-        ncls_child=children[i]->class_list(cls_list);
-	for (cls_t j=0; j<ncls_child; j++) {
-          cls_map[cls_list[j]]=i;
-	}
-      }
-      for (nel_ta i=0; i<n; i++) cls2[i]=cls_map[cls[i]];
-
-      ((multiclass<real, cls_t> *) classifier)->train_map(train, cls2, n);
-
-      delete [] cls_map;
-    }
-
-    for (cls_t i=0; i<nchild; i++) {
-      if(typeid(*children[i])==typeid(multiclass_hier<real, cls_t>)) {
-        ((multiclass_hier<real, cls_t> *) children[i])->train_map(train, cls, n);
-      }
-    }
-
-    return 0;
-  }
-
-  template <class real, class cls_t>
   cls_t multiclass_hier<real, cls_t>::classify(real *x, real &p, real *praw) {
     cls_t cls1, cls2;
     real pdum;

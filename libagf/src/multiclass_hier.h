@@ -56,9 +56,6 @@ namespace libagf {
       //low level initialization:
       int init(multi_parse_param &param);
 
-      //train the mapping for all the non-hierarchical multi-class classes:
-      int train_map(real **train, cls_t *cls, nel_ta n);
-
       //transformation matrix is not copied, only the pointer is stored
       //--do not delete original before classifier class instance:
       virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
