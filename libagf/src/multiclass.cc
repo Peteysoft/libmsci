@@ -533,7 +533,7 @@ namespace libagf {
       pt=0;
       for (cls_t i=0; i<nwork; i++) pt+=p[ind[i]];
       if (pt>1) {
-        for (cls_t i=0; i<nwork; i++) p[ind[i]]=p[ind[i]]/pt;
+        for (cls_t i=0; i<nwork; i++) p[ind[i]]=p[ind[i]]-(pt-1)/nwork;
 	dflag=0;
       }
     } while (dflag==0);
@@ -999,7 +999,7 @@ namespace libagf {
 	fprintf(stderr, "multiclass::save: not a recognized type\n");
 	throw PARAMETER_OUT_OF_RANGE;
     }
-    fprintf(fs, "%d\n", this->ncls);
+    fprintf(fs, "%4d\n", this->ncls);
     //need place filler for labels (how are we going to do this?):
     for (int i=0; i<this->ncls; i++) fprintf(fs, "%4d", i);
     fprintf(fs, "\n");

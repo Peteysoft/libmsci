@@ -628,7 +628,7 @@ namespace libagf {
     if (nsub<this->ncls) {
       fprintf(stderr, "borders1v1: Not enough labels found in initialization file, %s\n", file);
       fprintf(stderr, "  %d vs. %d\n", this->ncls, nsub);
-      throw SAMPLE_COUNT_MISMATCH;
+      throw DIMENSION_MISMATCH;
     }
     for (cls_t i=0; i<this->ncls; i++) this->label[i]=atoi(sub[i]);
     delete [] line;

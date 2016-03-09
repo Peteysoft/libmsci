@@ -89,6 +89,10 @@ namespace libagf {
 		char *fbase);
 
       virtual void set_id(cls_t *id);
+
+      //load and save to single ASCII file:
+      virtual int load(FILE *fs);
+      virtual int save(FILE *fs);
   };
 }
 

@@ -302,7 +302,7 @@ namespace libagf {
   //doesn't do much, but makes code more elegant:
   template <class real, class cls_t>
   int oneclass<real, cls_t>::save(FILE *fs) {
-    return (fprintf(fs, "%d", cls)==1);
+    return (fprintf(fs, "%4d", cls)==1);
   }
 
   template class classifier_obj<float, cls_ta>;

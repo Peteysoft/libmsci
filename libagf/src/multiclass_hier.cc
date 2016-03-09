@@ -655,6 +655,44 @@ namespace libagf {
     }
   }
 
+  template <typename real, typename cls_t>
+  int multiclass_hier<real, cls_t>::load(FILE *fs) {
+    char **sub;
+    int nsub;
+    char *type=fget_line(fs);		//first line describes type
+    char *line=fget_line(fs);		//second line has number of classes
+    sscanf(line, "%d", this->ncls);
+    delete [] line;
+    //third line contains class labels:
+    line=fget_line(fs);
+    sub=split_string_destructive(line, nsub);
+    if (nsub!=this->ncls) throw DIMENSION_MISMATCH;
+    children=new classifier_obj<real, cls_t> *[this->ncls];
+    for (int i=0; i<this->ncls; i++) {
+      children[i]=new oneclass<real, cls_t>(atoi(sub[i]));
+    }
+    delete [] line;
+    delete [] sub;
+    classifier=new multiclass<real, cls_t>();
+    classifier->load(fs);
+    nonh_flag=1;
+    return 0;
+  }
+
+  template <typename real, typename cls_t>
+  int multiclass_hier<real, cls_t>::save(FILE *fs) {
+    if (nonh_flag==0) {
+      fprintf(stderr, "multiclass_hier::save: cannot save; not the right type\n");
+      throw PARAMETER_OUT_OF_RANGE;
+    }
+    classifier->save(fs);
+    fseek(fs, 9, SEEK_SET);		//***ugly hack
+    					//(could stick labels at very end...)
+    for (int i=0; i<this->ncls; i++) children[i]->save(fs);
+    return 0;
+  }
+
+
   template class multiclass_hier<real_a, cls_ta>;
 
 }

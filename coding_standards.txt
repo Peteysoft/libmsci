@@ -88,7 +88,7 @@ Error codes should be consistent within libraries.  Excessive error checking
 should be avoided as this tends to clutter the code.  If there are many points
 in the program where errors can occur, the programmer should figure out a way
 to do this in a single block of code, such as an error-handling routine.
-I have still not figured out a way to do this that is both code-efficient and
+Ideally error handling should be both code-efficient and
 general, trapping both fatal and recoverable errors.
 
 - Command-line arguments: command line options within a single library should

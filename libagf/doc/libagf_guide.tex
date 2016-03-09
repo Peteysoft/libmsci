@@ -1,19 +1,39 @@
 \documentclass[12pt]{article}
 
+\usepackage{amsmath}
+\usepackage[dvips]{graphicx}
 \usepackage{natbib}
 \usepackage{url}
+
+\renewcommand{\contentsname}{CONTENTS}
+\renewcommand{\refname}{BIBLIOGRAPHY}
 
 \bibliographystyle{apa}
 
 \begin{document}
 
+\title{\includegraphics[width=0.2\textwidth]{agflogo} User Guide}
+\author{Peter Mills\\\textit{peteymills@hotmail.com}}
+
+\maketitle
+
+\begin{center}
+	\includegraphics[width=0.65\textwidth]{sc}
+\end{center}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
 \section{INSTALLATION}
 
-  First, make sure you have the required dependencies.  You will need the {\it GNU Scientific Library (GSL)}.  If it is not already installed on your system, download and install it.  Take note of the location of the compiled libraries and include files.  You will also need to install {\it libpetey}, another, much smaller numerical library.  Download this from Sourceforge and follow the installation instructions.
+  First, make sure you have the required dependencies.  You will need the {\it GNU Scientific Library (GSL)}.  If it is not already installed on your system, download and install it.  Take note of the location of the compiled libraries and include files.  You will also need to install {\it libpetey}, another, much smaller numerical library--this now comes bundled with libAGF.
 
-  Download the source from Sourceforge.net.  Unzip and unpack the tarball to the desired directory.  Modify the makefile with the appropriate directories, compiler names and compiler flags.  Type \verb"make" from inside the libagf directory to perform the build and \verb"make install" to copy the executables, libraries and include files to the appropriate directories.
+  Download the source from Github (\url{https://github/peteysoft/libmsci}) or your favourite mirror.  Unzip and unpack the tarball to the desired directory.  Modify the makefile with the appropriate directories, compiler names and compiler flags.  Type \verb"make" from inside the libagf directory to perform the build and \verb"make install" to copy the executables, libraries and include files to the appropriate directories.
 
-  A configure script is not supplied: please refer to the Peteysoft coding standards (\url{http://peteysoft.org/coding\_standards.txt}).
+  A configure script is not supplied: please refer to the Peteysoft coding standards \verb\peteysoft_standards.txt\ in the base of the installation directory (\url{https://github.com/peteysoft/libmsci/blob/master/coding_standards.txt}).
 
   Make sure the following macros have been set properly in the make file:
 
@@ -144,7 +164,7 @@ In Fortran:
   close(10)
 \end{verbatim}
 
-Note that the class indices must go from 0 to $N_c-1$, where $N_c$ is the number of classes.  The classification routines will output two binary files containing scalar data:  one with the extension, \verb".cls" containing class estimates, and one with the extension \verb".con" containing "confidence ratings" which are simply conditional probabilities re-scaled in the following manner:
+Note that the class indices must go from 0 to $N_c-1$, where $N_c$ is the number of classes.  The classification routines will output two binary files containing scalar data:  one with the extension, \verb".cls" containing class estimates, and one with the extension \verb".con" containing ``confidence ratings'' which are simply conditional probabilities re-scaled in the following manner:
 \begin{equation}
 c = \frac{N_c P(c | \vec x) - 1}{Nc - 1}
 \end{equation}
@@ -176,9 +196,9 @@ To read in and print a file of scalar data called, \verb"bar.dat", type the foll
 %s%c>print vector(bar.dat)
 \end{verbatim}
 
-Some users may prefer to use ASCII file formats to store their data.  If this is the case, there are a number of file conversion utilities included for comparison with other algorithms.  See Section \ref{COMMAND_LINE_EXECUTABLES}.
+Some users may prefer to use ASCII file formats to store their data.  If this is the case, there are a number of file conversion utilities included for comparison with other algorithms.  See Section \ref{COMMAND_LINE_EXECUTABLES}, COMMAND LINE EXECUTABLES.
 
-Sometimes it's desireable to normalize the data before performing classifications.  Normalization in libagf has now been generalized to linear transformation and includes singular value decomposition as well as feature selection.  The command, \verb"agf_precondition", is used to perform linear transformations on test and training (features) data and store the resulting transformation matrix in the same binary format for vector data as described above.  The default name is the same as before with the extension \verb".std" appended to the output base file name.  Features data can still be transformed directly within the machine learning routines using the command options \verb"-n", \verb"-S" and \verb"-a": see Section \ref{COMMAND_PARAMETERS}.  By default, pre-trained model data is stored in the normalized coordinates; to store it in the non-normalized coordinates, use the command switch, \verb"-u".
+Sometimes it's desireable to normalize the data before performing classifications.  Normalization in libagf has now been generalized to linear transformation and includes singular value decomposition as well as feature selection.  The command, \verb"agf_precondition", is used to perform linear transformations on test and training (features) data and store the resulting transformation matrix in the same binary format for vector data as described above.  The default name is the same as before with the extension \verb".std" appended to the output base file name.  Features data can still be transformed directly within the machine learning routines using the command options \verb"-n", \verb"-S" and \verb"-a": see Section \ref{COMMAND_PARAMETERS}, COMMAND PARAMETERS.  By default, pre-trained model data is stored in the normalized coordinates; to store it in the non-normalized coordinates, use the command switch, \verb"-u".
 
 \section{COMMAND PARAMETERS}
 
@@ -238,23 +258,19 @@ Option & Function \\
 & \verb/  /PDF validation:\\
 & \verb/    /6=AGF PDF estimation\\
 & \verb/    /7=KNN PDF estimation\\
-& \verb/  /optimal AGF: how to calculate the filter variances\\
-& \verb/    /0=halving max filter variance (default);\\
-& \verb/    /1=filter variance min and max;\\
-& \verb/    /2=total weight min and max\\
 -C & No class data.\\
 -d & Number of divisions in cross-validation scheme.\\
 -D & Generate ROC curve by varying the discrimination border.\\
 -e & Return error estimates.\\
--E & Value for missing data.
-\end{tabular}
-
-\begin{tabular}{ll}
+-E & Value for missing data.\\
 -f & For validation schemes:  fraction of training data to use for \\
    & testing.\\
 -F & Select features.\\
--g & Use lograthmic progression.\\
--h & Relative difference for calculating numerical derivatives.\\
+-g & Use lograthmic progression. \\
+-h & Relative difference for calculating numerical derivatives.
+\end{tabular}
+
+\begin{tabular}{ll}
 -H & Omit header data.\\
 -i & Class borders: maximum number of iterations in supernewton.\\
 -I & Weights calculation: maximum number of iterations in supernewton.\\
@@ -279,8 +295,16 @@ Option & Function \\
   & \verb/    /1=filter variance min and max;\\
   & \verb/    /2=total weight min and max\\
   & \verb/  /non-hierarchical multi-class classification:\\
-  & \verb/    /0=solve conditional probabilities by matrix inversion\\
-  & \verb/    /1=estimate class by voting
+  & \verb/    /0=constrained inverse (not always optimal)\\
+  & \verb/    /1=estimate class by voting\\
+  & \verb/    /2=voting from pdf, no re-normalization\\
+  & \verb/    /3=voting from class label, no re-normalization\\
+  & \verb/    /4=voting from pdf overrides least squares, conditional\\
+  & \verb/      /probabilities are adjusted and re-normalized\\
+  & \verb/    /5=voting from class overrides least squares, conditional\\
+  & \verb/      /probabilities are adjusted and re-normalized\\
+  & \verb/    /6=experimental\\
+  & \verb/    /7=constrained inverse (may be extremely inefficient)
 \end{tabular}
 
 \begin{tabular}{ll}
@@ -336,7 +360,7 @@ Multi-class classification using a series of class-borders:
 \verb/classify_m/: & Performs classifications using model output from \verb/multi_borders/.
 \end{tabular}
 
-  Multi-borders classification represents a significant step forward with this library.  The operation of these programs, called from the command line using \verb/multi_borders/ and \verb/classify_m/ is quite involved and is described in detail in Section, \ref{MULTI_BORDERS_CLASSIFICATION}.
+  Multi-borders classification represents a significant step forward with this library.  The operation of these programs, called from the command line using \verb/multi_borders/ and \verb/classify_m/ is quite involved and is described in detail in Section, \ref{MULTI_BORDERS_CLASSIFICATION}, MULTI-BORDERS CLASSIFICATION.
 
 \subsection{Testing/validation}
 
@@ -392,7 +416,7 @@ Multi-class classification using a series of class-borders:
 & where c is the class and C is the confidence rating.
 \end{tabular}
 
-  The LVQPAK file format is probably the easiest to work with.  There is one header with the number of dimensions, followed by a listing of the vectors, one vector per line, each column is a dimension except for the last one which is the class.  The \verb/sample_class/ program prints its results to standard out in an LVQPAK-compatible format--see EXAMPLES.
+The LVQPAK file format is probably the easiest to work with.  There is one header with the number of dimensions, followed by a listing of the vectors, one vector per line, each column is a dimension except for the last one which is the class.  The \verb/sample_class/ program prints its results to standard out in an LVQPAK-compatible format--see Section \ref{EXAMPLES}, EXAMPLES.
 
 Commands used by other commands:
 
@@ -439,7 +463,7 @@ Code & Meaning\\
 1280	&	Other warning.
 \end{tabular}
 
-Note that warnings are always divisible by 256 so that when passed back to the command line return a 0 exit status so as not to interupt running scripts.  Error codes are also listed in the include file, "error\_codes.h" in the libpetey distribution.  Note that non-fatal errors reduce to '0' if passed to the command line.
+Note that warnings are always divisible by 256 so that when passed back to the command line return a 0 exit status so as not to interupt running scripts.  Error codes are also listed in the include file, \verb"error_codes.h" in the libpetey distribution.  Note that non-fatal errors reduce to '0' if passed to the command line.
 
   AGF routines also return a set of diagnostics, for example:
 
@@ -464,7 +488,7 @@ total number of calls: 1430
 
 \end{verbatim}
 
-  The first parameter indicates the number of iterations required to reach the correct value for the total of the weights, $W$.  For efficiency reasons, this should be as small as possible, however the super-linear convergence of the root-finding algorithm ("supernewton") means that the brackets can be quite far away without much effect on efficiency.  To change the values of the filter variance used to bracket the root, use \verb/-v/ for the lower bracket and -V for the upper bracket.  Normally the defaults should work just fine but to decrease the number of iterations, they should be narrowed.  If they fail to bracket the root, the offending bracket is pushed outward.  These changes are "sticky", so the brackets can, in fact, be set arbritrarily narrow and even quite far from the root.
+  The first parameter indicates the number of iterations required to reach the correct value for the total of the weights, $W$.  For efficiency reasons, this should be as small as possible, however the super-linear convergence of the root-finding algorithm (``supernewton'') means that the brackets can be quite far away without much effect on efficiency.  To change the values of the filter variance used to bracket the root, use \verb/-v/ for the lower bracket and -V for the upper bracket.  Normally the defaults should work just fine but to decrease the number of iterations, they should be narrowed.  If they fail to bracket the root, the offending bracket is pushed outward.  These changes are ``sticky'', so the brackets can, in fact, be set arbritrarily narrow and even quite far from the root.
 
   To change the tolerance of $W$, use the \verb/-l/ switch.  To change the maximum number of iterations, use the \verb/-i/ or \verb/-I/ switch.
 
@@ -474,16 +498,18 @@ total number of calls: 1430
 
   The tolerance of the samples only applies when searching for class borders.  It shows how close the value of $R=P(2|\vec x)-P(1|\vec x)$ (difference in conditional probabilities) is to zero at each border sample.  This is set using the -t option and the diagnostic should be close to the set value.  It is sometimes larger because the convergence test of the root-finding routine looks at tolerance along the independent variable as well as the dependent variable--whichever is better.
 
-  To best understand how to interpret the diagnostics and use these to set the operational parameters, be sure to read the paper entitled, "Adaptive Guassian Filters: a powerful new method for supervised learning," in the \verb|doc/| sub-directory of this installation or \citet{Mills2011} which is a more fleshed-out version of it.
+  To best understand how to interpret the diagnostics and use these to set the operational parameters, be sure to read the paper entitled, ``Adaptive Guassian Filters: a powerful new method for supervised learning'', in the \verb|doc/| sub-directory of this installation or \citet{Mills2011} which is a more fleshed-out version of it.
 
 
 \section{EXAMPLES}
 
-  The "examples" sub-directory collects together a number of test suites for comparison, validation and application of AGF.  The makefiles in these test cases can give you a good idea of how to use the various components of the library.
+\label{EXAMPLES}
+
+  The \verb"examples" sub-directory collects together a number of test suites for comparison, validation and application of AGF.  The makefiles in these test cases can give you a good idea of how to use the various components of the library.
 
 \subsection{examples/class\_borders}
 
-The directory \verb"examples/class_borders" includes a number of routines for testing the algorithms and comparing them with other, popular classification algorithms.  The validation exercise is performed on a pair of two-dimensional, synthetic test classes and is described in \citet{Mills2011}.  To test the classification algorithms, type, "make test".  To test the pdf estimation routines, type, \verb"make test_pdf".  To test both from the bottom level directory, type \verb"make test".  All tests are done on a pair of synthetic test classes, described in the paper.  To generate samples and analytical estimates for these classes, use the following commands
+The directory \verb"examples/class_borders" includes a number of routines for testing the algorithms and comparing them with other, popular classification algorithms.  The validation exercise is performed on a pair of two-dimensional, synthetic test classes and is described in \citet{Mills2011}.  To test the classification algorithms, type, \verb"make test".  To test the pdf estimation routines, type, \verb"make test_pdf".  To test both from the bottom level directory, type \verb"make test".  All tests are done on a pair of synthetic test classes, described in the paper.  To generate samples and analytical estimates for these classes, use the following commands
 
 \begin{tabular}{ll}
 \verb/sample_class/ & Generates random samples of the synthetic test classes.\\
@@ -498,7 +524,7 @@ The directory \verb"examples/class_borders" includes a number of routines for te
 		  & algorithm as that employed for the \verb"class_borders" command.
 \end{tabular}
 
-  To compare the algorithms with LIBSVM \citep{Chang_Lin2011} and Kohonen's LVQ algorithm \citep{Kohonen2000}, type, "make compare".  You must have both modules installed and the executables in your path.
+  To compare the algorithms with LIBSVM \citep{Chang_Lin2011} and Kohonen's LVQ algorithm \citep{Kohonen2000}, type, \verb"make compare".  You must have both modules installed and the executables in your path.
 
 \subsection{examples/humidity\_data}
 
@@ -515,14 +541,14 @@ In the Landsat directory there are a number of scripts for performing surface cl
 
   Multi-borders is an algorithm that generalizes the AGF-borders binary classification algorithm to multiple classes.  It is a means of specifying the configuration of the class borders using a recursive control language.  The \verb/multi_borders/ command is used for training a multi-borders model and has the following syntax:
 
-  \verb/multi_borders/ [<options>] <control-in> <train> <model> <control-out>
+  \verb/multi_borders/ [$<$options$>$] $<$control-in$>$ $<$train$>$ $<$model$>$ $<$control-out$>$
 
 where:
 \begin{itemize}
-\item <control-in> is the input or training control file; 
-\item <train> is the base-name of the binary files containing the training data
-\item <model> is the base-name for the files that will contain each of the binary classification models and 
-\item <control-out> is the output or classification control file which is passed to the classification program, \verb/classify_m/.
+\item $<$control-in$>$ is the input or training control file; 
+\item $<$train$>$ is the base-name of the binary files containing the training data
+\item $<$model$>$ is the base-name for the files that will contain each of the binary classification models and 
+\item $<$control-out$>$ is the output or classification control file which is passed to the classification program, \verb/classify_m/.
 \end{itemize}
 
 Consider the following control file:
@@ -545,7 +571,7 @@ When passed to \verb/multi_borders/ as follows:
 $>multi_borders -n -s 125 test_multi5.txt foo bar foobar.txt > script.sh
 \end{verbatim}
 
-we get the following list of statements as output in "script.sh":
+we get the following list of statements as output in \verb"script.sh":
 
 \begin{verbatim}
 agf_precondition -a bar.std -n foo.vec bar.139397543805655.vec
@@ -559,7 +585,7 @@ rm bar.139397543805655.vec
 rm bar.139397543805655.cls
 \end{verbatim}
 
-and the contents of foobar.txt are as follows:
+and the contents of \verb"foobar.txt" are as follows:
 
 \begin{verbatim}
 bar {
@@ -590,16 +616,17 @@ The results will be stored in \verb"result.cls" and \verb"result.con".
 
   There are two types of multi-borders classification: {\it hierarchical} and {\it non-hierarchical}.  In non-hieararchical multi-borders classification, all the classes are partitioned in multiple ways using a binary classifier and the equations relating the conditional probabilities of each class to those of the binary classifiers are solved returning all of the conditional probabilities.  In the hierarchical method (also called a decision tree), the classes are partitioned using either a binary classifier or a non-hierarchical multi-classifier, then each of those partions are partitioned again and so on until there is only one class left in each of the partions.  Hierarchical classification returns only the conditional probability of the winning class.  The \verb/classify_m/ method automatical detects whether a control file uses the hierarchical method or only the non-hierarchical method(that is it has only one level) and prints out conditional probabilities as appropriate.  
 
-  The parameters for training each binary classifier are contained in double quotes in the training control file.  To take parameters from the command line, use the null string ('""') while a period ('"."') tells the program to use the last set of parameters at the same level or below.  A series of statements for training each of the binary classifiers are generated and sent to standard output.  Once the commands are run, these binary classifiers will be stored in a pair of uniquely named files, the base-names of which replace, in the final control file, the quoted parameter lists from the training control file.
+  The parameters for training each binary classifier are contained in double quotes in the training control file.  To take parameters from the command line, use the null string (\verb/""/) while a period (\verb/"."/) tells the program to use the last set of parameters at the same level or below.  A series of statements for training each of the binary classifiers are generated and sent to standard output.  Once the commands are run, these binary classifiers will be stored in a pair of uniquely named files, the base-names of which replace, in the final control file, the quoted parameter lists from the training control file.
 
-  In the control language, going up a level in the hierarchical scheme is denoted by a left curly brace ('{') while going down is denoted by a right curly brace ('}').  In a non-hierarchical model, we specify the parameters (file name) of each of the binary partition followed by the partitions themselves: two lists of classes separated by a forward slash ('/').  Class labels for non-hierarchical partitions are relative, that is they go from 0 to the number of classes in the non-hierarchical model less one.  Class labels in the top level partitions are absolute, therefore must be unique.  These should also go from 0 to one less than the total number of classes in the over-all model, but need not.
+  In the control language, going up a level in the hierarchical scheme is denoted by a left curly brace (\verb'{') while going down is denoted by a right curly brace (\verb$}$).  In a non-hierarchical model, we specify the parameters (file name) of each of the binary partition followed by the partitions themselves: two lists of classes separated by a forward slash (\verb'/').  Class labels for non-hierarchical partitions are relative, that is they go from 0 to the number of classes in the non-hierarchical model less one.  Class labels in the top level partitions are absolute, therefore must be unique.  These should also go from 0 to one less than the total number of classes in the over-all model, but need not.
 
   In this example, there are six classes.  They are first partioned into a group of two and a group of four.  The group of four is partitioned into a group of three, the first of which is partitioned into two classes and the second and third of which are single classes.  
 
 A good way to understand the \verb"multi-borders" paradigm is to look at the example cases in the \verb"examples/humidity" data directory.  There is also a draft paper contained in the \verb"docs/" sub-directory.
 
 
-\section{USING MULTI-BORDERS WITH EXTERNAL BINARY CLASSIFIERS}
+%\section{USING MULTI-BORDERS WITH EXTERNAL BINARY CLASSIFIERS}
+\subsection{Multi-borders with external binary classifiers}
 
 The multi-borders routines can now interface with external binary classification software, specifically, either LIBSVM, or a pair of programs that have the same calling conventions.  For training, use the -- switch to pass the command name to \verb/multi_borders/.  Consider the above control file as an example, but without any of the control switches:
 
@@ -651,14 +678,14 @@ Several things should be noted:
 
 The training command, passed by \verb/--/, should have the following syntax:
 
-\verb/  /<train> [<options>] <data> <model>
+\verb/  /$<$train$>$ [$<$options$>$] $<$data$>$ $<$model$>$
 
 where:
 \begin{itemize}
-\item <train> is the training command
-\item <options> are a set of options passed through the control file, through the \verb/-+/ option, or directly from the end of the command line or through the command name
-\item <data> is the training data in LVQ or SVM ASCII format
-\item <model> is the output model reconizable to the prediction command, see below.
+\item $<$train$>$ is the training command
+\item $<$options$>$ are a set of options passed through the control file, through the \verb/-+/ option, or directly from the end of the command line or through the command name
+\item $<$data$>$ is the training data in LVQ or SVM ASCII format
+\item $<$model$>$ is the output model reconizable to the prediction command, see below.
 \end{itemize}
 
 Once the training has completed, classifications are performed by passing the prediction command, \verb"svm-predict", from LIBSVM to \verb"classify_m" using the -0 option:
@@ -667,22 +694,22 @@ Once the training has completed, classifications are performed by passing the pr
 $>classify_m -M -O "svm-predict -b 1" foobar.txt test.svm output.svmout
 \end{verbatim}
 
-Once again, when paired with an external command, \verb/classify_m/ operates on ASCII files as opposed to the native AGF binary format. Output file format is the same as LIBSVM: a header consisting of the word, "labels", followed by a list of labels, then one class label per line, followed by the conditional probabilities in the same order as the class labels in the header. Since "hierarchical" classification generates only one probability per estimate, in this case only one is written per line.  While this is not LIBSVM conformant, the file conversion utility, svmout2agf, nonetheless recognizes it.  
+Once again, when paired with an external command, \verb/classify_m/ operates on ASCII files as opposed to the native AGF binary format. Output file format is the same as LIBSVM: a header consisting of the word, ``labels'', followed by a list of labels, then one class label per line, followed by the conditional probabilities in the same order as the class labels in the header. Since ``hierarchical'' classification generates only one probability per estimate, in this case only one is written per line.  While this is not LIBSVM conformant, the file conversion utility, svmout2agf, nonetheless recognizes it.  
 
-The prediction command, passed by -O, should have the following syntax:
+The prediction command, passed by \verb"-O", should have the following syntax:
 
-\verb/  /<predict> <test> <model> <output>
+\verb/  /$<$predict$>$ $<$test$>$ $<$model$>$ $<$output$>$
 
 where:
 \begin{itemize}
-\item <predict> is the command name--if there are options they must be passed directly as part of this name;
-\item <test> is the test data in LVQ or SVM ASCII format;
-\item <model> is the binary classification model;
-\item <output> are the predicted classes plus both conditional probabilities in the format described above.
+\item $<$predict$>$ is the command name--if there are options they must be passed directly as part of this name;
+\item $<$test$>$ is the test data in LVQ or SVM ASCII format;
+\item $<$model$>$ is the binary classification model;
+\item $<$output$>$ are the predicted classes plus both conditional probabilities in the format described above.
 \end{itemize}
 Note that the order of the first two arguments are reversed as compared to the libAGF convention in \verb/classify_b/ and \verb/classify_m/.
 
-LIBSVM tends to be slow, especially if you have a lot of training data.  Therefore, \verb/multi_borders/ includes the option to transform \verb"SVM/multi-borders" hybrid models into full multi-borders models.  To access this "accelerator" mode, use the \verb/-O/ switch and pass the output classification control file from the previous pass:
+LIBSVM tends to be slow, especially if you have a lot of training data.  Therefore, \verb/multi_borders/ includes the option to transform \verb"SVM/multi-borders" hybrid models into full multi-borders models.  To access this ``accelerator'' mode, use the \verb/-O/ switch and pass the output classification control file from the previous pass:
 
 \begin{verbatim}
 $>multi_borders -O "svm-predict -b 1" foobar.txt foo bar2 foobar2.txt
@@ -707,7 +734,7 @@ Because numerical differentiation is used to generate the gradient vectors, accu
 125			fprintf(output," %g",prob_estimates[j]);
 \end{verbatim}
 
-The \%g can be changed to, e.g. \%.12lg or a similar level of high precision.
+The \verb/%g/ can be changed to, e.g. \verb/%.12lg/ or a similar level of high precision.
 
 Output is in the normal, AGF binary format and \verb/classify_m/ can be used as normal for classification:
 
@@ -715,13 +742,15 @@ Output is in the normal, AGF binary format and \verb/classify_m/ can be used as 
 $>classify_m foobar2.txt test.vec output
 \end{verbatim}
 
-Running the commands, \verb"multi_borders", \verb"classify_m", and \verb"class_borders" without arguments prints a generous help screen including a description of most of the features explained in this section.  There is also an example contained in the second half of the makefile under the \verb"examples/humidity_data" directory (see, EXAMPLES, above).
+Running the commands, \verb"multi_borders", \verb"classify_m", and \verb"class_borders" without arguments prints a generous help screen including a description of most of the features explained in this section.  There is also an example contained in the second half of the makefile under the \verb"examples/humidity_data" directory (see, Section \ref{EXAMPLES}, EXAMPLES, above).
 
 \nocite{Kohonen2000}
 \nocite{Michie_etal1994}
 \nocite{Terrell_Scott1992}
 \nocite{Mills2014}
+\nocite{Mueller_etal2001}
 
+\addcontentsline{toc}{section}{BIBLIOGRAPHY}
 \bibliography{agf_bib}
 
 \end{document}
