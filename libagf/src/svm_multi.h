@@ -72,7 +72,9 @@ namespace libagf {
   template <class real, class cls_t>
   class borders1v1:public onevone<real, cls_t> {
     protected:
+      //binary classifiers:
       agf2class<real, cls_t> **classifier;
+      int *pol;					//"polarities"
       virtual real ** classify_raw(real *x);
     public:
       borders1v1();

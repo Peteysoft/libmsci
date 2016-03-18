@@ -742,6 +742,11 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  int agf2class<real, cls_t>::load(FILE *fs) {
+    return load(fs, 0);
+  }
+
+  template <class real, class cls_t>
   int agf2class<real, cls_t>::save(FILE *fs) {
     print_matrix(fs, brd, n, this->D1);
     print_matrix(fs, grd, n, this->D1);

@@ -611,14 +611,16 @@ namespace libagf {
     FILE *fs=fopen(file, "r");
     if (fs==NULL) throw UNABLE_TO_OPEN_FILE_FOR_READING;
     //read in number of classes:
-    char *line=fget_line(fs);
+    char *line=fget_line(fs, 1);
     if (strcmp(line, "1v1")!=0) {
       fprintf(stderr, "borders1v1: file, %s, wrong type (%s)\n", file, line);
       throw PARAMETER_OUT_OF_RANGE;
     }
     delete [] line;
+    line=fget_line(fs);
     sscanf(line, "%d", &this->ncls);
     delete [] line;
+    int nmod=(this->ncls-1)*this->ncls/2;
     this->label=new cls_t[this->ncls];
     //read in class labels:
     line=fget_line(fs);
@@ -633,8 +635,19 @@ namespace libagf {
     for (cls_t i=0; i<this->ncls; i++) this->label[i]=atoi(sub[i]);
     delete [] line;
     delete [] sub;
+    line=fget_line(fs);
+    sub=split_string_destructive(line, nsub);
+    if (nsub<nmod) {
+      fprintf(stderr, "borders1v1: Not enough \"polarities\" found in initialization file, %s\n", file);
+      fprintf(stderr, "  %d vs. %d\n", this->ncls, nsub);
+      throw DIMENSION_MISMATCH;
+    }
+    pol=new int[nmod];
+    for (int i=0; i<nmod; i++) pol[i]=atoi(sub[i]);
+    fprintf(fs, "\n");
+    delete [] line;
+    delete [] sub;
     //read in individual binary classifiers:
-    int nmod=this->ncls*(this->ncls-1)/2;
     classifier=new agf2class<real, cls_t>*[nmod];
     for (int i=0; i<nmod; i++) {
       classifier[i]=new agf2class<real, cls_t>();
@@ -667,14 +680,12 @@ namespace libagf {
     for (cls_t i=0; i<this->ncls; i++) fprintf(fs, "%d ", this->label[i]);
     fprintf(fs, "\n");
     for (int i=0; i<nmod; i++) {
+      fprintf(fs, "%d ", pol[i]);
+    }
+    fprintf(fs, "\n");
+    for (int i=0; i<nmod; i++) {
       err=classifier[i]->save(fs);
       if (err!=0) return err;
-    }
-    for (int i=0; i<this->ncls; i++) {
-      for (int j=i+1; j<this->ncls; j++) {
-        fprintf(fs, "%d vs %d ", this->label[i], this->label[j]);
-      }
-      fprintf(fs, "\n");
     }
     return err;
   }
@@ -745,6 +756,9 @@ namespace libagf {
       }
     }
 
+    pol=new int[nmod];
+    for (int i=0; i<nmod; i++) pol[i]=1;
+
     if (tflag && this->mat!=NULL) {
       delete [] xtran[0];
       delete [] xtran;
@@ -757,6 +771,7 @@ namespace libagf {
       delete classifier[i];
     }
     delete [] classifier;
+    delete [] pol;
   }
 
   template <class real, class cls_t>
@@ -768,7 +783,7 @@ namespace libagf {
     for (int i=0; i<this->ncls; i++) {
       result[i]=result[0]+i*this->ncls;
       for (int j=i+1; j<this->ncls; j++) {
-        result[i][j]=-classifier[k]->R(x);
+        result[i][j]=-pol[k]*classifier[k]->R(x);
 	if (this->voteflag!=1) result[i][j]=(result[i][j]+1)/2;
 	k++;
       }

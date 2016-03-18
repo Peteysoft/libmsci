@@ -361,8 +361,8 @@ int main (int argc, char **argv) {
         strcat(commandname, " -Z");
       }
     }
-    shell=new multiclass_hier<real_a, cls_ta>(infs, 0, 1,
-		precom, flag[7], opt_args.Kflag);
+    shell=new multiclass_hier<real_a, cls_ta>(infs, 0, precom, 
+		    flag[7], opt_args.Kflag);
   } else {
     //parse the control file and build the data structure:
     shell=new multiclass_hier<real_a, cls_ta>(infs, argc, argv);

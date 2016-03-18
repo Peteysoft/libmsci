@@ -63,7 +63,7 @@ namespace libagf {
       //is the mapping "strict"--i.e. each row includes all classes?
       int strictflag;
     public:
-      multiclass();
+      multiclass(int ct=0);
       //initialized from a control file:
       multiclass(const char *file, 	//control file
 		int clstyp=0,		//type of classification result
@@ -80,7 +80,6 @@ namespace libagf {
 					// 10=special for 1 v rest
 					// 11=special for 1 v. 1
 					// 12=special for adjacent
-		real cw=1.,		//constraint weight (sum of cond. prob.)
 		const char *com=NULL,	//command for binary classifier
 		int Mflag=0,		//LIBSVM format for external classifiers
 		int Kflag=0,		//keep temporary files

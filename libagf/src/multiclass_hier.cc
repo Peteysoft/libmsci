@@ -9,6 +9,7 @@
 
 #include "randomize.h"
 #include "peteys_tmpl_lib.h"
+#include "read_ascii_all.h"
 
 #include "../../libpetey/linked.cc"
 
@@ -28,7 +29,7 @@ namespace libagf {
 
   //high level initialization for classification:
   template <class real, class cls_t>
-  multiclass_hier<real, cls_t>::multiclass_hier(const char *file, int type, real cw, const char *com, int mf, int kf, int sigcode) {
+  multiclass_hier<real, cls_t>::multiclass_hier(const char *file, int type, const char *com, int mf, int kf, int sigcode) {
     FILE *fs;
     int err;
 
@@ -37,13 +38,13 @@ namespace libagf {
       fprintf(stderr, "multiclass_hier: Unable to open control file, %s\n", file);
       exit(UNABLE_TO_OPEN_FILE_FOR_READING);
     }
-    err=init(fs, type, cw, com, mf, kf, sigcode);
+    err=init(fs, type, com, mf, kf, sigcode);
     if (err!=0) exit(err);
   }
 
   template <class real, class cls_t>
-  multiclass_hier<real, cls_t>::multiclass_hier(FILE *fs, int type, real cw, const char *com, int mf, int kf, int sigcode) {
-    int err=init(fs, type, cw, com, mf, kf, sigcode);
+  multiclass_hier<real, cls_t>::multiclass_hier(FILE *fs, int type, const char *com, int mf, int kf, int sigcode) {
+    int err=init(fs, type, com, mf, kf, sigcode);
     if (err!=0) exit(err);
   }
 
@@ -69,7 +70,7 @@ namespace libagf {
   }
     
   template <class real, class cls_t>
-  int multiclass_hier<real, cls_t>::init(FILE *fs, int type, real cw, const char *com, int mf, int kf, int sigcode) {
+  int multiclass_hier<real, cls_t>::init(FILE *fs, int type, const char *com, int mf, int kf, int sigcode) {
     multi_parse_param param;
     int err;
 
@@ -82,7 +83,7 @@ namespace libagf {
     param.trainflag=0;
     param.Mflag=mf;
     param.Kflag=kf;
-    param.cw=cw;
+    param.cw=1;
     param.type=type;
     param.sigcode=sigcode;
 
@@ -656,27 +657,38 @@ namespace libagf {
   }
 
   template <typename real, typename cls_t>
-  int multiclass_hier<real, cls_t>::load(FILE *fs) {
+  int multiclass_hier<real, cls_t>::load(FILE *fs, int ct) {
     char **sub;
     int nsub;
-    char *type=fget_line(fs);		//first line describes type
+    char *type=fget_line(fs, 1);	//first line describes type
+    printf("%s\n", type);
+    if (strcmp(type, "1v1")!=0 && strcmp(type, "1vR")!=0 && strcmp(type, "ADJ")!=0) return PARAMETER_OUT_OF_RANGE;
     char *line=fget_line(fs);		//second line has number of classes
-    sscanf(line, "%d", this->ncls);
+    sscanf(line, "%d", &this->ncls);
     delete [] line;
     //third line contains class labels:
-    line=fget_line(fs);
+    line=fget_line(fs, 1);
+    printf("%s\n", line);
     sub=split_string_destructive(line, nsub);
     if (nsub!=this->ncls) throw DIMENSION_MISMATCH;
     children=new classifier_obj<real, cls_t> *[this->ncls];
     for (int i=0; i<this->ncls; i++) {
+      printf("%s\n", sub[i]);
       children[i]=new oneclass<real, cls_t>(atoi(sub[i]));
     }
     delete [] line;
     delete [] sub;
-    classifier=new multiclass<real, cls_t>();
+    classifier=new multiclass<real, cls_t>(ct);
+    rewind(fs);
     classifier->load(fs);
     nonh_flag=1;
+    delete [] type;
     return 0;
+  }
+
+  template <typename real, typename cls_t>
+  int multiclass_hier<real, cls_t>::load(FILE *fs) {
+    return load(fs, -1);
   }
 
   template <typename real, typename cls_t>

@@ -25,9 +25,9 @@ using namespace libpetey;
 namespace libagf {
 
   template <class real, class cls_t>
-  multiclass<real, cls_t>::multiclass() {
+  multiclass<real, cls_t>::multiclass(int ct) {
+    type=ct;
     constraint_weight=1;
-    type=2;
 
     //set model variables to NULL:
     twoclass=NULL;
@@ -45,7 +45,7 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  multiclass<real, cls_t>::multiclass(const char *file, int clstyp, real cw, const char *com, int mf, int kf, int sigcode) {
+  multiclass<real, cls_t>::multiclass(const char *file, int clstyp, const char *com, int mf, int kf, int sigcode) {
     int err;
     multi_parse_param param;
 
@@ -61,7 +61,7 @@ namespace libagf {
     //multi_partition_strict(fname, part, nmodel);
 
     //weight for normalization constraint:
-    constraint_weight=cw;
+    param.cw=1;
 
     param.commandname=NULL;
     if (com!=NULL) {
@@ -549,8 +549,8 @@ namespace libagf {
     real **praw=allocate_matrix<real, int32_t>(this->ncls, this->ncls);
     int k=0;
     for (cls_t i=0; i<this->ncls; i++) {
-      for (cls_t j=0; i<this->ncls; i++) {
-        praw[i][j]=pol[k]*gsl_vector_get(b, k);
+      for (cls_t j=i+1; j<this->ncls; j++) {
+        praw[i][j]=(1-pol[k]*gsl_vector_get(b, k))/2;
 	k++;
       }
     }
@@ -922,7 +922,7 @@ namespace libagf {
     int **code;				//coding matrix (as integer)
     char **sub;
     int nsub;
-    char *typestr=fget_line(fs);
+    char *typestr=fget_line(fs, 1);
     char *line=fget_line(fs);
     sscanf(line, "%d", &this->ncls);
     delete [] line;
@@ -930,15 +930,15 @@ namespace libagf {
     if (strcmp(typestr, "1vR")==0) {
       nmodel=this->ncls;
       code=one_against_all(this->ncls);
-      type=10;
-    } else if (strcmp(typestr, "1v1")) {
+      if (type<0) type=10;
+    } else if (strcmp(typestr, "1v1")==0) {
       nmodel=this->ncls*(this->ncls-1)/2;
-      code=one_against_all(this->ncls);
-      type=11;
-    } else if (strcmp(typestr, "ADJ")) {
+      code=one_against_one(this->ncls);
+      if (type<0) type=11;
+    } else if (strcmp(typestr, "ADJ")==0) {
       nmodel=this->ncls-1;
       code=partition_adjacent(this->ncls);
-      type=12;
+      if (type<0) type=12;
     } else {
       fprintf(stderr, "multiclass::load: type, %s, not recognized\n", typestr);
       throw PARAMETER_OUT_OF_RANGE;
@@ -957,7 +957,7 @@ namespace libagf {
     pol=new int[nmodel];
     for (int i=0; i<nmodel; i++) {
       pol[i]=atoi(sub[i]);
-      for (int j=0; j<this->ncls; j++) code[i][j]=pol[i]*code[i][j];
+      for (int j=0; j<this->ncls; j++) code[i][j]=-pol[i]*code[i][j];
     }
     delete [] line;
     delete [] sub;
@@ -967,7 +967,10 @@ namespace libagf {
     for (int i=0; i<nmodel; i++) {
       twoclass[i]=new agf2class<real, cls_t>();
       err=twoclass[i]->load(fs);
-      if (err!=0) throw err;
+      if (err!=0) {
+        fprintf(stderr, "multiclass::load: error loading border vectors\n");
+        throw err;
+      }
     }
 
     //convert integer coding matrix to floating point, GSL compatible one:
@@ -977,6 +980,8 @@ namespace libagf {
     }
     for (int j=0; j<this->ncls; j++) gsl_matrix_set(map, nmodel, j, 1);
     constraint_weight=1;
+
+    print_gsl_matrix(stdout, map);
     
     return err;
   }

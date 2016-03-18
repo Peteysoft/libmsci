@@ -112,7 +112,7 @@ namespace libpetey {
     int finish=0;
 
     i=0; 
-    do {
+    while (string[i]!='\0') {
       for (; isspace(string[i]); i++) {
         if (string[i]=='\0') {
           finish=1;
@@ -127,9 +127,10 @@ namespace libpetey {
           break;
         }
       }
+      if (finish) break;
       string[i]='\0';
       i++;
-    } while (finish==0);
+    }
 
     result=loc.make_array(n1);
     n=n1;
