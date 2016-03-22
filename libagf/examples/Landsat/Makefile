@@ -7,7 +7,7 @@ NSV=10			#number of singular vectors to keep
 #parameters for classication scheme
 #CLASS_OPTS=-c 1 -W 3		#direct classification
 
-CLASS_OPTS=-c 5 -W 3 control2.txt	#multi-borders classification
+CLASS_OPTS=-c 5 -W 3 control2.mbt	#multi-borders classification
 
 #path for python scripts:
 #BINPATH=/home/Petey/my_programs/libagf/applications/Landsat
