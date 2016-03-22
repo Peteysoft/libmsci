@@ -6,6 +6,7 @@ SHELL = /bin/bash
 MIN = 0.00007
 MAX = 0.001
 
+#number of classes:
 NCLS = 8
 
 #fraction of data to use for testing:
@@ -20,11 +21,15 @@ TRAIN = train
 #base name of test data:
 TEST = test
 
+#file extensions:
+MBTRAIN_SFX = .mbt		#mULTI-bORDERS tRAINING CONTROL FILE
+MBCONTROL_SFX = .mbc		#mULTI-bORDERS CLASSIFICATION cONTROL FILE
+
 # control as in control experiment:
 RAW = test.a
 OPTIONS0 = -W 40 -k 400
 
-TRN_CONTR = sq_control$(VER).txt
+TRN_CONTR = sq_control$(VER).$(MBTRAIN_SFX)
 
 #we preppend this to the names of all the expendable files involved in 
 #multi-borders classification
@@ -52,7 +57,7 @@ OPTIONS12b = -s 200 -W 25 -k 400
 
 SCRIPT = $(BASE)script$(VER).sh
 OUTPUT = $(BASE)borders$(VER)
-CLS_CONTR = $(BASE)cls_control$(VER).txt
+CLS_CONTR = $(BASE)cls_control$(VER)$(MBCONTROL_SFX)
 
 TRAIN_TIME = $(BASE)train_time$(VER).txt
 CLASS_TIME = class_time$(VER).txt
@@ -119,6 +124,10 @@ SVMFRAC = 0.2
 #options to pass to svm-train:
 SVMTRAINOPT = -h 0 -c 50
 
+#file extensions:
+LSVMTRAIN_SFX = .lst		#lIBsVM tRAINING CONTROL FILE
+LSVMCONTROL_SFX = .lsc		#lIBsVM CLASSIFICATION cONTROL FILE 
+
 #file names:
 
 #base name for training data
@@ -130,7 +139,7 @@ SVMTEST = svmtest
 SVMBASE = sq_svm$(VER)/
 
 #output control file
-SVMCONTROL = $(SVMBASE)control$(VER).txt
+SVMCONTROL = $(SVMBASE)control$(VER)$(LSVMCONTROL_SFX)
 #training script
 SVMSCRIPT = $(SVMBASE)svmscript$(VER).sh
 #base name for model data

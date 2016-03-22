@@ -8,9 +8,6 @@
 #include "randomize.h"
 #include "constrained.h"
 
-#define FUCK(X) X-1
-#define TM 1
-
 namespace libpetey {
 
   int SV_solve_transpose(gsl_matrix *vt,
@@ -640,7 +637,7 @@ namespace libpetey {
       }
       gsl_vector_set(x, vind, x_v/gsl_matrix_get(v, bind[bimin], vind));
 
-      //delete a shit-load of variables:
+      //clean up:
       gsl_matrix_free(a2);
       gsl_vector_free(b2);
       gsl_matrix_free(v2);
@@ -649,9 +646,8 @@ namespace libpetey {
       gsl_vector_free(x2);
     }
 
-    //if all constraints are satisfied, then we're done! yay!
-      
-    return FUCK(TM);
+    //really shouldn't have a return value if it's not a real error code! 
+    return 0;
 
   }
 
@@ -716,6 +712,9 @@ namespace libpetey {
       find_interior(v, c, p, 0.5);
       constrained(a, b, v, c, p, x);
 
+      printf("I\n");
+
+      /*
       //we've solved it using the flawed algorithm, lets see if the criteria
       //for the algorithm being always valid are satisfied:
       //calculate a^t*a:
@@ -728,30 +727,32 @@ namespace libpetey {
       print_gsl_matrix(stdout, a);
       print_gsl_matrix(stdout, ata);
       double vpmag[a->size2];
+
       //calculate v_i (A^T A)^{-1} v_j/sqrt(v_i (A^T A) v_i)/sqrt(v_j (A^T A)^{-1} v_j) for each i and j:
       for (int i=0; i<v->size1; i++) {
 	gsl_vector_view v_i=gsl_matrix_row(v, i);
         //(*solver1) (ata, &v_i.vector, t1);
         (*solver1) (at, &v_i.vector, t1);
 	//gsl_blas_ddot(t1, &v_i.vector, vpmag+i);
-	gsl_blas_ddot(t1, t1, vpmag+i);
-	vpmag[i]=sqrt(vpmag[i]);
+	//gsl_blas_ddot(t1, t1, vpmag+i);
+	//vpmag[i]=sqrt(vpmag[i]);
 	for (int j=0; j<i; j++) {
 	  gsl_vector_view v_j=gsl_matrix_row(v, j);
           double vidotvj;
           (*solver1) (at, &v_j.vector, t2);
 	  //gsl_blas_ddot(t1, &v_j.vector, &vidotvj);
-	  gsl_blas_ddot(t1, t2, &vidotvj);
+	  //gsl_blas_ddot(t1, t2, &vidotvj);
 	  //printf("%12.5g ", vidotvj/sqrt(vpmag[i]*vpmag[j]));
-	  printf("%12.5g ", vidotvj);
-	  printf("%12.5g ", sqrt(vpmag[i]*vpmag[j]));
+	  //printf("%12.5g ", vidotvj);
+	  //printf("%12.5g ", sqrt(vpmag[i]*vpmag[j]));
 	}
-	printf("\n");
+	//printf("\n");
       }
       gsl_vector_free(t1);
       gsl_vector_free(t2);
-      gsl_matrix_free(ata);
-      gsl_matrix_free(at);
+      //gsl_matrix_free(ata);
+      //gsl_matrix_free(at);
+      */
     }
 
     gsl_vector_free(p);

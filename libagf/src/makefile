@@ -71,6 +71,7 @@ EXECUTABLES =	class_borders \
 		agf2ascii \
 		svmout2agf \
 		svm2agf \
+		mbh2mbm \
 		agf \
 		knn \
 		print_control \
