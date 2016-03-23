@@ -451,6 +451,10 @@ namespace libagf {
     grd=NULL;
     n=0;
     gd=NULL;
+    //since we don't trust C++ to call the parent initializer:
+    this->ncls=2;
+    this->D=0;
+    this->D1=0;
   }
 
   template <class real, class cls_t>

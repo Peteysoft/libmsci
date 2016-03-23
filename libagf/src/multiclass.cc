@@ -816,6 +816,8 @@ namespace libagf {
     vector<scalar> sd2[m];
 
     for (int i=0; i<m; i++) {
+      sd[i].resize(n);		//I thought these fucking things were supposed
+      sd2[i].resize(n);		//to resize themselves??
       for (int j=0; j<n; j++) sd[i][j]=mat[i][j];
     }
 
@@ -830,17 +832,16 @@ namespace libagf {
     int spec_type;		//0=1 v. rest; 1=1 v. 1; 2=adj.
     int **code;				//coding matrix (as integers)
     int **proto;			//prototype to compare against
-    long sind[this->nmodel];
+    int ind[nmodel];
     long dum[nmodel];
     vector<int> sd[nmodel];
     vector<int> p2[nmodel];
 
     code=allocate_matrix<int, int32_t>(nmodel, this->ncls);
     for (int i=0; i<nmodel; i++) {
-      for (int j=0; j<this->ncls; j++) code[i][j]=gsl_matrix_get(map, i, j);
+      sd[i].resize(this->ncls);
+      for (int j=0; j<this->ncls; j++) sd[i][j]=gsl_matrix_get(map, i, j);
     }
-
-    matrix2sorted(code, nmodel, this->ncls, sd, sind);
 
     spec_type=-1;			//which type is it?
     pol=new int[nmodel];
@@ -864,40 +865,57 @@ namespace libagf {
 	  break;
       }
       if (nmodel==nm) {
-        matrix2sorted(proto, this->nmodel, this->ncls, p2, dum);
-        spec_type=tc;
-        for (int i=0; i<this->ncls; i++) {
-          if (code[i]!=proto[i]) {
-            for (int j=0; j<this->ncls; j++) proto[i][j]=-proto[i][j];
-            if (code[i]!=proto[i]) {
-              spec_type=-1;
-              break;
+        for (int i=0; i<nm; i++) {
+          p2[i].resize(this->ncls);
+          for (int j=0; j<this->ncls; j++) p2[i][j]=proto[i][j];
+        }
+	//fuck it, just use a brute-force method:
+	for (int i=0; i<nm; i++) ind[i]=-1;
+        for (int i=0; i<nm; i++) {
+          for (int j=0; j<nm; j++) {
+            if (sd[i]!=p2[j]) {
+              vector<int> tmp(this->ncls);
+	      //should have copy of negative coding matrix for "efficiency"
+	      //ha ha...
+              for (int k=0; k<this->ncls; k++) tmp[k]=-p2[j][k];
+              if (sd[i]==tmp) {
+                pol[i]=-1;
+                ind[i]=j;
+	      }
             } else {
-              pol[i]=-1;
+              pol[i]=1;
+              ind[i]=j;
 	    }
-          } else {
-            pol[i]=1;
 	  }
 	}
+	spec_type=tc;
+	for (int i=0; i<nm; i++) {
+          printf("%d ", ind[i]);
+          if (ind[i] == -1) {
+            spec_type=-1;
+	    break;
+	  }
+	}
+	printf("\n");
       }
+      if (spec_type!=-1) break;
       delete [] proto[0];
       delete [] proto;
-      if (spec_type==-1) {
-        delete [] pol;
-	pol=NULL;
-        break;
-      }
     }
-    if (spec_type!=-1) {
+
+    if (spec_type==-1) {
+      delete [] pol;
+      pol=NULL;
+    } else {
       //rearrange the coding matrix and binary classifiers so they're in
       //the "right" order:
       gsl_matrix *newmap=gsl_matrix_alloc(nmodel+1, this->ncls);
       binaryclassifier<real, cls_t> **twoclass2=new binaryclassifier<real, cls_t>*[nmodel];
       for (int i=0; i<nmodel; i++) {
         for (int j=0; j<this->ncls; j++) {
-          gsl_matrix_set(newmap, dum[i], j, gsl_matrix_get(map, sind[i], j));
+          gsl_matrix_set(newmap, i, j, gsl_matrix_get(map, ind[i], j));
         }
-	twoclass2[dum[i]]=twoclass2[sind[i]];
+	twoclass2[i]=twoclass[ind[i]];
       }
       for (int j=0; j<this->ncls; j++) {
         gsl_matrix_set(newmap, nmodel, j, gsl_matrix_get(map, nmodel, j));
@@ -957,7 +975,7 @@ namespace libagf {
     pol=new int[nmodel];
     for (int i=0; i<nmodel; i++) {
       pol[i]=atoi(sub[i]);
-      for (int j=0; j<this->ncls; j++) code[i][j]=-pol[i]*code[i][j];
+      for (int j=0; j<this->ncls; j++) code[i][j]=pol[i]*code[i][j];
     }
     delete [] line;
     delete [] sub;
@@ -992,13 +1010,13 @@ namespace libagf {
     detect_type();
     switch (type) {
       case(10):
-        fprintf(fs, "1vR");
+        fprintf(fs, "1vR\n");
 	break;
       case(11):
-	fprintf(fs, "1v1");
+	fprintf(fs, "1v1\n");
 	break;
       case(12):
-	fprintf(fs, "ADJ");
+	fprintf(fs, "ADJ\n");
 	break;
       default:
 	fprintf(stderr, "multiclass::save: not a recognized type\n");

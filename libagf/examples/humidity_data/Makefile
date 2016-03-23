@@ -29,7 +29,7 @@ MBCONTROL_SFX = .mbc		#mULTI-bORDERS CLASSIFICATION cONTROL FILE
 RAW = test.a
 OPTIONS0 = -W 40 -k 400
 
-TRN_CONTR = sq_control$(VER).$(MBTRAIN_SFX)
+TRN_CONTR = sq_control$(VER)$(MBTRAIN_SFX)
 
 #we preppend this to the names of all the expendable files involved in 
 #multi-borders classification
