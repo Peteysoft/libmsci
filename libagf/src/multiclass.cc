@@ -516,7 +516,7 @@ namespace libagf {
     int iter=0;
     int cor=0;
 
-    for (cls_t i=0; i<this->ncls; i++) p[i]=pol[i]*(1-gsl_vector_get(b, i))/2;
+    for (cls_t i=0; i<this->ncls; i++) p[i]=(1+pol[i]*gsl_vector_get(b, i))/2;
 
     for (cls_t i=0; i<k; i++) ind[i]=i;
     for (cls_t i=k+1; i<this->ncls; i++) ind[i-1]=i;
