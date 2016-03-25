@@ -318,9 +318,11 @@ namespace libagf {
 
   template <class real, class cls_t>
   multiclass_hier<real, cls_t>::~multiclass_hier() {
-    for (int i=0; i<classifier->n_class(); i++) delete children[i];
-    delete [] children;
-    delete classifier;
+    if (children!=NULL) {
+      for (int i=0; i<classifier->n_class(); i++) delete children[i];
+      delete [] children;
+    }
+    if (classifier!=NULL) delete classifier;
   }
 
   template <class real, class cls_t>

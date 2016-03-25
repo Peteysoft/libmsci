@@ -25,18 +25,29 @@ namespace libagf {
       gsl_vector *cthresh;
 
       //internal routines:
+      //run each of the binary classifiers and collect result into vector:
       void raw_classify(real *x, gsl_vector *b);
+
+      //basic least squares solution:
       cls_t classify_basic(gsl_vector *b, real *p);
       cls_t vote_label(gsl_vector *b, real *tly);
       cls_t vote_pdf(gsl_vector *b, real *tly);
-      cls_t vote_pdf2(gsl_vector *b, real *tly);
+      //brute-force constrained least squares:
       cls_t solve_class(gsl_vector *b, real *p1);
+
+      //special 1 versus rest solution:
       cls_t classify_1vR(gsl_vector *b, real *p);
+      //1 versus 1 solution:
       cls_t classify_1v1(gsl_vector *b, real *p);
 
       //more experimental versions:
+      //least squares including "non-strict" coding matrices:
       cls_t classify_scratch(gsl_vector *b, real *p);
+      //constrained least squares (not brute force but can return sub-optimal
+      //sol'n):
       cls_t classify_special(gsl_vector *b, real *p);
+      //assumes orthogonal coding matrix (multiple re-normalization steps):
+      cls_t vote_pdf2(gsl_vector *b, real *tly);
 
       //prepare SVD of coding matrix:
       int code_svd();

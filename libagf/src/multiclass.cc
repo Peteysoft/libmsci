@@ -42,6 +42,9 @@ namespace libagf {
 
     //"polarity":
     pol=NULL;
+
+    //constraints:
+    cnorm=NULL;
   }
 
   template <class real, class cls_t>
@@ -510,6 +513,8 @@ namespace libagf {
     int nwork;				//how many prob. still being worked on
     int k=ranu()*this->ncls;		//omit random classifier
     int dflag;
+    int iter=0;
+    int cor=0;
 
     for (cls_t i=0; i<this->ncls; i++) p[i]=pol[i]*(1-gsl_vector_get(b, i))/2;
 
@@ -523,7 +528,7 @@ namespace libagf {
       for (cls_t i=0; i<nwork; i++) {
         if (p[ind[i]]<0) {
           p[ind[i]]=0;
-	  for (cls_t j=i+1; i<nwork; j++) ind[i-1]=ind[i];
+	  for (cls_t j=i+1; j<nwork; j++) ind[j-1]=ind[j];
 	  nwork--;
 	  dflag=0;
 	  break;
@@ -534,9 +539,13 @@ namespace libagf {
       for (cls_t i=0; i<nwork; i++) pt+=p[ind[i]];
       if (pt>1) {
         for (cls_t i=0; i<nwork; i++) p[ind[i]]=p[ind[i]]-(pt-1)/nwork;
+	cor++;
 	dflag=0;
       }
+      iter++;
     } while (dflag==0);
+
+    printf("multiclass::classify_1vR: %d iterations; %d correction steps\n", iter, cor);
 
     p[k]=1;
     for (int i=0; i<nwork; i++) p[k]-=p[ind[i]];
@@ -949,14 +958,17 @@ namespace libagf {
       nmodel=this->ncls;
       code=one_against_all(this->ncls);
       if (type<0) type=10;
+      strictflag=1;
     } else if (strcmp(typestr, "1v1")==0) {
       nmodel=this->ncls*(this->ncls-1)/2;
       code=one_against_one(this->ncls);
       if (type<0) type=11;
+      strictflag=0;
     } else if (strcmp(typestr, "ADJ")==0) {
       nmodel=this->ncls-1;
       code=partition_adjacent(this->ncls);
       if (type<0) type=12;
+      strictflag=1;
     } else {
       fprintf(stderr, "multiclass::load: type, %s, not recognized\n", typestr);
       throw PARAMETER_OUT_OF_RANGE;
