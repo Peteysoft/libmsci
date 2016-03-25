@@ -559,7 +559,7 @@ namespace libagf {
     int k=0;
     for (cls_t i=0; i<this->ncls; i++) {
       for (cls_t j=i+1; j<this->ncls; j++) {
-        praw[i][j]=(1-pol[k]*gsl_vector_get(b, k))/2;
+        praw[i][j]=(1+pol[k]*gsl_vector_get(b, k))/2;
 	k++;
       }
     }
