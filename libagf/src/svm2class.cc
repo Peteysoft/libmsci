@@ -27,12 +27,17 @@ namespace libagf {
       throw PARAMETER_OUT_OF_RANGE;
     }
     dflag=1;
-    ind1=1;
-    ind2=0;
     clist=new cls_t[this->ncls];
     classifier->class_list(clist);
-    label1=clist[0];
-    label2=clist[1];
+    if (clist[0]==0 && clist[1]==1) {
+      ind1=1;
+      ind2=0;
+    } else {
+      ind1=0;
+      ind2=1;
+    }
+    label1=clist[ind2];
+    label2=clist[ind1];
     delete [] clist;
   }
 

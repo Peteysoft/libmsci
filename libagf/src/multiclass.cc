@@ -531,7 +531,7 @@ namespace libagf {
 	  for (cls_t j=i+1; j<nwork; j++) ind[j-1]=ind[j];
 	  nwork--;
 	  dflag=0;
-	  break;
+	  //break;
 	}
       }
       if (nwork==0) break;

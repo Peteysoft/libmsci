@@ -757,7 +757,7 @@ namespace libagf {
     }
 
     pol=new int[nmod];
-    for (int i=0; i<nmod; i++) pol[i]=1;
+    for (int i=0; i<nmod; i++) pol[i]=-1;
 
     if (tflag && this->mat!=NULL) {
       delete [] xtran[0];
@@ -783,7 +783,7 @@ namespace libagf {
     for (int i=0; i<this->ncls; i++) {
       result[i]=result[0]+i*this->ncls;
       for (int j=i+1; j<this->ncls; j++) {
-        result[i][j]=-pol[k]*classifier[k]->R(x);
+        result[i][j]=pol[k]*classifier[k]->R(x);
 	if (this->voteflag!=1) result[i][j]=(result[i][j]+1)/2;
 	k++;
       }
