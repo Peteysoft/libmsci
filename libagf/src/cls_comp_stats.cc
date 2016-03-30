@@ -24,11 +24,12 @@ int main(int argc, char ** argv) {
   int nhist=NCONHIST;
 
   flag_a bflag=0;
+  flag_a Hflag=0;
   int exit_code=0;
 
   char c;
 
-  while ((c = getopt(argc, argv, "bq:")) != -1) {
+  while ((c = getopt(argc, argv, "Hbq:")) != -1) {
     switch (c) {
       case ('b'):
              bflag=1;
@@ -36,6 +37,9 @@ int main(int argc, char ** argv) {
       case ('q'):
              sscanf(optarg, "%d", &nhist);
              break;
+      case ('H'):
+	     Hflag=1;
+	     break;
       case ('?'):
              fprintf(stderr, "Unknown option: -%c -- ignored\n", optopt);
 	     exit_code=COMMAND_OPTION_PARSE_ERROR;
@@ -61,6 +65,7 @@ int main(int argc, char ** argv) {
     printf("             .cls for classification results\n");
     printf("             .con for confidence ratings\n\n");
     printf("  -b     = short output (uncertainty coefficient and accuracy)\n");
+    printf("  -H     = for short output, don't print header\n");
     printf("  -q     = number of histogram bins for evaluating confidence ratings [%d]\n", NCONHIST);
     printf("\n");
     return INSUFFICIENT_COMMAND_ARGS;
@@ -107,7 +112,7 @@ int main(int argc, char ** argv) {
 */
 
   if (bflag == 1) {
-    class_eval_basic(class1, class2, n1);
+    class_eval_basic(class1, class2, n1, stdout, Hflag);
     //printf("%f %f\n", uc, (real_a) nt/(real_a) n1);
   } else {
     class_eval(class1, class2, n1);

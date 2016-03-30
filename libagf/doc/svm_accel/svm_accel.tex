@@ -2,6 +2,7 @@
 
 \bibliographystyle{apa}
 \usepackage{natbib}
+\usepackage[dvips]{graphicx}
 
 \title{When Support Vector Machines are just too slow}
 
@@ -361,7 +362,7 @@ and $\diffcondprob_{ij}$ is the difference in conditional probabilities of
 the binary classifier that discriminates between the $i$th and $j$th classes.
 \citet{Wu_etal2004} transform this problem into the following linear system:
 \begin{eqnarray}
-	\sum_i \frac{1}{4} \left [ \multiprob_i \sum_{j|j \ne i} (\decisionfunction_{ij} + 1)^2 - \multiprob_i (\decisionfunciton_{ij}^2 - \decisionfunction_{ij} - 2) \right ] + \lmult & = & 0 \\
+	\sum_i \frac{1}{4} \left [ \multiprob_i \sum_{j|j \ne i} (\decisionfunction_{ij} + 1)^2 - \multiprob_i (\decisionfunction_{ij}^2 - \decisionfunction_{ij} - 2) \right ] + \lmult & = & 0 \\
 	\sum_i \multiprob_i & = & 1
 \end{eqnarray}
 where $\multiprob_i = \condprob(i | \point)$ is the $i$th multi-class 
@@ -370,6 +371,18 @@ They also show that it can be solved iteratively so that the constraints
 not included in the problem, that the probabilities are all positive, are satisfied.
 
 \section{A simple example}
+
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{support_vectors}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{border_vectors}
+\end{figure}
+
+We use the pair of synthetic test classes from \citet{Mills2011} to illustrate
+the difference between support vectors and border vectors and between border
+vectors derived from AGF and from a LIBSVM model.
 
 \bibliography{../agf_bib}
 

@@ -127,7 +127,7 @@ double class_eval(cls_t *truth, cls_t *ret, nel_ta n, FILE *fs) {
 
 //calculate the uncertainty coefficient:
 template <class cls_t>
-double class_eval_basic(cls_t *truth, cls_t *ret, nel_ta n, FILE *fs) {
+double class_eval_basic(cls_t *truth, cls_t *ret, nel_ta n, FILE *fs, flag_a Hflag) {
   nel_ta **acc_mat;		//histogram (joint probability)
   double uc, ucr, uct;		//uncertainty coefficients
   cls_t nclt, nclr;		//number of classes
@@ -140,9 +140,9 @@ double class_eval_basic(cls_t *truth, cls_t *ret, nel_ta n, FILE *fs) {
   for (cls_t i=0; i<nclt && i<nclr; i++) nt+=acc_mat[i][i];
 
   if (fs != NULL) {
-    fprintf(fs, "\n");
-    fprintf(fs, "Uncertainty coefficient: %f\n", (float) uc);
-    fprintf(fs, "Accuracy: %f\n", (float) nt/n);
+    if (Hflag!=1) fprintf(fs, "Acc.   U.C.\n");
+    //make it easier to read off in automated scripts:
+    fprintf(fs, "%6.4f %6.4f\n", (float) nt/n, uc);
   }
 
   //clean up:
@@ -218,7 +218,7 @@ void check_confidence(cls_t *truth, cls_t *cls, real *con, nel_ta n, int nhist, 
 
 
 template double class_eval<int32_t>(int32_t *, int32_t *, nel_ta, FILE *);
-template double class_eval_basic<int32_t>(int32_t *, int32_t *, nel_ta, FILE *);
+template double class_eval_basic<int32_t>(int32_t *, int32_t *, nel_ta, FILE *, flag_a);
 template float ** con_acc_table<float, int32_t>(int32_t *, int32_t *, float *, nel_ta, int);
 template double ** con_acc_table<double, int32_t>(int32_t *, int32_t *, double *, nel_ta, int);
 template void print_con_acc<float>(float **, int, int, FILE *);

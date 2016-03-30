@@ -42,7 +42,8 @@ namespace libagf {
   double class_eval_basic(cls_t *truth, 			//true classes
 		cls_t *ret, 				//retrived classes
 		nel_ta n, 				//number of values
-		FILE *fs=stdout);			//output file stream
+		FILE *fs=stdout,			//output file stream
+		flag_a Hflag=0);			//don't print header
 
   //test the accuracy of the confidence ratings:
   //calculate table accuracy as a function of confidence rating
