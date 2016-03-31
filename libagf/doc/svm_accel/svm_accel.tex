@@ -10,6 +10,8 @@
 
 \input{svm_accel_symbol_def}
 
+\tableofcontents
+
 \section*{List of symbols}
 
 \input{svm_accel_symbol_table}
@@ -179,6 +181,8 @@ classification error whereas a more basic kernel method is more ad hoc
 and does little more than sum the number of samples weighted by distance.
 
 \subsection{Border classification}
+
+\label{border_method}
 
 In kernel SVM, the decision border exists only implicitly in a hypothetical,
 abstract space. Even in linear SVM, if the software is generalized to 
@@ -374,15 +378,42 @@ not included in the problem, that the probabilities are all positive, are satisf
 
 \begin{figure}
 \includegraphics[width=0.9\textwidth]{support_vectors}
+\label{sample_sv}
 \end{figure}
 
 \begin{figure}
 \includegraphics[width=0.9\textwidth]{border_vectors}
+\label{sample_border}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{skill_v_ns}
+\label{skill_v_ns}
 \end{figure}
 
 We use the pair of synthetic test classes from \citet{Mills2011} to illustrate
 the difference between support vectors and border vectors and between border
 vectors derived from AGF and from a LIBSVM model.
+Figure \ref{sample_sv} shows a realization of the two sample classes 
+in red and blue, comprising 300 samples total, along
+with the support vectors derived from a LIBSVM model.
+The support vectors are a subset of the training samples and while they
+tend to cluster around the border, they do not define it.
+For reference, the border between the two classes is also shown.
+This has been derived from the border classification method described in 
+Section \ref{border_method} using the mathematical definition of the classes,
+hence it represents the ``true'' border to within a numerical error.
+
+The true border is also compared with those derived from AGF and LIBSVM
+probability estimates in Figure \ref{sample_border}.
+The classes are once again shown for reference.
+While these borders contain 1000 samples for a clear view of where
+they are located using each method, in fact the method works well with
+surprisingly few samples.  Figure \ref{skill_v_ns} shows a plot of the skill
+as a function of the number of border samples, where {\it U.C.} stands for
+uncertainty coefficient. Note that the scores saturate at only about 20
+samples meaning that for this problem at least, very fast classifications are
+possible.
 
 \bibliography{../agf_bib}
 
