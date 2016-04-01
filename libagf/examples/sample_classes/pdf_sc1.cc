@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
   testfile=argv[1];
   outfile=argv[2];
 
-  test=read_vecfile(testfile, ntest, nvar);
+  test=read_vecfile<real_a>(testfile, ntest, nvar);
   if (test == NULL) {
     fprintf(stderr, "Unable to read input file: %s\n", testfile);
     exit(-2);

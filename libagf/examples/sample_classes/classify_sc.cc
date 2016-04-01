@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
     exit(3-argc);
   }
 
-  test=read_vecfile(argv[0], n, d);
+  test=read_vecfile<real_a>(argv[0], n, d);
   if (d != 2) {
     fprintf(stderr, "Error: classes are only defined in two dimensions!\n");
     fprintf(stderr, "Test data has %d.\n", d);
