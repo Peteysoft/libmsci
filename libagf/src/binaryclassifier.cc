@@ -139,6 +139,7 @@ namespace libagf {
   int binaryclassifier<real, cls_t>::commands(multi_train_param &param, 
 		cls_t **clist, char *fbase) {
     char *tmpname;
+
     if (param.partcom==NULL) {
       //print command name etc.:
       fprintf(param.commandfs, "%s %s %s %s", param.commandname, this->name,

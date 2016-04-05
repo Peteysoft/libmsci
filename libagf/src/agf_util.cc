@@ -77,6 +77,7 @@ int agf_parse_command_opts(int &argc, char **&argv, const char *optlist, agf_com
   opt_args->Rflag=0;		//-R
   opt_args->uflag=0;		//-u
   opt_args->Uflag=0;		//-U
+  opt_args->xflag=0;		//-x
   opt_args->Yflag=0;		//-Y
   opt_args->zflag=0;		//-z
   opt_args->Zflag=0;		//-Z
@@ -428,6 +429,9 @@ int agf_parse_command_opts(int &argc, char **&argv, const char *optlist, agf_com
 	     } else {
 	       opt_args->W2=Wc;
              }
+	     break;
+      case ('x'):
+             opt_args->xflag=1;
 	     break;
       case ('X'):
              real_a pratio;

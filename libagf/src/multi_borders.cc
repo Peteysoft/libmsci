@@ -15,6 +15,10 @@
 
 #include "agf_lib.h"
 
+//because we love arbitrary limits:
+#define COMMANDBUF_SIZE 1000000
+#define END_INDICATOR '\0'
+
 using namespace std;
 using namespace libpetey;
 using namespace libagf;
@@ -67,11 +71,12 @@ int main (int argc, char **argv) {
   //while keeping the ones to pass to class_borders
   //--the former include options for normalization or pre-processing:
   opt[3]=&nsv;
-  argc=parse_command_opts(argc, argv, "a0nS-+^MKOuZA", "%s%%%d%s%s%s%%%s%%%", opt, flag, 3);
+  argc=parse_command_opts(argc, argv, "a0nS-+^MKOuZAx", "%s%%%d%s%s%s%%%s%%%%", opt, flag, 3);
   if (argc<0) {
     fprintf(stderr, "multi_borders: error parsing command line\n");
     exit(FATAL_COMMAND_OPTION_PARSE_ERROR);
   }
+
 
   if (flag[5]) {
     //extra training options:
@@ -116,7 +121,6 @@ int main (int argc, char **argv) {
     fprintf(helpfs, "  border         base name for files containing border data\n");
     fprintf(helpfs, "                   (file names are recorded in output control file)\n");
     fprintf(helpfs, "  out            output control file to feed to classify_m\n\n");
-    fprintf(helpfs, "  * commands to train the model are written to stdout\n");
     fprintf(helpfs, "\noptions:\n");
     fprintf(helpfs, "  trainopt       are a series of options to pass to class_borders\n");
     fprintf(helpfs, "                     (-k, -i, -I, -N, -r, -s, -t, -v, -V, -W  --for an\n");
@@ -137,6 +141,8 @@ int main (int argc, char **argv) {
     fprintf(helpfs, "  -O pcom        \"accelerator\" mode: convert existing models to border samples\n");
     fprintf(helpfs, "                   pcom is an external command that returns probability estimates\n");
     fprintf(helpfs, "  -Z             accelerate LIBSVM model using in-house codes\n");
+    fprintf(helpfs, "  -K             keep temporary files; commands to train the model are written\n");
+    fprintf(helpfs, "                   to stdout\n");
     fprintf(helpfs, "\n");
     fprintf(helpfs, "The syntax of the control file is as follows:\n\n");
     fprintf(helpfs, "  <branch>         ::= <model> \"{\" <branch_list> \"}\" | <CLASS>\n");
@@ -186,9 +192,16 @@ int main (int argc, char **argv) {
   //"un-normalize" flag:
   opt_args.uflag=flag[10];
   opt_args.Kflag=flag[8];			//keep temporary files
+  opt_args.xflag=flag[13];
 
   //write statements to stdout:
-  commandfs=stdout;
+  char *commandbuf;
+  if (opt_args.Kflag) {
+    commandfs=stdout;
+  } else {
+    commandbuf=new char[COMMANDBUF_SIZE];
+    commandfs=fmemopen(commandbuf, COMMANDBUF_SIZE, "w");
+  }
 
   //create a unique session id (or at least as close as we can come):
   session_id=seed_from_clock();
@@ -335,7 +348,7 @@ int main (int argc, char **argv) {
     }
     chars.add('\0');
     buffer=chars.make_array(bufsize);
-    infs=fmemopen(buffer, bufsize, "r");
+    infs=fmemopen(buffer, bufsize, "w+");
   }
 
   //output control file (last argument):
@@ -388,6 +401,31 @@ int main (int argc, char **argv) {
       }
     }
     delete [] normfile;
+  }
+
+  //now actually do all the work:
+  if (opt_args.Kflag!=1) {
+   char *c;
+   int err;
+   fprintf(commandfs, "$c", END_INDICATOR);
+   fclose(commandfs);
+   do {
+     for (c=commandbuf; *c!='\n'; c++);
+     *c='\0';
+     //run in the background:
+     if (opt_args.xflag) {
+       char *com=new char[strlen(commandbuf)+2];
+       sprintf(com, "%s&", commandbuf);
+       printf("%s\n", com);
+       err=system(com);
+       delete [] com;
+     } else {
+       printf("%s\n", commandbuf);
+       err=system(commandbuf);
+     }
+     if (err!=0) exit(err);
+     commandbuf=c+1;
+   } while (c!=END_INDICATOR);
   }
 
   delete shell;
