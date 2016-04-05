@@ -5,8 +5,11 @@ VER2=german
 
 NCLS1=2
 NCLS2=2
-
 NCLS=$(NCLS$(V))
+
+AGFOPT1=
+AGFOPT2=
+AGFOPT=$(AGFOPT$(V))
 
 SCRIPTDIR=../../scripts
 
@@ -23,7 +26,7 @@ MULTICONTROL=onevsone.mbc
 
 SVMMODEL=$(BASE).svmmod
 
-$(WORKDIR)/nbv.txt: $(TRAINFILE)
+$(WORKDIR)/nbv.txt: $(MULTICONTROL) $(TRAINFILE)
 	$(SCRIPTDIR)/mb_nv.sh $(AGFOPT) $(MULTICONTROL) $(TRAINFILE) $(WORKDIR)/nbv.txt
 
 $(SVMMODEL): $(MULTICONTROL) $(TRAINFILE)

@@ -102,10 +102,8 @@ $(TEST).m$(VER).cls $(TEST).m$(VER).con results$(VER).txt $(CLASS_TIME): $(CLS_C
 
 $(CLS_CONTR) $(TRAIN_TIME): $(TRAIN).cls $(TRAIN).vec $(TRN_CONTR)
 	if [ ! -d $(BASE) ]; then mkdir $(BASE); fi
-	multi_borders $(OPTIONS$(VER)) $(TRN_CONTR) $(TRAIN) $(OUTPUT) \
-		$(CLS_CONTR) > $(SCRIPT)
-	chmod u+x $(SCRIPT)
-	( time ( ./$(SCRIPT) 2> $(BASE)/trainerr.txt ) ) 2> $(TRAIN_TIME)
+	( time (multi_borders $(OPTIONS$(VER)) $(TRN_CONTR) $(TRAIN) $(OUTPUT) \
+		$(CLS_CONTR) 2> $(BASE)/trainerr.txt ) ) 2> $(TRAIN_TIME)
 
 $(RAW).cls $(RAW).vec results0.txt raw_time.txt: $(TRAIN).vec $(TRAIN).cls $(TEST).vec
 	( time ( agf $(OPTIONS0) classify $(TRAIN) $(TEST).vec $(RAW) > results0.txt 2> rawerr.txt ) ) 2> raw_time.txt
@@ -237,10 +235,8 @@ $(SVMOUT).cls $(SVMOUT).con $(SVMCLASSTIME): $(SVMCONTROL)
 #create script, model control file and perform training with svm-train:
 $(SVMCONTROL) $(SVMSCRIPT) $(SVMTRAINTIME): $(SVMTRAIN).svm $(SVMTEST).svm $(TRN_CONTR)
 	if [ ! -d $(SVMBASE) ]; then mkdir $(SVMBASE); fi
-	multi_borders -M -- svm-train -+ "-b 1 $(SVMTRAINOPT)" $(TRN_CONTR) \
-		$(SVMTRAIN).svm $(SVMMODEL) $(SVMCONTROL) > $(SVMSCRIPT)
-	chmod u+x $(SVMSCRIPT)
-	( time ( ./$(SVMSCRIPT) 2> $(SVMBASE)svmtrainerr.txt ) ) 2> $(SVMTRAINTIME)
+	( time ( multi_borders -M -- svm-train -+ "-b 1 $(SVMTRAINOPT)" $(TRN_CONTR) \
+		$(SVMTRAIN).svm $(SVMMODEL) $(SVMCONTROL) 2> $(SVMBASE)svmtrainerr.txt ) ) 2> $(SVMTRAINTIME)
 
 # native SVM multi-class:
 #classifications with svm-predict:
