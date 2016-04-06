@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo on
+
 #BASE=/home/lenovo/my_software/libmsci/libagf/examples/sample_classes
 
 N="10 20 30 40 50 75 100 200 300 400 500 750 1000 2000 3000 4000 5000 7500 10000"
@@ -53,22 +55,10 @@ echo $#
 if [ $# -eq 2 ]; then
   TRAINING_DATA=$1
   OUTFILE=$2
-  if [ -z $SVMFLAG ]; then
-    TRAIN_COMMAND=multi_borders
-    CLASSIFY_COMMAND=classify_m
-  fi
-elif [ $# -eq 2 ]; then
-  TRAINING_DATA=$1
-  OUTFILE=$2
-  if [ -z $SVMFLAG ]; then
-    TRAIN_COMMAND=class_borders
-    CLASSIFY_COMMAND=classify_b
-    echo $TRAIN_COMMAND
-  fi
 else
   echo "   SUPPORT-VECTOR-MACHINE NUMBER OF SUPPORT VECTORS"
   echo
-  echo "mb_nb.sh [-g] [-M] [-K] [-N ntrial] [-q ntest]\\"
+  echo "svm_nsv.sh [-g] [-M] [-K] [-N ntrial] [-q ntest]\\"
   echo "        [options] train output"
   echo
   echo "  options   = options to pass to svm-train"
@@ -89,10 +79,12 @@ BASE=sv$RANDOM.tmp
 
 if test $SVMFLAG; then
   #this is kind of dum:
+  echo "svm2agf ${TRAINING_DATA} $BASE.0"
   svm2agf ${TRAINING_DATA} $BASE.0
   NTRAIN=$(wc -l < ${TRAINING_DATA})
   TRAINING_DATA=$BASE.0
 else
+  echo "agf2ascii -M ${TRAINING_DATA} $BASE.0.svm"
   agf2ascii -M ${TRAINING_DATA} $BASE.0.svm
   NTRAIN=$(wc -l < $BASE.0.svm)
 fi
@@ -107,17 +99,23 @@ for ((I=0; I<NTEST; I++)); do
     n=$(((I+1)*MAXSAMPLE/NTEST))
   fi
 
-  f=$(echo "$n./$MAXSAMPLE" | bc -l)
+  f=$(echo "$n/$MAXSAMPLE" | bc -l)
 
   #$BASE/sample_class $n $((n*2)) sctrain > sctrain.lvq
   #agf2ascii -M sctrain sctrain.svm
 
+  echo "agf_preprocess -zf $f ${TRAINING_DATA} $BASE.trn $BASE.tst"
   agf_preprocess -zf $f ${TRAINING_DATA} $BASE.trn $BASE.tst
+  echo "agf2ascii -M $BASE.trn $BASE.trn.svm"
   agf2ascii -M $BASE.trn $BASE.trn.svm
+  echo "agf2ascii -M $BASE.tst $BASE.tst.svm"
   agf2ascii -M $BASE.tst $BASE.tst.svm
 
+  echo "svm-train $SVMOPT $BASE.tst.svm $BASE.svmmod"
   svm-train $SVMOPT $BASE.tst.svm $BASE.svmmod
+  echo "svm-predict $BASE.trn.svm $BASE.svmmod $BASE.svmout"
   svm-predict $BASE.trn.svm $BASE.svmmod $BASE.svmout
+
   echo -n "$(wc -l < $BASE.tst.svm) " >> $OUTFILE
   grep nr_sv $BASE.svmmod >> $OUTFILE
 done

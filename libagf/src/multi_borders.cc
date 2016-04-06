@@ -315,12 +315,12 @@ int main (int argc, char **argv) {
       //class borders through the command name:
       commandname=new char[strlen(AGF_COMMAND_PREFIX)+strlen(normfile)+
 		strlen(AGF_BINARY_CLASSIFIER)+strlen(AGF_OPT_VER)+
-		strlen(extra)+25];
+		strlen(extra)+200];
       sprintf(commandname, "%s%s%s %s -u -a %s", AGF_COMMAND_PREFIX, 
 		AGF_BINARY_CLASSIFIER, AGF_OPT_VER, extra, normfile);
     } else {
       commandname=new char[strlen(AGF_COMMAND_PREFIX)+strlen(extra)+
-		strlen(AGF_BINARY_CLASSIFIER)+strlen(AGF_OPT_VER)+13];
+		strlen(AGF_BINARY_CLASSIFIER)+strlen(AGF_OPT_VER)+200];
       sprintf(commandname, "%s%s%s %s", AGF_COMMAND_PREFIX, 
 		AGF_BINARY_CLASSIFIER, AGF_OPT_VER, extra);
     }
@@ -371,7 +371,12 @@ int main (int argc, char **argv) {
     if (flag[4]==0) {
       //pass -Z option to class_borders:
       if (flag[11]) {
-        strcat(commandname, " -Z");
+        strcat(commandname, " -Z ");
+	//dammit:
+	for (int i=0; i<argc; i++) {
+          strcat(commandname, argv[i]);
+          strcat(commandname, " ");
+	}
       }
     }
     shell=new multiclass_hier<real_a, cls_ta>(infs, 0, precom, 
@@ -381,14 +386,10 @@ int main (int argc, char **argv) {
     shell=new multiclass_hier<real_a, cls_ta>(infs, argc, argv);
   }
 
-  //print out the new control file:
-  shell->print(outfs, modelbase);
   //print out the commands to generate the model:
   ncls=shell->generate_commands(commandfs, train, modelbase,
 		commandname, partcom, concom, opt_args.Kflag, session_id);
-
   fclose(infs);
-  fclose(outfs);
 
   //delete temporary files:
   if (normfile!=NULL && opt_args.Kflag==0) {
@@ -405,29 +406,34 @@ int main (int argc, char **argv) {
 
   //now actually do all the work:
   if (opt_args.Kflag!=1) {
-   char *c;
-   int err;
-   fprintf(commandfs, "$c", END_INDICATOR);
-   fclose(commandfs);
-   do {
-     for (c=commandbuf; *c!='\n'; c++);
-     *c='\0';
-     //run in the background:
-     if (opt_args.xflag) {
-       char *com=new char[strlen(commandbuf)+2];
-       sprintf(com, "%s&", commandbuf);
-       printf("%s\n", com);
-       err=system(com);
-       delete [] com;
-     } else {
-       printf("%s\n", commandbuf);
-       err=system(commandbuf);
-     }
-     if (err!=0) exit(err);
-     commandbuf=c+1;
-   } while (c!=END_INDICATOR);
+    char *c;
+    int err;
+    fprintf(commandfs, "%c", END_INDICATOR);
+    fclose(commandfs);
+    do {
+      for (c=commandbuf; *c!='\n'; c++);
+      *c='\0';
+      //run in the background:
+      if (opt_args.xflag) {
+        char *com=new char[strlen(commandbuf)+2];
+        sprintf(com, "%s&", commandbuf);
+        printf("%s\n", com);
+        err=system(com);
+        delete [] com;
+      } else {
+        printf("%s\n", commandbuf);
+        err=system(commandbuf);
+      }
+      if (err!=0) exit(err);
+      commandbuf=c+1;
+    } while (*commandbuf!=END_INDICATOR);
   }
 
+  //print out the new control file:
+  shell->print(outfs, modelbase);
+  fclose(outfs);
+
+  //clean up:
   delete shell;
 
   if (command!=NULL) delete [] command;
