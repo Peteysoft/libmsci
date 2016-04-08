@@ -712,8 +712,6 @@ namespace libpetey {
       find_interior(v, c, p, 0.5);
       constrained(a, b, v, c, p, x);
 
-      printf("I\n");
-
       /*
       //we've solved it using the flawed algorithm, lets see if the criteria
       //for the algorithm being always valid are satisfied:

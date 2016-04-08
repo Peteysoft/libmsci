@@ -645,7 +645,7 @@ namespace libagf {
     }
     pt=0;
     for (cls_t i=0; i<this->ncls; i++) pt+=pdf[i];
-    printf("pt (2)=%g\n", pt);
+    //printf("pt (2)=%g\n", pt);
 
     return cls1;
   }

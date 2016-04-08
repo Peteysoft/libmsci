@@ -120,5 +120,8 @@ for ((I=0; I<NTEST; I++)); do
   grep nr_sv $BASE.svmmod >> $OUTFILE
 done
 
-#rm -f $BASE.*
-  
+#clean up, remove temporary files:
+if [ -z $KFLAG ]; then
+  rm -f $BASE.*
+fi
+ 
