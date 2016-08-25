@@ -203,20 +203,24 @@ where $I$ is the identity matrix.
 This is known as the {\it tangent model} of a dynamical system and applied
 to a trajectory is the total stretching of Lagrangian space.
 
-We can relate $H$ to the integrated trajectory, $\Phi$, as follows:
-\begin{eqnarray}
-\frac{\mathrm d \Phi}{\mathrm d t} & = & v(\Phi, ~t) \\
-\frac{\mathrm d}{\mathrm d t} 
-\nabla_{\vec x_0} \Phi & = & \nabla \vec v \cdot \nabla_{\vec x_0} \Phi
-\label{gradient_trajectory}
-\end{eqnarray}
-or,
-\begin{equation}
-\nabla_{\vec x_0} \Phi = H
-\end{equation}
+%This derivation is false, but we leave this here as the two quantities
+%are definitely related, but not so simply:
+%We can relate $H$ to the integrated trajectory, $\Phi$, as follows:
+%\begin{eqnarray}
+%\frac{\mathrm d \Phi}{\mathrm d t} & = & v(\Phi, ~t) \\
+%gradient operator and total derivative don't commute:
+%\frac{\mathrm d}{\mathrm d t} 
+%\nabla_{\vec x_0} \Phi & = & \nabla \vec v \cdot \nabla_{\vec x_0} \Phi
+%\label{gradient_trajectory}
+%\end{eqnarray}
+%or,
+%\begin{equation}
+%\nabla_{\vec x_0} \Phi = H
+%\end{equation}
 Note that:
 \begin{equation}
 	\delta \vec x = H \cdot \delta \vec x_0
+	\label{initial_error_vector}
 \end{equation}
 where $\delta \vec x_0=\delta \vec x(t=t_0)$.
 
@@ -262,14 +266,14 @@ and that:
 \nabla q = \nabla q_0 \cdot H^\prime
 \end{equation}
 
-Also, by defining $\Phi^{-1}(\vec x,~t,~\Delta t)$ as,
-\begin{equation}
-\Phi^{-1}[\Phi(\vec x_0,~t_0,~\Delta t),~t_0+\Delta t,~\Delta t]=\vec x_0
-\end{equation}
-we can show:
-\begin{equation}
-H^\prime=\nabla \Phi^{-1}
-\end{equation}
+%Also, by defining $\Phi^{-1}(\vec x,~t,~\Delta t)$ as,
+%\begin{equation}
+%\Phi^{-1}[\Phi(\vec x_0,~t_0,~\Delta t),~t_0+\Delta t,~\Delta t]=\vec x_0
+%\end{equation}
+%we can show:
+%\begin{equation}
+%H^\prime=\nabla \Phi^{-1}
+%\end{equation}
 
 \section{Transport map}
 
