@@ -16,6 +16,8 @@
 
 \input{svm_accel_symbol_table}
 
+\section{Introduction}
+
 \section{Theory}
 
 \subsection{Kernel estimation}
@@ -402,7 +404,7 @@ hence it represents the ``true'' border to within a numerical error.
 
 \begin{figure}
 \includegraphics[width=0.9\textwidth]{skill_v_nb}
-\caption{Classification accuracy and uncertainty coefficient for border-classification starting with probabilities from the class definitions, adaptive Gaussian filtering (AGF), and a support vector machine (SVM).}
+\caption{Classification accuracy and uncertainty coefficient for border-classification starting with probabilities from the class definitions, adaptive Gaussian filtering (AGF), and a support vector machine (SVM). Average of 20 trials.}
 \label{skill_v_nb}
 \end{figure}
 
@@ -440,6 +442,49 @@ number of training samples. The fitted curve is approximately linear
 with an exponent of 0.94 and multiplications coefficient of 0.38.
 In other words, there will be approximately 38 \% as many support vectors as 
 there are training vectors.
+
+Of course it's possible to speed up an SVM by sub-sampling the training data
+or the resulting support vectors.
+In such case, the sampling must be done carefully so as not to reduce the
+accuracy of the result.
+Figure \ref{skill_v_nt} shows the effect on classification skill for the
+synthetic test classes when the number of training samples is reduced.
+Skill scores start to saturate at between 200 and 300 samples.
+By contrast, figure \ref{skill_v_nb} suggests you need only 20 border samples
+for good accuracy, so even with only 200 training samples you will still
+have improved efficiency by using the borders technique.
+
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{skill_v_nt}
+\caption{Classification accuracy and uncertainty coefficient for a support vector machine (SVM) trained with different numbers of samples.
+Error bars represent the standard deviation of 20 trials.}
+\label{skill_v_nt}
+\end{figure}
+
+This suggests a simple scaling law. The number of training samples required
+for good accuracy, and hence the number of support vectors, 
+should be proportional to the volume occupied by the
+training data in the feature space: $n_0 \propto V$ where 
+$n_0$ is the minimum number of training vectors and $V$ is volume.
+Then the number of border vectors should be proportional to the volume
+taken to the root of one less than the dimension of the feature space:
+$n_{b0} \propto V^\frac{1}{D-1}$.
+Putting it together, we can relate the two as follows:
+\begin{equation}
+	n_{b0} \propto n_0^\frac{1}{N-1}
+\end{equation}
+where $n_{b0}$ is the minimum number of border vectors required for good
+accuracy.
+
+In other words, mapping only the border between classes should always be
+faster than techniques that map the entirety of the class locations.
+This includes kernel density methods including SVM as well
+as similar methods such as learning vector quantization (LVQ) 
+\citep{Kohonen2000, LVQ_PAK}
+that attempt to create an ``idealized'' representation of the classes through
+as set of ``codebook'' vectors.
+
+\section{Case studies}
 
 \bibliography{../agf_bib}
 

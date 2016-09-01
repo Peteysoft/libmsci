@@ -119,15 +119,21 @@ int get_ncep_grid(NcFile *nci,			//netcdf file handle
 
   //ncep pressure grid:
   ncv=nci->get_var("level");
-  ndata=ncv->num_vals();
-  data=new float[ndata];
-  ncv->get(data, ndata);
-  lev=new simple<float>(data, ndata, 0);
+  if (ncv==NULL) {
+    lev=NULL;
+  } else {
+    ndata=ncv->num_vals();
+    data=new float[ndata];
+    ncv->get(data, ndata);
+    lev=new simple<float>(data, ndata, 0);
+  }
 
   delete [] data;
   delete [] traw;
   delete [] time;
   delete [] timeunits;
+
+  return 0;		//doesn't seem to return any error codes...
 
 }
 
@@ -151,6 +157,8 @@ int read_ncep_3d(NcVar *ncv,			//netcdf file handle
 
   ncv->set_cur(tind, 0, 0, 0);
   ncv->get(q, 1, dim[0], dim[1], dim[2]);
+
+  return 0;
 
 }
 
@@ -179,6 +187,8 @@ int read_ncep_2d(NcVar *ncv,			//netcdf variable handle
     ncv->set_cur(tind, zind, 0, 0);
     ncv->get(q, 1, 1, dim[0], dim[1]);
   }
+
+  return 0;
 
 }
 
@@ -224,6 +234,8 @@ int read_ncep_3d_old(NcVar *ncv,		//netcdf variable handle
 
   delete [] ncdata[0];
   delete [] ncdata;
+
+  return 0;
 }
 
 //read in a 2-D field for one time index:
@@ -714,7 +726,6 @@ simple<time_class> * get_ncep_tgrid(const char *base,	//base filename (incl. pat
 			long &it1, 		//index into first year
 			long &it2) {		//index into last year
   time_class tdiff;
-  time_class sixhour(0, 0, 0, 6, 0, 0);
   long nt;
   int32_t ntyr, ntyrmax;
   int32_t yr1, yr2;

@@ -58,28 +58,30 @@
 
 \begin{verbatim}
 #include <stdio.h>
+#include <stdint.h>
+
 int main() {
 
   FILE *fs;
 
   float ** data;	//array of vectors
-  long n;		//number of vectors
-  long D;		//number of dimensions
+  int32_t n;		//number of vectors
+  int32_t D;		//number of dimensions
 
   n=100;	//(e.g.)
   D=2;
 
   data=new float * [n];
-  for (long i=0; i<n; i++) data[i]=new float[D];
+  for (int32_t i=0; i<n; i++) data[i]=new float[D];
 
   //... commands to fill the matrix ...
 
   fs=fopen("data.vec", "w");
-  fwrite(&D, sizeof(long), 1, fs);
-  for (long i=0; i<n; i++) fwrite(data[i], sizeof(float), D, fs);
+  fwrite(&D, sizeof(D), 1, fs);
+  for (int32_t i=0; i<n; i++) fwrite(data[i], sizeof(float), D, fs);
   fclose(fs);
   
-  for (long i=0; i<n; i++) delete [] data[i];
+  for (int32_t i=0; i<n; i++) delete [] data[i];
   delete [] data;
 
 }
@@ -123,17 +125,18 @@ To write such data in C++, you can use the following commands:
 
 \begin{verbatim}
 #include <stdio.h>
+#include <stdint.h>
 
 int main() {
   FILE *fs;
-  long *data;
-  long n;
+  int32_t *data;
+  int32_t n;
 
   n=100;	//(e.g)
   data=new long[n];
   //... commands to fill array  ...
   fs=fopen("data.cls", "w");
-  fwrite(data, sizeof(long), n, fs);
+  fwrite(data, sizeof(int32_t), n, fs);
   fclose(fs);
   delete [] data;
 }
@@ -175,7 +178,8 @@ To read the output files, examine the routines \verb"read_clsfile" for reading c
 
 \begin{verbatim}
   float ** data;
-  long n, D;
+  nel_ta n;
+  dim_ta D;
 
   data=read_vecfile(data, n, D);
 

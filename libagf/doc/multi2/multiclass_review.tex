@@ -1,0 +1,231 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage[dvips]{graphicx}
+
+\usepackage{natbib}
+
+\bibliographystyle{apa}
+
+\begin{document}
+
+\section{Introduction}
+
+\section{Definition of the problem}
+
+\label{description}
+
+In a statistical classication problem we are given a set of ordered pairs, 
+$\lbrace \vec x_i : y_i \rbrace$ 
+where $\vec x_i \in \Re^N$ is the location of the {\it sample} in 
+the $N$-dimensional {\it feature space} 
+and $y_i \in [1..n_c]$ is the class number or label of the sample
+where $n_c$ is the number of classes,
+and the class labels are
+distributed according to an unknown conditional distribution,
+$P(c | \vec x)$ with $c \in [1..n_c]$ the class label and $\vec x$ the location
+in feature space.
+
+Given an arbitrary {\it test point}, $\vec x$, 
+we wish to estimate $P(c | \vec x)$, however we only have
+the means to estimate some binary component of it, that is we have a 
+set of binary classifiers, 
+each returning a {\it decision function}, $r_i(\vec x)$, that is
+trained using the same type of ordered pairs as above, 
+except the ordinates can only take on one of two values
+which we choose as: $y_i \in \lbrace -1, +1 \rbrace$.
+
+In this paper we assume that the decision function 
+returns estimates of the difference in conditional probabilities:
+\begin{equation}
+	r_i(\vec x) = p_i(+1|\vec x) - p(-1|\vec x)
+\end{equation}
+where $p_i(c|\vec x)$ is the conditional probability of the $i$th
+binary classifier.
+
+How can we partition the classes, $\lbrace y_i \rbrace$, that is create
+a mapping of the form:
+\begin{equation}
+	y_{ij} (y_j) = \left \lbrace  \begin{array}{lr}
+-1 & | y_j \in C_j^+ \\
++1 & | y_j \in C_j^-
+\end{array}
+\right .
+\end{equation}
+where $y_{ij}$ is the class value of $j$th sample of the transformed data 
+for trainng the $i$th binary classifier and 
+$C_j^+ \subset [1..n_c]$ is the set of classes from the original set, 
+$[1..n_c]$, that map to $+1$ while
+$C_j^- \subset [1..n_c]$ is the set of classes from the original set, 
+$[1..n_c]$, that map to $-1$?
+
+And once we have partitioned the classes
+and trained the binary classifers, 
+how do we solve for the most likely class, 
+\begin{equation}
+	c=\arg \max_i P(i | \vec x)
+\end{equation}
+given a test point, $\vec x$,
+or for the most likely estimate
+of $P(c | \vec x)$ where $c$ is either the most likely class
+or else can be any of the classes, $c \in [1..n_c]$?
+%--that is all of the conditional probabilities 
+%or just that of the ``winning'' class?
+
+\section{Nonhierarchical multi-class classification}
+
+In {\it non-hierarchical} multi-class classification, we solve for the
+classes or probabilities of the multi-class problem all at once:
+all the binary classifiers are used in the solution and the result of
+one binary classifier does not determine the use of another one.
+Using the notation provided in Section \ref{description}, 
+we can write a system of equations relating
+the multi-class conditional probabilities to the decision
+functions:
+\begin{equation}
+	r_i(\vec x) = \frac{\sum_{j=1}^{n_i^+} P(c_{ij}^+|\vec x) - \sum_{j=1}^{n_{i}^-} P(c_{ij}^-|\vec x)}{\sum_{j=1}^{n_i^-} P(c_{ij}^-|\vec x) + \sum_{j=1}^{n_i^+} P(c_{ij}^+|\vec x)}
+	\label{decision_function}
+\end{equation}
+where 
+$c_{ij}^- \in C_i^-$,
+$c_{ij}^+ \in C_i^+$,
+$n_i^-$ is the number of class labels on the negative side of
+the $i$the partition,
+and $n_i^+$ is the number of class labels on the positive side of
+the $i$the partition
+
+It's more natural, however to describe the problem using a
+{\it coding matrix}, $A$, 
+which is structured such that
+$a_{ij} \in {-1, 0, 1}$ where $i$ enumerates the binary classifier and
+$j$ enumerates the class of the multi-class problem.
+In other words, if $a_{ij}$ is $-1/+1$, we would assign each of the $j$th class
+labels in the training data a value of $-1/+1$ when training the $i$th
+binary classifier. If the value is $0$, the $j$th class label is excluded.
+
+The non-zero elements of $A$ are:
+\begin{eqnarray}
+	a_{ic_{ik}^-} & = & -1 | ~k = [1..n_{ci-}]\\
+a_{ic_{ik}^+} & = & +1 | ~k=[1..n_{ci+}]
+\end{eqnarray}
+
+%We can relate the multi-class probabilities to the output of the 
+%binary classifiers as follows:
+We can rewrite Equation (\ref{decision_function}) using the decision
+matrix as follows:
+\begin{equation}
+	\frac{\sum_j a_{ij} p_j}{\sum_j |a_{ij}| p_j} = r_i
+\end{equation}
+where $\vec p$, is a vector of multi-class conditional probabilities, $p_i=P(i|\vec x)$.
+
+Some rearrangement shows that
+we can solve for the probabilities, $\vec p$, via matrix inversion:
+\begin{eqnarray}
+	Q \vec p & = & \vec r \\
+	%q_{ij} & = & a_{ij} + \delta(a_{ij}) r_i \\
+	q_{ij} & = & a_{ij} + (1-|a_{ij}|) r_i 
+	\label{matrix_inverse2}
+\end{eqnarray}
+where $\vec r$ is the vector of decision functions, $\lbrace r_i| i=[1..n_p]\rbrace$ and
+$\vec p$ is the vector of estimated probabilities, $\vec p =\lbrace p_i | i=[1..n_c]\rbrace$, and $\delta$ is the delta function.
+Not that $Q$ reduces to $A$ if $A$ contains no zeroes.
+The case of a coding matrix that contains no zeroes, that is all the partitions divide up all the
+classes rather than a subset, will be called the {\it strict} case.
+From a computational perspective, 
+$Q$ must be regenerated for every new test point or value of $\vec r$ 
+whereas $A$ can be inverted or decomposed and then
+applied to every subsequent value of $\vec r$.
+
+Because the decision functions, $\vec r$, are not estimated perfectly,
+the final probabilities may need to be constrained and the inverse
+problem solved via minimization:
+\begin{equation}
+	\vec p = \arg \min_{\vec v} | Q \vec v - \vec r |
+\end{equation}
+subject to:
+\begin{eqnarray}
+	\sum_{i=1}^{n_c} p_i & = & 1 \\
+	p_i & \ge & 0
+\end{eqnarray}
+where straight brackets, $||$, denotes a vector norm which  
+in this case is the Euclidian or $L^2$ norm.
+
+The class of the test point is determined through maximum likelihood:
+\begin{equation}
+	c = \arg \max_i p_i
+\end{equation}
+
+\subsection{Common coding matrices}
+
+Common coding matrices include ``one-versus-the-rest'' in which
+we take each class and train it against the rest of the
+classes.
+For $n_c=4$ it works out to:
+\begin{equation}
+A = 
+\begin{bmatrix}
+1 & -1 & -1 & -1 \\
+-1 & 1 & -1 & -1 \\
+-1 & -1 & 1 & -1 \\
+-1 & -1 & -1 & 1
+\end{bmatrix}
+\end{equation}
+In a ``one-versus-one'' solution, we train each class against
+every other class. For $n_c=4$:
+\begin{equation}
+A = 
+\begin{bmatrix}
+-1 & 1 & 0 & 0 \\
+-1 & 0 & 1 & 0 \\
+-1 & 0 & 0 & 1 \\
+0 & -1 & 1 & 0 \\
+0 & -1 & 0 & 1 \\
+0 & 0 & -1 & 1
+\end{bmatrix}
+\end{equation}
+The one-versus-one solution is used in LIBSVM \citep{Chang_Lin2011}.
+
+\subsection{Voting solution}
+
+In many other texts [insert citation], the class of the test point is determined by how close $\vec r$
+is to each of the columns in $A$:
+\begin{equation}
+	c = \arg \min_i |\vec a^{(i)} - \vec r|^2
+\end{equation}
+where $\vec a^{(i)}$ is the $i$th column of $A$. 
+For the norm, $||$, Hamming distance is
+frequently used, which is the number of bits that must be changed
+in a binary number in order for it to match another binary number.
+This assumes that each $r_i$ returns only $-1$ or $+1$ and that
+the coding matrix is strict:
+\begin{equation}
+|\vec v - \vec r} = \sum_i \delta_{v_i r_i}
+\end{equation}
+
+Here we are assuming that the decision functions return an approximation of the 
+difference in conditional probabilities of the binary classifier, hence we will once again use a
+Euclidian metric. Expanding:
+\begin{equation}
+	c = \arg \min_i |\vec a^{(i)}|^2 - 2 \vec a^{(i)} \cdot \vec r + |\vec r|^2
+\end{equation}
+The length of $\vec r$ is independent of $i$, hence it can be eliminated from the expression.
+For the strict case, the length of each column will also be constant at $|\vec a^{(i)}|=\sqrt{n_p}$.
+Even for the non-strict case, we would expect the column lengths to be close for typical coding 
+matrices. The column lengths are equal in the one-versus-one case for instance.
+Eliminating these two terms produces a {\it voting} solution:
+\begin{equation}
+	c = \arg \max A^T \vec r
+\end{equation}
+That is, if the sign of $r_i$ matches the $i$th element of the column, then a vote is cast 
+in proportion to the size of $r_i$ for the class label corresponding to the column number.
+
+A voting solution can be used for any coding matrix and if each $r_i$ returns on $-1$ or 
+$+1$.  The LIBSVM libary, for instance, uses a one-versus-one arrangement with a voting
+solution if probabilities are not required \citep{Chang_Lin2011}.
+The disadvantage of a voting solution is
+that it does not return estimates of the probabilities.
+
+\bibliography{../agf_bib.bib}
+
+\end{document}
+
