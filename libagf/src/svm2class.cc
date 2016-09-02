@@ -80,25 +80,23 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  cls_t svm2class<real, cls_t>::classify(real *x, real *p, real *praw) {
-    real r;
-    r=R(x, praw);
-    p[0]=(1-r)/2;
-    p[1]=1-p[0];
-    if (r<0) return label1; else return label2;
+  real svm2class<real, cls_t>::R(real *x, real *praw) {
+    return classifier->R(x, ind1, ind2, praw);
   }
 
   template <class real, class cls_t>
-  cls_t svm2class<real, cls_t>::classify(real *x, real &p, real *praw) {
-    real r;
-    r=R(x, praw);
-    if (r<0) {
-      p=(1-r)/2;
-      return label1;
-    } else {
-      p=(1+r)/2;
-      return label2;
+  real svm2class<real, cls_t>::R_deriv(real *x, real *drdx) {
+    //real drdx2[this->D1];
+    real r=classifier->R_deriv(x, ind1, ind2, drdx);
+    /*
+    real r2=R(x);
+    this->R_deriv_num(x, 0.005, drdx2);
+    printf("%g %g\n", r, r2);
+    for (int i=0; i<this->D1; i++) {
+      printf("%g %g\n", drdx[i], drdx2[i]);
     }
+    */
+    return r;
   }
 
   template <class real, class cls_t>

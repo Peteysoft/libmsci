@@ -207,7 +207,7 @@ namespace libagf {
 		iter_ta maxit,		//max no. of iterations in root-finder
                 real **border,		//returned border samples
                 real **gradient,	//return border gradients
-                real rthresh=0)		//location of Bayesian border
+                real rthresh)		//location of Bayesian border
   {
   
     gsl_rng *rann;		//GSL random number generator
