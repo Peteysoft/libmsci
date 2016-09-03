@@ -52,11 +52,12 @@ int main(int argc, char ** argv) {
   
   if (argc < 3) {
     printf("Converts multi-borders hierarchical (recursive control file) to\n");
-    printf("multi-borders modes (single ASCII file).\n");
+    printf("multi-borders modes (single ASCII file) using one of three modes:\n");
+    printf("one-vs-one, one-vs-the-rest, partitioning of adjacent classes.\n");
     printf("\n");
     printf("usage: mbh2mbm control outfile\n\n");
     printf("    where:\n");
-    printf("control  = base name of binary input files.\n");
+    printf("control  = name of control file.\n");
     printf("outfile  = output file in ASCII format.\n");
     exit(1);
   }

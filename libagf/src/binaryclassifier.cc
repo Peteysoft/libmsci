@@ -404,13 +404,21 @@ namespace libagf {
   template <class real, class cls_t>
   int general2class<real, cls_t>::commands(multi_train_param &param, 
 		cls_t **clist, char *fbase) {
+    char Kstr[3];
+    if (Kflag) {
+      Kstr[0]='-';
+      Kstr[1]='K';
+      Kstr[2]='\0';
+    } else {
+      Kstr[0]='\0';
+    }
     //accelerator mode:
     if (strcmp(command, "")==0) {
       //if command name is the empty string, we don't include it:
-      fprintf(param.commandfs, "%s %s %s %s", param.commandname, this->name, 
+      fprintf(param.commandfs, "%s %s %s %s %s", param.commandname, Kstr, this->name, 
 		      param.train, fbase);
     } else {
-      fprintf(param.commandfs, "%s -O \"%s\" %s %s %s", param.commandname, command, 
+      fprintf(param.commandfs, "%s %s -O \"%s\" %s %s %s", param.commandname, Kstr, command, 
 		this->name, param.train, fbase);
     }
 

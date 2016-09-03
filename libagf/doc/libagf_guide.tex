@@ -300,7 +300,7 @@ Option & Function \\
   & \verb/    /2=total weight min and max\\
   & \verb/  /non-hierarchical multi-class classification:\\
   & \verb/    /0=constrained inverse (not always optimal)\\
-  & \verb/    /1=estimate class by voting\\
+  & \verb/    /1=linear least squares, no constraints or re-normalization\\
   & \verb/    /2=voting from pdf, no re-normalization\\
   & \verb/    /3=voting from class label, no re-normalization\\
   & \verb/    /4=voting from pdf overrides least squares, conditional\\
@@ -363,7 +363,8 @@ Multi-class classification using a series of class-borders:
 
 \begin{tabular}{ll}
 \verb/multi_borders/ & 	Trains a multi-class model based on a control file.\\
-\verb/classify_m/: & Performs classifications using model output from \verb/multi_borders/.
+\verb/classify_m/: & Performs classifications using model output from \verb/multi_borders/.\\
+\verb/svm_accelerate/: & Trains a multi-borders model from a native LIBSVM model.
 \end{tabular}
 
   Multi-borders classification represents a significant step forward with this library.  The operation of these programs, called from the command line using \verb/multi_borders/ and \verb/classify_m/ is quite involved and is described in detail in Section, \ref{MULTI_BORDERS_CLASSIFICATION}, MULTI-BORDERS CLASSIFICATION.
@@ -419,7 +420,9 @@ Multi-class classification using a series of class-borders:
 \verb/C2R/ & Converts a two-class classification to a difference in conditional\\
 		  & probabilites. The equation is:\\
 	& \verb\  \$R = (2 c - 1) C$\\
-& where c is the class and C is the confidence rating.
+& where c is the class and C is the confidence rating.\\
+\verb/mbh2mbm/: & Collates a multi-file multi-borders model into a single \\
+	 	& single ASCII file. 
 \end{tabular}
 
 The LVQPAK file format is probably the easiest to work with.  There is one header with the number of dimensions, followed by a listing of the vectors, one vector per line, each column is a dimension except for the last one which is the class.  The \verb/sample_class/ program prints its results to standard out in an LVQPAK-compatible format--see Section \ref{EXAMPLES}, EXAMPLES.
@@ -574,10 +577,10 @@ Consider the following control file:
 When passed to \verb/multi_borders/ as follows:
 
 \begin{verbatim}
-$>multi_borders -n -s 125 test_multi5.txt foo bar foobar.txt > script.sh
+$>multi_borders -n -s 125 test_multi5.txt foo bar foobar.txt
 \end{verbatim}
 
-we get the following list of statements as output in \verb"script.sh":
+runs the following set of statements:
 
 \begin{verbatim}
 agf_precondition -a bar.std -n foo.vec bar.139397543805655.vec
@@ -591,7 +594,13 @@ rm bar.139397543805655.vec
 rm bar.139397543805655.cls
 \end{verbatim}
 
-and the contents of \verb"foobar.txt" are as follows:
+In the past these were only printed to standard out with running them the
+job of the user. Now they are executed directly with the option of 
+running them in the background using the \verb"-x" switch.
+It is still possible to print out the commands only using the \verb"-K"
+switch.
+
+The contents of \verb"foobar.txt" are as follows:
 
 \begin{verbatim}
 bar {
@@ -634,7 +643,7 @@ A good way to understand the \verb"multi-borders" paradigm is to look at the exa
 %\section{USING MULTI-BORDERS WITH EXTERNAL BINARY CLASSIFIERS}
 \subsection{Multi-borders with external binary classifiers}
 
-The multi-borders routines can now interface with external binary classification software, specifically, either LIBSVM, or a pair of programs that have the same calling conventions.  For training, use the -- switch to pass the command name to \verb/multi_borders/.  Consider the above control file as an example, but without any of the control switches:
+The multi-borders routines can now interface with external binary classification software, specifically, either LIBSVM, or a pair of programs that have the same calling conventions.  For training, use the \verb"--" switch to pass the command name to \verb/multi_borders/.  Consider the above control file as an example, but without any of the control switches:
 
 \begin{verbatim}
 "" {
@@ -651,25 +660,26 @@ The multi-borders routines can now interface with external binary classification
 We pass the LIBSVM command, \verb"svm-train", to \verb"multi-borders", as follows:
 
 \begin{verbatim}
-$>multi_borders -M -- "svm-train -b 1" -+ "-h 0 -c 25" test_multi.txt foo bar foobar.txt
+$>multi_borders -M -- "svm-train -b 1" -+ "-h 0 -c 25" \
+		test_multi.txt foo.svm bar foobar.txt
 \end{verbatim}
 
-Which produces the following output:
+which will execute the following statements:
 
 \begin{verbatim}
-agf_preprocess -A -M foo bar.00.2367545368.tmp 1 / 2
+agf_preprocess -A -M foo.svm bar.00.2367545368.tmp 1 / 2
 svm-train -b 1 -h 0 -c 25  bar.00.2367545368.tmp bar.00
 rm -f bar.00.2367545368.tmp
-agf_preprocess -A -M foo bar.01.00.2367545368.tmp 3 / 4
+agf_preprocess -A -M foo.svm bar.01.00.2367545368.tmp 3 / 4
 svm-train -b 1 -h 0 -c 25  bar.01.00.2367545368.tmp bar.01.00
 rm -f bar.01.00.2367545368.tmp
-agf_preprocess -A -M foo bar.01-00.2367545368.tmp 3 4 5 / 6
+agf_preprocess -A -M foo.svm bar.01-00.2367545368.tmp 3 4 5 / 6
 svm-train -b 1 -h 0 -c 25  bar.01-00.2367545368.tmp bar.01-00
 rm -f bar.01-00.2367545368.tmp
-agf_preprocess -A -M foo bar.01-01.2367545368.tmp 3 4 / 5 6
+agf_preprocess -A -M foo.svm bar.01-01.2367545368.tmp 3 4 / 5 6
 svm-train -b 1 -h 0 -c 25  bar.01-01.2367545368.tmp bar.01-01
 rm -f bar.01-01.2367545368.tmp
-agf_preprocess -A -M foo bar.2367545368.tmp 1 2 / 3 4 5 6
+agf_preprocess -A -M foo.svm bar.2367545368.tmp 1 2 / 3 4 5 6
 svm-train -b 1 -h 0 -c 25  bar.2367545368.tmp bar
 rm -f bar.2367545368.tmp
 \end{verbatim}
@@ -677,12 +687,12 @@ rm -f bar.2367545368.tmp
 Several things should be noted:
 \begin{itemize}
 \item the \verb/-b/ switch in svm-train tells it to generate probability estimates
-\item the \verb/-+/ option passes any other switches to use as "defaults"
+\item the \verb/-+/ option passes any other switches to use as ``defaults''
 \item when used in this way, training data must be in ASCII format: \verb/-M/ switch for the same format as LIBSVM, otherwise it uses the same format as LVQPAC (see File Conversion, above)
 \item the output control file is the same as before
 \end{itemize}
 
-The training command, passed by \verb/--/, should have the following syntax:
+The training command, passed through \verb/--/, should have the following syntax:
 
 \verb/  /$<$train$>$ [$<$options$>$] $<$data$>$ $<$model$>$
 
@@ -715,32 +725,39 @@ where:
 \end{itemize}
 Note that the order of the first two arguments are reversed as compared to the libAGF convention in \verb/classify_b/ and \verb/classify_m/.
 
-LIBSVM tends to be slow, especially if you have a lot of training data.  Therefore, \verb/multi_borders/ includes the option to transform \verb"SVM/multi-borders" hybrid models into full multi-borders models.  To access this ``accelerator'' mode, use the \verb/-O/ switch and pass the output classification control file from the previous pass:
+LIBSVM tends to be slow, especially if you have a lot of training data.  
+There are currently three ways of converting LIBSVM models into borders
+models: the first two use the \verb/multi_borders/ command and work on
+LIBSVM/multi-borders hybrid models.
+First, you can used the \verb/-O/ switch to pass the prediction command 
+(\verb/svm-predict -b 1/ for LIBSVM models) to
+\verb/multi_borders/ so that it can train a faster multi-borders model.
+This solution has the advantage that it can work with any external binary
+classifier, not just LIBSVM.
+It has the disadvantage, however, that gradient vectors are calculated
+numerically, so is not very accurate.
+
+A better solution is the \verb/-Z/ switch which tells \verb/multi_borders/ 
+to use the ``in-house'' SVM codes.
+To accelerate the previous model, pass the output classification control file from the previous pass:
 
 \begin{verbatim}
-$>multi_borders -O "svm-predict -b 1" foobar.txt foo bar2 foobar2.txt
+$>multi_borders -Z foobar.txt foo bar2 foobar2.txt
 \end{verbatim}
 
-which generates the following output:
+which executes the following statements:
 
 \begin{verbatim}
-class_borders -M -O "svm-train -b 1" bar.00 foo bar2.00
-class_borders -M -O "svm-train -b 1" bar.01.00 foo bar2.01.00
-class_borders -M -O "svm-train -b 1" bar.01-00 foo bar2.01-00
-class_borders -M -O "svm-train -b 1" bar.01-01 foo bar2.01-01
-class_borders -M -O "svm-train -b 1" bar foo bar2
+class_borders -Z bar.00 foo bar2.00
+class_borders -Z bar.01.00 foo bar2.01.00
+class_borders -Z bar.01-00 foo bar2.01-00
+class_borders -Z bar.01-01 foo bar2.01-01
+class_borders -Z bar foo bar2
 \end{verbatim}
 
-Note how we're using \verb/class_borders/ to perform the training: it treats the external command as a source of conditional probabilities and finds a series of roots (zeroes) to sample the border between the two classes, just as it would with AGF estimates.  It is also worth noting that an extra parameter is included in the \verb/class_borders/ command: in addition to the output file name in the last parameter, the first parameter iS the name of the model used to predict the probabilities, while the second parameter is a file containing training data which is used to sample the space while searching for roots.  This training data must be in ASCII format, just like in all other interoperations using external commands.  If the external command uses the training data directly to generate estimates, simply pass it twice.
-
-Because numerical differentiation is used to generate the gradient vectors, accuracy may be reduced.  In fact in order to make this method even usable when run in conjunction with LIBSVM, it's necessary to increase the precision of output probabilities.  In version 3.18, these are printed at line number 125 in svm-predict.c:
-
-\begin{verbatim}
-124		for(j=0;j<nr_class;j++)
-125			fprintf(output," %g",prob_estimates[j]);
-\end{verbatim}
-
-The \verb/%g/ can be changed to, e.g. \verb/%.12lg/ or a similar level of high precision.
+Note how we're using \verb/class_borders/ to perform the training: it uses SVM as a source of conditional probabilities and finds a series of roots (zeroes) to sample the border between the two classes, just as it would with AGF estimates.  
+To facilitate this, an extra parameter is included in the \verb/class_borders/ command: in addition to the output file name in the last parameter, the first parameter is the name of the model used to predict the probabilities, 
+while the second parameter is a file containing training data which is used to sample the space while searching for roots.  
 
 Output is in the normal, AGF binary format and \verb/classify_m/ can be used as normal for classification:
 
@@ -748,7 +765,42 @@ Output is in the normal, AGF binary format and \verb/classify_m/ can be used as 
 $>classify_m foobar2.txt test.vec output
 \end{verbatim}
 
-Running the commands, \verb"multi_borders", \verb"classify_m", and \verb"class_borders" without arguments prints a generous help screen including a description of most of the features explained in this section.  There is also an example contained in the second half of the makefile under the \verb"examples/humidity_data" directory (see, Section \ref{EXAMPLES}, EXAMPLES, above).
+Another way of accelerating LIBSVM models, which only works with ``native''
+LIBSVM models, is with the \verb/svm_accelerate/ command.
+Suppose we've trained a LIBSVM model, \verb/model.svmmod/, as follows:
+
+\begin{verbatim}
+$>svm-train foo.svm model.svmmod
+\end{verbatim}
+
+We can convert it to a multi-borders model as follows:
+
+\begin{verbatim}
+$>svm_accelerate model.svmmod foo model.mod
+\end{verbatim}
+
+where \verb/foo.svm/ is the training data in LIBSVM format and \verb/foo/
+is the training data in libAGF format. Note that the multi-borders model
+in this case is stored in ASCII format all in one file but is still 
+accepted by \verb/classify_m/:
+
+\begin{verbatim}
+$>classify_m model.mod test.vec output
+\end{verbatim}
+
+If the multi-file multi-borders model is in one of the following configurations:
+one-vs-one, one-vs-the-rest, or partitioning of adjacent classes, then you
+can convert it to a single ASCII file using the \verb/mbh2mbm/ command.
+The file format simple. There is a four line header with the 
+following information: type of configuration (``1v1'', ``1vR'', ''ADJ''),
+number of classes,
+list of class labels, and
+``polarities'' of each of the binary classifiers.
+Next, all the binary classifiers are listed as pairs of matrices: 
+first the border vectors, then the gradient vectors. 
+Each matrix has a one line header with the number of vectors plus the size of each vector.
+
+Running the commands, \verb"multi_borders", \verb"classify_m", \verb"class_borders", \verb/svm_accelerate/, or \verb/mbh2mbm/ without arguments prints a generous help screen including a description of most of the features explained in this section.  There is also an example contained in the second half of the makefile under the \verb"examples/humidity_data" directory (see, Section \ref{EXAMPLES}, EXAMPLES, above).
 
 \nocite{Kohonen2000}
 \nocite{Michie_etal1994}

@@ -701,7 +701,7 @@ namespace libagf {
     cls_t csel[ntrain];			//selected classes
     int (*sfunc) (void *, real_a *, real_a *);		//sampling function
     real **xtran;			//transformed training data
-    int ntest=0;
+    int ntest=10;
 
     this->ncls=svm->n_class();
     this->D1=svm->n_feat();
