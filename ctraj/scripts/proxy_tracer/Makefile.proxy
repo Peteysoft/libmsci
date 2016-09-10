@@ -1,0 +1,111 @@
+CC = g++
+
+COPTS = $(OPT_VER)
+
+YEAR=1999
+TFLAG=-T	#use theta levels
+#vertical level:
+THETA=500
+NGRID = 50	#horizontal resolution
+NFINE=6		#number of Runge-Kutta steps between each interpolation
+DT=1		#Eulerian time-step
+
+T0=$(YEAR)/1/1
+TF=$(YEAR)/6/1
+
+VFIELD_PATH=/cygdrive/e/tmpdata/vfield
+DATA_PATH= /cygdrive/e/data/ncep/sixhour
+
+VFIELD_N = $(VFIELD_PATH)/vfield_ncep$(YEAR)_$(THETA)K_N.ds
+VFIELD_S = $(VFIELD_PATH)/vfield_ncep$(YEAR)_$(THETA)K_S.ds
+
+#deprecated:
+#LEAD=240		#lead time for PC proxy
+#LEAD=60		#lead time for PC proxy
+
+SKIP=4		#plot only every fourth frame
+
+MATFILE = mat.dat
+
+TRACER=ctraj_tracer
+TRACER_MULTIPLY=tracer_step2_w_renorm
+#TRACER_MULTIPLY=sparse_vect_prod$(OPT_VER)
+
+PLOT_OPTS=-z 50 -I 0 -F 1 -O $(SKIP)
+
+NTEST = 10
+
+T0_MEAS = $(YEAR)/03/01
+TF_MEAS = $(YEAR)/03/02
+WINDOW = 1
+
+IND1 != grep $(T0_MEAS)$$ dates.txt | cut -f1 -d" "
+
+IND2 != grep $(TF_MEAS)$$ dates.txt | cut -f1 -d" "
+
+all: proxycorr.txt lyap_spec.txt pccorr.txt tcorr.txt
+
+animations: proxy.gif tracer1.gif pc1.gif
+
+# animations:
+proxy.gif: proxy.vec
+	animate_ctraj.sh $(PLOT_OPTS) proxy.vec proxy.gif
+
+tracer1.gif: tracer1.vec
+	animate_ctraj.sh $(PLOT_OPTS) tracer1.vec tracer1.gif
+
+tracer2.gif: tracer2.vec
+	animate_ctraj.sh $(PLOT_OPTS) tracer2.vec tracer2.gif
+
+proxycorr.txt: proxy.vec tracer2.vec
+	echo $(IND1)
+	echo $(IND2)
+	correlate_fields -1 $(IND1) -2 0 tracer2.vec proxy.vec > proxycorr.txt
+	correlate_fields -1 $(IND2) -2 4 tracer2.vec proxy.vec >> proxycorr.txt
+
+proxy.vec: meas_sim.txt dates.txt tracer1.vec
+	proxy_tracer $(HEMI) -i $(T0_MEAS) -f $(TF_MEAS) \
+		tracer1.vec dates.txt meas_sim.txt $(WINDOW) proxy.vec
+
+dates.txt: 
+	$(TRACER) -Q -h $(DT) -i $(T0) -f $(TF) $(VFIELD_N) $(VFIELD_S) \
+			> dates.txt
+
+meas_sim.txt: meas_loc.txt tracer2.vec dates.txt
+	tracer_interpolate tracer2.vec dates.txt meas_loc.txt > meas_sim.txt
+
+meas_loc.txt:
+	random_global -i $(T0_MEAS) -f $(TF_MEAS) $(NTEST) > meas_loc.txt 
+
+lyap_spec.txt: $(MATFILE)
+	./pcs_all.sh -N 500 $(MATFILE) animation_frames/pc > lyap_spec.txt
+
+clean:
+#	rm -f $(VFIELD_N)
+#	rm -f $(VFIELD_S)
+	rm -f $(MATFILE)
+	rm -f tracer1.vec
+	rm -f tracer2.vec
+	rm -f proxy.vec
+	rm -f proxy.gif tracer1.gif tracer2.gif pc1.gif
+	rm -f dates.txt
+	rm -f meas_sim.txt meas_loc.txt
+	rm -f tcorr.txt pccorr.txt
+	rm -f lyap_spec.txt
+
+tracer1.vec: $(MATFILE)
+	zonally_symmetric_tracer | lla2aeb -n $(NGRID) tracer1.vec
+	$(TRACER_MULTIPLY) $(MATFILE) tracer1.vec
+
+tracer2.vec: $(MATFILE)
+	zonally_symmetric_tracer | lla2aeb -n $(NGRID) tracer2.vec
+	$(TRACER_MULTIPLY) $(MATFILE) tracer2.vec
+
+$(MATFILE): $(VFIELD_N) $(VFIELD_S)
+	$(TRACER) -n $(NGRID) -h $(DT) -k $(NFINE) -i $(T0) -f $(TF) \
+		$(VFIELD_S) $(VFIELD_N) $(MATFILE)
+
+$(VFIELD_N) $(VFIELD_S):
+	make -C ../test vfield YEAR=$(YEAR) LEV=$(THETA) \
+		DATAPATH=$(DATA_PATH) VFIELD_PATH=$(VFIELD_PATH)
+

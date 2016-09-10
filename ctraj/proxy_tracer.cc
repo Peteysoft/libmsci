@@ -57,6 +57,7 @@ int main(int argc, char **argv) {
   float window;
   time_class tf;		//reference date
   time_class t1, t2;		//measurement time window
+  int hemi;			//hemisphere
   double l2;			//for truncating matrix array
   int32_t dwid=TFIELD_WIDTH;	//width of date field
 
@@ -81,7 +82,8 @@ int main(int argc, char **argv) {
   optarg[1]=&order;
   optarg[2]=&i0;
   optarg[3]=&N;
-  argc=parse_command_opts(argc, argv, "do0Nif?", "%d%d%d%d%s%s%", optarg, flag, OPT_WHITESPACE);
+  argc=parse_command_opts(argc, argv, "do0Nif?-+", "%d%d%d%d%s%s%-+", optarg, flag, OPT_WHITESPACE);
+  hemi=flag[8]-flag[7];
 
   if (argc<5 || flag[6]) {
     printf("\n");
@@ -218,7 +220,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "and %s\n", tstring);
 
     //select measurements:
-    samp_w=select_meas(t1, t2, samp, nsamp, &nsamp_w);
+    samp_w=select_meas(t1, t2, samp, nsamp, &nsamp_w, hemi);
 
     if (nsamp_w<=order) {
       fprintf(stderr, "proxy_tracer: insufficient measurements (%d) found in window\n");

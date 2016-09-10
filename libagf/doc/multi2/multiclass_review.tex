@@ -121,12 +121,12 @@ where $\vec p$, is a vector of multi-class conditional probabilities, $p_i=P(i|\
 Some rearrangement shows that
 we can solve for the probabilities, $\vec p$, via matrix inversion:
 \begin{eqnarray}
-	Q \vec p & = & \vec r \\
+	Q \vec p & = & \vec r \label{basic_system}\\
 	%q_{ij} & = & a_{ij} + \delta(a_{ij}) r_i \\
 	q_{ij} & = & a_{ij} + (1-|a_{ij}|) r_i 
 	\label{matrix_inverse2}
 \end{eqnarray}
-where $\vec r$ is the vector of decision functions, $\lbrace r_i| i=[1..n_p]\rbrace$ and
+where $\vec r$ is the vector of decision functions, $\lbrace r_i| i=[1..n_p]\rbrace$, $n_p$ is the number of partitions,
 $\vec p$ is the vector of estimated probabilities, $\vec p =\lbrace p_i | i=[1..n_c]\rbrace$, and $\delta$ is the delta function.
 Not that $Q$ reduces to $A$ if $A$ contains no zeroes.
 The case of a coding matrix that contains no zeroes, that is all the partitions divide up all the
@@ -140,12 +140,12 @@ Because the decision functions, $\vec r$, are not estimated perfectly,
 the final probabilities may need to be constrained and the inverse
 problem solved via minimization:
 \begin{equation}
-	\vec p = \arg \min_{\vec v} | Q \vec v - \vec r |
+	\vec p = \arg \min_{\vec v} | Q \vec v - \vec r | \label{minimization_problem}
 \end{equation}
 subject to:
 \begin{eqnarray}
-	\sum_{i=1}^{n_c} p_i & = & 1 \\
-	p_i & \ge & 0
+	\sum_{i=1}^{n_c} p_i & = & 1 \label{first_constraint}\\
+	p_i & \ge & 0 
 \end{eqnarray}
 where straight brackets, $||$, denotes a vector norm which  
 in this case is the Euclidian or $L^2$ norm.
@@ -184,6 +184,54 @@ A =
 \end{bmatrix}
 \end{equation}
 The one-versus-one solution is used in LIBSVM \citep{Chang_Lin2011}.
+
+Another common coding matrix is simply a random one: this is commonly
+known as an ``error-correcting'' code. There are of course some guidelines
+as to how to construct such a coding matrix. More on this in the next 
+section.
+
+Suppose we include the constraint in (\ref{first_constraint}) in the matrix, $Q$:
+\begin{eqnarray}
+	q_{n_p+1,j} & = & 1 |~ j=1..n_c \\
+	\vec r_{n_p+1} & = & 1
+\end{eqnarray}
+and solve the system via least squares:
+\begin{equation}
+	Q^T Q \vec p = Q^T \vec r
+\end{equation}
+This solves the minimization problem in (\ref{minimization_problem}) while
+including one of the constraints, however in many
+cases the constraints in (\ref{constraints}) will not be satisfied so will
+for many applications need to be adjusted, reducing accuracy.
+This is not the case, however, for the one-versus-one configuration: the
+constraints are normally always satisfied [citation].
+
+[start over]
+Suppose we solve the minimization problem in (\ref{minimization_problem})
+via least squares:
+\begin{equation}
+	Q^T Q \vec p = Q^T \vec r
+\end{equation}
+Suppose also that we incorporate the normality constraint in (\ref{first_constraint}) into the problem. There are at least two ways to do this. The most
+obvious is to reduce the dimensionality of the problem:
+\begin{equation}
+	p_k = 1 - \sum_{i|i \ne k} p_i
+\end{equation}
+while a more symmetric method involves adding an extra variable similar to
+a Lagrange multiplier:
+\begin{equation}
+	\begin{bmatrix}
+		Q^T Q & \vec 1 \\
+		\vec 1 & 0
+	\end{bmatrix}
+	\begin{bmatrix}
+		\vec p\\
+		\lambda
+	\end{bmatrix}
+	= [\vec r, 1]
+\end{equation}
+where $\lambda$ is the Lagrange multiplier.
+
 
 \subsection{Voting solution}
 
@@ -224,6 +272,64 @@ $+1$.  The LIBSVM libary, for instance, uses a one-versus-one arrangement with a
 solution if probabilities are not required \citep{Chang_Lin2011}.
 The disadvantage of a voting solution is
 that it does not return estimates of the probabilities.
+
+To maximize the accuracy of an error-correcting coding matrices, the distance
+between each of the rows, $| \vec a_i - \vec a_j |$, should be as large as
+possible [insert citation], where $\vec a_i$ is the $i$th row of the matrix
+$A$ and $i \ne j$, the $i$th coding vector. 
+If we take the upright brackets once again to be
+Euclidian metric and assume either that $A$ is ``strict'' then this reduces to
+minimizing the absolutely value of the dot product, $|\vec a_i \cdot \vec a_j|$.
+Why the absolute value? Because the negative of a coding vector is its 
+equivalent.
+
+In other words, if the number of coding vectors is equal to the number of classes, the optimal coding vector will be orthogonal, $A^T A = I$, where $I$ is
+the identity matrix. Thus the voting solution and the (unconstrained) matrix 
+inverse will be equivalent. Orthogonal, ``strict'' coding matrices will exist
+if the number of classes is divisible by 4 [need proof, really...], e.g.:
+\begin{equation}
+A = 
+\begin{bmatrix}
+1 & -1 & -1 & -1 \\
+-1 & 1 & 1 & 1 \\
+-1 & -1 & -1 & 1 \\
+-1 & -1 & 1 & -1
+\end{bmatrix}
+\end{equation}
+
+\section{Decision trees}
+
+The most obvious method of dividing up a multi-class problem into binary
+classifiers is hierarchically using a {\it decision tree} [insert citation].
+In this method, the classes are first divided into two partitions, then
+those partitions are each divided into two partitions and so on until only
+one class remains. The classification scheme is hierarchical, with all the
+losing classes being excluded from the consideration at each step.
+Only the conditional probability of the winning class is calculated as the
+product of all the returned conditional probabilities of the binary
+classifiers.
+
+Decision trees have the advantage that they are fast since on average they
+require only $\log_2 n_c$ classifications and there is no need to solve a 
+constrained matrix inverse. On the other hand, because there is less
+information being taken into consideration, they also tend to be less
+accurate [citation].
+
+Interestingly, the same partitions created for a decision tree can also
+be used in a non-hierarchical scheme
+to solve for all of the conditional probabilities. Consider the following
+coding matrix for instance:
+\begin{equation}
+A = 
+\begin{bmatrix}
+1 & 1 & -1 & -1 \\
+-1 & 1 & 0 & 0 \\
+0 & 0 & -1 & 1
+\end{bmatrix}
+\end{equation}
+While there are only three coding vectors for four classes, 
+once we add in the constraint in (\ref{first_constraint}) the system becomes 
+fully determined.
 
 \bibliography{../agf_bib.bib}
 

@@ -242,9 +242,9 @@ Here is a list of all the options, although not all commands support all options
 \begin{tabular}{ll}
 Option & Function \\
 \hline
--- & Command for multi-borders classification.\\
--+ & Extra options to pass to multi-borders command.\\
--\^ & Command to partition class labels.\\
+-- & External command to train a binary classifier.\\
+-+ & Extra options to pass to binary training command.\\
+-\^ & External command to convert data formats for above.\\
 -0 & Read from stdin.\\
 -1 & Write to stdout.\\
 -a & Name of file containing normalization data.\\
@@ -289,7 +289,7 @@ Option & Function \\
  & normalizes both the training and test data.\\
 -N & Maximum number of iterations in supernewton.\\
 -o & Name of log file.\\
--O & Command to make a single classification prediction.\\
+-O & External command for binary classification prediction.\\
 -p & Threshold density in clustering algorithm.\\
 -P & Calculate correlation/covariance matrix.\\
 -q & Number of trials/divisions.\\
@@ -637,7 +637,7 @@ The results will be stored in \verb"result.cls" and \verb"result.con".
 
   In this example, there are six classes.  They are first partioned into a group of two and a group of four.  The group of four is partitioned into a group of three, the first of which is partitioned into two classes and the second and third of which are single classes.  
 
-A good way to understand the \verb"multi-borders" paradigm is to look at the example cases in the \verb"examples/humidity" data directory.  There is also a draft paper contained in the \verb"docs/" sub-directory.
+A good way to understand the ``multi-borders'' paradigm is to look at the example cases in the \verb"examples/humidity" data directory.  There is also a draft paper contained in the \verb"docs/" sub-directory.
 
 
 %\section{USING MULTI-BORDERS WITH EXTERNAL BINARY CLASSIFIERS}
@@ -657,7 +657,7 @@ The multi-borders routines can now interface with external binary classification
 } 
 \end{verbatim}
 
-We pass the LIBSVM command, \verb"svm-train", to \verb"multi-borders", as follows:
+We pass the LIBSVM command, \verb"svm-train", to \verb"multi_borders", as follows:
 
 \begin{verbatim}
 $>multi_borders -M -- "svm-train -b 1" -+ "-h 0 -c 25" \
@@ -788,10 +788,10 @@ accepted by \verb/classify_m/:
 $>classify_m model.mod test.vec output
 \end{verbatim}
 
-If the multi-file multi-borders model is in one of the following configurations:
+If a multi-file, multi-borders model is in one of the following configurations:
 one-vs-one, one-vs-the-rest, or partitioning of adjacent classes, then you
 can convert it to a single ASCII file using the \verb/mbh2mbm/ command.
-The file format simple. There is a four line header with the 
+The file format fairly simple. There is a four line header with the 
 following information: type of configuration (``1v1'', ``1vR'', ''ADJ''),
 number of classes,
 list of class labels, and
