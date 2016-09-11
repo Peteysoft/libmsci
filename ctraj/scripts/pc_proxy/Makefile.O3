@@ -9,44 +9,60 @@ TFa= $(YEAR)/12/31
 #TFa= $(YEAR)/4/31
 
 #interpolate POAM data between these two dates:
-T0b= $(YEAR)/11/1
-TFb= $(YEAR)/12/30
+T0b= $(YEAR)/9/12
+TFb= $(YEAR)/11/17
+
+#T0b= $(YEAR)/11/1
+#TFb= $(YEAR)/12/30
 
 #T0b= $(YEAR)/2/1
 #TFb= $(YEAR)/3/25
 
-LEAD = 60
-LEAD2=30
+#specifications for tracer simulation:
+#vertical level:
+THETA = 500
 
+NGRID = 100		#grid points per side
+TSTEP = 1		#"coarse" (Eulerian) time step
+NFINE = 6		#"fine" (Lagrangian) Runge-Kutta time step
+
+#specifications for interpolation:
+PC=1			#use PC proxy?
+
+WINDOW = 1		#size of measurement window
+
+HEMI1 =
+HEMI2 =
+#KFLAG = -K
+
+LEAD2=30
 NEV = 5
 NCV = 25
 
-WINDOW = 1
+ifdef PC
+  PROXY_COMMAND=pc_proxy_predict
+  LEAD = 60
+  PROXY_OPTIONS=-v $(NEV) -A $(NCV) -l $(LEAD2) $(HEMI1)
+  BASE=l$(LEAD)_$(HEMI1)$(THETA)K
+  PROXYFILE=$(CVMAT)
+else
+  PROXY_COMMAND=proxy_tracer
+  PROXY_OPTIONS=$(HEMI1)
+  BASE=t$(HEMI1)$(THETA)K
+  PROXYFILE=$(PROXY_FIELD)
+endif
 
-NGRID = 100
-
-TSTEP = 1
-NFINE = 6
-
-THETA = 500
-
-#KFLAG = -K
-
-HEMI1 = 
-HEMI2 = 
-
+#file names:
 VFIELD_PATH=/cygdrive/e/tmpdata/vfield
 VFIELD_N=$(VFIELD_PATH)/vfield_ncep$(YEAR)_$(THETA)K_N.ds
 VFIELD_S=$(VFIELD_PATH)/vfield_ncep$(YEAR)_$(THETA)K_S.ds
 
 DATA_PATH = /cygdrive/e/data/ncep/sixhour/
 
-BASE=l$(LEAD)_$(THETA)K
-
-
 #cross-validated proxy tracers:
 PROXY1=proxy1_$(BASE).vec
 PROXY2=proxy2_$(BASE).vec
+PROXY_O3 = proxyO3_$(BASE).vec
 
 #corresponding dates:
 PDATES1=pdates1_$(BASE).txt
@@ -63,12 +79,8 @@ CVAL2=v2_$(BASE).txt
 #passive proxy tracer field:
 PROXY_FIELD = proxy_field.vec
 
-#interpolates:
-CLASSIC_PROXY = classic_proxy.vec
-CLASSIC_DATES = classic_dates.txt
-
-all: proxyO3.vec proxy_datesO3.txt o3soundings$(THETA)K.txt
-	tracer_interpolate -d 24 -P proxyO3.vec proxy_datesO3.txt \
+all: $(PROXY_O3) proxy_datesO3.txt o3soundings$(THETA)K.txt
+	tracer_interpolate -d 24 -P $(HEMI2) -i $(T0b) -f $(TFb) $(PROXY_O3) proxy_datesO3.txt \
 		o3soundings$(THETA)K.txt
 
 cross_validate: $(PROXY1) $(PROXY2) $(PDATES1) $(PDATES2) file1.txt file2.txt
@@ -84,15 +96,13 @@ clean:
 	rm -f proxy1.vec proxy2.vec
 	rm -f pdates1.txt pdates2.txt
 
-$(PROXY2) $(PDATES2): file2.txt $(CVMAT) datesO3.txt
-	pc_proxy_predict $(HEMI1) -d 20 -i $(T0b) -f $(TFb) \
-		-v $(NEV) -A $(NCV) -l $(LEAD2) $(CVMAT) datesO3.txt \
-		file2.txt $(LEAD) $(WINDOW) $(PROXY2) > $(PDATES2) 
+$(PROXY2) $(PDATES2): file2.txt $(PROXYFILE) datesO3.txt
+	$(PROXY_COMMAND) $(PROXY_OPTIONS) -d 20 -i $(T0b) -f $(TFb) \
+		$(PROXYFILE) datesO3.txt file2.txt $(LEAD) $(WINDOW) $(PROXY2) > $(PDATES2) 
 
-$(PROXY1) $(PDATES1): file1.txt $(CVMAT) datesO3.txt
-	pc_proxy_predict $(HEMI1) -d 20 -i $(T0b) -f $(TFb) \
-		-v $(NEV) -A $(NCV) -l $(LEAD2) $(CVMAT) datesO3.txt \
-		file1.txt $(LEAD) $(WINDOW) $(PROXY1) > $(PDATES1)
+$(PROXY1) $(PDATES1): file1.txt $(PROXYFILE) datesO3.txt
+	$(PROXY_COMMAND) $(PROXY_OPTIONS) -d 20 -i $(T0b) -f $(TFb) \
+		$(PROXYFILE) datesO3.txt file1.txt $(LEAD) $(WINDOW) $(PROXY1) > $(PDATES1)
 
 file1.txt file2.txt: POAMIII_$(THETA)K.txt
 	split_file POAMIII_$(THETA)K.txt file1.txt file2.txt
@@ -100,9 +110,9 @@ file1.txt file2.txt: POAMIII_$(THETA)K.txt
 o3soundings$(THETA)K.txt: o3soundings$(THETA)K.txt.gz
 	gunzip -c o3soundings$(THETA)K.txt.gz > o3soundings$(THETA)K.txt
 
-proxyO3.vec proxy_datesO3.txt: $(CVMAT) datesO3.txt POAMIII_$(THETA)K.txt
-	pc_proxy_predict $(KFLAG) -d 20 -i $(T0b) -f $(TFb) -l $(LEAD2) $(CVMAT) datesO3.txt \
-		POAMIII_$(THETA)K.txt $(LEAD) $(WINDOW) proxyO3.vec > proxy_datesO3.txt
+$(PROXY_O3) proxy_datesO3.txt: $(PROXYFILE) datesO3.txt POAMIII_$(THETA)K.txt
+	$(PROXY_COMMAND) $(KFLAG) -d 20 -i $(T0b) -f $(TFb) $(PROXY_OPTIONS) $(PROXYFILE) datesO3.txt \
+		POAMIII_$(THETA)K.txt $(LEAD) $(WINDOW) $(PROXY_O3) > proxy_datesO3.txt
 
 POAMIII_$(THETA)K.txt: POAMIII_$(THETA)K.txt.gz
 	gunzip -c POAMIII_$(THETA)K.txt.gz > POAMIII_$(THETA)K.txt
@@ -117,18 +127,7 @@ datesO3.txt: $(VFIELD_S) $(VFIELD_N)
 
 #classic proxy tracer:
 
-#interpolate the sonde data to the proxy interpolates:
-classic_results.txt: $(CLASSIC_PROXY) $(CLASSIC_DATES) o3_soundings$(THETA)K.txt
-	tracer_interpolate -d 24 -P $(CLASSIC_PROXY) $(CLASSIC_DATES) o3_soundings$(THETA)K.txt \
-		> classic_results.txt
-
-
-#interpolate the POAM ozone data:
-$(CLASSIC_PROXY) $(CLASSIC_DATES): $(PROXY_FIELD) datesO3.txt POAMIII_$(THETA)K.txt
-	proxy_tracer $(KFLAG) -d 20 -i $(T0b) -f $(TFb) $(PROXY_FIELD) datesO3.txt \
-		POAMIII_$(THETA)K.txt $(WINDOW) (CLASSIC_PROXY) > $(CLASSIC_DATES)
-
-//generate the passive tracer fields that serve as the proxy:
+#generate the passive tracer fields that serve as the proxy:
 $(PROXY_FIELD): $(CVMAT)
 	zonally_symmetric_tracer | lla2aeb -n $(NGRID) $(PROXY_FIELD)
 	tracer_step2_w_renorm $(CVMAT) $(PROXY_FIELD)

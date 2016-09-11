@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
   int32_t nvar1, nvar2; 
   int32_t index1=-1, index2=-1;
   int32_t n1, n2;
-  int32_t ind0, N;
+  int32_t ind0=0, N;
   size_t fsize;
   char c;
   size_t recbytes;
