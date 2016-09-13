@@ -1,0 +1,315 @@
+\documentclass{article}
+
+\usepackage{natbib}
+
+\bibliographystyle{apa}
+
+\begin{document}
+
+\newcommand{\vect}[1]{\ensuremath{\vec #1}}
+
+\section{Theory}
+
+The advection-diffusion equation is given as follows:
+\begin{equation}
+\frac{\partial q(\vect x, ~ t)}{\partial t} = \left [ -\vect v(\vect x, ~t) \cdot \nabla + \nabla \cdot D \nabla \right ] q(\vect x, ~ t)
+\label{advection_diffusion}
+\end{equation}
+where $q$ is the tracer concentration, $\vect x$ is spatial position, 
+$t$ is time, $\vect v$ is the fluid velocity, and $D$ is the diffusivity tensor.
+In an Eulerian tracer simulation, the approximate value of $q$ is only known
+is only known at discrete locations thus we can represent it as a vector,
+$\vect q=\lbrace q_i \rbrace$.
+This form of it is only valid if $q$ is a volume-mixing-ratio (vmr) or
+if the fluid is incompressible ($\nabla \cdot \vec v = 0$).
+
+The linear operator contained in the square brackets in Equation 
+(\ref{advection_diffusion}) is approximated as a matrix, $A$, which is 
+multiplied with $\vect q$:
+\begin{equation}
+\frac{\mathrm d \vect q}{\mathrm d t} = A(t) \vect q
+\label{linear_ODE}
+\end{equation}
+For example, consider a second-order finite difference scheme in one dimension:
+\begin{eqnarray}
+\frac{\partial q_i}{\partial t} & = & \frac{v(q_{i+1} - q_{i-1})}{2 \Delta x} +
+	\frac{d (q_{i-1} + q_{i+1} - 2 q_i)}{\Delta x^2} \\
+& = & \left (- \frac{v}{2 \Delta x} + \frac{d}{\Delta x^2} \right ) q_{i-1} -
+	\frac{2 d}{\Delta x^2} q_i + 
+	\left (\frac{v}{2 \Delta x} + \frac{d}{\Delta x^2} \right ) q_{i+1} \label{finite_difference_diffusion}
+\end{eqnarray}
+where $d$ is a scalar diffusion coefficient and $\Delta x$ is the grid spacing.
+Expressed as elements of a matrix:
+\begin{eqnarray}
+a_{i,i-1} & = & \left (- \frac{v}{2 \Delta x} + \frac{d}{\Delta x^2} \right ) \\
+	a_{i,i} & = & -\frac{2 d}{\Delta x^2} \\
+a_{i,i+1} & = & \left (\frac{v}{2 \Delta x} + \frac{d}{\Delta x^2} \right )
+\end{eqnarray}
+To produce a general solution, we substitute a matrix, $R$, for $\vect q$
+in (\ref{linear_ODE}):
+\begin{equation}
+	\frac{\mathrm d R(t, \Delta t}{\mathrm d \Delta t} = A(t) R(t, \Delta t)
+\end{equation}
+Unlike in most analyses, we have two parameters for the time:
+the integration start time, $t$, and the integration time, $\Delta t$.
+We do this so that $R$ may be decomposed in terms of itself:
+\begin{equation}
+R(t_0,~t_n-t_0) = R(t_{n-1},\,\Delta t_{n-1}) \cdot R(t_{n-2},\,\Delta t_{n-2}) \cdot \, ...~~ 
+	\cdot R(t_2,\, \Delta t_2) \cdot R(t_1,\,\Delta t_1) \cdot R(t_0,\,\Delta t_0)
+\label{matrix_soln_decomposition}
+\end{equation}
+where,
+\begin{equation}
+t_n=t_0+\sum_{i=0}^{n-1} \Delta t_i
+\end{equation}
+It follows that $R(t, 0)=I$.
+Once we've found $R$, 
+we can use it to calculate $\vect q$ given $\vect q$ at any other time:
+\begin{equation}
+	\vect q(t) = R(t_0, t-t_0) \vect q(t_0)
+\end{equation}
+$\vect q(t_0)=\vect q_0$ is the initial tracer configuration.
+To make this solution fully analytical, we solve $R$ for an infinitessimal
+integration time using linear algebra:
+\begin{equation}
+	\lim_{\Delta t \rightarrow 0} R(t, \Delta t) = \exp \left [ \Delta t A(t) \right ]
+\end{equation}
+where $\exp$ is the matrix generalization of the exponential function.
+
+\subsection{Principal component proxy}
+
+Suppose we decompose a specific $R$ using singular value decomposition:
+\begin{equation}
+	R(t_0, ~ t_n - t_0) = U S V^T
+\end{equation}
+where both $U$ and $V$ are orthogonal matrics:
+\begin{equation}
+	U^T U = V^T V = I
+\end{equation}
+$I$ is the identity matrix and $S$ is diagonal matrix of {\it singular values}.
+$U$ is a matrix of {\it left singular vectors} and 
+$V$ is a matrix of {\it right singular vectors}.
+This method of matrix decomposition is also known as {\it principal component}
+analysis or PCA, hence the name of the interpolation technique.
+
+To correlate a series of sparse measurements, $\lbrace m_i \rbrace$,
+with the top $k$ principal components, we first find interpolates at each
+measurement location in the left singular vectors and then find a series
+of coefficients, $\vect c$, that minimize the least square error of the
+interpolates with the measurements.
+In any real problem, the measurements are unlikely to occur at the same time,
+so rather than using the left singular vectors, we use $R$ to advance the
+right singular values to the same time as the measurement. 
+Thus we have the following minimization problem:
+\begin{equation}
+	\min_{\vect c} \sum_i \left \lbrace \sum_{j=1}^k c_j \vect w_i R(t_0, ~ t_n-t^{(i)}) \vect v_j - m_i \right \rbrace^2
+\end{equation}
+where $\vect v_j$ is the $j$th right singular vector, $t^{(i)}$ is the time
+stamp of the $i$th measurement, $m_i$, and $\vect w_i$ is a vector of 
+interpolation coefficients.
+
+Once the coefficients have been fitted we can reconstruct the tracer:
+\begin{equation}
+	\vec q(t_n) \approx \sum_{i=1}^k c_i \vec u
+\end{equation}
+
+\section{Lyapunov exponents}
+
+Suppose we have a system of ordinary differential equations (ODEs):
+\begin{equation}
+	\frac{\mathrm d \vect r}{\mathrm d t} = \vect f(\mathrm r, ~ t)
+	\label{ODE}
+\end{equation}
+where $\vect r$ is a vector of dependent variables.
+We linearize this about $\vect r$ using the {\it tangent vector},
+$\nabla_{\vect r} f$:
+\begin{eqnarray}
+\frac{\mathrm d}{\mathrm d t} (\vect r + \delta \vect r) & \approx & \vect f + 
+	\nabla_{\vect r} \vect f \cdot \delta \vect x \\
+	\frac{\mathrm d}{\mathrm d t} \delta \vect r & \approx & \nabla_{\vect r} \vect f \cdot \vect r
+\end{eqnarray}
+where $\delta \vect r$ is a vector of {\it infinitessimal error vectors}.
+Define the {\it tangent model}, $H$, such that:
+\begin{equation} 
+	\frac{\mathrm d}{\mathrm d t} H = \nabla_{\vect r} \vect f \cdot H \\
+\end{equation}
+
+An Eulerian tracer simulation is linear: the tangent vector is simply
+the dynamics, that is,
+if we take Equation (\ref{linear_ODE}) as our system of ODEs in
+(\ref{ODE}), then setting $\vect r=\vect q$, 
+we have $\vect f(\vec q, ~t)=A(t) \vect q$,
+while the tangent vector is given as:
+\begin{equation}
+	\nabla_{\vect q} \vect f = A
+\end{equation}
+Thus the solution matrix, $R$, for our Eulerian tracer simulation, above,
+is equivalent to the tangent model, $H$.
+
+The Lyapunov exponents are defined as the logarithms of the time averages
+of the singular values in the limit as time goes to infinity:
+\begin{equation}
+\lambda_i = \lim_{t \rightarrow \infty} \frac{1}{t} \log s_i;
+~~~~~~~\lambda_{i-1} \le \lambda_i
+\end{equation}
+where $s_i$ is the $i$th singular value \citep{Ott1993}.
+For most systems:
+\begin{equation}
+|\delta \vect r| \approx |\delta \vect r(0) | \exp(\lambda_i)
+\label{lambda1}
+\end{equation}
+That is, as $H$ is integrated forward, the largest singular value and
+the largest singular vector will increasingly begin to dominate
+\citep{Ott1993}.
+
+\subsection{Special properties}
+
+A property of tracer systems is that the amount of substance is 
+conserved:
+\begin{equation}
+\sum_i q_i = const.
+\end{equation}
+The equation is only approximate if the following conditions don't hold:
+the fluid is incompressible or $q$ measures
+density rather than vmr and the simulation uses an equal area grid. 
+We can show that:
+\begin{eqnarray}
+\sum_i r_{ij} & = & 1 
+\label{columns_sum_to_one}\\
+\sum_i a_{ij} & = & 0
+\label{columns_sum_to_zero}\\
+\end{eqnarray}
+See appendix \ref{mass_conservation_derivation} for the derivation.
+
+All Eulerian tracer simulations are by necessity diffusive. 
+Given the constraints above in (\ref{columns_sum_to_one}) and
+(\ref{columns_sum_to_zero}) also, 
+we can also show that all the singular values are less-than-or-equal-to one
+therefore the largest Lyapunov exponent will be zero.
+See Section \ref{Lyapunov_exponents} for a numerical demonstration and
+appendix \ref{Lyapunov_exponents_less_than_zero} for the derivation.
+
+\section{Numerical experiments}
+
+\subsection{Calculating Lyapunov exponents}
+
+\label{Lyapunov_exponents}
+
+Thus, even though the tracer fields themselves, 
+can develop into complex fractals
+given sufficient resolution and little or no diffusion,
+\citep{Mills2009} the system is only at the cusp of chaos since chaos is
+typically defined as having one or more positive Lyapunov exponents.
+
+\appendix
+
+\section{Mass conservation}
+
+\label{mass_conservation_derivation}
+
+Suppose that:
+\begin{equation}
+	\sum_i q_i = const.
+	\label{constant_mass}
+\end{equation}
+Then:
+\begin{eqnarray}
+	\sum_i \sum_j r_{ij} q_j & = & \sum_j q_j \\
+	\sum_j q_j \left ( \sum_i r_{ij} - 1 \right ) & = & 0
+\end{eqnarray}
+Therefore:
+\begin{equation}
+	\sum_i r_{ij} = 1
+\end{equation}
+If (\ref{constant_mass}) is true, then:
+\begin{equation}
+	\frac{\mathrm d}{\mathrm d t}\sum_i q_i = 0
+\end{equation}
+is also be true. Continuing:
+\begin{eqnarray}
+	\sum_i \frac{\mathrm d q_i}{\mathrm d t} & = & 0 \\
+\sum_i \sum_j a_{ij} q_j & = & 0 \\
+\sum_j q_j \sum_i a_{ij} & = & 0
+\end{eqnarray}
+which shows the second part of (\ref{columns_sum_to_one}) and 
+(\ref{columns_sum_to_zero}):
+\begin{equation}
+	\sum_i a_{ij} = 0
+\end{equation}
+
+\section{Diffusion and the Lyapunov spectrum}
+
+\label{Lyapunov_exponents_less_than_zero}
+
+As pointed out already, a discrete tracer mapping will always require some 
+amount of diffusion.  This means that the tracer configuration will 
+tend towards a uniform distribution over time, 
+that is, it will ``flatten out.''  We can
+show that, given the constraint shown above, 
+a tracer field with all the same values has the smallest magnitude.  
+Suppose there are only two elements in the 
+tracer vector, $\vect q=\lbrace q,~q \rbrace$.  The magnitude of the vector is:
+\begin{equation}
+|\vect q|=\sqrt{q^2+q^2}=\sqrt{2} q
+\end{equation}
+Now we introduce a separation between the elements, $2\Delta q$, that 
+nonetheless keeps the sum of the elements constant:
+\begin{eqnarray}
+|q+\Delta q,~q-\Delta q| & = & \sqrt{(q+\Delta q)^2+(q-\Delta q)^2} \\
+& = & \sqrt{2}\sqrt{q^2+(\Delta q)^2} \ge \sqrt{2} q
+\end{eqnarray}
+This will generalize to higher-dimensional vectors.  In general, we can
+say that:
+\begin{equation}
+\vect q \cdot R^T \cdot R \cdot \vect q \le \vect q \cdot \vect q
+\label{tracer_map_inequality}
+\end{equation}
+Implying that for the eigenvalue problem,
+\begin{eqnarray}
+R^T \cdot R \cdot \vect v & = & s^2 \vect v \nonumber\\
+s^2 & \le & 1 \label{SV_inequality}
+\end{eqnarray}
+This further shows that the Lyapunov exponents are all
+either zero or negative with the largest equal to 0.  
+Note however that this does not constitute a proof; the actual proof is more 
+involved.
+
+To prove (\ref{SV_inequality}) from (\ref{tracer_map_inequality}), we first
+expand $\vect q$ in terms of the right singular values, 
+$\lbrace \vect v_i \rbrace$:
+\begin{equation}
+	\vect q = \sum_i c_i \vect v_i
+\end{equation}
+where $\lbrace c_i \rbrace$ are a set of coefficients.
+Substituting this into the left-hand-side of (\ref{tracer_map_inequality}):
+\begin{eqnarray}
+	\vect q \cdot R^T \cdot R \cdot \vect q & = & \sum_i c_i \vect v_i \sum c_i s_i^2 \vect v_i \\
+   & = & \sum_i \sum_j c_i c_j s_i^2 \vect v_i \cdot \vect v_j \\
+   & = & \sum_i \sum_j c_i c_j s_i^2 \delta_{ij} \\
+	  & = & \sum_i c_i^2 s_i^2
+\end{eqnarray}
+where $\delta$ is the Kronecker delta.
+Similarly, we can show that:
+\begin{equation}
+	\vect q \cdot \vect q = \sum_i c_i^2
+\end{equation}
+If we assume that $s_i \le 1$ for every $i$, then:
+\begin{equation}
+	\sum_i c_i^2 s_i^2 \le \sum_i c_i^2 
+	\label{diffusive_inequality_in_terms_of_SVs}
+\end{equation}
+since each term on the left side is less-than-or-equal-to the
+corresponding term on the right side. 
+Note that in order for the inequality in 
+(\ref{diffusive_inequality_in_terms_of_SVs}) to be broken, at least one
+singular value must be greater-than one.
+Therefore (\ref{tracer_map_inequality}) is true for every $\vect q$
+if-and-only-if (\ref{SV_inequality}) is true for every $s$.
+In the language of set theory and first-order logic:
+\begin{equation}
+	\forall \vect q \in \Re^n ~ (\vect q \cdot R^T \cdot R \cdot \vect q \le \vect q \cdot \vect q) \iff \forall s \in \Re | ~R^T \cdot R \cdot \vect v = s^2 \vect v ~ (s \le 1)
+\end{equation}
+
+\bibliography{proxy2.bib}
+
+\end{document}
