@@ -388,13 +388,13 @@ is used in place of the vector, $\vec r$:
 One of the most important properties of the solution is that it
 is decomposable as follows:
 \begin{equation}
-R(t_0,~t_n-t_0) = R(t_{n-1},\,\Delta t_{n-1}) \cdot R(t_{n-2},\,\Delta t_{n-2}) \cdot \, ...~~ 
-	\cdot R(t_2,\, \Delta t_2) \cdot R(t_1,\,\Delta t_1) \cdot R(t_0,\,\Delta t_0)
+	R(t_0,~t_n-t_0) = R(t_n,\,\Delta t_n) \cdot R(t_{n-1},\,\Delta t_{n-1}) \cdot R(t_{n-2},\,\Delta t_{n-2}) \cdot \, ...~~ 
+	\cdot R(t_0,\,\Delta t_0)
 \label{matrix_soln_decomposition}
 \end{equation}
 where,
 \begin{equation}
-t_n=t_0+\sum_{i=0}^{n-1} \Delta t_i
+t_n=t_0+\sum_{i=0}^n \Delta t_i
 \end{equation}
 and we have used the convention, begun
 in Equation (\ref{traj_def}) of making $R$ a function both of the
@@ -440,8 +440,8 @@ could be transposed.
 In the time-dependent case each element of the solution is in reverse order,
 not just the initial conditions:
 \begin{equation}
-\vec r(t_n) = \vec r_0 \cdot R^*(t_0,\Delta t_0) \cdot R^*(t_1, \Delta t_1) \cdot ~ ... 
-~ \cdot R^*(t_{n-2},\Delta t_{n-2}) \cdot R^*(t_{n-1},\Delta t_{n-1})
+	\vec r(t_n) = \vec r_0 \cdot R^*(t_0,\Delta t_0) \cdot R^*(t_1, \Delta t_1) \cdot \cdot R^*(t_2, \Delta t_2) ~ ... 
+~ \cdot R^*(t_n},\Delta t_n})
 \end{equation}
 where $R^*$ is a solution to the equation:
 \begin{eqnarray}
@@ -466,8 +466,8 @@ it is easy to show that the stationary solution is simply inverted:
 \end{eqnarray}
 while for the time-dependent case, we have:
 \begin{equation}
-\vec r \approx R^{-1}(t_{n-1},\Delta t_{n-1}) \cdot R^{-1}(t_{n-2}, \Delta t_{n-2}) \cdot ~ ... 
-~ \cdot R^{-1}(t_1,\Delta t_1) \cdot R^{-1}(t_0,\Delta t_0) \cdot \vec r_0
+	\vec r \approx R^{-1}(t_n,\Delta t_n) \cdot R^{-1}(t_{n-1},\Delta t_{n-1}) \cdot R^{-1}(t_{n-2}, \Delta t_{n-2}) \cdot ~ ... 
+~ \cdot R^{-1}(t_0,\Delta t_0) \cdot \vec r_0
 \end{equation}
 assuming that each $\Delta t_i$ is small enough that $R$ approximates the 
 stationary case.
@@ -480,7 +480,7 @@ which is given by:
 \begin{eqnarray}
 \vec r(t_n) & \approx & \vec r_0 \cdot R^{-1}(t_0,\Delta t_0) \cdot R^{-1}(t_1, \Delta t_1) \cdot ~ ... 
 ~ \nonumber \\
-& & ~~~~~~~...~\cdot R^{-1}(t_{n-2},\Delta t_{n-2}) \cdot R^{-1}(t_{n-1},\Delta t_{n-1}) \\
+& & ~~~~~~~...~\cdot R^{-1}(t_{n-1},\Delta t_{n-1}) \cdot R^{-1}(t_n,\Delta t_n) \\
 & = & \vec r_0 \cdot R^{-1}(t_0, t_n-t_0)
 \end{eqnarray}
 Where $R$ is the solution to Equation (\ref{linear_ODE_system_matrix_soln}).

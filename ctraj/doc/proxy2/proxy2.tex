@@ -1,6 +1,7 @@
 \documentclass{article}
 
 \usepackage{natbib}
+\usepackage[dvips]{graphicx}
 
 \bibliographystyle{apa}
 
@@ -17,11 +18,12 @@ The advection-diffusion equation is given as follows:
 \end{equation}
 where $q$ is the tracer concentration, $\vect x$ is spatial position, 
 $t$ is time, $\vect v$ is the fluid velocity, and $D$ is the diffusivity tensor.
+It is assumed that there is no term, $q \nabla \vect \cdot v$,
+either because $q$ is a volume-mixing ratio (vmr) or 
+the fluid is incompressible ($\nabla \cdot \vec v = 0$).
 In an Eulerian tracer simulation, the approximate value of $q$ is only known
 is only known at discrete locations thus we can represent it as a vector,
 $\vect q=\lbrace q_i \rbrace$.
-This form of it is only valid if $q$ is a volume-mixing-ratio (vmr) or
-if the fluid is incompressible ($\nabla \cdot \vec v = 0$).
 
 The linear operator contained in the square brackets in Equation 
 (\ref{advection_diffusion}) is approximated as a matrix, $A$, which is 
@@ -45,8 +47,8 @@ a_{i,i-1} & = & \left (- \frac{v}{2 \Delta x} + \frac{d}{\Delta x^2} \right ) \\
 	a_{i,i} & = & -\frac{2 d}{\Delta x^2} \\
 a_{i,i+1} & = & \left (\frac{v}{2 \Delta x} + \frac{d}{\Delta x^2} \right )
 \end{eqnarray}
-To produce a general solution, we substitute a matrix, $R$, for $\vect q$
-in (\ref{linear_ODE}):
+To produce a general solution to (\ref{linear_ODE}, 
+we first substitute a matrix, $R$, for $\vect q$:
 \begin{equation}
 	\frac{\mathrm d R(t, \Delta t}{\mathrm d \Delta t} = A(t) R(t, \Delta t)
 \end{equation}
@@ -54,13 +56,13 @@ Unlike in most analyses, we have two parameters for the time:
 the integration start time, $t$, and the integration time, $\Delta t$.
 We do this so that $R$ may be decomposed in terms of itself:
 \begin{equation}
-R(t_0,~t_n-t_0) = R(t_{n-1},\,\Delta t_{n-1}) \cdot R(t_{n-2},\,\Delta t_{n-2}) \cdot \, ...~~ 
-	\cdot R(t_2,\, \Delta t_2) \cdot R(t_1,\,\Delta t_1) \cdot R(t_0,\,\Delta t_0)
+	R(t_0,~t_n-t_0) = R(t_n, \, \Delta t_n) R(t_{n-1},\,\Delta t_{n-1}) R(t_{n-2},\,\Delta t_{n-2}) \, ...~~ 
+	R(t_0,\,\Delta t_0)
 \label{matrix_soln_decomposition}
 \end{equation}
 where,
 \begin{equation}
-t_n=t_0+\sum_{i=0}^{n-1} \Delta t_i
+t_n=t_0+\sum_{i=0}^{n} \Delta t_i
 \end{equation}
 It follows that $R(t, 0)=I$.
 Once we've found $R$, 
@@ -68,7 +70,7 @@ we can use it to calculate $\vect q$ given $\vect q$ at any other time:
 \begin{equation}
 	\vect q(t) = R(t_0, t-t_0) \vect q(t_0)
 \end{equation}
-$\vect q(t_0)=\vect q_0$ is the initial tracer configuration.
+where $\vect q(t_0)=\vect q_0$ is the initial tracer configuration.
 To make this solution fully analytical, we solve $R$ for an infinitessimal
 integration time using linear algebra:
 \begin{equation}
@@ -113,11 +115,35 @@ Once the coefficients have been fitted we can reconstruct the tracer:
 	\vec q(t_n) \approx \sum_{i=1}^k c_i \vec u
 \end{equation}
 
-\section{Lyapunov exponents}
+\subsection{Traditional tracer proxy}
+
+We can contrast the above description of principal component proxy tracer
+analysis with the more traditional proxy tracer technnique.
+In the older method, the measurements are simply correlated with another
+tracer (the proxy): either a passive tracer that has been advected
+continuously with periodic re-normalization \citep{Allen_Nakamura2003} 
+or some other quantity that is conserved by the flow 
+such as potential vorticity \citep{Randall_etal2002,Hoskins_etal1985}.
+The regression is typically done to second-order, meanwhile the proxy value
+is often converted to an area-based ``Lagrangian'' coordinate such as
+equivalent latitude \citep{Butchart_Remsberg1986}.
+
+If $\Phi$ is the proxy value, then we have the following minimization
+problem:
+\begin{equation}
+	\min_{\vec c} \sum_i \left [ \sum_{j=0}^N c_j (\vec w_i \cdot \vec \Phi)^j - m_i \right ]^2
+\end{equation}
+where $\vec c$ are the regression coefficients and $N$ is the order of the
+method. The tracer is reconstructed as follows:
+\begin{equation}
+	q_i \approx \sum_{j=0}^N c_i \Phi_i^j
+\end{equation}
+
+\subsection{Lyapunov exponents}
 
 Suppose we have a system of ordinary differential equations (ODEs):
 \begin{equation}
-	\frac{\mathrm d \vect r}{\mathrm d t} = \vect f(\mathrm r, ~ t)
+	\frac{\mathrm d \vect r}{\mathrm d t} = \vect f(\vect r, ~ t)
 	\label{ODE}
 \end{equation}
 where $\vect r$ is a vector of dependent variables.
@@ -136,7 +162,8 @@ Define the {\it tangent model}, $H$, such that:
 
 An Eulerian tracer simulation is linear: the tangent vector is simply
 the dynamics, that is,
-if we take Equation (\ref{linear_ODE}) as our system of ODEs in
+if we take Equation (\ref{linear_ODE}), a system of linear ODEs,
+as our system of ODEs in
 (\ref{ODE}), then setting $\vect r=\vect q$, 
 we have $\vect f(\vec q, ~t)=A(t) \vect q$,
 while the tangent vector is given as:
@@ -164,7 +191,7 @@ the largest singular vector will increasingly begin to dominate
 
 \subsection{Special properties}
 
-A property of tracer systems is that the amount of substance is 
+An important property of flow tracers is that the amount of substance is 
 conserved:
 \begin{equation}
 \sum_i q_i = const.
@@ -186,20 +213,75 @@ Given the constraints above in (\ref{columns_sum_to_one}) and
 (\ref{columns_sum_to_zero}) also, 
 we can also show that all the singular values are less-than-or-equal-to one
 therefore the largest Lyapunov exponent will be zero.
-See Section \ref{Lyapunov_exponents} for a numerical demonstration and
-appendix \ref{Lyapunov_exponents_less_than_zero} for the derivation.
+Section \ref{Lyapunov_exponents} provides a numerical demonstration while 
+appendix \ref{Lyapunov_exponents_less_than_zero} gives the derivation.
+
+\section{Numerics and data}
 
 \section{Numerical experiments}
+
+\subsection{Tracer correlation}
+
+\begin{figure}
+\begin{center}
+\includegraphics[angle=90,width=0.9\textwidth]{../pc_proxy/tcorr.eps}
+\caption{The correlation over time of two differently-initialized tracers
+(broken line)--zonally symmetric and meridionally symmetric--and of
+the zonally-symmetric-initialized tracer with the first principal component.
+The simulation was driven with NCEP reanalysis 1 data on the 500 K isentropic
+level with an Eulerian time-step of six (6) hours and a Lagrangian time-step
+of one (1) hour.}\label{tcorr}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=0.45\textwidth]{../pc_proxy/tsample.eps}
+\includegraphics[width=0.45\textwidth]{../pc_proxy/pc1.eps}
+\caption{Comparison of a simulated tracer (a.) and the first principal
+component (b.) for the same time integration.}\label{pc1}
+\end{figure}
+
+Two differently-initialized tracers, when integrated with the same
+wind fields over a long time period, become correlated.
+This can be used to infer global fields of a long-lived tracer such as
+ozone based on only a few sparse measurements 
+\citep{Allen_Nakamura2003,Randall_etal2002}.
+Figure \ref{tcorr} demonstrates this with the extreme example of an initially
+zonally-symmetric tracer and an initialy meridionally-symmetric tracer.
+Tracers are advected with National Center for Environmental Prediction
+(NCEP) reanalysis 1 data at the 500 K isentrop \citep{Kalnay_etal1996}.
+
+We also plot the correlation of the first tracer with the largest singular
+vector.  We see that, because of Equation (\ref{lambda1}), they too become
+correlated over time.
+This at least partially explains the efficacy of the proxy tracer method.
+A sample PC as compared with the tracer is shown in Figure \ref{pc1}.  
 
 \subsection{Calculating Lyapunov exponents}
 
 \label{Lyapunov_exponents}
 
-Thus, even though the tracer fields themselves, 
-can develop into complex fractals
-given sufficient resolution and little or no diffusion,
-\citep{Mills2009} the system is only at the cusp of chaos since chaos is
-typically defined as having one or more positive Lyapunov exponents.
+\begin{figure}
+\begin{center}
+\includegraphics[angle=90,width=0.9\textwidth]{../pc_proxy/lyap_spec.eps}
+\caption{Plot of the top five (5) singular-values of a semi-Lagrangian
+tracer simulation over time.  Straight-line fits return the Lyapunov-spectrum.
+The simulation was done on the 500 K isentropic level.}
+\label{lyap_spec}
+\end{center}
+\end{figure}
+
+Figure \ref{lyap_spec} plots the time evolution of the singular values.
+From this we can calculate the Lyapunov spectrum by making straight line
+fits of their logarithms.
+While the resulting fields may develop into complex fractals \citep{Mills2009}
+%Raise my h-index to 2.  Yay!
+the Lyapunov spectrum shows that the tracer dynamics themselves 
+are not truly chaotic, but are
+only on the cusp: the largest singular value remains approximately constant.
+It also shows how quickly the other singular vectors decay,
+so that the largest will eventually dominate in accordance with
+Equation \ref{lambda1}.
 
 \appendix
 
@@ -269,8 +351,9 @@ Implying that for the eigenvalue problem,
 R^T \cdot R \cdot \vect v & = & s^2 \vect v \nonumber\\
 s^2 & \le & 1 \label{SV_inequality}
 \end{eqnarray}
-This further shows that the Lyapunov exponents are all
-either zero or negative with the largest equal to 0.  
+Therefore the Lyapunov exponents are all
+either zero or negative.
+%with the largest equal to 0.  [why?]
 Note however that this does not constitute a proof; the actual proof is more 
 involved.
 
