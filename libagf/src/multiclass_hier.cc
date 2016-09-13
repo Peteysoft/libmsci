@@ -662,9 +662,13 @@ namespace libagf {
   int multiclass_hier<real, cls_t>::load(FILE *fs, int ct) {
     char **sub;
     int nsub;
-    char *type=fget_line(fs, 1);	//first line describes type
+    char *type;
+    type=fget_line(fs, 1);	//first line describes type
     printf("%s\n", type);
-    if (strcmp(type, "1v1")!=0 && strcmp(type, "1vR")!=0 && strcmp(type, "ADJ")!=0) return PARAMETER_OUT_OF_RANGE;
+    if (strcmp(type, "1v1")!=0 && strcmp(type, "1vR")!=0 && strcmp(type, "ADJ")!=0) {
+      delete [] type;
+      return PARAMETER_OUT_OF_RANGE;
+    }
     char *line=fget_line(fs);		//second line has number of classes
     sscanf(line, "%d", &this->ncls);
     delete [] line;

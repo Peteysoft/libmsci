@@ -6,7 +6,8 @@ DATATYPE=ncep
 #command-line calculator:
 CCALC = bc
 
-DATAPATH = /cygdrive/e/data/ncep/sixhour
+#DATAPATH = /cygdrive/e/data/ncep/sixhour
+DATAPATH = /media/Lexar/ncep_data
 
 BINPATH = /home/lenovo/bin
 

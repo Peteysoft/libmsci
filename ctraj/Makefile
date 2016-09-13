@@ -1,6 +1,7 @@
 #
-# Copywrite 2013 Peter Mills.  Released under the terms of the GNU Public
-# license.
+# Released under the terms of the GNU Public license.
+#
+# Main contributer: Peter Mills (peteymills@hotmail.com)
 #
 # Makefile to build a set of executables for modelling trajectory
 # advection and tracer transport.
@@ -30,7 +31,8 @@ CC = g++
 OPT_VER = -g
 
 # paths for binaries and include files:
-BASE_PATH = /home/lenovo
+#BASE_PATH = /home/lenovo
+BASE_PATH = /mnt/sdc1/home2/pete/
 
 LIB_PATH = $(BASE_PATH)/lib
 

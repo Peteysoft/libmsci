@@ -14,8 +14,10 @@ ORDER=2		#order of regression
 T0=$(YEAR)/1/1
 TF=$(YEAR)/7/1
 
-VFIELD_PATH=/cygdrive/e/tmpdata/vfield
-DATA_PATH= /cygdrive/e/data/ncep/sixhour
+#VFIELD_PATH=/cygdrive/e/tmpdata/vfield
+VFIELD_PATH=/tmp/vfield
+#DATA_PATH= /cygdrive/e/data/ncep/sixhour
+DATA_PATH= /media/Lexar/ncep_data
 
 VFIELD_N = $(VFIELD_PATH)/vfield_ncep$(YEAR)_$(THETA)K_N.ds
 VFIELD_S = $(VFIELD_PATH)/vfield_ncep$(YEAR)_$(THETA)K_S.ds
