@@ -505,12 +505,21 @@ template void grid_area<float>(int32_t, float *);
 template <typename real>
 real eq_lat(real *q, int32_t n, real *eq_lat) {
   long *ind;
+  //static int32_t nlast=0;
+  //static real *area=NULL;
+  
   real area[n];
   real cum_area=0;
+  real cum_area_mid=0;
   real total_area=0;
   real mass=0;		//not exactly
 
-  grid_area(n, area);
+  //if (n!=nlast) {
+    //if (area!=NULL) delete [] area;
+    //area=new real[n];
+    grid_area(n, area);
+  //}
+
   for (int32_t i=0; i<n; i++) {
     total_area+=area[i];	//final value is pretty far off...
     mass+=area[i]*q[i];
@@ -519,8 +528,11 @@ real eq_lat(real *q, int32_t n, real *eq_lat) {
   ind=heapsort(q, n);
   for (int32_t i=0; i<n; i++) {
     cum_area+=area[ind[i]];
-    eq_lat[i]=asin(cum_area/total_area-1);
+    cum_area_mid=(cum_area_mid+cum_area)/2;
+    cum_area_mid=cum_area;
+    eq_lat[ind[i]]=asin(2*cum_area_mid/total_area-1);
   }
+  delete [] ind;
   return mass;
 }
 

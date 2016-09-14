@@ -36,6 +36,14 @@ int main(int argc, char **argv) {
 
   float *q;
   float *eqlat;
+  float *area;
+  long *ind;
+
+  float total_area;
+  float cum_area;
+  float cum_area_cor;
+  float mass;
+  float mass2;
 
   void *optarg[20];
   int flag[20];
@@ -73,16 +81,34 @@ int main(int argc, char **argv) {
 
   fprintf(stderr, "%d tracer fields found in %s\n", tfile);
 
-  fclose(fs);
+  //it is actually worth doing it this way:
+  area=new float [np];
+  grid_area(np, area);
+  total_area=0;
+  for (int i=0; i<np; i++) total_area+=area[i];
 
   q=new float[np];
   eqlat=new float[np];
+  ind=new long[np];
   fs2=fopen(outfile, "w");
   fwrite(&np, sizeof(np), 1, fs2);
   for (long i=0; i<nall; i++) {
-    fread(q, sizeof(float), nall, fs);
-    printf("%g\n", eq_lat(q, np, eqlat));
-    fwrite(eqlat, sizeof(float), nall, fs2);
+    fread(q, sizeof(float), np, fs);
+    heapsort(q, ind, np);
+    mass=0;
+    cum_area=0;
+    cum_area_cor=0;
+    for (int32_t j=0; j<np; j++) {
+      cum_area+=area[ind[j]];
+      cum_area_cor=(cum_area+cum_area_cor)/2;
+      eqlat[ind[j]]=asin(2*cum_area_cor/total_area-1);
+      cum_area_cor=cum_area;
+      //printf("%g %g\n", area[j], q[j]);
+      mass+=area[j]*q[j];
+      mass2+=area[j]*abs(q[j]);
+    }
+    printf("%g %g\n", mass, mass2);
+    fwrite(eqlat, sizeof(float), np, fs2);
   }
 
   fclose(fs);
@@ -90,6 +116,8 @@ int main(int argc, char **argv) {
 
   delete [] q;
   delete [] eqlat;
+  delete [] ind;
+  delete [] area;
 
   return 0;
 }
