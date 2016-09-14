@@ -65,9 +65,16 @@ namespace ctraj {
 
   //calculate equivalent latitude:
   template <typename real>
-  real eq_lat(real *q,
-		  int32_t n,
-		  real *eq_lat);
+  class eq_lat {
+    real *area;			//area of each grid point
+    int32_t n;			//number of points
+    real total_area;		//total area
+
+    public:
+      eq_lat(int32_t np);
+      real operator () (real *q, real *el);
+      ~eq_lat();
+  };
 
 } //end namespace ctraj
 
