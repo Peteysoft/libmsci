@@ -476,5 +476,55 @@ void tracer_map(ctraj_tfield_base<real> * tracer,
 
 }
 
+template <typename real>
+void grid_area(int32_t n, real *area) {
+  ctraj_tfield_standard<real> tracer;
+  az_eq_t<real> metric(REARTH);
+  real dx2;
+  tracer.init2(n);
+
+  dx2=1000/(int32_t) sqrt(n/M_PI/2);
+  dx2=dx2*dx2;
+
+  for (int32_t i=0; i<n; i++) {
+    real c[2];
+    int32_t hemi;
+    real loc[2];
+    hemi=tracer.get_loc(i, loc);
+    metric.mcoef2(loc, c);
+    //printf("%g %g\n", loc[0], loc[1]);
+    //printf("%g %g\n", c[0], c[1]);
+    if (metric.fix(hemi, loc)==hemi) area[i]=sqrt(c[0]*c[1])*dx2;
+    		else area[i]=0;
+    //(seems a bit toooo approximate...)
+  }
+}
+
+template void grid_area<float>(int32_t, float *);
+
+template <typename real>
+real eq_lat(real *q, int32_t n, real *eq_lat) {
+  long *ind;
+  real area[n];
+  real cum_area=0;
+  real total_area=0;
+  real mass=0;		//not exactly
+
+  grid_area(n, area);
+  for (int32_t i=0; i<n; i++) {
+    total_area+=area[i];	//final value is pretty far off...
+    mass+=area[i]*q[i];
+  }
+  //printf("total area=%g\n", total_area);
+  ind=heapsort(q, n);
+  for (int32_t i=0; i<n; i++) {
+    cum_area+=area[ind[i]];
+    eq_lat[i]=asin(cum_area/total_area-1);
+  }
+  return mass;
+}
+
+template float eq_lat<float>(float *, int32_t, float *);
+
 } //end namespace ctraj
   

@@ -256,12 +256,10 @@ int main(int argc, char **argv) {
 
   delete [] qint;
 
-
   //qvec=tracer_multiply(matall+i0, nall-i0, q0);
 
   //fwrite(qvec[0], sizeof(float), n*(nall-i0), fs);
   fclose(fs);
-
 
   delete [] q[0];
   delete [] q;

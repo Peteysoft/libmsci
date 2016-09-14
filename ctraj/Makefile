@@ -31,8 +31,8 @@ CC = g++
 OPT_VER = -g
 
 # paths for binaries and include files:
-#BASE_PATH = /home/lenovo
-BASE_PATH = /mnt/sdc1/home2/pete/
+BASE_PATH = /home/lenovo
+#BASE_PATH = /mnt/sdc1/home2/pete/
 
 LIB_PATH = $(BASE_PATH)/lib
 
@@ -93,7 +93,7 @@ EXE = ctraj_model \
 	tracer_step2_w_renorm \
 	proxy_tracer \
 	pc_proxy tracer_interpolate pc_proxy_predict \
-	contour_dimension contour_length
+	contour_dimension contour_length eq_lat
 
 UTIL = zonally_symmetric_tracer lla2aeb extract_field \
        		nc2ds ecmwf2ds vdata2ds extract_ncep_field \

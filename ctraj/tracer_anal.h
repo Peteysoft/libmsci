@@ -58,6 +58,17 @@ namespace ctraj {
 		sparse<int32_t, real> *map,
 		real t, real dt, int32_t nt);
 
+  //calculate approximate area of each grid point:
+  template <typename real>
+  void grid_area(int32_t n, 		//number of points
+		  real *area);		//area at each point
+
+  //calculate equivalent latitude:
+  template <typename real>
+  real eq_lat(real *q,
+		  int32_t n,
+		  real *eq_lat);
+
 } //end namespace ctraj
 
 #endif
