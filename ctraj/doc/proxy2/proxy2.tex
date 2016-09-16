@@ -2,6 +2,7 @@
 
 \usepackage{natbib}
 \usepackage[dvips]{graphicx}
+\usepackage{url}
 
 \bibliographystyle{apa}
 
@@ -18,13 +19,13 @@ The advection-diffusion equation is given as follows:
 \end{equation}
 where $q$ is the tracer concentration, $\vect x$ is spatial position, 
 $t$ is time, $\vect v$ is the fluid velocity, and $D$ is the diffusivity tensor.
-It is assumed that there is no term, $q \nabla \vect \cdot v$,
+It is assumed that there is no mass-conservation term, $q \nabla \vect \cdot v$,
 either because $q$ is a volume-mixing ratio (vmr) or 
 the fluid is incompressible ($\nabla \cdot \vec v = 0$).
-In an Eulerian tracer simulation, the approximate value of $q$ is only known
-is only known at discrete locations thus we can represent it as a vector,
-$\vect q=\lbrace q_i \rbrace$.
 
+In an Eulerian tracer simulation, the approximate value of $q$
+is only known at discrete locations so can be represented as a vector,
+$\vect q=\lbrace q_i \rbrace$.
 The linear operator contained in the square brackets in Equation 
 (\ref{advection_diffusion}) is approximated as a matrix, $A$, which is 
 multiplied with $\vect q$:
@@ -32,6 +33,7 @@ multiplied with $\vect q$:
 \frac{\mathrm d \vect q}{\mathrm d t} = A(t) \vect q
 \label{linear_ODE}
 \end{equation}
+
 For example, consider a second-order finite difference scheme in one dimension:
 \begin{eqnarray}
 \frac{\partial q_i}{\partial t} & = & \frac{v(q_{i+1} - q_{i-1})}{2 \Delta x} +
@@ -47,14 +49,15 @@ a_{i,i-1} & = & \left (- \frac{v}{2 \Delta x} + \frac{d}{\Delta x^2} \right ) \\
 	a_{i,i} & = & -\frac{2 d}{\Delta x^2} \\
 a_{i,i+1} & = & \left (\frac{v}{2 \Delta x} + \frac{d}{\Delta x^2} \right )
 \end{eqnarray}
-To produce a general solution to (\ref{linear_ODE}, 
+
+To produce a general solution to Equation (\ref{linear_ODE}, 
 we first substitute a matrix, $R$, for $\vect q$:
 \begin{equation}
 	\frac{\mathrm d R(t, \Delta t}{\mathrm d \Delta t} = A(t) R(t, \Delta t)
 \end{equation}
 Unlike in most analyses, we have two parameters for the time:
 the integration start time, $t$, and the integration time, $\Delta t$.
-We do this so that $R$ may be decomposed in terms of itself:
+In this way, $R$ may be decomposed in terms of itself:
 \begin{equation}
 	R(t_0,~t_n-t_0) = R(t_n, \, \Delta t_n) R(t_{n-1},\,\Delta t_{n-1}) R(t_{n-2},\,\Delta t_{n-2}) \, ...~~ 
 	R(t_0,\,\Delta t_0)
@@ -64,13 +67,15 @@ where,
 \begin{equation}
 t_n=t_0+\sum_{i=0}^{n} \Delta t_i
 \end{equation}
-It follows that $R(t, 0)=I$.
+It follows that $R(t, 0)=I$ where $I$ is the identity matrix.
+
 Once we've found $R$, 
 we can use it to calculate $\vect q$ given $\vect q$ at any other time:
 \begin{equation}
 	\vect q(t) = R(t_0, t-t_0) \vect q(t_0)
 \end{equation}
 where $\vect q(t_0)=\vect q_0$ is the initial tracer configuration.
+
 To make this solution fully analytical, we solve $R$ for an infinitessimal
 integration time using linear algebra:
 \begin{equation}
@@ -83,22 +88,26 @@ where $\exp$ is the matrix generalization of the exponential function.
 Suppose we decompose a specific $R$ using singular value decomposition:
 \begin{equation}
 	R(t_0, ~ t_n - t_0) = U S V^T
+	\label{SVD}
 \end{equation}
-where both $U$ and $V$ are orthogonal matrics:
+where $S$ is a diagonal matrix of {\it singular values}
+and both $U$ and $V$ are orthogonal matrices:
 \begin{equation}
 	U^T U = V^T V = I
-\end{equation}
-$I$ is the identity matrix and $S$ is diagonal matrix of {\it singular values}.
-$U$ is a matrix of {\it left singular vectors} and 
-$V$ is a matrix of {\it right singular vectors}.
+\end{equation},
+$U$ is the matrix of {\it left singular vectors} and 
+$V$ is the matrix of {\it right singular vectors}.
 This method of matrix decomposition is also known as {\it principal component}
 analysis or PCA, hence the name of the interpolation technique.
+Singular vectors are increasingly being used in meteorology both to quantify the
+predictability of a forecast and to generate perturbations for ensemble
+forecasts \citep{Tang_etal2006}.
 
 To correlate a series of sparse measurements, $\lbrace m_i \rbrace$,
 with the top $k$ principal components, we first find interpolates at each
-measurement location in the left singular vectors and then find a series
-of coefficients, $\vect c$, that minimize the least square error of the
-interpolates with the measurements.
+measurement location in the left singular vectors and then find a set
+of coefficients, $\vect c$, that minimizes the mean-square error of the
+interpolates versus the measurements.
 In any real problem, the measurements are unlikely to occur at the same time,
 so rather than using the left singular vectors, we use $R$ to advance the
 right singular values to the same time as the measurement. 
@@ -117,9 +126,9 @@ Once the coefficients have been fitted we can reconstruct the tracer:
 
 \subsection{Traditional tracer proxy}
 
-We can contrast the above description of principal component proxy tracer
+Contrast the above description of principal component proxy tracer
 analysis with the more traditional proxy tracer technnique.
-In the older method, the measurements are simply correlated with another
+In the earlier method, the measurements are simply correlated with another
 tracer (the proxy): either a passive tracer that has been advected
 continuously with periodic re-normalization \citep{Allen_Nakamura2003} 
 or some other quantity that is conserved by the flow 
@@ -196,7 +205,7 @@ conserved:
 \begin{equation}
 \sum_i q_i = const.
 \end{equation}
-The equation is only approximate if the following conditions don't hold:
+The equation is not exact if the following conditions don't hold:
 the fluid is incompressible or $q$ measures
 density rather than vmr and the simulation uses an equal area grid. 
 We can show that:
@@ -204,23 +213,63 @@ We can show that:
 \sum_i r_{ij} & = & 1 
 \label{columns_sum_to_one}\\
 \sum_i a_{ij} & = & 0
-\label{columns_sum_to_zero}\\
+\label{columns_sum_to_zero}
 \end{eqnarray}
 See appendix \ref{mass_conservation_derivation} for the derivation.
 
 All Eulerian tracer simulations are by necessity diffusive. 
 Given the constraints above in (\ref{columns_sum_to_one}) and
-(\ref{columns_sum_to_zero}) also, 
-we can also show that all the singular values are less-than-or-equal-to one
-therefore the largest Lyapunov exponent will be zero.
+(\ref{columns_sum_to_zero}) in addition, 
+we can also show that all the singular values are less-than-or-equal-to one.
 Section \ref{Lyapunov_exponents} provides a numerical demonstration while 
 appendix \ref{Lyapunov_exponents_less_than_zero} gives the derivation.
 
 \section{Numerics and data}
 
-\section{Numerical experiments}
+\subsection{Tracer simulation}
 
-\subsection{Tracer correlation}
+To run the tracer advection, the \textit{ctraj} software package is used
+(http://ctraj.sf.net).  The codes are written in C++ and contain programs
+for gridded, semi-Lagrangian tracer advection on an 
+azimuthally-equidistant-projected coordinate system.
+Two fields are advected simultaneously, one for the Northern hemisphere
+and one for the Southern hemisphere, with equatorial crossings accounted for.
+Gridding on both hemispheres is 100 by 100, or 200km-,
+1.8 degree-latitude-separation at the pole.  
+Output is written to a series of sparse matrices which are then
+decomposed with the Lanczos method \citep{Golub_Van_Loan1996} using the
+Arnoldi package (ARPACK) \citep{Lehoucq_Scott1996}.
+
+\subsection{Polar Ozone and Aerosol Measurement III instrument}
+
+The Polar Ozone and Aerosol Measurement (POAM) III instrument is a solar-
+occultation instrument mounted on a sun-synchronous, low-earth-orbit
+satellite \citep{Lucke_etal1999}.  
+Using optimal estimation \citep{Rodgers2000}, ozone profiles are retrieved 
+within a narrow latitude band in either polar region \citep{Lumpe_etal2002}.  
+It is capable of returning 28 or 29 measurements per day,
+alternating between Northern and Southern hemisphere, however because of
+a malfunction
+in the instrument, it normally operates in only one or the other hemisphere for longer periods.  Therefore, we confine ourselves to earlier data,
+October and November 1998, when more frequent and diverse measurements
+are available.
+
+\subsection{National Center for Environmental Prediction reanalysis data}
+
+The National Center for Environmental Prediction (NCEP) supplies, 
+free-of-charge,
+gridded (2.5 by 2.5 degrees longitude/latitude, 4 time daily), reanalyzed 
+climate data starting in 1948 \citep{Kalnay_etal1996}.
+Wind and temperature data is used to drive the advection model.
+
+\subsection{Ozone sonde data}
+
+The World Ozone and Ultraviolet Data Centre (WOUDC) collects ozone sonde data
+from around the world \citep{Hare_etal2000}. A list of all contributors is available on the website:
+\url{http://woudc.org}.
+
+
+\section{Numerical experiments}
 
 \begin{figure}
 \begin{center}
@@ -240,6 +289,8 @@ of one (1) hour.}\label{tcorr}
 \caption{Comparison of a simulated tracer (a.) and the first principal
 component (b.) for the same time integration.}\label{pc1}
 \end{figure}
+
+\subsection{Tracer correlation}
 
 Two differently-initialized tracers, when integrated with the same
 wind fields over a long time period, become correlated.
@@ -282,6 +333,59 @@ only on the cusp: the largest singular value remains approximately constant.
 It also shows how quickly the other singular vectors decay,
 so that the largest will eventually dominate in accordance with
 Equation \ref{lambda1}.
+
+\subsection{Test of PC proxy}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=1\textwidth]{../pc_proxy/proxyfields.eps}
+\caption{Comparison of simulated tracer fields with the reconstructed version.
+a. and b. compare the initial field of the simulated versus the reconstructed,
+respectively, while c. and d. compare the fields at the lead time,
+60 days later.}
+\label{proxyfields}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[angle=90, width=0.9\textwidth]{../pc_proxy/proxycorr.eps}
+\caption{Correlation over time of a zonally-symmetric-initialized, passive tracer
+with one reconstructed using PC proxy using a lead time of 60 days,
+marked by the vertical, dashed line.}\label{PCproxytest}
+\end{center}
+\end{figure}
+
+To perform the analysis, we need to choose a lead time, 
+$t_n-t_0$ in Equation (\ref{SVD}), as well as
+a \textit{measurement window}.
+The lead time determines how long the tracer is advected before performing
+the SVD.
+Measurements are selected from within the measurement window.
+We also need to choose an {\it offset} which determines how far from the
+beginning of the integration, $t_0$, the measurement window is centered.
+For this experiment, it is centered at the end of the lead time.
+
+\begin{figure}
+\begin{center}
+\includegraphics[angle=90,width=0.8\textwidth]{../pc_proxy/meas_loc.eps}
+\caption{Locations of the ten (10) simulated sparse measurements used for the
+test retrieval.}\label{sparse}
+\end{center}
+\end{figure}
+
+Figure \ref{proxyfields} and \ref{PCproxytest} 
+shows the results of a test retrieval for a 
+zonally-symmetric-initialized tracer using a lead time of 60 days
+and five singular vectors.
+The Lyapunov spectrum can help us select the number of singular vectors
+as it shows how many remain significant at
+a given lead time--see Figure \ref{lyap_spec}.
+Ten sparse measurements were randomly selected in space and time
+within a measurement window of one day--these are plotted in Figure \ref{sparse}.
+The Pearson correlation for the initial field (Figures \ref{proxyfields}a. and b.)
+is 0.875, while the correlation at the lead time 
+(Figures \ref{proxyfields}c. and d.) is 0.99
 
 \appendix
 
