@@ -10,23 +10,27 @@
 
 \newcommand{\vect}[1]{\ensuremath{\vec #1}}
 
+\tableofcontents
+
 \section{Theory}
+
+\subsection{Tracer dynamics}
 
 The advection-diffusion equation is given as follows:
 \begin{equation}
-\frac{\partial q(\vect x, ~ t)}{\partial t} = \left [ -\vect v(\vect x, ~t) \cdot \nabla + \nabla \cdot D \nabla \right ] q(\vect x, ~ t)
+\frac{\partial q(\vect x, ~ t)}{\partial t} = \left \lbrace -\vect v(\vect x, ~t) \cdot \nabla + \nabla \cdot D \nabla \right \rbrace q(\vect x, ~ t)
 \label{advection_diffusion}
 \end{equation}
 where $q$ is the tracer concentration, $\vect x$ is spatial position, 
 $t$ is time, $\vect v$ is the fluid velocity, and $D$ is the diffusivity tensor.
-It is assumed that there is no mass-conservation term, $q \nabla \vect \cdot v$,
+It is assumed that there is no mass-conservation term, $q \nabla \cdot \vect v$,
 either because $q$ is a volume-mixing ratio (vmr) or 
 the fluid is incompressible ($\nabla \cdot \vec v = 0$).
 
 In an Eulerian tracer simulation, the approximate value of $q$
 is only known at discrete locations so can be represented as a vector,
 $\vect q=\lbrace q_i \rbrace$.
-The linear operator contained in the square brackets in Equation 
+The linear operator contained in the braces in Equation 
 (\ref{advection_diffusion}) is approximated as a matrix, $A$, which is 
 multiplied with $\vect q$:
 \begin{equation}
@@ -50,12 +54,12 @@ a_{i,i-1} & = & \left (- \frac{v}{2 \Delta x} + \frac{d}{\Delta x^2} \right ) \\
 a_{i,i+1} & = & \left (\frac{v}{2 \Delta x} + \frac{d}{\Delta x^2} \right )
 \end{eqnarray}
 
-To produce a general solution to Equation (\ref{linear_ODE}, 
+To produce a general solution to Equation (\ref{linear_ODE}), 
 we first substitute a matrix, $R$, for $\vect q$:
 \begin{equation}
-	\frac{\mathrm d R(t, \Delta t}{\mathrm d \Delta t} = A(t) R(t, \Delta t)
+	\frac{\mathrm d R(t, \Delta t)}{\mathrm d \Delta t} = A(t) R(t, \Delta t)
 \end{equation}
-Unlike in most analyses, we have two parameters for the time:
+Unlike in most analyses, there are two parameters for the time:
 the integration start time, $t$, and the integration time, $\Delta t$.
 In this way, $R$ may be decomposed in terms of itself:
 \begin{equation}
@@ -73,11 +77,12 @@ Once we've found $R$,
 we can use it to calculate $\vect q$ given $\vect q$ at any other time:
 \begin{equation}
 	\vect q(t) = R(t_0, t-t_0) \vect q(t_0)
+	\label{tracer_integration}
 \end{equation}
 where $\vect q(t_0)=\vect q_0$ is the initial tracer configuration.
 
-To make this solution fully analytical, we solve $R$ for an infinitessimal
-integration time using linear algebra:
+To make this solution fully analytical, although not realizable in practice,
+we solve $R$ for an infinitessimal integration time using linear algebra:
 \begin{equation}
 	\lim_{\Delta t \rightarrow 0} R(t, \Delta t) = \exp \left [ \Delta t A(t) \right ]
 \end{equation}
@@ -90,11 +95,12 @@ Suppose we decompose a specific $R$ using singular value decomposition:
 	R(t_0, ~ t_n - t_0) = U S V^T
 	\label{SVD}
 \end{equation}
-where $S$ is a diagonal matrix of {\it singular values}
+where $S$ is a diagonal matrix of {\it singular values},
+$t_n - t_0$ is the {\it integration time},
 and both $U$ and $V$ are orthogonal matrices:
 \begin{equation}
-	U^T U = V^T V = I
-\end{equation},
+	U^T U = V^T V = I~,
+\end{equation}
 $U$ is the matrix of {\it left singular vectors} and 
 $V$ is the matrix of {\it right singular vectors}.
 This method of matrix decomposition is also known as {\it principal component}
@@ -103,6 +109,16 @@ Singular vectors are increasingly being used in meteorology both to quantify the
 predictability of a forecast and to generate perturbations for ensemble
 forecasts \citep{Tang_etal2006}.
 
+A good way to think of it is as a set of orthogonal initial conditions,
+$\lbrace \vec v^{(i)} \rbrace$, which, when the tracer dynamics are applied,
+transform into a set of orthogonal final conditions, 
+$\lbrace \vec u^{(i)} \rbrace$,
+that have grown by respective factors $\lbrace s_i \rbrace$:
+\begin{equation}
+	R \vec v^{(i)} = s_i \vec u^{(i)}
+\end{equation}
+The superscript denotes the column number.
+
 To correlate a series of sparse measurements, $\lbrace m_i \rbrace$,
 with the top $k$ principal components, we first find interpolates at each
 measurement location in the left singular vectors and then find a set
@@ -110,8 +126,14 @@ of coefficients, $\vect c$, that minimizes the mean-square error of the
 interpolates versus the measurements.
 In any real problem, the measurements are unlikely to occur at the same time,
 so rather than using the left singular vectors, we use $R$ to advance the
-right singular values to the same time as the measurement. 
-Thus we have the following minimization problem:
+right singular values to the same time as the measurement.
+The time period during which measurements are admitted we shall refer to as
+the {\it measurement window}.
+Meanwhile, the difference between the integration start time, $t_0$,
+and the center of the measurement window shall be referred to as the
+{\it lead time}.
+
+We have the following minimization problem:
 \begin{equation}
 	\min_{\vect c} \sum_i \left \lbrace \sum_{j=1}^k c_j \vect w_i R(t_0, ~ t_n-t^{(i)}) \vect v_j - m_i \right \rbrace^2
 \end{equation}
@@ -121,10 +143,12 @@ interpolation coefficients.
 
 Once the coefficients have been fitted we can reconstruct the tracer:
 \begin{equation}
-	\vec q(t_n) \approx \sum_{i=1}^k c_i \vec u
+	\vec q(t_n) \approx \sum_{i=1}^k c_i \vec u^{(i)}
 \end{equation}
 
 \subsection{Traditional tracer proxy}
+
+\label{traditional}
 
 Contrast the above description of principal component proxy tracer
 analysis with the more traditional proxy tracer technnique.
@@ -160,13 +184,13 @@ We linearize this about $\vect r$ using the {\it tangent vector},
 $\nabla_{\vect r} f$:
 \begin{eqnarray}
 \frac{\mathrm d}{\mathrm d t} (\vect r + \delta \vect r) & \approx & \vect f + 
-	\nabla_{\vect r} \vect f \cdot \delta \vect x \\
-	\frac{\mathrm d}{\mathrm d t} \delta \vect r & \approx & \nabla_{\vect r} \vect f \cdot \vect r
+	\nabla_{\vect r} \vect f \delta \vect x \\
+	\frac{\mathrm d}{\mathrm d t} \delta \vect r & \approx & \nabla_{\vect r} \vect f \vect r
 \end{eqnarray}
 where $\delta \vect r$ is a vector of {\it infinitessimal error vectors}.
 Define the {\it tangent model}, $H$, such that:
 \begin{equation} 
-	\frac{\mathrm d}{\mathrm d t} H = \nabla_{\vect r} \vect f \cdot H \\
+	\frac{\mathrm d}{\mathrm d t} H = \nabla_{\vect r} \vect f H \\
 \end{equation}
 
 An Eulerian tracer simulation is linear: the tangent vector is simply
@@ -224,6 +248,118 @@ we can also show that all the singular values are less-than-or-equal-to one.
 Section \ref{Lyapunov_exponents} provides a numerical demonstration while 
 appendix \ref{Lyapunov_exponents_less_than_zero} gives the derivation.
 
+\subsection{Error analysis}
+
+A detailed error analysis can help us both to better understand the technique
+and to chose the best parameters for a given interpolation.
+Real flow tracers will have sources and sinks, thus we introduce a source
+term, $\sigma$, to Equations (\ref{matrix_soln_decomposition})
+and (\ref{tracer_integration}):
+\begin{eqnarray}
+	  \vec q(t_n) 
+  & \approx & \Delta t_{n} \sigma_{n} + \nonumber \\
+  & & R(t_{n-1}, ~ \Delta t_{n-1}) [\vec \sigma_{n-1} + \nonumber \\
+  & & R(t_{n-2}, ~ \Delta t_{n-2}) [\vec \sigma_{n-2} + \nonumber \\
+  & & \vdots \nonumber \\
+  & & + R(t_1, ~ \Delta t_1) [\vec \sigma_1 + \nonumber \\
+  & & R(t_0, ~ \Delta t_0) \vec q_0 ]...]]
+\end{eqnarray}
+where $\vec \sigma_i$ is the integrated source term for the $i$th time step.
+Expanding:
+\begin{equation}
+\vec q(t_n) 
+   = R(t_0,~t_n-t_0) \vec q_0 + \sum_{i=1}^{n} R(t_i,~t_n-t_i) \vec \sigma_i
+  \label{sources_sinks}
+\end{equation}
+
+To get a handle on the error, we consider first a fully passive tracer 
+(no sources or sinks) started with initial conditions $\vec q_0=\vec q(t_0)$.
+Expanding this in terms of the right singular vectors with a set
+of coefficients, $\vec c_0$:
+\begin{equation}
+	\vec q_0 = V \vec c_0
+	\label{c0}
+\end{equation}
+means that the final tracer takes the following form:
+\begin{equation}
+	\vec q(t_n) = U S \vec c_0
+\end{equation}
+however we are only calculating the top $k$ singular vectors, so the
+interpolation looks like this:
+\begin{equation}
+	\vec q(t_n) \approx \sum_{i=0}^k c_{0i} s_i \vec u^{(i)}
+\end{equation}
+
+The error is simply the terms left out of the equation,
+discounting errors introduced through discretization and because of
+a finitely resolved (and possibly inaccurate) wind field.
+The smaller the remaining singular values, $\lbrace s_i|i=[k+1..n_p]\rbrace$,
+the smaller the error, where $n_p$ is the total number of grid points in the tracer.
+This is why the Lyapunov exponents are useful:
+they tell us how fast the singular values shrink.
+
+A tracer interpolated with all the singular vectors will take the form:
+\begin{equation}
+	\vec q(t_n) = U \vec c
+	\label{full_interpolation}
+\end{equation}
+Substitution of (\ref{c0}) into (\ref{sources_sinks}) and comparison with
+(\ref{full_interpolation}) produces
+the following:
+\begin{equation}
+	\vec c = S \vec c_0 + U^T \sum_{i=1}^n R(t_i, t_n-t_i) \vec \sigma_i
+\end{equation}
+In other words, we need to project the integrated source terms onto the
+singular vectors.
+%Noting that $R(t_i, t_n-t_i)=R(t_0, t_n-t_0)R^{-1}(t_0, t_i-t_0)$, we have:
+%\begin{equation}
+%	\vec c = S \left [ \vec c_0 + V \sum_{i=1}^n R^{-1}(t_0, t_i-t_0) \vec \sigma_i \right ]
+%\end{equation}
+As before, the error is given by terms not included in the analysis:
+\begin{equation}
+	\vec \epsilon = \sum_{i=k+1}^{n_p} \vec u^{(i)} \left [s_i c_{0i}
+	+ \vec u^{(i)} \cdot \sum_{j=1}^n R(t_j, t_n-t_j) \vec \sigma_j \right ]
+	\label{error1}
+\end{equation}
+Note that the first occurance of the singular vector, $\vec u^(i)$, does not
+cancel out the second occurance because the factor in square brackets is a scalar, i.e., order of operations matters.
+
+The first term in Equation (\ref{error1}) sums the components of the initial tracer configuration that project onto the smaller singular vectors not included in the analysis. 
+This term will be small because of the shrinking of singular values over time.
+The second term are the components of the source terms projected onto the same singular vectors.
+The less the source terms line up with the largest singular vectors, the
+larger this source of error.
+
+Equation (\ref{error1}) suggests two approaches to reducing the error.
+The first is to reduce the size of $R(t_j, t_n-t_j)$ so that the source terms
+grow as little as possible.
+This would suggest that the measurement window should be in the middle
+of the integration, i.e. the lead time is half the integration time.
+The second is to make this factor as close as possible to $R(t_n, t_n-t_0)$
+so that projection onto the singular vectors leaves the term $SV$ and
+the leftover smaller components are shrunk by the singular values.
+This would suggest that the measurement window should be towards the end
+of the integration, i.e. the lead time is the same as the integration time.
+
+To understand this last point, rewrite Equation (\ref{error1}) as follows:
+\begin{equation}
+	\vec \epsilon = \sum_{i=k+1}^{n_p} s_i \vec u^{(i)} \left [c_{0i}
+	+ \vec v^{(i)} \cdot \sum_{j=1}^n R^{-1}(t_0, t_j-t_0) \vec \sigma_j \right ]
+\end{equation}
+Note that because of diffusion, 
+a backwards integration is not equivalent to the inverse of the
+forwards integration, but only approximately so, that is,
+$R(t+\Delta t, -\Delta t) \approx R^{-1}(t, \Delta t)$.
+
+Measurement error and fitting discrepancies can be treated in the same way 
+as any other linear least squares problem. 
+It stands to reason that having few measurements will magnify 
+errors generated by sources and sinks.
+In this paper we will take an empirical approach to the error analysis by
+validating reconstructed tracer fields against actual measurements whenever
+possible.
+
+
 \section{Numerics and data}
 
 \subsection{Tracer simulation}
@@ -235,9 +371,10 @@ azimuthally-equidistant-projected coordinate system.
 Two fields are advected simultaneously, one for the Northern hemisphere
 and one for the Southern hemisphere, with equatorial crossings accounted for.
 Gridding on both hemispheres is 100 by 100, or 200km-,
-1.8 degree-latitude-separation at the pole.  
-Output is written to a series of sparse matrices which are then
-decomposed with the Lanczos method \citep{Golub_Van_Loan1996} using the
+1.8-degree-latitude-separation at the pole.  
+Output is written to a series of sparse matrices.
+Eigenvalues and eigenvectors for the SVD
+are calculated with the Lanczos method \citep{Golub_Van_Loan1996} using the
 Arnoldi package (ARPACK) \citep{Lehoucq_Scott1996}.
 
 \subsection{Polar Ozone and Aerosol Measurement III instrument}
@@ -294,7 +431,8 @@ component (b.) for the same time integration.}\label{pc1}
 
 Two differently-initialized tracers, when integrated with the same
 wind fields over a long time period, become correlated.
-This can be used to infer global fields of a long-lived tracer such as
+As discussed in Section \ref{traditional},
+this can be used to infer global fields of a long-lived tracer such as
 ozone based on only a few sparse measurements 
 \citep{Allen_Nakamura2003,Randall_etal2002}.
 Figure \ref{tcorr} demonstrates this with the extreme example of an initially
@@ -326,7 +464,6 @@ Figure \ref{lyap_spec} plots the time evolution of the singular values.
 From this we can calculate the Lyapunov spectrum by making straight line
 fits of their logarithms.
 While the resulting fields may develop into complex fractals \citep{Mills2009}
-%Raise my h-index to 2.  Yay!
 the Lyapunov spectrum shows that the tracer dynamics themselves 
 are not truly chaotic, but are
 only on the cusp: the largest singular value remains approximately constant.
@@ -387,9 +524,15 @@ The Pearson correlation for the initial field (Figures \ref{proxyfields}a. and b
 is 0.875, while the correlation at the lead time 
 (Figures \ref{proxyfields}c. and d.) is 0.99
 
+\addcontentsline{toc}{section}{References}
+
+\bibliography{proxy2.bib}
+
 \appendix
 
-\section{Mass conservation}
+\section{Derivations}
+
+\subsection{Mass conservation}
 
 \label{mass_conservation_derivation}
 
@@ -423,7 +566,7 @@ which shows the second part of (\ref{columns_sum_to_one}) and
 	\sum_i a_{ij} = 0
 \end{equation}
 
-\section{Diffusion and the Lyapunov spectrum}
+\subsection{Diffusion and the Lyapunov spectrum}
 
 \label{Lyapunov_exponents_less_than_zero}
 
@@ -447,12 +590,12 @@ nonetheless keeps the sum of the elements constant:
 This will generalize to higher-dimensional vectors.  In general, we can
 say that:
 \begin{equation}
-\vect q \cdot R^T \cdot R \cdot \vect q \le \vect q \cdot \vect q
+\vect q R^T R \vect q \le | \vect q |^2
 \label{tracer_map_inequality}
 \end{equation}
 Implying that for the eigenvalue problem,
 \begin{eqnarray}
-R^T \cdot R \cdot \vect v & = & s^2 \vect v \nonumber\\
+R^T R \vect v & = & s^2 \vect v \nonumber\\
 s^2 & \le & 1 \label{SV_inequality}
 \end{eqnarray}
 Therefore the Lyapunov exponents are all
@@ -470,8 +613,8 @@ $\lbrace \vect v_i \rbrace$:
 where $\lbrace c_i \rbrace$ are a set of coefficients.
 Substituting this into the left-hand-side of (\ref{tracer_map_inequality}):
 \begin{eqnarray}
-	\vect q \cdot R^T \cdot R \cdot \vect q & = & \sum_i c_i \vect v_i \sum c_i s_i^2 \vect v_i \\
-   & = & \sum_i \sum_j c_i c_j s_i^2 \vect v_i \cdot \vect v_j \\
+	\vect q R^T R \vect q & = & \sum_i c_i \vect v_i \sum_i c_i s_i^2 \vect v_i \\
+   & = & \sum_i \sum_j c_i c_j s_i^2 \vect v_i \vect v_j \\
    & = & \sum_i \sum_j c_i c_j s_i^2 \delta_{ij} \\
 	  & = & \sum_i c_i^2 s_i^2
 \end{eqnarray}
@@ -494,9 +637,8 @@ Therefore (\ref{tracer_map_inequality}) is true for every $\vect q$
 if-and-only-if (\ref{SV_inequality}) is true for every $s$.
 In the language of set theory and first-order logic:
 \begin{equation}
-	\forall \vect q \in \Re^n ~ (\vect q \cdot R^T \cdot R \cdot \vect q \le \vect q \cdot \vect q) \iff \forall s \in \Re | ~R^T \cdot R \cdot \vect v = s^2 \vect v ~ (s \le 1)
+	\forall \vect q \in \Re^n ~ (\vect q R^T R \vect q \le |\vect q |^2) \iff \forall s \in \Re | ~R^T R \vect v = s^2 \vect v ~ (s \le 1)
 \end{equation}
 
-\bibliography{proxy2.bib}
 
 \end{document}

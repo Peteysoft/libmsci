@@ -138,7 +138,7 @@ void tracer_interp(float **qall, time_class *t, int32_t nt, int32_t np, meas_dat
 
 }
 
-float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall, meas_data *samp, long nsamp, int32_t nev, int32_t ncv, int cflag) {
+float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall, meas_data *samp, long nsamp, int32_t nev, int32_t ncv, int cflag, int mflag) {
 
   ind_t m, n;		//size of matrix
   int32_t i0;		//start point, number of matrices
@@ -189,15 +189,19 @@ float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall,
   //sa_dir=1;
   if (N+i0 > nall) N=nall-i0;
 
+  printf("generating matrix square i0=%d N=%d\n", i0, N);
   a_mat=new sparse_array<int32_t, float>(matall+i0, N);
+  printf("generating matrix square\n");
   at_mat=*a_mat;
   at_mat.transpose();
+  printf("generating matrix square\n");
   a_mat->mat_mult(at_mat, ata_mat);
 
   //perform the SVD:
   eval=new float[ncv];
 
   //call the fortran program:
+  printf("performing SVD\n");
   //FORTRAN_FUNC(sarsvd)(&n, &nev, &ncv, v[0], eval, (void *) (&ata_mat));
   v=cc_arsvd(n, nev, ncv, eval, &ata_mat);
 
@@ -211,14 +215,15 @@ float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall,
   tracer->init1(np);
 
   //first we multiply through to get all the tracers:
+  printf("multiplying tracers\n");
   qall=new float **[nev];
   for (int32_t i=0; i<nev; i++) {
     qall[i]=tracer_multiply(matall+i0, nall, v[i]);
-
   }
 
   //create the matrix:
   //printf("nsamp=%d, nev=%d\n", nsamp, nev);
+  printf("performing interpolations\n");
   a=gsl_matrix_alloc(nsamp, nev+cflag);
   b=gsl_vector_alloc(nsamp);
   for (long i=0; i<nsamp; i++) {
@@ -250,6 +255,7 @@ float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall,
     gsl_vector_set(b, i, samp[i].q); 
   }
 
+  printf("fitting coefficients\n");
   work=gsl_multifit_linear_alloc(nsamp, nev+cflag);
   x=gsl_vector_alloc(nev+cflag);
   cov=gsl_matrix_alloc(nev+cflag, nev+cflag);
@@ -261,27 +267,29 @@ float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall,
   //output final, interpolated field:
   //if there is a constant term, we only output one field:
   //at the lead time...
-  if (cflag) {
-    qvec=new float *[1];
-    qvec[0]=new float[n];
-    for (int32_t k=0; k<n; k++) qvec[0][k]=gsl_vector_get(x, nev);
-    for (int32_t i=0; i<nev; i++) {
-      for (ind_t k=0; k<n; k++) qvec[0][k]+=gsl_vector_get(x, i)*qall[i][N][k];
-    }
-  } else {
-
-    qvec=new float *[nall];
-    qvec[0]=new float[nall*n];
-    for (int32_t k=0; k<n; k++) qvec[0][k]=0;
-    for (int32_t i=1; i<nall; i++) {
+  printf("reconstructing field %d %d %d\n", N, nall, n);
+  float konst=0;
+  if (cflag) konst=gsl_vector_get(x, nev);
+  if (mflag) {
+    qvec=new float *[nall+1];
+    qvec[0]=new float[(nall+1)*n];
+    for (int32_t k=0; k<n; k++) qvec[0][k]=konst;
+    for (int32_t i=1; i<=nall; i++) {
       qvec[i]=qvec[0]+i*n;
-      for (ind_t k=0; k<n; k++) qvec[i][k]=0;
+      for (ind_t k=0; k<n; k++) qvec[i][k]=konst;
     }
 
     for (int32_t i=0; i<nev; i++) {
-      for (int32_t j=0; j<nall; j++) {
+      for (int32_t j=0; j<=nall; j++) {
         for (ind_t k=0; k<n; k++) qvec[j][k]+=gsl_vector_get(x, i)*qall[i][j][k];
       }
+    }
+  } else {
+    qvec=new float *[1];
+    qvec[0]=new float[n];
+    for (int32_t k=0; k<n; k++) qvec[0][k]=konst;
+    for (int32_t i=0; i<nev; i++) {
+      for (ind_t k=0; k<n; k++) qvec[0][k]+=gsl_vector_get(x, i)*qall[i][N][k];
     }
   }
 

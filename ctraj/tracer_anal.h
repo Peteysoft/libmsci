@@ -39,7 +39,8 @@ namespace ctraj {
 		long nsamp, 			//number of samples
 		int32_t nev, 			//number of eigenvalues
 		int32_t ncv, 			//number of Arnoldi vectors
-		int cflag=0);			//constant term?
+		int cflag=0,			//constant term?
+		int mflag=0);			//output multiple fields?
 
   //returns the coefficients:
   //(doesn't work--one of these days I should fix it)

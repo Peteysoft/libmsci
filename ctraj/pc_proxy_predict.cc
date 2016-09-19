@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
 
   //get time grids:
   fs=fopen(datefile, "r");
-  line=fget_line(fs);		//throw away first grid
+  //line=fget_line(fs);		//throw away first grid
   for (int32_t i=0; i<nall; i++) {
     int32_t ind;
     line=fget_line(fs);
@@ -265,12 +265,7 @@ int main(int argc, char **argv) {
 
     //output final, interpolated field:
     //printf("%d: writing vector of length %d for %s\n", i, n, tstring);
-    if (kflag) {
-      fwrite(qvec[0], sizeof(float), n, fs);
-    } else {
-      //output field nearest measurements window:
-      fwrite(qvec[N3], sizeof(float), n, fs);
-    }
+    fwrite(qvec[0], sizeof(float), n, fs);
 
     delete [] qvec[0];
     delete [] qvec;

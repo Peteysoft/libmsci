@@ -146,9 +146,9 @@ int main(int argc, char **argv) {
   //fgets(line, MAXLL, fs);		//no header
 
   //get time grids:
-  line=fget_line(fs);		//throw away first gird (thus both the map and
+  //line=fget_line(fs);		//throw away first gird (thus both the map and
 				//the resultant tracer are compatible)
-  for (int32_t i=0; i<nall; i++) {
+  for (int32_t i=0; i<nall+1; i++) {
     int ind;
     line=fget_line(fs);
     sscanf(line, "%d %s", &ind, tstring);
@@ -158,13 +158,13 @@ int main(int argc, char **argv) {
   fclose(fs);
 
   if (flag[5]) {
-    i0=ceil(interpolate(t, nall, t0, -1));
+    i0=ceil(interpolate(t, nall+1, t0, -1));
   }
 
   if (N<0) N=nall-i0;
 
   if (flag[6]) {
-    N=bin_search(t, nall, tf, -1)-i0+1;
+    N=bin_search(t, nall+1, tf, -1)-i0+1;
   } 
 
   if (i0 < 0) i0=0;
@@ -181,9 +181,9 @@ int main(int argc, char **argv) {
 
   fprintf(docfs, "Performing interpolation...\n");
   
-  fprintf(docfs, "pc_proxy::main: nsamp=%ld, nev=%d, ncv=%d\n", nsamp, nev, ncv);
+  fprintf(docfs, "pc_proxy::main: nsamp=%ld, nev=%d, ncv=%d, i0=%d, N=%d\n", nsamp, nev, ncv, i0, N);
 
-  qvec=pc_proxy(matall+i0, t+i0, N, nall-i0, samp, nsamp, nev, ncv, cflag);
+  qvec=pc_proxy(matall+i0, t+i0, N, nall-i0, samp, nsamp, nev, ncv, cflag, wflag);
 
   //printf("Generating final tracer...\n");
 
@@ -192,14 +192,10 @@ int main(int argc, char **argv) {
   //output final, interpolated initial field:
   fs=fopen(outfile, "w");
   nvar=n;
-  if (cflag) {
+  if (wflag) {
     fprintf(docfs, "Writing %d vectors of length %d\n", nall-i0, n);
     fwrite(&nvar, sizeof(nvar), 1, fs);
-    fwrite(qvec[N], sizeof(float), nvar, fs);
-  } else if (wflag) {
-    fprintf(docfs, "Writing %d vectors of length %d\n", nall-i0, n);
-    fwrite(&nvar, sizeof(nvar), 1, fs);
-    fwrite(qvec[0], sizeof(float), n*(nall-i0), fs);
+    fwrite(qvec[0], sizeof(float), n*(nall-i0+1), fs);
   } else {
     fprintf(docfs, "Writing %d vectors of length %d\n", 1, n);
     fwrite(&nvar, sizeof(nvar), 1, fs);

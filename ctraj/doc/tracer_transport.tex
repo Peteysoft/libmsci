@@ -203,20 +203,18 @@ where $I$ is the identity matrix.
 This is known as the {\it tangent model} of a dynamical system and applied
 to a trajectory is the total stretching of Lagrangian space.
 
-%This derivation is false, but we leave this here as the two quantities
-%are definitely related, but not so simply:
-%We can relate $H$ to the integrated trajectory, $\Phi$, as follows:
-%\begin{eqnarray}
-%\frac{\mathrm d \Phi}{\mathrm d t} & = & v(\Phi, ~t) \\
-%gradient operator and total derivative don't commute:
-%\frac{\mathrm d}{\mathrm d t} 
-%\nabla_{\vec x_0} \Phi & = & \nabla \vec v \cdot \nabla_{\vec x_0} \Phi
-%\label{gradient_trajectory}
-%\end{eqnarray}
-%or,
-%\begin{equation}
-%\nabla_{\vec x_0} \Phi = H
-%\end{equation}
+We can relate $H$ to the integrated trajectory, $\Phi$, as follows:
+\begin{eqnarray}
+\frac{\mathrm d \Phi}{\mathrm d t} & = & v(\Phi, ~t) \\
+%yes, the two operators do commute... duh...
+\frac{\mathrm d}{\mathrm d t} 
+\nabla_{\vec x_0} \Phi & = & \nabla \vec v \cdot \nabla_{\vec x_0} \Phi
+\label{gradient_trajectory}
+\end{eqnarray}
+or,
+\begin{equation}
+\nabla_{\vec x_0} \Phi = H
+\end{equation}
 Note that:
 \begin{equation}
 	\delta \vec x = H \cdot \delta \vec x_0
@@ -266,14 +264,14 @@ and that:
 \nabla q = \nabla q_0 \cdot H^\prime
 \end{equation}
 
-%Also, by defining $\Phi^{-1}(\vec x,~t,~\Delta t)$ as,
-%\begin{equation}
-%\Phi^{-1}[\Phi(\vec x_0,~t_0,~\Delta t),~t_0+\Delta t,~\Delta t]=\vec x_0
-%\end{equation}
-%we can show:
-%\begin{equation}
-%H^\prime=\nabla \Phi^{-1}
-%\end{equation}
+Also, by defining $\Phi^{-1}(\vec x,~t,~\Delta t)$ as,
+\begin{equation}
+\Phi^{-1}[\Phi(\vec x_0,~t_0,~\Delta t),~t_0,~\Delta t]=\vec x_0
+\end{equation}
+we can show:
+\begin{equation}
+H^\prime=\nabla \Phi^{-1}
+\end{equation}
 
 \section{Transport map}
 
@@ -441,7 +439,7 @@ In the time-dependent case each element of the solution is in reverse order,
 not just the initial conditions:
 \begin{equation}
 	\vec r(t_n) = \vec r_0 \cdot R^*(t_0,\Delta t_0) \cdot R^*(t_1, \Delta t_1) \cdot \cdot R^*(t_2, \Delta t_2) ~ ... 
-~ \cdot R^*(t_n},\Delta t_n})
+~ \cdot R^*(t_n,\Delta t_n)
 \end{equation}
 where $R^*$ is a solution to the equation:
 \begin{eqnarray}
@@ -745,7 +743,7 @@ $\lbrace \vec v_i \rbrace$:
 where $\lbrace c_i \rbrace$ are a set of coefficients.
 Substituting this into the left-hand-side of (\ref{tracer_map_inequality}):
 \begin{eqnarray}
-	\vec q \cdot R^T \cdot R \cdot \vec q & = & \sum_i c_i \vec v_i \sum c_i s_i^2 \vec v_i \\
+	\vec q \cdot R^T \cdot R \cdot \vec q & = & \left ( \sum_i c_i \vec v_i \right ) \cdot \left (\sum_i c_i s_i^2 \vec v_i \right ) \\
    & = & \sum_i \sum_j c_i c_j s_i^2 \vec v_i \cdot \vec v_j \\
    & = & \sum_i \sum_j c_i c_j s_i^2 \delta_{ij} \\
 	  & = & \sum_i c_i^2 s_i^2
