@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
   fclose(fs);
 
   //read in the dates:
-  t=new time_class[nall];
+  t=new time_class[nall+1];
 
   fs=fopen(datefile, "r");
   //fgets(line, MAXLL, fs);		//no header

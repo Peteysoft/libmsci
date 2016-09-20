@@ -31,8 +31,8 @@ CC = g++
 OPT_VER = -g
 
 # paths for binaries and include files:
-BASE_PATH = /home/lenovo
-#BASE_PATH = /mnt/sdc1/home2/pete/
+#BASE_PATH = /home/lenovo
+BASE_PATH = /mnt/sdc1/home2/pete/
 
 LIB_PATH = $(BASE_PATH)/lib
 
