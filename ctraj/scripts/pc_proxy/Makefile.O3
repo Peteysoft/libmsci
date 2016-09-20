@@ -9,7 +9,8 @@ TFa= $(YEAR)/12/31
 #TFa= $(YEAR)/4/31
 
 #interpolate POAM data between these two dates:
-T0b= $(YEAR)/9/12
+#T0b= $(YEAR)/9/12
+T0b= $(YEAR)/11/1
 TFb= $(YEAR)/11/17
 
 #T0b= $(YEAR)/11/1

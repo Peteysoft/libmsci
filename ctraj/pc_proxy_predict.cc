@@ -168,12 +168,12 @@ int main(int argc, char **argv) {
   fclose(fs);
 
   //read in the dates:
-  t=new time_class[nall];
+  t=new time_class[nall+1];
 
   //get time grids:
   fs=fopen(datefile, "r");
   //line=fget_line(fs);		//throw away first grid
-  for (int32_t i=0; i<nall; i++) {
+  for (int32_t i=0; i<=nall; i++) {
     int32_t ind;
     line=fget_line(fs);
     sscanf(line, "%d %s", &ind, tstring);
@@ -186,18 +186,18 @@ int main(int argc, char **argv) {
   //output fields:
   if (flag[5]) {
     date0.add(-lead2);
-    i0=ceil(interpolate(t, nall, date0, -1));
+    i0=ceil(interpolate(t, nall+1, date0, -1));
   }
 
   if (N == -1 || N+i0>nall) {
     tf=t[nall-1];
     tf.add(-lead-window);
-    N=bin_search_g(t, nall, tf, -1)-i0+1;
+    N=bin_search_g(t, nall+1, tf, -1)-i0+1;
   }
 
   if (flag[6]) {
     datef.add(-lead2);
-    N=bin_search_g(t, nall, datef, -1)-i0+1;
+    N=bin_search_g(t, nall+1, datef, -1)-i0+1;
   }
   //***NOTE*** no range-checking...
 
@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
     tf=t[i];
 
     tf.add(lead);
-    l2=interpolate(t, nall, tf, -1);
+    l2=interpolate(t, nall+1, tf, -1);
     N2=(int32_t) (ceil(l2)-i);		//number of sparse matrix elements
 
     tf2=t[i];
@@ -228,7 +228,7 @@ int main(int argc, char **argv) {
     t2=tf2;
     t2.add(window);
     //round to nearest index: (rel. location of measurement window)
-    N3=(int32_t) (interpolate(t, nall, tf2, -1)-i+0.5);
+    N3=(int32_t) (interpolate(t, nall+1, tf2, -1)-i+0.5);
 
     t1.write_string(tstring);
     fprintf(docfs, "Interpolating measurements between %s ", tstring);
@@ -259,7 +259,7 @@ int main(int argc, char **argv) {
       nfield++;
     }
 
-    qvec=pc_proxy(matall+i, t+i, N2, nall-i, samp_w, nsamp_w, nev, ncv, kflag);
+    qvec=pc_proxy(matall+i, t+i, N2, nall-i, samp_w, nsamp_w, nev, ncv, kflag, N3);
 
     delete [] samp_w;
 

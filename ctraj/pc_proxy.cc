@@ -183,7 +183,9 @@ int main(int argc, char **argv) {
   
   fprintf(docfs, "pc_proxy::main: nsamp=%ld, nev=%d, ncv=%d, i0=%d, N=%d\n", nsamp, nev, ncv, i0, N);
 
-  qvec=pc_proxy(matall+i0, t+i0, N, nall-i0, samp, nsamp, nev, ncv, cflag, wflag);
+  int index;
+  if (wflag) index=-1; else index=N;
+  qvec=pc_proxy(matall+i0, t+i0, N, nall-i0, samp, nsamp, nev, ncv, cflag, index);
 
   //printf("Generating final tracer...\n");
 
@@ -193,7 +195,7 @@ int main(int argc, char **argv) {
   fs=fopen(outfile, "w");
   nvar=n;
   if (wflag) {
-    fprintf(docfs, "Writing %d vectors of length %d\n", nall-i0, n);
+    fprintf(docfs, "Writing %d vectors of length %d\n", nall-i0+1, n);
     fwrite(&nvar, sizeof(nvar), 1, fs);
     fwrite(qvec[0], sizeof(float), n*(nall-i0+1), fs);
   } else {
