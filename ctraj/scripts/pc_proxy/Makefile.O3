@@ -28,11 +28,11 @@ TSTEP = 1		#"coarse" (Eulerian) time step
 NFINE = 6		#"fine" (Lagrangian) Runge-Kutta time step
 
 #specifications for interpolation:
-PC=1			#use PC proxy?
+#PC=1			#use PC proxy?
 
 WINDOW = 1		#size of measurement window
 
-HEMI1 =
+HEMI1 = --
 HEMI2 =
 #KFLAG = -K
 
@@ -40,7 +40,7 @@ LEAD2=30
 NEV = 5
 NCV = 25
 
-ifdef PC
+ifdef $(PC)
   PROXY_COMMAND=pc_proxy_predict
   LEAD = 60
   PROXY_OPTIONS=-v $(NEV) -A $(NCV) -l $(LEAD2) $(HEMI1)
@@ -130,8 +130,9 @@ datesO3.txt: $(VFIELD_S) $(VFIELD_N)
 
 #generate the passive tracer fields that serve as the proxy:
 $(PROXY_FIELD): $(CVMAT)
-	zonally_symmetric_tracer | lla2aeb -n $(NGRID) $(PROXY_FIELD)
-	tracer_step2_w_renorm $(CVMAT) $(PROXY_FIELD)
+	zonally_symmetric_tracer | lla2aeb -n $(NGRID) $(PROXY_FIELD).a
+	tracer_step2_w_renorm $(CVMAT) $(PROXY_FIELD).a
+	eq_lat $(PROXY_FIELD).a $(PROXY_FIELD)
 	
 #extract the velocity fields:
 $(VFIELD_N) $(VFIELD_S):

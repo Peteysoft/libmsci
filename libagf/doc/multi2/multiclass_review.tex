@@ -145,7 +145,7 @@ problem solved via minimization:
 subject to:
 \begin{eqnarray}
 	\sum_{i=1}^{n_c} p_i & = & 1 \label{first_constraint}\\
-	p_i & \ge & 0 
+	p_i & \ge & 0 \label{constraints}
 \end{eqnarray}
 where straight brackets, $||$, denotes a vector norm which  
 in this case is the Euclidian or $L^2$ norm.
@@ -247,8 +247,9 @@ in a binary number in order for it to match another binary number.
 This assumes that each $r_i$ returns only $-1$ or $+1$ and that
 the coding matrix is strict:
 \begin{equation}
-|\vec v - \vec r} = \sum_i \delta_{v_i r_i}
+|\vec v - \vec r| = \sum_i \delta_{v_i r_i}
 \end{equation}
+where $\delta$ is the Kronecker delta. 
 
 Here we are assuming that the decision functions return an approximation of the 
 difference in conditional probabilities of the binary classifier, hence we will once again use a
@@ -330,6 +331,74 @@ A =
 While there are only three coding vectors for four classes, 
 once we add in the constraint in (\ref{first_constraint}) the system becomes 
 fully determined.
+
+\subsection{Variations}
+
+There are many variations on the method. \citet{Ramanan_etal2007} for instance train a 
+one-versus-the-rest model at each level of the tree so that if the ``one''
+class is returned, the lower levels of the tree are short circuited
+and this class is selected for the final result. Otherwise, the one class
+is left out of subsequent analysis. This is less a new method than simply
+a means of shaping the tree appropriate to datasets with unbalanced
+numbers of classes, for instance the ``Shuttle'' dataset \citep{King_etal1995}.
+
+In a decision directed acyclic graph (DDAG), 
+rather than testing one group against another, 
+each node of the tree tests one class against another \citep{Platt_etal2000}. 
+The losing class is excluded from subsequent analysis. 
+The previous paragraph describes the ``tree'' version of the one-versus-the-rest. 
+This is the tree version of one-versus-one. 
+In a DDAG, there are multiple paths to the same node.
+
+\subsection{Empirically designed trees}
+
+\begin{figure}
+	\includegraphics[width=0.9\textwidth]{landclasstree.eps}
+	\label{landclasstree}
+\end{figure}
+
+Consider the following land-classification problem: you have remote-sensing measurements of four surface types: corn field, wheat field, evergreen forest and deciduous forest.
+How do you divide up the tree to best classify the measurements into one of these four surface types?
+A priori, it would make the most sense to first divide them by their more general grouping: field versus forest and then, once you have field, classify by type of field, or if you have forest, classify by the type of forest.
+This is illustrated in Figure \ref{landclasstree}.
+
+In this case we have prior knowledge of how the classes are related to one another,
+but in many cases, we the classes may be too abstract to have any knowledge without examining the actual training data.
+Many different methods of empirically designing both decision trees and coding matrices have been shown in the literature.
+\citet{Cheong_etal2004}, for instance, use a self-organizing-map (SOM)
+\cite{Kohonen2000} to visualize the relationship between the classes while
+\citet{Lee_Oh2003} use a genetic algorithm to optimize the decision tree.
+
+\citet{Benabdeslem_Bennani2006} design the tree by measuring the distance between
+the classes and building a dendrogram.
+\citet{Zhou_etal2008} use a similar method to design a coding matrix.
+This seems the most straightforward approach and is interesting in that it reduces a very large problem involving probabilities into a much smaller one.
+Consider the problem above: it stands to reason that the field and forest classes would be much more strongly separated than either of the sub-classes within.
+That is the {\it interclass distance} between field and forest is larger.
+
+How do we measure the interclass distance? Fundamentally this is a the distance between two sets and there are many methods of measuring this.
+We could notate this as follows:
+\begin{equation}
+	D_{ij}=D(P(\vec x|i),~P(\vec x|j))
+\end{equation}
+
+Consider the distance between the means of the two classes divided by their standard deviations. Let:
+\begin{equation}
+	\vec \mu_i = \frac{1}{n_i} \sum_{k|c_k=i} \vec x_k
+\end{equation}
+be the mean of the $i$th class where $n_i$ is the number of instances of that class, while:
+\begin{equation}
+	\sigma_i = \frac{1}{n_i-1}\sqrt{\sum_{k|c_k=i}|\vec x_k - \vec \mu_i|^2}
+\end{equation}
+then let the distance between the two classes be:
+\begin{equation}
+	D_{ij}=\frac{|\vec \mu_j - \vec \mu_i |}{\sigma_i \sigma_j}
+\end{equation}
+That is, the closer the centers of the two classes, the shorter the distance, while the wider each class is, the farther the distance.
+	
+This would work well if each of the classes is quite distinct and clustered around a strong center.
+But for more diffuse classes, especially those with multiple centers, it would make more sense to use a metric designed specifically for sets rather than this somewhat crude adaptation of a vector metric.
+In this regard, the Hausdorff metric seems almost tailor-made for this application.
 
 \bibliography{../agf_bib.bib}
 
