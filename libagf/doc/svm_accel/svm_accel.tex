@@ -171,8 +171,8 @@ neither the final decision function, (\ref{svm_decision}), nor in the
 optimization problem, (\ref{dual_problem}). Second, while the use of
 $\expandedspace$ implies that the time complexity of the decision function 
 could be $O(1)$ as in a parametric statistical model, in actual fact it is
-dependent on the number of non-zero values in $\lbrace \svmcoeff \rbrace$.
-While the coefficient set, $\lbrace \svmcoeff \rbrace$, does tend to be sparse,
+dependent on the number of non-zero values in $\lbrace \svmcoeff_i \rbrace$.
+While the coefficient set, $\lbrace \svmcoeff_i \rbrace$, does tend to be sparse,
 nonetheless in most real problems the number of non-zero coefficients is
 proportional to the number of samples, $\nsample$, producing a time complexity
 of $O(\nsample)$. Thus for large problems, calculating the decision value will

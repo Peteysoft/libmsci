@@ -186,38 +186,39 @@ A =
 The one-versus-one solution is used in LIBSVM \citep{Chang_Lin2011}.
 
 Another common coding matrix is simply a random one: this is commonly
-known as an ``error-correcting'' code. There are of course some guidelines
-as to how to construct such a coding matrix. More on this in the next 
-section.
+known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}. 
+There are of course some guidelines
+as to how to construct such a coding matrix. More on this in the later 
+sections.
 
-Suppose we include the constraint in (\ref{first_constraint}) in the matrix, $Q$:
-\begin{eqnarray}
-	q_{n_p+1,j} & = & 1 |~ j=1..n_c \\
-	\vec r_{n_p+1} & = & 1
-\end{eqnarray}
-and solve the system via least squares:
+\subsection{Basic inverse solution}
+
+Equation (\ref{minimization_problem}) can be solved via the normal
+equation:
 \begin{equation}
 	Q^T Q \vec p = Q^T \vec r
+	\label{normal_equation}
 \end{equation}
-This solves the minimization problem in (\ref{minimization_problem}) while
-including one of the constraints, however in many
-cases the constraints in (\ref{constraints}) will not be satisfied so will
-for many applications need to be adjusted, reducing accuracy.
-This is not the case, however, for the one-versus-one configuration: the
-constraints are normally always satisfied [citation].
+Because the binary probability estimates in $\vec r$ are rarely perfect, however,
+in many cases the constraints in (\ref{first_constraint}) and (\ref{constraints}) will not be satisfied 
+so for most applications the results will need to be adjusted, reducing accuracy.
 
-[start over]
-Suppose we solve the minimization problem in (\ref{minimization_problem})
-via least squares:
-\begin{equation}
-	Q^T Q \vec p = Q^T \vec r
-\end{equation}
-Suppose also that we incorporate the normality constraint in (\ref{first_constraint}) into the problem. There are at least two ways to do this. The most
-obvious is to reduce the dimensionality of the problem:
+It is straightforward to incorporate the normality constraint in (\ref{first_constraint}) into the problem. There are at least two ways to do this. The most
+obvious is to reduce the dimensionality of the problem by one:
 \begin{equation}
 	p_k = 1 - \sum_{i|i \ne k} p_i
 \end{equation}
-while a more symmetric method involves adding an extra variable similar to
+We can now rewrite the elements of the matrix, $Q$:
+\begin{equation}
+	q_{ij} = a_{ij} - a_{ik} + (|a_{ij}|-|a_{ik}|)r_i | ~ j \ne k
+\end{equation}
+and the solution vector which we'll now call $\vec b$:
+\begin{equation}
+	b_i = r_i - a_{ik} + (|a_{ik}| - 1) r_i
+\end{equation}
+Replace $\vec r$ with $\vec b$ in Equation (\ref{minimization_problem}) or (\ref{normal_equation}).
+
+A more symmetric method involves adding an extra variable similar to
 a Lagrange multiplier:
 \begin{equation}
 	\begin{bmatrix}
@@ -232,6 +233,13 @@ a Lagrange multiplier:
 \end{equation}
 where $\lambda$ is the Lagrange multiplier.
 
+Since they are inequality constraints, those in (\ref{constraints}) are
+harder to enforce.
+The exception being the one-versus-one configuration: so long as the normality
+constraint is satisfied, the inequality constraints are also satisfied
+\citep{Wu_etal2004}.
+Methods of enforceing the inequality constraints, (\ref{constraints}), will
+be left to a later section.
 
 \subsection{Voting solution}
 
@@ -376,11 +384,12 @@ This seems the most straightforward approach and is interesting in that it reduc
 Consider the problem above: it stands to reason that the field and forest classes would be much more strongly separated than either of the sub-classes within.
 That is the {\it interclass distance} between field and forest is larger.
 
-How do we measure the interclass distance? Fundamentally this is a the distance between two sets and there are many methods of measuring this.
+How does one measure the interclass distance? Fundamentally this is a the distance between two sets and there are many methods of measuring this.
 We could notate this as follows:
-\begin{equation}
-	D_{ij}=D(P(\vec x|i),~P(\vec x|j))
-\end{equation}
+\begin{eqnarray}
+	D_{ij} & = & D\left [P(\vec x|i),~P(\vec x|j)\right ] \\
+	       & \approx & D\left (\lbrace \vec x_k|~c_k=i \rbrace,~\lbrace \vec x_k|~c_k=j\rbrace \right )
+\end{eqnarray}
 
 Consider the distance between the means of the two classes divided by their standard deviations. Let:
 \begin{equation}
@@ -392,13 +401,22 @@ be the mean of the $i$th class where $n_i$ is the number of instances of that cl
 \end{equation}
 then let the distance between the two classes be:
 \begin{equation}
-	D_{ij}=\frac{|\vec \mu_j - \vec \mu_i |}{\sigma_i \sigma_j}
+	D_{ij}=\frac{|\vec \mu_j - \vec \mu_i |}{\sqrt{\sigma_i \sigma_j}}
 \end{equation}
 That is, the closer the centers of the two classes, the shorter the distance, while the wider each class is, the farther the distance.
+The square root in the denominator keeps the measure unitless.
 	
 This would work well if each of the classes is quite distinct and clustered around a strong center.
 But for more diffuse classes, especially those with multiple centers, it would make more sense to use a metric designed specifically for sets rather than this somewhat crude adaptation of a vector metric.
-In this regard, the Hausdorff metric seems almost tailor-made for this application.
+In this regard, the Hausdorff metric seems tailor-made for this application.
+
+For a pair of finite sets such as training samples from a pair of classes,
+the Hausdorff distance works out to \citep{Ott1993, Gulick1992}:
+\begin{equation}
+D_{Hij} = \max \left \lbrace \min_k \max_l | \vec x_k - \vec x_l|~,~\min_l \max_k | \vec x_k - \vec x_l| ~ |~c_k=i;~c_l=j \right \rbrace
+\end{equation}
+Obviously, this metric is not unitless and has the same dimensions as the
+vector metric from which it is composed.
 
 \bibliography{../agf_bib.bib}
 

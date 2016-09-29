@@ -1,18 +1,20 @@
-all: agf2/agf_paper.pdf multiborders/multiborders_arxiv.pdf directions/agf_directions.pdf libagf_guide.pdf
+
+all:
+	make -C agf2
+	make -C multiborders
+	make -C directions
+	make -C multi2
 
 clean:
 	make -C agf2 clean
 	make -C multiborders clean
 	make -C directions clean
 
-agf2/agf_paper.pdf:
+all:
 	make -C agf2
-
-multiborders/multiborders_arxiv.pdf:
 	make -C multiborders
-
-directions/agf_directions.pdf:
 	make -C directions
+	make -C multi2
 
 libagf_guide.pdf: libagf_guide.tex agf_bib.bib
 	latex libagf_guide.tex
