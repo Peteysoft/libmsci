@@ -16,12 +16,12 @@
 \label{description}
 
 In a statistical classication problem we are given a set of ordered pairs, 
-$\lbrace \vec x_i : y_i \rbrace$ 
-where $\vec x_i \in \Re^N$ is the location of the {\it sample} in 
+$\lbrace \vec x_j : y_j \rbrace$ 
+where $\vec x_j \in \Re^N$ is the location of the {\it sample} in 
 the $N$-dimensional {\it feature space} 
-and $y_i \in [1..n_c]$ is the class number or label of the sample
+and $y_j \in [1..n_c]$ is the class of the sample
 where $n_c$ is the number of classes,
-and the class labels are
+and the classes are
 distributed according to an unknown conditional distribution,
 $P(c | \vec x)$ with $c \in [1..n_c]$ the class label and $\vec x$ the location
 in feature space.
@@ -30,36 +30,35 @@ Given an arbitrary {\it test point}, $\vec x$,
 we wish to estimate $P(c | \vec x)$, however we only have
 the means to estimate some binary component of it, that is we have a 
 set of binary classifiers, 
-each returning a {\it decision function}, $r_i(\vec x)$, that is
-trained using the same type of ordered pairs as above, 
-except the ordinates can only take on one of two values
-which we choose as: $y_i \in \lbrace -1, +1 \rbrace$.
-
+each returning a {\it decision function}, $r_i(\vec x)$.
 In this paper we assume that the decision function 
 returns estimates of the difference in conditional probabilities:
 \begin{equation}
-	r_i(\vec x) = p_i(+1|\vec x) - p(-1|\vec x)
+	r_i(\vec x) \approx p_i(+1|\vec x) - p_i(-1|\vec x)
 \end{equation}
 where $p_i(c|\vec x)$ is the conditional probability of the $i$th
 binary classifier.
+The decision function is trained using the same type of ordered pairs as
+above except that the classes can only take on one of two values,
+which for convenience are chosen as either $-1$ or $+1$, 
+that is, $y_{ij} \in \lbrace -1, +1 \rbrace$.
 
 How can we partition the classes, $\lbrace y_i \rbrace$, that is create
 a mapping of the form:
 \begin{equation}
 	y_{ij} (y_j) = \left \lbrace  \begin{array}{lr}
--1 & | y_j \in C_j^+ \\
-+1 & | y_j \in C_j^-
+-1 & | y_j \in C_i^+ \\
++1 & | y_j \in C_i^-
 \end{array}
 \right .
 \end{equation}
 where $y_{ij}$ is the class value of $j$th sample of the transformed data 
 for trainng the $i$th binary classifier and 
-$C_j^+ \subset [1..n_c]$ is the set of classes from the original set, 
+$C_i^+ \subset [1..n_c]$ is the set of classes from the original set, 
 $[1..n_c]$, that map to $+1$ while
-$C_j^- \subset [1..n_c]$ is the set of classes from the original set, 
-$[1..n_c]$, that map to $-1$?
+$C_i^- \subset [1..n_c]$ is the set of classes that map to $-1$?
 
-And once we have partitioned the classes
+Once we have partitioned the classes
 and trained the binary classifers, 
 how do we solve for the most likely class, 
 \begin{equation}
@@ -77,7 +76,7 @@ or else can be any of the classes, $c \in [1..n_c]$?
 In {\it non-hierarchical} multi-class classification, we solve for the
 classes or probabilities of the multi-class problem all at once:
 all the binary classifiers are used in the solution and the result of
-one binary classifier does not determine the use of another one.
+one binary classifier does not determine the use of any of the others.
 Using the notation provided in Section \ref{description}, 
 we can write a system of equations relating
 the multi-class conditional probabilities to the decision
@@ -90,17 +89,17 @@ where
 $c_{ij}^- \in C_i^-$,
 $c_{ij}^+ \in C_i^+$,
 $n_i^-$ is the number of class labels on the negative side of
-the $i$the partition,
+the $i$th partition,
 and $n_i^+$ is the number of class labels on the positive side of
-the $i$the partition
+the $i$th partition
 
-It's more natural, however to describe the problem using a
+It's more natural to describe the problem using a
 {\it coding matrix}, $A$, 
 which is structured such that
 $a_{ij} \in {-1, 0, 1}$ where $i$ enumerates the binary classifier and
 $j$ enumerates the class of the multi-class problem.
-In other words, if $a_{ij}$ is $-1/+1$, we would assign each of the $j$th class
-labels in the training data a value of $-1/+1$ when training the $i$th
+In other words, if $a_{ij}$ is $-1$/$+1$, we would assign each of the $j$th class
+labels in the training data a value of $-1$/$+1$ when training the $i$th
 binary classifier. If the value is $0$, the $j$th class label is excluded.
 
 The non-zero elements of $A$ are:
@@ -124,11 +123,15 @@ we can solve for the probabilities, $\vec p$, via matrix inversion:
 	Q \vec p & = & \vec r \label{basic_system}\\
 	%q_{ij} & = & a_{ij} + \delta(a_{ij}) r_i \\
 	q_{ij} & = & a_{ij} + (1-|a_{ij}|) r_i 
-	\label{matrix_inverse2}
+	\label{matrix_equation2}
 \end{eqnarray}
-where $\vec r$ is the vector of decision functions, $\lbrace r_i| i=[1..n_p]\rbrace$, $n_p$ is the number of partitions,
-$\vec p$ is the vector of estimated probabilities, $\vec p =\lbrace p_i | i=[1..n_c]\rbrace$, and $\delta$ is the delta function.
-Not that $Q$ reduces to $A$ if $A$ contains no zeroes.
+where $\vec r=\lbrace r_i| i=[1..n_p]\rbrace$ 
+is the vector of decision functions, 
+$n_p$ is the number of partitions,
+$\vec p =\lbrace p_i | i=[1..n_c]\rbrace$
+is the vector of estimated probabilities.
+%and $\delta$ is the Kronecker delta.
+Note that $Q$ reduces to $A$ if $A$ contains no zeroes.
 The case of a coding matrix that contains no zeroes, that is all the partitions divide up all the
 classes rather than a subset, will be called the {\it strict} case.
 From a computational perspective, 
@@ -203,7 +206,7 @@ Because the binary probability estimates in $\vec r$ are rarely perfect, however
 in many cases the constraints in (\ref{first_constraint}) and (\ref{constraints}) will not be satisfied 
 so for most applications the results will need to be adjusted, reducing accuracy.
 
-It is straightforward to incorporate the normality constraint in (\ref{first_constraint}) into the problem. There are at least two ways to do this. The most
+It is straightforward to incorporate the normality constraint in (\ref{first_constraint}) into the problem. There are at least three ways to do this. The most
 obvious is to reduce the dimensionality of the problem by one:
 \begin{equation}
 	p_k = 1 - \sum_{i|i \ne k} p_i
@@ -231,7 +234,15 @@ a Lagrange multiplier:
 	\end{bmatrix}
 	= [\vec r, 1]
 \end{equation}
-where $\lambda$ is the Lagrange multiplier.
+where $\lambda$ is the Lagrange multiplier and $\vec 1$ is a vector of all ones.
+
+If the number of partitions is one less than the number of classes, $n_p=n_c-1$,
+the normality constraint, (\ref{first_constraint}), can simply be added to the 
+matrix equation in (\ref{matrix_equation2}) as a row of all ones in $Q$ and a one in an augmented $\vec r$:
+\begin{eqnarray}
+	q_{n_c+1,j} & = & 1 \\
+	r_{n_c+1} & = & 1
+\end{eqnarray}
 
 Since they are inequality constraints, those in (\ref{constraints}) are
 harder to enforce.
@@ -243,21 +254,26 @@ be left to a later section.
 
 \subsection{Voting solution}
 
-In many other texts [insert citation], the class of the test point is determined by how close $\vec r$
+In many other texts \citep{Allwein_etal2000, Hsu_Lin2002, Dietterich_Bakiri1995},
+the class of the test point is determined by how close $\vec r$
 is to each of the columns in $A$:
 \begin{equation}
 	c = \arg \min_i |\vec a^{(i)} - \vec r|^2
 \end{equation}
-where $\vec a^{(i)}$ is the $i$th column of $A$. 
+where $\vec a^{(i)}$ is the $i$th column of $A$.
 For the norm, $||$, Hamming distance is
 frequently used, which is the number of bits that must be changed
 in a binary number in order for it to match another binary number.
-This assumes that each $r_i$ returns only $-1$ or $+1$ and that
-the coding matrix is strict:
+This assumes that each $r_i$ returns only $-1$ or $+1$.
+If the coding matrix is strict, then:
 \begin{equation}
 |\vec v - \vec r| = \sum_i \delta_{v_i r_i}
 \end{equation}
-where $\delta$ is the Kronecker delta. 
+where $\delta$ is the Kronecker delta.
+\citet{Allwein_etal2000} 
+tailor the matric on the basis of the binary classifier used, each of which
+will return a different type of continuous decision function 
+(that doesn't represent the difference in conditional probabilities).
 
 Here we are assuming that the decision functions return an approximation of the 
 difference in conditional probabilities of the binary classifier, hence we will once again use a
@@ -294,8 +310,8 @@ equivalent.
 
 In other words, if the number of coding vectors is equal to the number of classes, the optimal coding vector will be orthogonal, $A^T A = I$, where $I$ is
 the identity matrix. Thus the voting solution and the (unconstrained) matrix 
-inverse will be equivalent. Orthogonal, ``strict'' coding matrices will exist
-if the number of classes is divisible by 4 [need proof, really...], e.g.:
+inverse will be equivalent. Orthogonal, ``strict'' coding matrices 
+are not hard to construct for certain class sizes, for instance:
 \begin{equation}
 A = 
 \begin{bmatrix}
@@ -309,7 +325,8 @@ A =
 \section{Decision trees}
 
 The most obvious method of dividing up a multi-class problem into binary
-classifiers is hierarchically using a {\it decision tree} [insert citation].
+classifiers is hierarchically using a {\it decision tree} 
+\citep{Cheong_etal2004, Lee_Oh2003}.
 In this method, the classes are first divided into two partitions, then
 those partitions are each divided into two partitions and so on until only
 one class remains. The classification scheme is hierarchical, with all the
@@ -338,7 +355,8 @@ A =
 \end{equation}
 While there are only three coding vectors for four classes, 
 once we add in the constraint in (\ref{first_constraint}) the system becomes 
-fully determined.
+fully determined, although it doesn't scale to larger problems:
+extra partitions will have to be added.
 
 \subsection{Variations}
 
@@ -388,16 +406,16 @@ How does one measure the interclass distance? Fundamentally this is a the distan
 We could notate this as follows:
 \begin{eqnarray}
 	D_{ij} & = & D\left [P(\vec x|i),~P(\vec x|j)\right ] \\
-	       & \approx & D\left (\lbrace \vec x_k|~c_k=i \rbrace,~\lbrace \vec x_k|~c_k=j\rbrace \right )
+	       & \approx & D\left (\lbrace \vec x_k|~y_k=i \rbrace,~\lbrace \vec x_k|~y_k=j\rbrace \right )
 \end{eqnarray}
 
 Consider the distance between the means of the two classes divided by their standard deviations. Let:
 \begin{equation}
-	\vec \mu_i = \frac{1}{n_i} \sum_{k|c_k=i} \vec x_k
+	\vec \mu_i = \frac{1}{n_i} \sum_{k|y_k=i} \vec x_k
 \end{equation}
 be the mean of the $i$th class where $n_i$ is the number of instances of that class, while:
 \begin{equation}
-	\sigma_i = \frac{1}{n_i-1}\sqrt{\sum_{k|c_k=i}|\vec x_k - \vec \mu_i|^2}
+	\sigma_i = \frac{1}{n_i-1}\sqrt{\sum_{k|y_k=i}|\vec x_k - \vec \mu_i|^2}
 \end{equation}
 then let the distance between the two classes be:
 \begin{equation}
@@ -413,7 +431,7 @@ In this regard, the Hausdorff metric seems tailor-made for this application.
 For a pair of finite sets such as training samples from a pair of classes,
 the Hausdorff distance works out to \citep{Ott1993, Gulick1992}:
 \begin{equation}
-D_{Hij} = \max \left \lbrace \min_k \max_l | \vec x_k - \vec x_l|~,~\min_l \max_k | \vec x_k - \vec x_l| ~ |~c_k=i;~c_l=j \right \rbrace
+D_{Hij} = \max \left \lbrace \min_k \max_l | \vec x_k - \vec x_l|~,~\min_l \max_k | \vec x_k - \vec x_l| ~ ;~y_k=i;~y_l=j \right \rbrace
 \end{equation}
 Obviously, this metric is not unitless and has the same dimensions as the
 vector metric from which it is composed.
