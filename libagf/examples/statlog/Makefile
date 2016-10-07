@@ -10,11 +10,21 @@ VER3=heart
 
 NCLS1=2
 NCLS2=2
+NCLS3=2
+
 NCLS=$(NCLS$(V))
 
 AGFOPT1=
 AGFOPT2="-W 2"
+AGFOPT3=
+
 AGFOPT=$(AGFOPT$(V))
+
+SVMOPT1=
+SVMOPT2=
+SVMOPT3=
+
+SVMOPT=$(SVMOPT$(V))
 
 SCRIPTDIR=../../scripts
 
@@ -42,9 +52,11 @@ all: $(NBORDER_SVM) $(NBORDER_AGF) $(NSUPPORT)
 clean:
 	rm -f $(BASE).*
 
+#find number of border samples SVM-borders:
 $(NBORDER_SVM): $(SVMMODEL).svc $(TRAIN).vec $(TRAIN).cls
 	$(SCRIPTDIR)/mb_nb.sh -g -q $(NTEST) -N $(NTRIAL) -s $(MAXSAMPLE) -Z $(SVMMODEL).svc $(TRAIN) $(NBORDER_SVM)
 
+#find number of border samples AGF-borders:
 $(NBORDER_AGF): $(MULTICONTROL) $(TRAIN).vec $(TRAIN).cls
 	$(SCRIPTDIR)/mb_nb.sh -g -q $(NTEST) -N $(NTRIAL) -s $(MAXSAMPLE) $(AGFOPT) $(MULTICONTROL) $(TRAIN) $(NBORDER_AGF)
 
@@ -52,7 +64,7 @@ $(NSUPPORT): $(TRAIN).svm
 	$(SCRIPTDIR)/svm_nsv.sh -G -q $(NTEST) $(SVMOPT) $(TRAIN) $(NSUPPORT)
 
 $(ACCELERATOR): $(MULTICONTROL) $(SVMMODEL).svc $(TRAIN).vec $(TRAIN).cls
-	multi_borders -Z $(SVMMODEL).svc $(TRAIN) $(ACCELERATOR) $(ACCELERATOR).mbc &> svmmulti.log
+	multi_borders -Z $(SVMMODEL).svc $(TRAIN) $(ACCELERATOR) $(ACCELERATOR).mbc &>> svmmulti.log
 
 $(SVMMODEL).svc: $(MULTICONTROL) $(TRAIN).svm
 	multi_borders -M -- "svm-train $(SVMOPT)" $(MULTICONTROL) $(TRAIN).svm $(SVMMODEL) $(SVMMODEL).svc &> svmmulti.log

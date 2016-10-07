@@ -40,7 +40,7 @@ namespace ctraj {
 		int32_t nev, 			//number of eigenvalues
 		int32_t ncv, 			//number of Arnoldi vectors
 		int cflag=0,			//constant term?
-		int mflag=0);			//output multiple fields?
+		int index=-1);			//index of field to output
 
   //returns the coefficients:
   //(doesn't work--one of these days I should fix it)

@@ -31,8 +31,8 @@ CC = g++
 OPT_VER = -g
 
 # paths for binaries and include files:
-#BASE_PATH = /home/lenovo
-BASE_PATH = /mnt/sdc1/home2/pete/
+BASE_PATH = /home/lenovo
+#BASE_PATH = /mnt/sdc1/home2/pete/
 
 LIB_PATH = $(BASE_PATH)/lib
 
@@ -63,6 +63,7 @@ LD_OPTIONS = -L$(GSL_LIB) -L$(LIB_PATH) \
 	-lgsl -lgslcblas \
 	-L$(ARPATH) -l$(LIBARPACK) -l$(FORTRAN_RUNTIME) -ldl \
 	-L$(NCDF_LIB) -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lz
+	#-L$(NCDF_LIB) -lnetcdf_c++ -lnetcdf -lz
 
 #LD_OPTIONS = -L$(LIB_PATH) -ldataset$(OPT_VER) -lpetey$(OPT_VER)
 CFLAGS = -I$(GSL_INC) -I$(NCDF_INC) -I$(INCLUDE_PATH) \

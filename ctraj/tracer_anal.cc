@@ -138,10 +138,9 @@ void tracer_interp(float **qall, time_class *t, int32_t nt, int32_t np, meas_dat
 
 }
 
-float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall, meas_data *samp, long nsamp, int32_t nev, int32_t ncv, int cflag, int mflag) {
+float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall, meas_data *samp, long nsamp, int32_t nev, int32_t ncv, int cflag, int index) {
 
   ind_t m, n;		//size of matrix
-  int32_t i0;		//start point, number of matrices
 
   float **v;		//eigenvectors
   float *eval;		//eigenvalues
@@ -179,29 +178,25 @@ float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall,
   gsl_matrix *cov;
   double chisq;
 
-  i0=0;
-
   //get matrix dimensions:
   matall[0].dimensions(m, n);
   assert(m==n);
 
   //prepare for SVD:
   //sa_dir=1;
-  if (N+i0 > nall) N=nall-i0;
+  if (N > nall) N=nall;
 
-  printf("generating matrix square i0=%d N=%d\n", i0, N);
-  a_mat=new sparse_array<int32_t, float>(matall+i0, N);
-  printf("generating matrix square\n");
+  //printf("generating matrix square N=%d\n", N);
+  a_mat=new sparse_array<int32_t, float>(matall, N);
   at_mat=*a_mat;
   at_mat.transpose();
-  printf("generating matrix square\n");
   a_mat->mat_mult(at_mat, ata_mat);
 
   //perform the SVD:
   eval=new float[ncv];
 
   //call the fortran program:
-  printf("performing SVD\n");
+  //printf("performing SVD\n");
   //FORTRAN_FUNC(sarsvd)(&n, &nev, &ncv, v[0], eval, (void *) (&ata_mat));
   v=cc_arsvd(n, nev, ncv, eval, &ata_mat);
 
@@ -215,10 +210,11 @@ float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall,
   tracer->init1(np);
 
   //first we multiply through to get all the tracers:
-  printf("multiplying tracers\n");
+  printf("multiplying tracer (nall=%d; n=%d)\n", nall, n);
   qall=new float **[nev];
   for (int32_t i=0; i<nev; i++) {
-    qall[i]=tracer_multiply(matall+i0, nall, v[i]);
+    printf("%d\n", i);
+    qall[i]=tracer_multiply(matall, nall, v[i]);
   }
 
   //create the matrix:
@@ -236,7 +232,7 @@ float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall,
     hemi=metric.to(lonlat, xy);
     tracer->interpolate((hemi+1)/2, xy, sub, intc);
 
-    tind=interpolate(t, nall, samp[i].t, -1)-i0;
+    tind=interpolate(t, nall+1, samp[i].t, -1);
     tindi=(int) tind;
     frac=tind-(double) tindi;
 
@@ -270,7 +266,7 @@ float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall,
   printf("reconstructing field %d %d %d\n", N, nall, n);
   float konst=0;
   if (cflag) konst=gsl_vector_get(x, nev);
-  if (mflag) {
+  if (index<0) {
     qvec=new float *[nall+1];
     qvec[0]=new float[(nall+1)*n];
     for (int32_t k=0; k<n; k++) qvec[0][k]=konst;
@@ -289,7 +285,7 @@ float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall,
     qvec[0]=new float[n];
     for (int32_t k=0; k<n; k++) qvec[0][k]=konst;
     for (int32_t i=0; i<nev; i++) {
-      for (ind_t k=0; k<n; k++) qvec[0][k]+=gsl_vector_get(x, i)*qall[i][N][k];
+      for (ind_t k=0; k<n; k++) qvec[0][k]+=gsl_vector_get(x, i)*qall[i][index][k];
     }
   }
 
@@ -535,14 +531,20 @@ real eq_lat<real>::operator () (real *q, real *el) {
   real cum_area=0;
   real cum_area_mid=0;
   real mass=0;		//not exactly
+  real t2=0;
 
   //printf("total area=%g\n", total_area);
   ind=heapsort(q, n);
+  for (int32_t i=0; i<n; i++) t2+=area[ind[i]];		//order matters, apparently...
   for (int32_t i=0; i<n; i++) {
+    real test;
     cum_area+=area[ind[i]];
     cum_area_mid=(cum_area_mid+cum_area)/2;
     cum_area_mid=cum_area;
-    el[ind[i]]=asin(2*cum_area_mid/total_area-1);
+    test=2*cum_area_mid/t2-1;
+    if (test>1) fprintf(stderr, "test>1: %12.8f %15.8g %15.8g\n", test, cum_area_mid, total_area);
+    if (test<-1) fprintf(stderr, "test<-1: %12.8f %15.8g %15.8g\n", test, cum_area_mid, total_area);
+    el[ind[i]]=asin(test);
     mass+=area[i]*q[i];
   }
   delete [] ind;

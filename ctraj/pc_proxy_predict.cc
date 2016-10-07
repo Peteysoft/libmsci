@@ -145,35 +145,37 @@ int main(int argc, char **argv) {
   if (cflag==0) outfile=argv[6];
 
   //read in the array of sparse matrices:
-  fprintf(docfs, "Reading file: %s\n", matfile);
-  fs=fopen(matfile, "r");
+  //if (cflag!=1) {
+    fprintf(docfs, "Reading file: %s\n", matfile);
+    fs=fopen(matfile, "r");
 
 //*FLAG* -- fixed-length data structure
-  matall=new sparse_matrix[nall];
+    matall=new sparse_matrix[nall];
 
-  for (int32_t i=0; i<nall; i++) {
-    //printf("%d\n", i);
-    ncon=matall[i].read(fs);
-    if (ncon==0) {
-      nall=i;
-      break;
+    for (int32_t i=0; i<nall; i++) {
+      //printf("%d\n", i);
+      ncon=matall[i].read(fs);
+      if (ncon==0) {
+        nall=i;
+        break;
+      }
     }
-  }
-  fprintf(docfs, "%d sparse matrices read in\n", nall);
+    fprintf(docfs, "%d sparse matrices read in\n", nall);
 
-  //determine the dimensions of the matrics:
-  matall[0].dimensions(m, n);
-  assert(m==n);			//only square matrices need apply...
+    //determine the dimensions of the matrics:
+    matall[0].dimensions(m, n);
+    assert(m==n);			//only square matrices need apply...
 
-  fclose(fs);
+    fclose(fs);
+  //}
 
   //read in the dates:
-  t=new time_class[nall];
+  t=new time_class[nall+1];
 
   //get time grids:
   fs=fopen(datefile, "r");
   //line=fget_line(fs);		//throw away first grid
-  for (int32_t i=0; i<nall; i++) {
+  for (int32_t i=0; i<=nall; i++) {
     int32_t ind;
     line=fget_line(fs);
     sscanf(line, "%d %s", &ind, tstring);
@@ -185,22 +187,22 @@ int main(int argc, char **argv) {
   //if we are specifying dates, then we are interested in the final,
   //output fields:
   if (flag[5]) {
-    date0.add(-lead2);
-    i0=ceil(interpolate(t, nall, date0, -1));
+    date0.add(lead2-lead);
+    i0=ceil(interpolate(t, nall+1, date0, -1));
   }
 
   if (N == -1 || N+i0>nall) {
     tf=t[nall-1];
     tf.add(-lead-window);
-    N=bin_search_g(t, nall, tf, -1)-i0+1;
+    N=bin_search_g(t, nall+1, tf, -1)-i0+1;
   }
 
   if (flag[6]) {
     datef.add(-lead2);
-    N=bin_search_g(t, nall, datef, -1)-i0+1;
+    N=bin_search_g(t, nall+1, datef, -1)-i0+1;
   }
   //***NOTE*** no range-checking...
-
+  
   //read in measurements:
   fprintf(docfs, "Reading in measurements from, %s\n", measurement_file);
   samp=read_meas(measurement_file, &nsamp, dwid);
@@ -214,11 +216,12 @@ int main(int argc, char **argv) {
   }
   nfield=0;
   for (int32_t i=i0; i<N+i0; i++) {
+    int32_t nall_local;		//to save memory...
     //calculate lead times:
     tf=t[i];
 
     tf.add(lead);
-    l2=interpolate(t, nall, tf, -1);
+    l2=interpolate(t, nall+1, tf, -1);
     N2=(int32_t) (ceil(l2)-i);		//number of sparse matrix elements
 
     tf2=t[i];
@@ -228,7 +231,9 @@ int main(int argc, char **argv) {
     t2=tf2;
     t2.add(window);
     //round to nearest index: (rel. location of measurement window)
-    N3=(int32_t) (interpolate(t, nall, tf2, -1)-i+0.5);
+    N3=(int32_t) (interpolate(t, nall+1, tf2, -1)-i+0.5);
+    //to save memory while doing the interpolation:
+    nall_local=bin_search(t, nall+1, t2, -1)+1-i;
 
     t1.write_string(tstring);
     fprintf(docfs, "Interpolating measurements between %s ", tstring);
@@ -239,13 +244,6 @@ int main(int argc, char **argv) {
     samp_w=select_meas(t1, t2, samp, nsamp, &nsamp_w, hemi);
     //write_meas(samp_w, nsamp_w, stdout);
     t[N3+i].write_string(tstring);
-    if (nsamp_w < nev) {
-      fprintf(stderr, "pc_proxy_predict: %s not included in time series\n", tstring);
-      fprintf(stderr, "            fewer data points (%ld) than singular vectors (%d)\n",
-			nsamp_w, nev);
-      err=OTHER_WARNING;
-      continue;
-    }
 
     if (cflag) {
       //if the -C option is specified, we only output the number of samples per field:
@@ -254,12 +252,20 @@ int main(int argc, char **argv) {
       nsamp_ave+=nsamp_w;
       delete [] samp_w;
       continue;
-    } else {
-      printf("%d %s\n", nfield, tstring);
-      nfield++;
     }
 
-    qvec=pc_proxy(matall+i, t+i, N2, nall-i, samp_w, nsamp_w, nev, ncv, kflag);
+    if (nsamp_w < nev) {
+      fprintf(stderr, "pc_proxy_predict: %s not included in time series\n", tstring);
+      fprintf(stderr, "            fewer data points (%ld) than singular vectors (%d)\n",
+			nsamp_w, nev);
+      err=OTHER_WARNING;
+      continue;
+    }
+
+    printf("%d %s\n", nfield, tstring);
+    nfield++;
+
+    qvec=pc_proxy(matall+i, t+i, N2, nall_local, samp_w, nsamp_w, nev, ncv, kflag, N3);
 
     delete [] samp_w;
 
@@ -278,7 +284,7 @@ int main(int argc, char **argv) {
     fclose(fs);
   }
 
-  delete [] matall;
+  //if (cflag!=1) delete [] matall;
   delete [] t;
   delete [] samp;
 

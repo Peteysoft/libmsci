@@ -30,7 +30,7 @@ shift $(($OPTIND - 1))
 BASE=$1
 TRACER_FILE=$2
 NALL=$(extract_field $TRACER_FILE)
-if [ $N < 0 || $N > $NALL ]; then
+if [[ $N -gt $NALL || $N -lt 0 ]]; then
   N=$NALL
 fi
 
@@ -42,6 +42,11 @@ INDEX1=$[NV-1]
 #REC=$(extract_field -Rn $NGRID)
 for ((INDEX=$I0; INDEX<$N; INDEX+=$SKIP)); do
   OUTFILE=$BASE$INDEX.dat
-  correlate_fields -1 $INDEX1 -2 $INDEX $OUTFILE $TRACER_FILE
+  if [[ -a $OUTFILE ]]; then
+    echo "correlate_fields -1 $INDEX1 -2 $INDEX $OUTFILE $TRACER_FILE"
+    correlate_fields -1 $INDEX1 -2 $INDEX $OUTFILE $TRACER_FILE
+  else
+    break
+  fi
 done
 

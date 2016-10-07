@@ -130,7 +130,7 @@ errtype dependent_intc::interpol_coeff(interpol_index *indices,
       mult=mult*dim[j];
    }
    subscripts[i]=sub;
-   coeffs[i]=(float) (weight/(double) norm);
+   coeffs[i]=weight/(double) norm;
 //   printf("Weight %d= %f\n", i, weight/(double) norm);
   }
 

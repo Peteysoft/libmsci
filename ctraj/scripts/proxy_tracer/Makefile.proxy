@@ -14,10 +14,10 @@ ORDER=2		#order of regression
 T0=$(YEAR)/1/1
 TF=$(YEAR)/7/1
 
-#VFIELD_PATH=/cygdrive/e/tmpdata/vfield
-VFIELD_PATH=/tmp/vfield
-#DATA_PATH= /cygdrive/e/data/ncep/sixhour
-DATA_PATH= /media/Lexar/ncep_data
+VFIELD_PATH=/cygdrive/e/tmpdata/vfield
+#VFIELD_PATH=/tmp/vfield
+DATA_PATH= /cygdrive/e/data/ncep/sixhour
+#DATA_PATH= /media/Lexar/ncep_data
 
 VFIELD_N = $(VFIELD_PATH)/vfield_ncep$(YEAR)_$(THETA)K_N.ds
 VFIELD_S = $(VFIELD_PATH)/vfield_ncep$(YEAR)_$(THETA)K_S.ds
@@ -66,19 +66,19 @@ tcorr.txt: tracer1.vec tracer2.vec
 proxycorr.txt: proxy.vec tracer2.vec
 	echo $(IND1)
 	echo $(IND2)
-	correlate_fields -1 $(IND1) -2 0 tracer2.vec proxy.vec > proxycorr.txt
-	correlate_fields -1 $(IND2) -2 4 tracer2.vec proxy.vec >> proxycorr.txt
+	correlate_fields -1 $(IND1) -2 0 tracer1a.vec proxy.vec > proxycorr.txt
+	correlate_fields -1 $(IND2) -2 4 tracer1a.vec proxy.vec >> proxycorr.txt
 
 proxy.vec: meas_sim.txt dates.txt tracer1.vec
 	proxy_tracer $(HEMI) -i $(T0_MEAS) -f $(TF_MEAS) -o $(ORDER) \
-		tracer1.vec dates.txt meas_sim.txt $(WINDOW) proxy.vec
+		tracer1a.vec dates.txt meas_sim.txt $(WINDOW) proxy.vec
 
 dates.txt: 
 	$(TRACER) -Q -h $(DT) -i $(T0) -f $(TF) $(VFIELD_N) $(VFIELD_S) \
 			> dates.txt
 
-meas_sim.txt: meas_loc.txt tracer2.vec dates.txt
-	tracer_interpolate tracer2.vec dates.txt meas_loc.txt > meas_sim.txt
+meas_sim.txt: meas_loc.txt tracer1.vec dates.txt
+	tracer_interpolate tracer1a.vec dates.txt meas_loc.txt > meas_sim.txt
 
 meas_loc.txt:
 	random_global -i $(T0_MEAS) -f $(TF_MEAS) $(NTEST) > meas_loc.txt 
@@ -97,12 +97,14 @@ clean:
 	rm -f lyap_spec.txt
 
 tracer1.vec: $(MATFILE)
-	zonally_symmetric_tracer | lla2aeb -n $(NGRID) tracer1.vec
-	$(TRACER_MULTIPLY) $(MATFILE) tracer1.vec
+	zonally_symmetric_tracer | lla2aeb -n $(NGRID) tracer1a.vec
+	$(TRACER_MULTIPLY) $(MATFILE) tracer1a.vec
+	eq_lat tracer1a.vec tracer1.vec
 
 tracer2.vec: $(MATFILE)
-	zonally_symmetric_tracer -E | lla2aeb -n $(NGRID) tracer2.vec
-	$(TRACER_MULTIPLY) $(MATFILE) tracer2.vec
+	zonally_symmetric_tracer -E | lla2aeb -n $(NGRID) tracer2a.vec
+	$(TRACER_MULTIPLY) $(MATFILE) tracer2a.vec
+	eq_lat tracer2a.vec tracer2.vec
 
 $(MATFILE): $(VFIELD_N) $(VFIELD_S)
 	$(TRACER) -n $(NGRID) -h $(DT) -k $(NFINE) -i $(T0) -f $(TF) \
