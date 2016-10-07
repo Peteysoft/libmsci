@@ -541,7 +541,7 @@ namespace libpetey {
     //perform left vector multiplication:
     template <class index_t, class data_t>
     void sparse<index_t, data_t>::left_mult(data_t *cor, data_t *result) {
-      for (index_t i=0; i<m; i++) result[i]=0;
+      for (index_t i=0; i<n; i++) result[i]=0;
       for (long i=0; i<nel; i++) {
         result[matrix[i].j]+=matrix[i].value*cor[matrix[i].i];
       }
@@ -653,7 +653,7 @@ namespace libpetey {
           //increment muliplicand index until it reaches the end, or row index
           //changes:
           while (cand_i_old == cand.matrix[r].i) {
-    	r++;
+            r++;
             if (r >= cand.nel) break;
           }
           //if multiplicand index is at the end, we are finished,

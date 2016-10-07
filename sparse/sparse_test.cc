@@ -5,6 +5,8 @@
 #include "sparse.h"
 #include "randomize.h"
 
+using namespace libpetey;
+using namespace libsparse;
 
 //test cases:
 //  y=A*b		vector multiplication
@@ -16,10 +18,6 @@
 //  C=A+B		add sparse to full
 namespace libpetey {
   namespace libsparse {
-
-    using namespace libpetey;
-    using namespace libsparse;
-
     template <typename real>
     real test_sparse_arithmetic(
 		int m,		//size of matrices
@@ -31,8 +29,8 @@ namespace libpetey {
 
       double (*rangen) ();
       FILE *logfs=stderr;
-      real res;		//residual
-      real max_res=0;	//maximum size of residual
+      real res;			//residual
+      real max_res=0;		//largest residual
       int err=0;		//error code (number of bad values)
       real **A;
       real **B;
@@ -96,13 +94,15 @@ namespace libpetey {
 	  err++;
 	}
       }
- 
-      fprintf(logfs, "y=v*A\n");
-      left_vec_mult(v, A, y, m, n);	//full version
-      A1.left_mult(v, y1);		//sparse version
+
+      for (int i=0; i<m; i++) y[i]=(*rangen) ();
+      fprintf(logfs, "v=y*A\n");
+      left_vec_mult(y, A, v, m, n);	//full version
+      real v1[m];
+      A1.left_mult(y, v1);		//sparse version
 
       for (int i=0; i<m; i++) {
-        res=fabs(2*(y[i]-y1[i])/(y[i]+y1[i]));
+        res=fabs(2*(v[i]-v1[i])/(v[i]+v1[i]));
         if (res > max_res) max_res=res;
 	if (res > eps) {
           fprintf(stderr, "Residual of %g found; %g max\n", res, eps);
