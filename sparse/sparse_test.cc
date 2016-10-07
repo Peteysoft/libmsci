@@ -77,16 +77,32 @@ namespace libpetey {
       sparse<int32_t, real> C1(m, p);
       real **C2=allocate_matrix<real>(m, p);
       real y1[m];
+/*
+      print_matrix(stdout, A, m, n);
+      printf("\n");
+      print_matrix(stdout, B, n, p);
+      printf("\n");
+      A1.print(stdout);
+      printf("\n");
+      B1.print(stdout);
+      printf("\n");
+*/
 
       //beginning of test cases:
 
       //y=A*v
       fprintf(logfs, "y=A*v\n");
       vector_mult(A, v, y, m, n);		//full version
-      A1.vect_mult(v, y1);		//sparse version
-
+      A1.vect_mult(v, y1);			//sparse version
+/*
+      for (int i=0; i<m; i++) printf("%g ", y[i]);
+      printf("\n\n");
+      for (int i=0; i<m; i++) printf("%g ", y1[i]);
+      printf("\n\n");
+*/
       for (int i=0; i<m; i++) {
-        res=fabs(2*(y[i]-y1[i])/(y[i]+y1[i]));
+        if (y[i]==0 && y1[i]==0) res=0; 
+		else res=fabs(2*(y[i]-y1[i])/(y[i]+y1[i]));
         if (res > max_res) max_res=res;
 	if (res > eps) {
           fprintf(stderr, "Residual of %g found; %g max\n", res, eps);
@@ -100,9 +116,15 @@ namespace libpetey {
       left_vec_mult(y, A, v, m, n);	//full version
       real v1[m];
       A1.left_mult(y, v1);		//sparse version
-
-      for (int i=0; i<m; i++) {
-        res=fabs(2*(v[i]-v1[i])/(v[i]+v1[i]));
+/*
+      for (int i=0; i<n; i++) printf("%g ", v[i]);
+      printf("\n\n");
+      for (int i=0; i<n; i++) printf("%g ", v1[i]);
+      printf("\n\n");
+*/
+      for (int i=0; i<n; i++) {
+        if (v[i]==0 && v1[i]==0) res=0; 
+        	else res=fabs(2*(v[i]-v1[i])/(v[i]+v1[i]));
         if (res > max_res) max_res=res;
 	if (res > eps) {
           fprintf(stderr, "Residual of %g found; %g max\n", res, eps);
@@ -114,10 +136,16 @@ namespace libpetey {
       fprintf(logfs, "C=A*B\n");
       matrix_mult(A, B, C, m, n, p);	//full version
       A1.mat_mult(B1, C1);			//sparse version
-
+/*
+      print_matrix(stdout, C, m, p);
+      printf("\n");
+      C1.print(stdout);
+      printf("\n");
+*/
       for (int i=0; i<m; i++) {
         for (int j=0; j<p; j++) {
-          res=fabs(2*(C[i][j]-C1(i,j))/(C[i][j]+C1(i,j)));
+          if (C[i][j]==0 && C1(i,j)==0) res=0; 
+          	else res=fabs(2*(C[i][j]-C1(i,j))/(C[i][j]+C1(i,j)));
           if (res > max_res) max_res=res;
 	  if (res > eps) {
             fprintf(stderr, "Residual of %g found; %g max\n", res, eps);
@@ -132,7 +160,8 @@ namespace libpetey {
 
       for (int i=0; i<m; i++) {
         for (int j=0; j<p; j++) {
-          res=fabs(2*(C[i][j]-C2[i][j])/(C[i][j]+C2[i][j]));
+          if (C[i][j]==0 && C2[i][j]==0) res=0; 
+          	else res=fabs(2*(C[i][j]-C2[i][j])/(C[i][j]+C2[i][j]));
           if (res > max_res) max_res=res;
         }
       }
@@ -142,7 +171,8 @@ namespace libpetey {
 
       for (int i=0; i<m; i++) {
         for (int j=0; j<p; j++) {
-          res=fabs(2*(C[i][j]-C2[i][j])/(C[i][j]+C2[i][j]));
+          if (C[i][j]==0 && C2[i][j]==0) res=0; 
+          	else res=fabs(2*(C[i][j]-C2[i][j])/(C[i][j]+C2[i][j]));
           if (res > max_res) max_res=res;
 	  if (res > eps) {
             fprintf(stderr, "Residual of %g found; %g max\n", res, eps);
@@ -158,6 +188,7 @@ namespace libpetey {
       delete_matrix(C);
       delete_matrix(C2);
       B=allocate_matrix<real>(m, n);
+      zero_matrix(B, m, n);
       B1.reset(m, n);
       for (int i=0; i<m; i++) {
         for (int j=0; j<n; j++) {
@@ -170,13 +201,19 @@ namespace libpetey {
 
       fprintf(logfs, "C=A+B (one sparse term\n");
       C=libpetey::copy_matrix(A, m, n);	//full version
+      //print_matrix(stdout, C, m, n);
+      //print_matrix(stdout, B, m, n);
       matrix_add(C, B, m, n);
       C2=libpetey::copy_matrix(B, m, n);	//sparse version
       A1.full_add(C2);
 
+      //print_matrix(stdout, C, m, n);
+      //print_matrix(stdout, C2, m, n);
+
       for (int i=0; i<m; i++) {
         for (int j=0; j<n; j++) {
-          res=fabs(2*(C[i][j]-C2[i][j])/(C[i][j]+C2[i][j]));
+          if (C[i][j]==0 && C2[i][j]==0) res=0; 
+          	else res=fabs(2*(C[i][j]-C2[i][j])/(C[i][j]+C2[i][j]));
           if (res > max_res) max_res=res;
 	  if (res > eps) {
             fprintf(stderr, "Residual of %g found; %g max\n", res, eps);
@@ -190,9 +227,13 @@ namespace libpetey {
       C1=B1;
       C1.sparse_add(A1);			//sparse version
 
+      //print_matrix(stdout, C, m, n);
+      //C1.print(stdout);
+
       for (int i=0; i<m; i++) {
         for (int j=0; j<n; j++) {
-          res=fabs(2*(C[i][j]-C1(i, j))/(C[i][j]+C1(i, j)));
+          if (C[i][j]==0 && C1(i,j)==0) res=0; 
+          	else res=fabs(2*(C[i][j]-C1(i, j))/(C[i][j]+C1(i, j)));
           if (res > max_res) max_res=res;
 	  if (res > eps) {
             fprintf(stderr, "Residual of %g found; %g max\n", res, eps);

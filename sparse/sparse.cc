@@ -14,6 +14,7 @@
 #include "../libpetey/bin_search.cc"
     
 #include "sparse_array.h"
+#include "full_util.h"
 #include "full_matrix.h"
     
 #include "sparse_element.h"
@@ -170,8 +171,9 @@ namespace libpetey {
     void sparse<index_t, data_t>::from_full(data_t **non, index_t min, index_t nin, data_t neps) {
       data_t val;
     
+      eps=neps;
       reset(min, nin);
-    
+
       for (index_t i=0; i<m; i++) {
         for (index_t j=0; j<n; j++) {
           val=non[i][j];
@@ -179,6 +181,7 @@ namespace libpetey {
         }
       }
       update();
+
     
     }
     
@@ -187,6 +190,7 @@ namespace libpetey {
     sparse<index_t, data_t>::sparse(data_t **non, index_t min, index_t nin, data_t neps) {
     
       array_size=1;
+      eps=neps;
       matrix=new sparse_el<index_t, data_t>[array_size];
       from_full(non, min, nin, neps);
       sparse_log=stderr;
