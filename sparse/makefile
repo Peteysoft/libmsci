@@ -62,7 +62,8 @@ INCLUDE_FILES = matrix_base.h \
 		sparse_array.h \
 		av.h \
 		debug.h \
-		sparse_solve.h 
+		sparse_solve.h \
+		sparse_test.h 	
 
 OBJECT_FILES = av$(OPT_VER).o \
 	       conj_grad$(OPT_VER).o \
@@ -72,7 +73,8 @@ OBJECT_FILES = av$(OPT_VER).o \
 	       sparse_array$(OPT_VER).o \
 	       matrix_base$(OPT_VER).o \
 	       sparse_invert$(OPT_VER).o \
-	       sparse_arpack_solver$(OPT_VER).o
+	       sparse_arpack_solver$(OPT_VER).o \
+	       sparse_test$(OPT_VER).o
 
 FORTRAN_OBJ = arevd$(OPT_VER).o \
 	      arsvd$(OPT_VER).o
@@ -83,6 +85,8 @@ EXECUTABLES = ev_sparse_array \
 	      sparse_vect_prod \
 	      svd_sparse_array
 
+TESTABLES = test_sparse
+
 SPARSE_CALCULABLES = sparse_calc \
 		sparse_calc.tab$(OPT_VER).o \
 		lex.yy$(OPT_VER).o \
@@ -91,9 +95,13 @@ SPARSE_CALCULABLES = sparse_calc \
 EXECUTABLES2=$(addsuffix $(OPT_VER)$(EXE_EXT), $(EXECUTABLES))
 EXECUTABLES3=$(addprefix $(BIN_PATH)/, $(addsuffix $(EXE_EXT), $(EXECUTABLES)))
 
+TESTABLES2=$(addsuffix $(OPT_VER)$(EXE_EXT), $(TESTABLES))
+
 %INCLUDE_FILES2=$(addprefix $(INCLUDE_PATH)/, $(INCLUDE_FILES))
 
 all: $(LIBNAME) $(EXECUTABLES2) sparse_calc
+
+test: $(TESTABLES2)
 
 install: $(EXECUTABLES3)
 	make install_include
@@ -120,6 +128,9 @@ clean:
 	rm -f lex.yy.c
 
 $(EXECUTABLES2): %$(OPT_VER)$(EXE_EXT): %.cc $(LIBNAME) $(LIBPETEY)
+	$(CC) $(CFLAGS) -o $@ $< $(LD_FLAGS)
+
+$(TESTABLES2): %$(OPT_VER)$(EXE_EXT): %.cc $(LIBNAME) $(LIBPETEY)
 	$(CC) $(CFLAGS) -o $@ $< $(LD_FLAGS)
 
 $(LIBNAME): $(OBJECT_FILES) $(FORTRAN_OBJ) makefile

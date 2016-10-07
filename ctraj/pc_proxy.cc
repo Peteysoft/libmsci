@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
   if (N<0) N=nall-i0;
 
   if (flag[6]) {
-    N=bin_search(t, nall+1, tf, -1)-i0+1;
+    N=bin_search(t, nall+1, tf, -1)-i0;
   } 
 
   if (i0 < 0) i0=0;

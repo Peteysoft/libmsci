@@ -56,6 +56,8 @@ int main(int argc, char **argv) {
   float var1, var2;
   float cov;
 
+  float thresh;
+
   time_class t0;
   time_class tf;
   time_class ttest;
@@ -64,10 +66,11 @@ int main(int argc, char **argv) {
   size_t fsize;
   int32_t nvar;
 
-  void *optarg[9];
-  int flag[9];
+  void *optarg[20];
+  int flag[20];
 
   int Hflag;		//for generationg histograms
+  int tflag;		//we're cheating...
 
   //for generating the interpolation coefficients:
   int32_t np;
@@ -79,15 +82,17 @@ int main(int argc, char **argv) {
   optarg[2]=&i0;
   optarg[3]=&dwid;
   optarg[6]=&N;
-  argc=parse_command_opts(argc, argv, "-+0difNPH?", "%%%d%d%s%s%d%%%", optarg, flag, OPT_WHITESPACE);
+  optarg[9]=&thresh;
+  argc=parse_command_opts(argc, argv, "-+0difNPHt?", "%%%d%d%s%s%d%%%g%", optarg, flag, OPT_WHITESPACE);
   if (argc < 0) exit(411);
   if (flag[0]) hemi=-1; else if (flag[1]) hemi=1;
   if (flag[4]) t0.read_string((char *) optarg[4]);
   if (flag[5]) tf.read_string((char *) optarg[5]);
   cflag=flag[7];
   Hflag=flag[8];
+  tflag=flag[9];
 
-  if (argc<4 || flag[9]) {
+  if (argc<4 || flag[10]) {
     int err;
     if (flag[9]) {
       docfs=stdout;
@@ -220,24 +225,31 @@ int main(int argc, char **argv) {
     //calculate averages:
     ave1=0;
     ave2=0;
+    int nbad=0;
     for (long i=0; i<nsamp2; i++) {
-      ave1+=samp2[i].q;
-      ave2+=samp3[i].q;
+      if (tflag && samp2[i].q > thresh && samp3[i].q > thresh) {
+        ave1+=samp2[i].q;
+        ave2+=samp3[i].q;
+      } else {
+	nbad++;
+      }
     }
-    ave1/=nsamp2;
-    ave2/=nsamp2;
+    ave1/=nsamp2-nbad;
+    ave2/=nsamp2-nbad;
     //calculate covariance and standard deviations:
     cov=0;
     var1=0;
     var2=0;
     for (long i=0; i<nsamp2; i++) {
-      diff1=samp2[i].q-ave1;
-      diff2=samp3[i].q-ave2;
-      cov+=diff1*diff2;
-      var1+=diff1*diff1;
-      var2+=diff2*diff2;
+      if (tflag && samp2[i].q > thresh && samp3[i].q > thresh) {
+        diff1=samp2[i].q-ave1;
+        diff2=samp3[i].q-ave2;
+        cov+=diff1*diff2;
+        var1+=diff1*diff1;
+        var2+=diff2*diff2;
+      }
     }
-    printf("r=%g\n", cov/sqrt(var1/(nsamp2-1))/sqrt(var2/(nsamp2-1))/(nsamp2-1));
+    printf("r=%g\n", cov/sqrt(var1/(nsamp2-nbad-1))/sqrt(var2/(nsamp2-nbad-1))/(nsamp2-nbad-1));
 
   } else if (Hflag==0) {
     write_meas(samp2, nsamp2, stdout);

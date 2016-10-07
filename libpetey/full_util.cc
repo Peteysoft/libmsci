@@ -72,8 +72,6 @@ void copy_matrix(real **m1, real **m2, integer m, integer n) {
 template <class real, class integer>
 real ** copy_matrix(real **mat, integer m, integer n) {
   real **result;
-  //this is really fucking annoying, I have to add all these fucking
-  //template parameters in order for it to compile:
   result=allocate_matrix<real, integer>(m, n);
   copy_matrix(mat, result, m, n);
   return result;

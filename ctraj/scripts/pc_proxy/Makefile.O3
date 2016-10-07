@@ -1,23 +1,24 @@
-YEAR=1998
-#YEAR=1999
+#YEAR=1998
+YEAR=1999
 
 #extent of tracer mapping:
 T0a= $(YEAR)/1/1-6
-TFa= $(YEAR)/12/31
+TFa= $(YEAR)/4/1
+#TFa= $(YEAR)/12/31
 
 #T0a= $(YEAR)/1/1
 #TFa= $(YEAR)/4/31
 
 #interpolate POAM data between these two dates:
 #T0b= $(YEAR)/9/12
-T0b= $(YEAR)/11/1
-TFb= $(YEAR)/11/17
+#T0b= $(YEAR)/11/1
+#TFb= $(YEAR)/11/17
 
 #T0b= $(YEAR)/11/1
 #TFb= $(YEAR)/12/30
 
-#T0b= $(YEAR)/2/1
-#TFb= $(YEAR)/3/25
+T0b= $(YEAR)/2/1
+TFb= $(YEAR)/3/25
 
 #specifications for tracer simulation:
 #vertical level:
@@ -28,19 +29,19 @@ TSTEP = 1		#"coarse" (Eulerian) time step
 NFINE = 6		#"fine" (Lagrangian) Runge-Kutta time step
 
 #specifications for interpolation:
-#PC=1			#use PC proxy?
+PC=1			#use PC proxy?
 
 WINDOW = 1		#size of measurement window
 
-HEMI1 = --
+HEMI1 =
 HEMI2 =
 #KFLAG = -K
 
-LEAD2=30
+LEAD2=60
 NEV = 5
 NCV = 25
 
-ifdef $(PC)
+ifdef PC
   PROXY_COMMAND=pc_proxy_predict
   LEAD = 60
   PROXY_OPTIONS=-v $(NEV) -A $(NCV) -l $(LEAD2) $(HEMI1)
@@ -64,13 +65,15 @@ DATA_PATH = /cygdrive/e/data/ncep/sixhour/
 PROXY1=proxy1_$(BASE).vec
 PROXY2=proxy2_$(BASE).vec
 PROXY_O3 = proxyO3_$(BASE).vec
-
+PROXY_DATES = proxy_dates_$(BASE).txt
 #corresponding dates:
 PDATES1=pdates1_$(BASE).txt
 PDATES2=pdates2_$(BASE).txt
 
 #tracer mapping:
 CVMAT=matO3_$(THETA)K.dat
+#corresponsing dates:
+DATES=datesO3.txt
 
 #cross-validation results:
 CVAL1=v1_$(BASE).txt
@@ -80,9 +83,9 @@ CVAL2=v2_$(BASE).txt
 #passive proxy tracer field:
 PROXY_FIELD = proxy_field.vec
 
-all: $(PROXY_O3) proxy_datesO3.txt o3soundings$(THETA)K.txt
-	tracer_interpolate -d 24 -P $(HEMI2) -i $(T0b) -f $(TFb) $(PROXY_O3) proxy_datesO3.txt \
-		o3soundings$(THETA)K.txt
+all: $(PROXY_O3) $(PROXY_DATES) $(PROXY_O3) o3soundings$(THETA)K.txt
+	tracer_interpolate -d 24 -P $(HEMI2) -i $(T0b) -f $(TFb) $(PROXY_O3) \
+		$(PROXY_DATES) o3soundings$(THETA)K.txt
 
 cross_validate: $(PROXY1) $(PROXY2) $(PDATES1) $(PDATES2) file1.txt file2.txt
 	tracer_interpolate -d 20 -P $(HEMI2) -i $(T0b) -f $(TFb) $(PROXY2) \
@@ -91,19 +94,18 @@ cross_validate: $(PROXY1) $(PROXY2) $(PDATES1) $(PDATES2) file1.txt file2.txt
 		$(PDATES1) file2.txt > $(CVAL2)
 
 clean:
-	rm -f matO3.dat datesO3.txt
-	rm -f proxyO3.vec proxy_datesO3.txt
-	rm -f file1.txt file2.txt
-	rm -f proxy1.vec proxy2.vec
-	rm -f pdates1.txt pdates2.txt
+	rm -f *$(BASE)*
+	rm -f $(CVMAT)
+	rm -f $(PROXY_FIELD)
+	rm -f $(DATES)
 
-$(PROXY2) $(PDATES2): file2.txt $(PROXYFILE) datesO3.txt
+$(PROXY2) $(PDATES2): file2.txt $(PROXYFILE) $(DATES)
 	$(PROXY_COMMAND) $(PROXY_OPTIONS) -d 20 -i $(T0b) -f $(TFb) \
-		$(PROXYFILE) datesO3.txt file2.txt $(LEAD) $(WINDOW) $(PROXY2) > $(PDATES2) 
+		$(PROXYFILE) $(DATES) file2.txt $(LEAD) $(WINDOW) $(PROXY2) > $(PDATES2) 
 
-$(PROXY1) $(PDATES1): file1.txt $(PROXYFILE) datesO3.txt
+$(PROXY1) $(PDATES1): file1.txt $(PROXYFILE) $(DATES)
 	$(PROXY_COMMAND) $(PROXY_OPTIONS) -d 20 -i $(T0b) -f $(TFb) \
-		$(PROXYFILE) datesO3.txt file1.txt $(LEAD) $(WINDOW) $(PROXY1) > $(PDATES1)
+		$(PROXYFILE) $(DATES) file1.txt $(LEAD) $(WINDOW) $(PROXY1) > $(PDATES1)
 
 file1.txt file2.txt: POAMIII_$(THETA)K.txt
 	split_file POAMIII_$(THETA)K.txt file1.txt file2.txt
@@ -111,20 +113,20 @@ file1.txt file2.txt: POAMIII_$(THETA)K.txt
 o3soundings$(THETA)K.txt: o3soundings$(THETA)K.txt.gz
 	gunzip -c o3soundings$(THETA)K.txt.gz > o3soundings$(THETA)K.txt
 
-$(PROXY_O3) proxy_datesO3.txt: $(PROXYFILE) datesO3.txt POAMIII_$(THETA)K.txt
-	$(PROXY_COMMAND) $(KFLAG) -d 20 -i $(T0b) -f $(TFb) $(PROXY_OPTIONS) $(PROXYFILE) datesO3.txt \
-		POAMIII_$(THETA)K.txt $(LEAD) $(WINDOW) $(PROXY_O3) > proxy_datesO3.txt
+$(PROXY_O3) $(PROXY_DATES): $(PROXYFILE) $(DATES) POAMIII_$(THETA)K.txt
+	$(PROXY_COMMAND) $(KFLAG) -d 20 -i $(T0b) -f $(TFb) $(PROXY_OPTIONS) $(PROXYFILE) $(DATES) \
+		POAMIII_$(THETA)K.txt $(LEAD) $(WINDOW) $(PROXY_O3) > $(PROXY_DATES)
 
 POAMIII_$(THETA)K.txt: POAMIII_$(THETA)K.txt.gz
 	gunzip -c POAMIII_$(THETA)K.txt.gz > POAMIII_$(THETA)K.txt
 
 $(CVMAT): $(VFIELD_S) $(VFIELD_N)
 	ctraj_tracer -n $(NGRID) -h $(TSTEP) -k $(NFINE) \
-		-i $(T0a) -f $(TFa) $(VFIELD_S) $(VFIELD_N) $(CVMAT) > datesO3.txt
+		-i $(T0a) -f $(TFa) $(VFIELD_S) $(VFIELD_N) $(CVMAT) > $(DATES)
 
-datesO3.txt: $(VFIELD_S) $(VFIELD_N)
+$(DATES): $(VFIELD_S) $(VFIELD_N)
 	ctraj_tracer -Q -n $(NGRID) -h $(TSTEP) -k $(NFINE) \
-		-i $(T0a) -f $(TFa) $(VFIELD_S) $(VFIELD_N) > datesO3.txt
+		-i $(T0a) -f $(TFa) $(VFIELD_S) $(VFIELD_N) > $(DATES)
 
 #classic proxy tracer:
 

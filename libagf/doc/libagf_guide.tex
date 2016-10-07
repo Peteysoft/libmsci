@@ -422,7 +422,7 @@ Multi-class classification using a series of class-borders:
 	& \verb\  \$R = (2 c - 1) C$\\
 & where c is the class and C is the confidence rating.\\
 \verb/mbh2mbm/: & Collates a multi-file multi-borders model into a single \\
-	 	& single ASCII file. 
+	 	& ASCII file. 
 \end{tabular}
 
 The LVQPAK file format is probably the easiest to work with.  There is one header with the number of dimensions, followed by a listing of the vectors, one vector per line, each column is a dimension except for the last one which is the class.  The \verb/sample_class/ program prints its results to standard out in an LVQPAK-compatible format--see Section \ref{EXAMPLES}, EXAMPLES.
@@ -564,12 +564,12 @@ Consider the following control file:
 
 \begin{verbatim}
 "-s 100" {
-  "."      {1 2}
+  "."      {0 1}
   ""       0 1 / 2;
   "-s 75"  0 / 1 2;
   {
-    "-s 50" {3 4}
-    5 6
+    "-s 50" {2 3}
+    4 5
   } 
 }
 \end{verbatim}
@@ -585,11 +585,11 @@ runs the following set of statements:
 \begin{verbatim}
 agf_precondition -a bar.std -n foo.vec bar.139397543805655.vec
 cp foo.cls bar.139397543805655.cls
-class_borders -s 100 bar.139397543805655 bar.00 1 / 2
-class_borders -s 50 bar.139397543805655 bar.01.00 3 / 4
-class_borders -s 125  bar.139397543805655 bar.01-00 3 4 5 / 6
-class_borders -s 75 bar.139397543805655 bar.01-01 3 4 / 5 6
-class_borders -s 100 bar.139397543805655 bar 1 2 / 3 4 5 6
+class_borders -s 100 bar.139397543805655 bar.00 0 / 1
+class_borders -s 50 bar.139397543805655 bar.01.00 2 / 3
+class_borders -s 125  bar.139397543805655 bar.01-00 2 3 4 / 5
+class_borders -s 75 bar.139397543805655 bar.01-01 2 3 / 4 5
+class_borders -s 100 bar.139397543805655 bar 0 1 / 2 3 4 5
 rm bar.139397543805655.vec
 rm bar.139397543805655.cls
 \end{verbatim}
@@ -605,18 +605,18 @@ The contents of \verb"foobar.txt" are as follows:
 \begin{verbatim}
 bar {
   bar.00 {
-    1
-    2 
+    0
+    1 
   }
   bar.01-00 0 1 / 2;
   bar.01-01 0 / 1 2;
   {
     bar.01.00 {
+      2
       3
-      4
     }
+    4
     5
-    6
   }
 }
 \end{verbatim}
@@ -647,12 +647,12 @@ The multi-borders routines can now interface with external binary classification
 
 \begin{verbatim}
 "" {
-  ""  {1 2}
+  ""  {0 1}
   ""  0 1 / 2;
   ""  0 / 1 2;
   {
-    "" {3 4}
-    5 6
+    "" {2 3}
+    4 5
   } 
 } 
 \end{verbatim}
@@ -667,19 +667,19 @@ $>multi_borders -M -- "svm-train -b 1" -+ "-h 0 -c 25" \
 which will execute the following statements:
 
 \begin{verbatim}
-agf_preprocess -A -M foo.svm bar.00.2367545368.tmp 1 / 2
+agf_preprocess -A -M foo.svm bar.00.2367545368.tmp 0 / 1
 svm-train -b 1 -h 0 -c 25  bar.00.2367545368.tmp bar.00
 rm -f bar.00.2367545368.tmp
-agf_preprocess -A -M foo.svm bar.01.00.2367545368.tmp 3 / 4
+agf_preprocess -A -M foo.svm bar.01.00.2367545368.tmp 2 / 3
 svm-train -b 1 -h 0 -c 25  bar.01.00.2367545368.tmp bar.01.00
 rm -f bar.01.00.2367545368.tmp
-agf_preprocess -A -M foo.svm bar.01-00.2367545368.tmp 3 4 5 / 6
+agf_preprocess -A -M foo.svm bar.01-00.2367545368.tmp 2 3 4 / 5
 svm-train -b 1 -h 0 -c 25  bar.01-00.2367545368.tmp bar.01-00
 rm -f bar.01-00.2367545368.tmp
-agf_preprocess -A -M foo.svm bar.01-01.2367545368.tmp 3 4 / 5 6
+agf_preprocess -A -M foo.svm bar.01-01.2367545368.tmp 2 3 / 4 5
 svm-train -b 1 -h 0 -c 25  bar.01-01.2367545368.tmp bar.01-01
 rm -f bar.01-01.2367545368.tmp
-agf_preprocess -A -M foo.svm bar.2367545368.tmp 1 2 / 3 4 5 6
+agf_preprocess -A -M foo.svm bar.2367545368.tmp 0 1 / 2 3 4 5
 svm-train -b 1 -h 0 -c 25  bar.2367545368.tmp bar
 rm -f bar.2367545368.tmp
 \end{verbatim}

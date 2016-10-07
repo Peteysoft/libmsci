@@ -264,10 +264,11 @@ where $\vec a^{(i)}$ is the $i$th column of $A$.
 For the norm, $||$, Hamming distance is
 frequently used, which is the number of bits that must be changed
 in a binary number in order for it to match another binary number.
-This assumes that each $r_i$ returns only $-1$ or $+1$.
+This assumes that each decision function returns only one of two values: 
+$r_i \in \lbrace -1, +1 \rbrace$.
 If the coding matrix is strict, then:
 \begin{equation}
-|\vec v - \vec r| = \sum_i \delta_{v_i r_i}
+	|\vec a^{(j)} - \vec r| = \sum_i \delta_{a_{ij} r_i}
 \end{equation}
 where $\delta$ is the Kronecker delta.
 \citet{Allwein_etal2000} 
@@ -279,7 +280,7 @@ Here we are assuming that the decision functions return an approximation of the
 difference in conditional probabilities of the binary classifier, hence we will once again use a
 Euclidian metric. Expanding:
 \begin{equation}
-	c = \arg \min_i |\vec a^{(i)}|^2 - 2 \vec a^{(i)} \cdot \vec r + |\vec r|^2
+	c = \arg \min_i \left [|\vec a^{(i)}|^2 - 2 \vec a^{(i)} \cdot \vec r + |\vec r|^2 \right ]
 \end{equation}
 The length of $\vec r$ is independent of $i$, hence it can be eliminated from the expression.
 For the strict case, the length of each column will also be constant at $|\vec a^{(i)}|=\sqrt{n_p}$.
@@ -292,21 +293,23 @@ Eliminating these two terms produces a {\it voting} solution:
 That is, if the sign of $r_i$ matches the $i$th element of the column, then a vote is cast 
 in proportion to the size of $r_i$ for the class label corresponding to the column number.
 
-A voting solution can be used for any coding matrix and if each $r_i$ returns on $-1$ or 
-$+1$.  The LIBSVM libary, for instance, uses a one-versus-one arrangement with a voting
+A voting solution can be used for any coding matrix and 
+is especially appropriate if each $r_i$ returns on $-1$ or $+1$.  
+The LIBSVM libary, for instance, uses a one-versus-one arrangement with a voting
 solution if probabilities are not required \citep{Chang_Lin2011}.
 The disadvantage of a voting solution is
 that it does not return estimates of the probabilities.
 
-To maximize the accuracy of an error-correcting coding matrices, the distance
-between each of the rows, $| \vec a_i - \vec a_j |$, should be as large as
-possible [insert citation], where $\vec a_i$ is the $i$th row of the matrix
-$A$ and $i \ne j$, the $i$th coding vector. 
-If we take the upright brackets once again to be
-Euclidian metric and assume either that $A$ is ``strict'' then this reduces to
-minimizing the absolutely value of the dot product, $|\vec a_i \cdot \vec a_j|$.
-Why the absolute value? Because the negative of a coding vector is its 
-equivalent.
+To maximize the accuracy of an error-correcting coding matrix, 
+the distance between each of the columns, $| \vec a^{(i)} - \vec a^{(j)} |$, 
+should be as large as possible \citep{Allwein_etal2000, Windeatt_Ghaderi2002}, 
+where $\vec a^({i})$ is the $i$th column of the matrix $A$ and $i \ne j$. 
+If we take the upright brackets once again to be a
+Euclidian metric and assume that $A$ is ``strict'' then this 
+reduces to minimizing the absolute value of the dot product,
+$|\vec a^{(i)} \cdot \vec a^{(j)}|$.
+Why the absolute value? 
+Because a coding vector that is the negative of another is degenerate.
 
 In other words, if the number of coding vectors is equal to the number of classes, the optimal coding vector will be orthogonal, $A^T A = I$, where $I$ is
 the identity matrix. Thus the voting solution and the (unconstrained) matrix 
@@ -321,6 +324,8 @@ A =
 -1 & -1 & 1 & -1
 \end{bmatrix}
 \end{equation}
+Orthogonal coding matrices for the non-strict case are even easier to
+construct, but the voting solution does not correspond to the inverse solution.
 
 \section{Decision trees}
 
@@ -435,6 +440,89 @@ D_{Hij} = \max \left \lbrace \min_k \max_l | \vec x_k - \vec x_l|~,~\min_l \max_
 \end{equation}
 Obviously, this metric is not unitless and has the same dimensions as the
 vector metric from which it is composed.
+
+\section{Unifying framework}
+
+Despite the restrictions placed on the problem in Section \ref{description}
+-- that the decision functions must approximate the difference in conditional
+probabilities and that the classifier must return the conditional probability
+of the winning class at minimum -- it's apparent that there are still many ways
+of solving the multi-class classification problem.
+Here we present a descriptive language that unifies many of the ideas presented
+in the previous sections.
+This is not a "one-size-fits-all" solution, but rather a means of specifying
+a particular partitioning that best suits the problem at hand.
+This partitioning could be arrived at either through prior knowledge, 
+or empirically by measuring the distance between the classes, for instance.
+
+In Backus-Naur form (BNF) the control language looks like this:
+
+\begin{tabular}{lcl}
+$<$branch$>$ & ::= & $<$model$>$ ``\{'' $<$branch-list$>$ ``\}'' $|$ $<$CLASS$>$\\
+$<$model$>$  & ::= & $<$TWOCLASS$>$ $|$ $<$partition-list$>$\\
+$<$branch-list$>$ & ::= & $<$branch$>$ $|$ $<$branch-list$>$ $<$branch$>$\\
+$<$partition-list$>$ & ::= & $<$partition$>$ $|$ $<$partition-list$>$ $<$partition$>$\\
+$<$partition$>$ & ::= & $<$TWOCLASS$>$ $<$class-list$>$ `` / '' $<$class-list$>$ ``;''\\
+$<$class-list$>$ & ::= & $<$CLASS$>$ $|$ $<$class-list$>$ `` '' $<$CLASS$>$
+\end{tabular}.
+
+$<$CLASS$>$ is a class value between 0 and $n_c-1$.  It is used in two senses.
+It may be one of the class values in a partition in a non-hierarchical model.
+In this case it's value is relative, that is local to the non-hierarchical model.
+It may also be the class value returned
+from a top level partition in the hierarchy in which case it's value is absolute.
+$<$TWOCLASS$>$ is a binary classification model.
+This could either be the name of model that has already been trained or it
+could be a list of options or specifications used to train said model.
+
+For example, a one-versus-one specification for four classes would look like
+this:
+
+\begin{verbatim}
+  m01 0 / 1;
+  m02 0 / 2;
+  m03 0 / 3;
+  m12 1 / 2;
+  m13 1 / 3;
+  m23 2 / 3;
+  {0 1 2 3}
+\end{verbatim}
+
+while a one-versus-the-rest specifications, also for four class, would look
+like this:
+
+\begin{verbatim}
+  m0 1 2 3 / 0;
+  m1 0 2 3 / 1;
+  m2 0 1 3 / 2;
+  m3 0 1 2 / 3;
+  {0 1 2 3}
+\end{verbatim}
+
+A hierarchical specification might look like this:
+
+\begin{verbatim}
+  m {
+    m0 {0 1}
+    m1 {2 3}
+  }
+\end{verbatim}
+
+The real beauty and power in the framework lies in being able to combine the
+two methods, hiearchical and non-hierarchical, as shown in the following,
+six-class example:
+
+\begin{verbatim}
+  m {
+    m0 {0 1}
+    m1.0 0 1 / 2;
+    m1.1 0 / 1 2;
+    {
+      m10 {2 3}
+      4 5
+    }
+  }
+\end{verbatim}
 
 \bibliography{../agf_bib.bib}
 
