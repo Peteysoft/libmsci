@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <getopt.h>
+#include <stdlib.h>
 
 #include "sparse_test.h"
 #include "error_codes.h"

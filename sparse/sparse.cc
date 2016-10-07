@@ -463,7 +463,7 @@ namespace libpetey {
       }
     
       //sort the elements:
-      heapsort(matrix, (long *) index, nel);
+      heapsort(matrix, index, nel);
     
       //remove zero and duplicate elements:
       maxind=index[0];
@@ -656,24 +656,27 @@ namespace libpetey {
           new_val=0;
           //increment muliplicand index until it reaches the end, or row index
           //changes:
+          for (; r<cand.nel; r++) if (cand.matrix[r].i>cand_i_old) break;
+          /*
           while (cand_i_old == cand.matrix[r].i) {
             r++;
             if (r >= cand.nel) break;
           }
+          */
           //if multiplicand index is at the end, we are finished,
           //otherwise, proceed to all the subsequent rows of the multiplicand
           if (r >= cand.nel) {
             break;
           } else {
             q=qold;
-    	cand_i_old=cand.matrix[r].i;
+            cand_i_old=cand.matrix[r].i;
           }
           //other cases are dealt with in a similar fashion:
         } else if (r >= cand.nel) {
           if (fabs(new_val) > eps) result.add_el(new_val, this_i_old, cand_i_old);
           new_val=0;
           while (this_i_old == matrix[q].i) {
-    	q++;
+            q++;
             if (q >= nel) break;
           }
           if (q >= nel) {
@@ -688,17 +691,17 @@ namespace libpetey {
           if (fabs(new_val) > eps) result.add_el(new_val, this_i_old, cand_i_old);
           new_val=0;
           while (cand_i_old == cand.matrix[r].i) {
-    	r++;
+            r++;
             if (r >= cand.nel) break;
           }
           if (r >= cand.nel) {
             qold=q;
-    	this_i_old=matrix[q].i;
+            this_i_old=matrix[q].i;
             r=0;
             cand_i_old=cand.matrix[0].i;
           } else {
             q=qold;
-    	cand_i_old=cand.matrix[r].i;
+            cand_i_old=cand.matrix[r].i;
           }
         } else if (cand_i_old != cand.matrix[r].i) {
           if (fabs(new_val) > eps) result.add_el(new_val, this_i_old, cand_i_old);
@@ -727,7 +730,7 @@ namespace libpetey {
         return;
       }
     
-      while (j<b.nel) {
+      while (j<b.nel && i<nel) {
         if (matrix[i]>b.matrix[j]) {
           add_el(b.matrix[j].value, b.matrix[j].i, b.matrix[j].j);
           j++;
@@ -739,6 +742,7 @@ namespace libpetey {
           j++;
         }
       }
+      for (; j<b.nel; j++) add_el(b.matrix[j].value, b.matrix[j].i, b.matrix[j].j);
         
     }
     
