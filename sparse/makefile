@@ -4,15 +4,15 @@
 
 # optimization version:
 OPT_VER = -g
-#EXE_EXT=.exe
+EXE_EXT=.exe
 
 # compilers:
 CC = g++
 F77 = gfortran
 
 # paths for binaries and include files:
-#BASE_PATH = /home/lenovo
-BASE_PATH=/mnt/sdc1/home2/pete
+BASE_PATH = /home/lenovo
+#BASE_PATH=/mnt/sdc1/home2/pete
 LIB_PATH = $(BASE_PATH)/lib
 INCLUDE_PATH = $(BASE_PATH)/include
 BIN_PATH = $(BASE_PATH)/bin

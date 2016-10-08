@@ -3,7 +3,8 @@
 //
 //a simple class definition for dealing with sparse matrices
 //
-    
+#include <algorithm>
+
 #include <math.h>
 #include <complex.h>
 #include <string.h>
@@ -321,15 +322,10 @@ namespace libpetey {
           matrix[nel-1].value=new_element.value;
         } else {
           matrix[nel]=new_element;
-          if (update_flag != 0) if (new_element <= matrix[nel-1]) {
-            update_flag=0;
-    //      printf("Update flag changed after %d elements\n", nel);
-          }
+          if (new_element < matrix[nel-1]) update_flag=0;
           nel++;
         }
       }
-    
-      //if (update_flag==1) if (fabs(new_element.value) < eps) update_flag=2;
     
       return nel;
     }
@@ -407,33 +403,22 @@ namespace libpetey {
     //for when the matrix is already sorted: remove zero elements...
     template <class index_t, class data_t>
     void sparse<index_t, data_t>::remove_zeros (data_t minmag) {
-      long index[nel];	//index of non-zero elements
-      long nnon;		//number of non-zero elements
-      sparse_el<index_t, data_t> *new_matrix;
+      long nzero;		//number of zero elements
       
       if (update_flag==0) {
         update();
       } else {
         update_flag=1;
-        nnon=0;
-        for (long i=0; i<nel; i++) {
-          if (fabs(matrix[i].value) > minmag) {
-            index[nnon]=i;
-            nnon++;
+        nzero=0;
+        for (long i=1; i<nel-nzero; i++) {
+          if (nzero>0) matrix[i]=matrix[i+nzero];
+          if (matrix[i]==matrix[i-1] || matrix[i].value < eps) {
+            nzero++;
+            i--;
           }
         }
-        if (nnon>0) {
-          new_matrix=new sparse_el<index_t, data_t> [nnon];
-          array_size=nnon;
-        } else {
-          new_matrix=new sparse_el<index_t, data_t>[1];
-          array_size=1;
-        }
-        for (long i=0; i<nnon; i++) new_matrix[i]=matrix[index[i]];
-        delete [] matrix;
-        matrix=new_matrix;
-        fprintf(sparse_log, "Found %ld zero or insignificant elements\n", nel-nnon);
-        nel=nnon;
+	nel-=nzero;
+        fprintf(sparse_log, "Found %ld zero or insignificant elements\n", nzero);
       }
     }
     
@@ -445,15 +430,7 @@ namespace libpetey {
     //-last point has been fixed
     template <class index_t, class data_t>
     void sparse<index_t, data_t>::update() {
-      long i;
-      //long keep[nel];		//indices of those elements to keep
-      long index[nel];
-      //long nkeep;
-      long offset;
-      long nins, ndup;		//number of insignificant and duplicate elements respectively
-      long last_el;
-      long maxind;
-      sparse_el<index_t, data_t> *new_matrix;
+      long ndup;	//number of insignificant and duplicate elements
     
       if (update_flag==2) remove_zeros();
       if (update_flag==1) return;
@@ -463,73 +440,20 @@ namespace libpetey {
       }
     
       //sort the elements:
-      heapsort(matrix, index, nel);
-    
-      //remove zero and duplicate elements:
-      maxind=index[0];
-      /*
-      if (fabs(matrix[index[0]].value) > eps) {
-        keep[0]=index[0];
-        nkeep++;
-      }
-      */
-      new_matrix=new sparse_el<index_t, data_t>[array_size];
-    
-      nins=0;
+      heapsort_inplace(matrix, nel);
+      //stable_sort(matrix[0], matrix[nel-1]);
+
+      //remove insignificant and duplicate elements:
       ndup=0;
-      for (long i=1; i<nel; i++) {
-        if (matrix[index[i]] != matrix[index[i-1]]) {
-          if (fabs(matrix[maxind].value) > eps) {
-            new_matrix[i-nins-ndup-1]=matrix[maxind];
-          } else {
-            nins++;
-          }
-          //keep[nkeep]=index[i];
-          //nkeep++;
-          maxind=index[i];
-        } else {
-          //printf("%d %d %f\n", matrix[index[i-1]].i, matrix[index[i-1]].j, matrix[index[i-1]].value);
-          //printf("%d %d %f\n", matrix[index[i]].i, matrix[index[i]].j, matrix[index[i]].value);
-          //matrix element is a duplicate:
-          //see if it was added later or earlier than current latest duplicate
-          if (index[i] > maxind) {
-            maxind=index[i];
-          }
+      for (long i=1; i<nel-ndup; i++) {
+        if (ndup>0) matrix[i]=matrix[i+ndup];
+        if (matrix[i]==matrix[i-1] || matrix[i].value < eps) {
           ndup++;
-        }
+	  i--;
+	}
       }
-      
-      offset=nins+ndup;
-      if (fabs(matrix[maxind].value) > eps) {
-    //    printf("%d %d %f\n", matrix[maxind].i, matrix[maxind].j, matrix[maxind].value);
-        new_matrix[nel-offset-1]=matrix[maxind];
-      } else {
-        nins++;
-      }
-    
-      fprintf(sparse_log, "Matrix updated: %ld insignificant and %ld duplicate elements found\n", nins, ndup);
-    
-      nel=nel-offset;
-    
-      delete[] matrix;
-      matrix=new_matrix;
-    
-      if (nel !=0) {
-        if (2*nel <= array_size) {
-          array_size=nel;
-          new_matrix=new sparse_el<index_t, data_t>[array_size];
-          for (long i=0; i<nel; i++) {
-            new_matrix[i]=matrix[i];
-          }
-          delete[] matrix;
-          matrix=new_matrix;
-        }
-      } else {
-        delete[] matrix;
-        array_size=1;
-        matrix=new sparse_el<index_t, data_t>[array_size];
-      }
-    
+      nel-=ndup;
+      fprintf(sparse_log, "Matrix updated: %ld insignificant and duplicate elements found\n", ndup);
       update_flag=1;
     }
     
@@ -657,12 +581,7 @@ namespace libpetey {
           //increment muliplicand index until it reaches the end, or row index
           //changes:
           for (; r<cand.nel; r++) if (cand.matrix[r].i>cand_i_old) break;
-          /*
-          while (cand_i_old == cand.matrix[r].i) {
-            r++;
-            if (r >= cand.nel) break;
-          }
-          */
+
           //if multiplicand index is at the end, we are finished,
           //otherwise, proceed to all the subsequent rows of the multiplicand
           if (r >= cand.nel) {
@@ -795,16 +714,12 @@ namespace libpetey {
       tran.update_flag=0;
       
     }
-    
+   
+    //(what the heck is all this crap for??) 
     //find the transpose and return to a full matrix:
     template <class index_t, class data_t>
     void sparse<index_t, data_t>::transpose(data_t **tran) {
-    
-      for (index_t i=0; i<n; i++) {
-        for (index_t j=0; j<m; j++) {
-          tran[i][j]=0;
-        }
-      }
+      zero_matrix(tran, m, n);
       for (long i=0; i<nel; i++) {
         tran[matrix[i].j][matrix[i].i]=matrix[i].value;
       }
@@ -854,39 +769,18 @@ namespace libpetey {
     //convert to a full matrix:
     template <class index_t, class data_t>
     void sparse<index_t, data_t>::full(data_t ** non) {
-      for (index_t i=0; i<m; i++) {
-        for (index_t j=0; j<n; j++) {
-          non[i][j]=0;
-        }
-      }
-    
+      zero_matrix(non, m, n);
       for (long i=0; i<nel; i++) {
         non[matrix[i].i][matrix[i].j]=matrix[i].value;
       }
-    
     }
     
     //convert to a full matrix:
     template <class index_t, class data_t>
     sparse<index_t, data_t>::operator data_t ** () {
-      data_t *temp, **non;
-    
-      update();
-    
-      temp=new data_t[m*n];
-      non=new data_t *[m];
-    
-      for (index_t i=0; i<m; i++) {
-        non[i]=&temp[i*n];
-        for (index_t j=0; j<n; j++) {
-          non[i][j]=0;
-        }
-      }
-    
-      for (long i=0; i<nel; i++) {
-        non[matrix[i].i][matrix[i].j]=matrix[i].value;
-      }
-    
+      data_t **non;
+      non=allocate_matrix<data_t>(m, n);
+      full(non);
       return non;
     }
     

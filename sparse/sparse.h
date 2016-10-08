@@ -16,7 +16,8 @@ namespace libpetey {
 
     typedef int32_t ind_t;
 
-    #define EPS 5.96e-8		//this is actually pretty big... (?)
+    //#define EPS 5.96e-8		//this is actually pretty big... (?)
+    #define EPS 0
 
     template <class index_t, class data_t>
     class sparse:public matrix_base<index_t, data_t> {
