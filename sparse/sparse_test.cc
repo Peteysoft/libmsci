@@ -255,7 +255,112 @@ namespace libpetey {
       return max_res;
     }
 
+    template <typename real>
+    real test_sparse_mem(
+		int m,		//size of matrices
+		int n,
+		real sparsity,
+		real tol,
+		int gdev) {
+      double (*rangen) ();
+      FILE *logfs=stderr;
+      FILE *fs;
+      sparse<int32_t, real> S1(m, n);
+      sparse<int32_t, real> S2;
+      int i, j;
+      int errcount=0;
+      real res;
+
+      if (gdev) {
+        rangen=&rang;
+      } else {
+        rangen=&ranu;
+      }
+
+      for (int k=0; k<n*m*(1-sparsity); k++) {
+        i=ranu()*m;
+	j=ranu()*n;
+	S1.add_el((*rangen)(), i, j);
+      }
+
+      fprintf(logfs, "Assignment: S2=S1\n");
+      S2=S1;
+
+      /* there is no comparison operator!:
+      if (S1==S2) {
+        fprintf(logfs, "S1==S2: passed\n");
+      } else {
+        fprintf(stderr, "S1==S2: failed\n");
+	errcount++;
+      }
+      */
+
+      for (int i=0; i<n; i++) {
+        for (int j=0; j<m; j++) {
+          if (S1(i,j)!=S2(i,j)) {
+            fprintf(stderr, "S1(%d,%d)==S2(%d,%d): failed\n", i, j, i, j);
+	    errcount++;
+	  }
+	}
+      }
+
+      fprintf(logfs, "Binary write: S1.write(fs); S2.read(fs)\n");
+
+      S1.reset(m, n);
+      for (int k=0; k<n*m*(1-sparsity); k++) {
+        i=ranu()*m;
+	j=ranu()*n;
+	S1.add_el((*rangen)(), i, j);
+      }
+
+      fs=tmpfile();
+      S1.write(fs);
+      rewind(fs);
+      S2.read(fs);
+      fclose(fs);
+
+      for (int i=0; i<n; i++) {
+        for (int j=0; j<m; j++) {
+          if (S1(i,j)!=S2(i,j)) {
+            fprintf(stderr, "S1(%d,%d)==S2(%d,%d): failed\n", i, j, i, j);
+	    errcount++;
+	  }
+	}
+      }
+
+      S1.reset();
+      for (int k=0; k<n*m*(1-sparsity); k++) {
+        i=ranu()*m;
+	j=ranu()*n;
+	S1.add_el((*rangen)(), i, j);
+      }
+
+      fprintf(logfs, "ASCII write: S1.print(fs); S2.scan(fs)\n");
+      fs=tmpfile();
+      S1.print(fs);
+      rewind(fs);
+      S2.scan(fs);
+
+      fclose(fs);
+
+      for (int i=0; i<n; i++) {
+        for (int j=0; j<m; j++) {
+          res=fabs(2*(S1(i, j)-S2(i, j))/(S1(i, j)+S2(i, j)));
+          if (res>tol) {
+            fprintf(stderr, "S1(%d,%d)~=S2(%d,%d): failed\n", i, j, i, j);
+	    errcount++;
+	  }
+	}
+      }
+
+      return errcount;
+    }
+
+
     template float test_sparse_arithmetic<float>(int, int, int, float, float, int);
     template double test_sparse_arithmetic<double>(int, int, int, double, double, int);
+
+    template float test_sparse_mem<float>(int, int, float, float, int);
+    template double test_sparse_mem<double>(int, int, double, double, int);
   }
 }

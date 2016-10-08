@@ -171,10 +171,8 @@ namespace libpetey {
     template <class index_t, class data_t>
     void sparse<index_t, data_t>::from_full(data_t **non, index_t min, index_t nin, data_t neps) {
       data_t val;
-    
       eps=neps;
       reset(min, nin);
-
       for (index_t i=0; i<m; i++) {
         for (index_t j=0; j<n; j++) {
           val=non[i][j];
@@ -182,16 +180,12 @@ namespace libpetey {
         }
       }
       update();
-
-    
     }
     
     //this initializer loads up a full matrix
     template <class index_t, class data_t>
     sparse<index_t, data_t>::sparse(data_t **non, index_t min, index_t nin, data_t neps) {
-    
       array_size=1;
-      eps=neps;
       matrix=new sparse_el<index_t, data_t>[array_size];
       from_full(non, min, nin, neps);
       sparse_log=stderr;
@@ -742,29 +736,6 @@ namespace libpetey {
         matrix[ind].value+=b;
       }
     }
-    
-    /*
-    //find the transpose and return as a full matrix:
-    float ** sparse<index_t, data_t>::transpose() {
-      float *temp, **tran;
-    
-      temp=new float[m*n];
-      tran=new float *[m];
-    
-      for (index_t i=0; i<m; i++) {
-        tran[i]=&temp[i*n];
-        for (index_t j=0; j<n; j++) {
-          tran[i][j]=0;
-        }
-      }
-    
-      for (long i=0; i<nel; i++) {
-        tran[matrix[i].j][matrix[i].i]=matrix[i].value;
-      }
-    
-      return tran;
-    }
-    */
     
     //convert to a full matrix:
     template <class index_t, class data_t>

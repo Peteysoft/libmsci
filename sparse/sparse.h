@@ -1,6 +1,8 @@
 #ifndef SPARSE_H
 #define SPARSE_H 1
 
+#include <vector>
+
 #include <stdio.h>
 
 #include <stdint.h>
@@ -31,6 +33,7 @@ namespace libpetey {
     
       protected:
         sparse_el<index_t, data_t> *matrix;
+        //vector<sparse_el<index_t, data_t> > matrix;
 
         //dimensions:
         index_t m;
@@ -120,11 +123,10 @@ namespace libpetey {
         void left_m_mult(data_t **cor, data_t **result, index_t np);
         virtual void left_mult(data_t *cor, data_t *result);
 
-        //take the transpose:
+        //take the transpose (why do we need all these??):
         void transpose();
         void transpose(sparse<index_t, data_t> &trans);	//returns sparse
         void transpose(data_t **non);			//returns non-sparse
-        //float ** transpose();				//returns non-sparse
 
         void full(data_t ** full);
         operator data_t ** ();		//convert to non-sparse
