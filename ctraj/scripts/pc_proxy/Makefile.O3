@@ -1,21 +1,26 @@
 #YEAR=1998
 YEAR=1999
 
-#extent of tracer mapping:
-T0a= $(YEAR)/1/1-6
-TFa= $(YEAR)/4/1
-#TFa= $(YEAR)/12/31
+#extent of velocity field:
+#(take two years of data and keep it local to guarantee no more stupid
+#range errors...)
+T0=1998/1/1
+TF=2000/1/1
 
-#T0a= $(YEAR)/1/1
-#TFa= $(YEAR)/4/31
+#extent of tracer mapping:
+T0a= 1998/12/1
+TFa= 1999/4/1
+
+#T0a = 1998/8/1
+#TFa= 1998/12/31
 
 #interpolate POAM data between these two dates:
-#T0b= $(YEAR)/9/12
-#T0b= $(YEAR)/11/1
-#TFb= $(YEAR)/11/17
+#T0b= 1998/9/12
+#T0b= 1998/11/1
+#TFb= 1998/11/17
 
-#T0b= $(YEAR)/11/1
-#TFb= $(YEAR)/12/30
+#T0b= 1998/11/1
+#TFb= 1998/12/30
 
 T0b= $(YEAR)/2/1
 TFb= $(YEAR)/3/25
@@ -55,9 +60,9 @@ else
 endif
 
 #file names:
-VFIELD_PATH=/cygdrive/e/tmpdata/vfield
-VFIELD_N=$(VFIELD_PATH)/vfield_ncep$(YEAR)_$(THETA)K_N.ds
-VFIELD_S=$(VFIELD_PATH)/vfield_ncep$(YEAR)_$(THETA)K_S.ds
+#VFIELD_PATH=/cygdrive/e/tmpdata/vfield
+VFIELD_N=vfield_ncep_$(THETA)K_N.ds
+VFIELD_S=vfield_ncep_$(THETA)K_S.ds
 
 DATA_PATH = /cygdrive/e/data/ncep/sixhour/
 
@@ -138,7 +143,10 @@ $(PROXY_FIELD): $(CVMAT)
 	
 #extract the velocity fields:
 $(VFIELD_N) $(VFIELD_S):
-	make -C ../test vfield YEAR=$(YEAR) LEV=$(THETA) \
-		DATAPATH=$(DATA_PATH) VFIELD_PATH=$(VFIELD_PATH)
+	nc2ds -i $(T0) -f $(TF) -p $(DATA_PATH) -T $(THETA) $(VFIELD_S) $(VFIELD_N)
+ 
+#$(VFIELD_N) $(VFIELD_S):
+#	make -C ../test vfield YEAR=$(YEAR) LEV=$(THETA) \
+#		DATAPATH=$(DATA_PATH) VFIELD_PATH=$(VFIELD_PATH)
  
 

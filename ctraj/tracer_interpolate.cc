@@ -227,11 +227,11 @@ int main(int argc, char **argv) {
     ave2=0;
     int nbad=0;
     for (long i=0; i<nsamp2; i++) {
-      if (tflag && samp2[i].q > thresh && samp3[i].q > thresh) {
+      if (tflag && (samp2[i].q <= thresh || samp3[i].q <= thresh)) {
+	nbad++;
+      } else {
         ave1+=samp2[i].q;
         ave2+=samp3[i].q;
-      } else {
-	nbad++;
       }
     }
     ave1/=nsamp2-nbad;
@@ -241,7 +241,7 @@ int main(int argc, char **argv) {
     var1=0;
     var2=0;
     for (long i=0; i<nsamp2; i++) {
-      if (tflag && samp2[i].q > thresh && samp3[i].q > thresh) {
+      if (tflag==0 || (samp2[i].q > thresh && samp3[i].q > thresh)) {
         diff1=samp2[i].q-ave1;
         diff2=samp3[i].q-ave2;
         cov+=diff1*diff2;

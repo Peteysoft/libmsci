@@ -497,13 +497,13 @@ solution is the identity matrix, $I$.
 
 We wish to solve the following minimization problem:
 \begin{equation}
-\underset{\vec p}{\min} (A \vec p - \vec r)^2
+\underset{\vec p}{\min} |A \vec p - \vec r|^2
 \label{basic_min}
 \end{equation}
 subject to the constraints:
 \begin{eqnarray}
-\sum_{i=1}{n_c} & p_i & = 1 \\
-0 \le & p_i & \le 1; ~i=0..n_c
+	\sum_{i=1}{n_c} & p_i & = 1 \label{norm_constraint}\\
+	0 \le & p_i & \le 1; ~i=0..n_c \label{prob_constraint}
 \end{eqnarray}
 The situation is illustrated in Figure \ref{fig1} for the case of three classes.
 
@@ -547,11 +547,10 @@ by the $j$th constraint.
 Likewise, we can return to the format in (\ref{generalized_constraint}) via the
 generalized cross-product or wedge product:
 \begin{eqnarray}
-	\vec v_i^\prime & = & \wedge \left ( \lbrace \vec c_j - \vec c_{j-1} | j \ne i \rbrace,~ \vec c_1-\vec c_{n_c} \right ) \\
-	b_i^\prime &= & \vec v_i^\prime \cdot \vec c_j | ~ i \ne j \\
+	\vec v_i^\prime & = & \wedge \left ( \lbrace \vec c_j - \vec c_k |~ j \ne i;~k \ne i \rbrace \right ) \\
 	d & = & \mathrm{sgn} \left (\vec v_i^\prime \cdot \vec c_i - b_i^\prime) \right ) \\
 	\vec v_i & = & d \vec v_i^\prime \\
-	b_i & = & d b_i^\prime \\
+	b_i &= & d \vec v_i^\prime \cdot \vec c_j | ~ i \ne j
 \end{eqnarray}
 [is this correct?]
 
@@ -590,6 +589,39 @@ produces the following:
 	\frac{v_i^2 b}{|\vec v|^2} - b + \frac{b}{|\vec v|^2} \sum_{j \ne i} v_j^2 
     = \frac{b}{|\vec v|^2} \left (\sum_{j \ne i} v_j^2 + v_i^2 \right ) - b = 0
 \end{equation}
+
+The vertices can also be acquired directly from the original constrained
+problem in (\ref{basic_min})-(\ref{prob_constraint})
+since they will lie in the following positions:
+\begin{eqnarray}
+	\vec p_i & = & \hat e | ~ i=[1..n_c] \\
+	\vec p_{n_c+1} & = & \vec 0
+\end{eqnarray}
+where $\hat e$ are the basis-vectors and $\vec 0$ is a vector of all zeroes.
+Substituting this into (\ref{basic_min}) produces the following:
+\begin{eqnarray}
+	\vec c_i & = & \vec a^{(i)} + \vec r | ~ i=[1..n_c] \label{vertex_i}\\
+	\vec c_{n_c+1} & = & \vec r \label{vertex_nplus1}
+\end{eqnarray}
+where $a^{(i)}$ is the $i$th column of $A$.
+
+Note that the general constrained problem in (\ref{trivial_min}) 
+and (\ref{generalized_constraint}) can be formulated in terms of the vertices:
+\begin{eqnarray}
+	\min_{\vec k} \left |\sum_i k_i \vec c_i \right |^2 & & \label{vertex_formulation}\\
+	\sum_i \vec k & = & 1 \\
+	\vec k & \le & 0
+\end{eqnarray}
+Which looks suspiciously like a problem involving conditional probabilities.
+In fact if we substitute the vertices derived in (\ref{vertex_i}) and
+(\ref{vertex_nplus1}) into (\ref{vertex_formulation}) we get back the
+original problem:
+\begin{eqnarray}
+	& & \min_{\vec k} \left |\sum_{i=1}^n_c k_i (\vec a^{(i)} + \vec r) + k_{n+1} \vec r \right |^2\\
+	& = & \min_{\vec k} \left |\sum_{i=1}^n_c k_i \vec a^{(i)} + \sum_{i=1}^n k_i \vec r + k_{n+1} \vec r \right |^2\\
+	& = & \min_{\vec k} \left |\sum_{i=1}^n_c k_i \vec a^{(i)} + \vec r \right |^2
+\end{eqnarray}
+Thus $k_i=p_i|i=[1..n]$.
 
 \section{Solving the constrained problem}
 

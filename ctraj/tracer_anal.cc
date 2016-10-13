@@ -197,7 +197,6 @@ float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall,
 
   //call the fortran program:
   //printf("performing SVD\n");
-  //FORTRAN_FUNC(sarsvd)(&n, &nev, &ncv, v[0], eval, (void *) (&ata_mat));
   v=cc_arsvd(n, nev, ncv, eval, &ata_mat);
 
   //calculate number of gridpoints from number of tracer points
@@ -210,16 +209,15 @@ float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall,
   tracer->init1(np);
 
   //first we multiply through to get all the tracers:
-  printf("multiplying tracer (nall=%d; n=%d)\n", nall, n);
+  //fprintf(stderr, "multiplying tracer (nall=%d; n=%d)\n", nall, n);
   qall=new float **[nev];
   for (int32_t i=0; i<nev; i++) {
-    printf("%d\n", i);
     qall[i]=tracer_multiply(matall, nall, v[i]);
   }
 
   //create the matrix:
   //printf("nsamp=%d, nev=%d\n", nsamp, nev);
-  printf("performing interpolations\n");
+  //fprintf(stderr, "performing interpolations\n");
   a=gsl_matrix_alloc(nsamp, nev+cflag);
   b=gsl_vector_alloc(nsamp);
   for (long i=0; i<nsamp; i++) {
@@ -251,7 +249,7 @@ float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall,
     gsl_vector_set(b, i, samp[i].q); 
   }
 
-  printf("fitting coefficients\n");
+  //fprintf(stderr, "fitting coefficients\n");
   work=gsl_multifit_linear_alloc(nsamp, nev+cflag);
   x=gsl_vector_alloc(nev+cflag);
   cov=gsl_matrix_alloc(nev+cflag, nev+cflag);
@@ -263,7 +261,7 @@ float ** pc_proxy(sparse_matrix *matall, time_class *t, int32_t N, int32_t nall,
   //output final, interpolated field:
   //if there is a constant term, we only output one field:
   //at the lead time...
-  printf("reconstructing field %d %d %d\n", N, nall, n);
+  //fprintf(stderr, "reconstructing field %d %d %d\n", N, nall, n);
   float konst=0;
   if (cflag) konst=gsl_vector_get(x, nev);
   if (index<0) {

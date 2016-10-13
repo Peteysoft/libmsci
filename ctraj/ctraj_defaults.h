@@ -56,7 +56,7 @@ namespace ctraj {
   const int TFIELD_WIDTH=23;
 
   //maximum size of date string conversions:
-  const int TSTRING_LEN=30;
+  const int TSTRING_LEN=40;
 
   //do we allow whitespace between the option and it's parameter?
   const int OPT_WHITESPACE=1;

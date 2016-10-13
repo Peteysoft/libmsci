@@ -54,7 +54,8 @@ int main(int argc, char **argv) {
   float **qvec;
 
   //for calculating lead times:
-  float lead;			//length in days of tracer map
+  float lead;		//length in days of tracer map 
+  			//(should really be called, "integration time"...)
   float lead2;		//days between start of tracer map and measurement window
   float window;
   time_class tf;		//date at end of lead time
@@ -187,21 +188,31 @@ int main(int argc, char **argv) {
   //if we are specifying dates, then we are interested in the final,
   //output fields:
   if (flag[5]) {
-    date0.add(lead2-lead);
+    date0.write_string(tstring);
+    date0.add(-lead2);
+    date0.write_string(tstring);
     i0=ceil(interpolate(t, nall+1, date0, -1));
-  }
-
-  if (N == -1 || N+i0>nall) {
-    tf=t[nall-1];
-    tf.add(-lead-window);
-    N=bin_search_g(t, nall+1, tf, -1)-i0+1;
+    if (i0<0) {
+      fprintf(stderr, "Insufficient date coverage in tracer mapping\n");
+      exit(PARAMETER_OUT_OF_RANGE);
+    }
   }
 
   if (flag[6]) {
     datef.add(-lead2);
     N=bin_search_g(t, nall+1, datef, -1)-i0+1;
   }
-  //***NOTE*** no range-checking...
+
+  if (N < 0 || N+i0>nall) {
+    tf=t[nall-1];
+    tf.add(-lead-window);
+    N=bin_search_g(t, nall+1, tf, -1)-i0+1;
+  }
+
+  if (N<0) {
+    fprintf(stderr, "Insufficient date coverage in tracer mapping\n");
+    exit(PARAMETER_OUT_OF_RANGE);
+  }
   
   //read in measurements:
   fprintf(docfs, "Reading in measurements from, %s\n", measurement_file);
@@ -219,6 +230,8 @@ int main(int argc, char **argv) {
     int32_t nall_local;		//to save memory...
     //calculate lead times:
     tf=t[i];
+    tf.write_string(tstring);
+    //printf("%d %s\n", i, tstring);
 
     tf.add(lead);
     l2=interpolate(t, nall+1, tf, -1);
