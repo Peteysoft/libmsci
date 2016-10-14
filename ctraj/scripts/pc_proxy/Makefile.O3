@@ -8,22 +8,21 @@ T0=1998/1/1
 TF=2000/1/1
 
 #extent of tracer mapping:
-T0a= 1998/12/1
-TFa= 1999/4/1
+#T0a= 1998/12/1
+#TFa= 1999/4/1
 
-#T0a = 1998/8/1
-#TFa= 1998/12/31
+T0a = 1998/7/1
+TFa= 1999/1/1
 
 #interpolate POAM data between these two dates:
-#T0b= 1998/9/12
-#T0b= 1998/11/1
-#TFb= 1998/11/17
+T0b= 1998/9/12
+TFb= 1998/11/17
 
 #T0b= 1998/11/1
 #TFb= 1998/12/30
 
-T0b= $(YEAR)/2/1
-TFb= $(YEAR)/3/25
+#T0b= 1999/2/1
+#TFb= 1999/3/25
 
 #specifications for tracer simulation:
 #vertical level:

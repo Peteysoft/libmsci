@@ -37,9 +37,9 @@ float ** tracer_multiply(sparse_matrix *a, int32_t N, float *v0) {
 
   for (int32_t i=0; i<n; i++) tracer[0][i]=v0[i];
 
-  for (int32_t i=1; i<=N; i++) {
-    tracer[i]=tracer[0]+i*n;
-    a[i].vect_mult(tracer[i-1], tracer[i]);
+  for (int32_t i=0; i<N; i++) {
+    tracer[i+1]=tracer[0]+(i+1)*n;
+    a[i].vect_mult(tracer[i], tracer[i+1]);
   }
 
   return tracer;
@@ -57,18 +57,18 @@ float ** tracer_multiply_renorm(sparse_matrix *a, int32_t N, float *v0) {
 
   for (int32_t i=0; i<n; i++) tracer[0][i]=v0[i];
 
-  for (int32_t i=1; i<=N; i++) {
-    tracer[i]=tracer[0]+i*n;
-    vmin=tracer[i-1][0];
-    vmax=tracer[i-1][0];
+  for (int32_t i=0; i<N; i++) {
+    tracer[i+1]=tracer[0]+(i+1)*n;
+    vmin=tracer[i][0];
+    vmax=tracer[i][0];
     for (ind_type j=1; j<n; j++) {
-      if (tracer[i-1][j] > vmax) vmax=tracer[i-1][j];
-      if (tracer[i-1][j] < vmin) vmin=tracer[i-1][j];
+      if (tracer[i][j] > vmax) vmax=tracer[i][j];
+      if (tracer[i][j] < vmin) vmin=tracer[i][j];
     }
     for (ind_t j=0; j<n; j++) {
-      tracer[i-1][j]=(tracer[i-1][j]-vmin)/(vmax-vmin)*2-1;
+      tracer[i][j]=(tracer[i][j]-vmin)/(vmax-vmin)*2-1;
     }
-    a[i].vect_mult(tracer[i-1], tracer[i]);
+    a[i].vect_mult(tracer[i], tracer[i+1]);
   }
 
   return tracer;

@@ -259,7 +259,7 @@ int main(int argc, char *argv[]) {
       param[1]=&d0i;
 
       //do a Runge-Kutta integration:
-      rk_dumb(tind[it+1], x0i, ndim, tstep_fine, nfine, result, (void *) param, &ctraj_deriv);
+      rk_dumb(tind[it], x0i, ndim, tstep_fine, nfine, result, (void *) param, &ctraj_deriv);
 
       nwt=tracer->interpolate(d0i, result[nfine], ind, wt);
 
