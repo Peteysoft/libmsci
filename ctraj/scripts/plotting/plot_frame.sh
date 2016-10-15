@@ -14,7 +14,7 @@ YLEN=180
 
 VTYPE=2
 
-while getopts 'qc:g:z:I:J:F:Har:x:y:V:n:q:X:Y:R:' ARG; do
+while getopts 'qc:g:z:I:J:F:Har:x:y:V:n:qX:Y:R:' ARG; do
   case $ARG in
     z) ZOPTS="$ZOPTS -z $OPTARG"
        WCFLAG=1
@@ -40,8 +40,6 @@ while getopts 'qc:g:z:I:J:F:Har:x:y:V:n:q:X:Y:R:' ARG; do
        VTYPE=$OPTARG
       ;;
     n) EXT_OPT="$EXT_OPT -n $OPTARG"
-      ;;
-    q) EXT_OPT="$EXT_OPT -q $OPTARG"
       ;;
     X) EXT_OPT="$EXT_OPT -X $OPTARG"
        XLEN=$OPTARG
@@ -127,8 +125,11 @@ fi
 
 if test -z $OUTFILE; then OUTFILE="$BASE.$INDEX.tmp.ps"; fi
 
+echo $QFLAG
 echo "psbasemap -R${RANGE} -J${PROJ} -K -Bg30 > ${OUTFILE}"
 psbasemap -R${RANGE} -J${PROJ} -K -Bg30 > ${OUTFILE}
+
+echo $QFLAG
 
 if test $QFLAG; then
   DLON=$(date_calc "($XLEN|$NLON)")
@@ -145,7 +146,7 @@ if test $QFLAG; then
     makecpt -T$ZGRIDFILE > $PALETTE
   fi
 
-  $NLON2=$(( $NLON + 1 ))
+  NLON2=$(( $NLON + 1 ))
 
   echo "extract_field -x $NLON -y $NLAT $EXT_OPT $INFILE $INDEX | xyz2grd -R$RANGE2 -I$NLON+/$NLAT+ $ORIENT -G$GRDFILE"
   extract_field -x $NLON -y $NLAT $EXT_OPT $INFILE $INDEX | xyz2grd -R$RANGE2 -I$DLON/$DLAT $ORIENT -G$GRDFILE

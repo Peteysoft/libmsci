@@ -41,7 +41,7 @@ HEMI1 =
 HEMI2 =
 #KFLAG = -K
 
-LEAD2=60
+LEAD2=30
 NEV = 5
 NCV = 25
 

@@ -150,6 +150,7 @@ install:
 	install $(INCLUDE) $(INCLUDE_PATH)
 	install $(LIBRARY_INCLUDE) $(INCLUDE_PATH)
 	install $(SCRIPTS) $(BIN_PATH)
+	make -C scripts/plotting BIN_PATH=$(BIN_PATH) install
 
 #build the main library--this is linked into all the executables...
 libctraj.a: $(OBJECTS)
