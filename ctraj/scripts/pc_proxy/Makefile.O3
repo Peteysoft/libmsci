@@ -11,7 +11,7 @@ TF=2000/1/1
 #T0a= 1998/12/1
 #TFa= 1999/4/1
 
-T0a = 1998/7/1
+T0a = 1998/6/1
 TFa= 1999/1/1
 
 #interpolate POAM data between these two dates:
@@ -41,13 +41,13 @@ HEMI1 =
 HEMI2 =
 #KFLAG = -K
 
-LEAD2=30
+LEAD2=90
 NEV = 5
 NCV = 25
 
 ifdef PC
   PROXY_COMMAND=pc_proxy_predict
-  LEAD = 60
+  LEAD = 90
   PROXY_OPTIONS=-v $(NEV) -A $(NCV) -l $(LEAD2) $(HEMI1)
   BASE=l$(LEAD)_$(HEMI1)$(THETA)K
   PROXYFILE=$(CVMAT)
