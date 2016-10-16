@@ -617,9 +617,9 @@ In fact if we substitute the vertices derived in (\ref{vertex_i}) and
 (\ref{vertex_nplus1}) into (\ref{vertex_formulation}) we get back the
 original problem:
 \begin{eqnarray}
-	& & \min_{\vec k} \left |\sum_{i=1}^n_c k_i (\vec a^{(i)} + \vec r) + k_{n+1} \vec r \right |^2\\
-	& = & \min_{\vec k} \left |\sum_{i=1}^n_c k_i \vec a^{(i)} + \sum_{i=1}^n k_i \vec r + k_{n+1} \vec r \right |^2\\
-	& = & \min_{\vec k} \left |\sum_{i=1}^n_c k_i \vec a^{(i)} + \vec r \right |^2
+	& & \min_{\vec k} \left |\sum_{i=1}^{n_c} k_i (\vec a^{(i)} + \vec r) + k_{n+1} \vec r \right |^2\\
+	& = & \min_{\vec k} \left |\sum_{i=1}^{n_c} k_i \vec a^{(i)} + \sum_{i=1}^n k_i \vec r + k_{n+1} \vec r \right |^2\\
+	& = & \min_{\vec k} \left |\sum_{i=1}^{n_c} k_i \vec a^{(i)} + \vec r \right |^2
 \end{eqnarray}
 Thus $k_i=p_i|i=[1..n]$.
 
