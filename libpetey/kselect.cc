@@ -5,6 +5,7 @@
 #include "randomize.h"
 #include "quicksort.h"
 #include "kselect.h"
+#include "kextreme.h"
 
 using namespace std;
 
@@ -202,6 +203,11 @@ namespace libpetey {
         break;
       }
       if (err!=0) break;
+    }
+    int err2=verify_kleast(list, n, kleast, k);
+    if ((err2==0) && (err!=0) || (err2==1 && err!=-1)) {
+      fprintf(stderr, "Two error states differ: %d %d\n", err, err2);
+      err=1;
     }
     if (err!=0) {
       for (long i=0; i<n; i++) printf("%g ", list[i]);
