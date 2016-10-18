@@ -30,7 +30,6 @@ cls_t agf_classify(real **mat, 		//matrix of training data
 		flag_a joint)		//joint or conditional probabilities?
 {
 
-  real *d2;
   long *ind;			//indices for k nearest
   real *knearest;		//k nearest distances
   real *weight;		//the weights
@@ -40,19 +39,10 @@ cls_t agf_classify(real **mat, 		//matrix of training data
   //if we want joint probabilities:
   real norm;
 
-  //first we calculate all the distances:
-  d2=new real[n];
-  for (nel_ta i=0; i<n; i++) {
-    d2[i]=metric2(vec, mat[i], D);
-    //printf("%g ", d2[i]);
-  }
-  //printf("\n");
-
   //select out the k nearest:
   knearest=new real[k];
   ind=new long[k];
-  //sorter.decompose(knearest, ind, k);
-  KLEAST_FUNC(d2, n, k, knearest, ind);
+  kinearest(mat, n, D, vec, k, knearest, ind);
 
   //calculate the weights using the central "engine":
   weight=new real[k];
@@ -87,7 +77,6 @@ cls_t agf_classify(real **mat, 		//matrix of training data
   diag_param->W=tw;
 
   //clean up:
-  delete [] d2;
   delete [] knearest;
   delete [] ind;
   delete [] weight;

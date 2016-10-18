@@ -13,7 +13,6 @@
 #define AGF_PARTCOM "agf_preprocess"
 
 //names of important functions
-#define KLEAST_FUNC kleast_quick	//function for finding nearest neighbours
 #define AGF_CALC_W_FUNC agf_calc_w2	//function for calculating AGF weights
 
 namespace libagf {

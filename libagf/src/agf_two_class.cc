@@ -18,7 +18,6 @@ namespace libagf {
 template <class real>
 real dgrad(real **mat, dim_ta D, nel_ta ntrain, nel_ta clind, real *vec, real var[2], 
 		nel_ta k, real minw, real *grad, agf_diag_param *diag_param) {
-  real *d2;			//the distances (squared)
   real *knearest;		//distances of k nearest neighbours
   long *ind;			//indexes of k nearest neighbours
   real *weight;		//the current value for the weights
@@ -31,16 +30,10 @@ real dgrad(real **mat, dim_ta D, nel_ta ntrain, nel_ta clind, real *vec, real va
 
   real **mat2;			//k nearest training samples
 
-  //first we calculate all the distances:
-  d2=new real[ntrain];
-  for (nel_ta i=0; i<ntrain; i++) {
-    d2[i]=metric2(vec, mat[i], D);
-  }
-
   //select out the k nearest:
   knearest=new real[k];
   ind=new long[k];
-  KLEAST_FUNC(d2, ntrain, k, knearest, ind);
+  kinearest(mat, ntrain, D, vec, k, knearest, ind);
 
   //select out training samples:
   mat2=new real *[k];
@@ -97,7 +90,6 @@ real dgrad(real **mat, dim_ta D, nel_ta ntrain, nel_ta clind, real *vec, real va
   delete [] dwdx[0];
   delete [] dwdx;
 
-  delete [] d2;
   delete [] knearest;
   delete [] ind;
   delete [] weight;
@@ -111,7 +103,6 @@ real dgrad(real **mat, dim_ta D, nel_ta ntrain, nel_ta clind, real *vec, real va
 template <class real>
 real dcalc(real **mat, dim_ta D, nel_ta ntrain, nel_ta clind, real *vec, real var[2],
 		nel_ta k, real minw, agf_diag_param *diag_param) {
-  real *d2;			//the distances (squared)
   real *knearest;		//distances of k nearest neighbours
   long *ind;			//indexes of k nearest neighbours
   real *weight;		//the current value for the weights
@@ -121,16 +112,10 @@ real dcalc(real **mat, dim_ta D, nel_ta ntrain, nel_ta clind, real *vec, real va
 
   real varf;
 
-  //first we calculate all the distances:
-  d2=new real[ntrain];
-  for (nel_ta i=0; i<ntrain; i++) {
-    d2[i]=metric2(vec, mat[i], D);
-  }
-
   //select out the k nearest:
   knearest=new real[k];
   ind=new long[k];
-  KLEAST_FUNC(d2, ntrain, k, knearest, ind);
+  kinearest(mat, ntrain, D, vec, k, knearest, ind);
 
   /*
   for (nel_ta i=0; i<k; i++) printf("%g ", knearest[i]);
@@ -159,7 +144,6 @@ real dcalc(real **mat, dim_ta D, nel_ta ntrain, nel_ta clind, real *vec, real va
   diag_param->W=tw;
 
   //clean up:
-  delete [] d2;
   delete [] knearest;
   delete [] ind;
   delete [] weight;

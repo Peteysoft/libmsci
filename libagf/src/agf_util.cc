@@ -9,7 +9,8 @@
 
 #include <vector>
 
-#include "kextreme.h"
+//#include "kextreme.h"
+#include "kselect.h"
 #include "quicksort.h"
 //#include "coeffs.h"
 //#include "nr.h"
@@ -471,6 +472,56 @@ int agf_parse_command_opts(int &argc, char **&argv, const char *optlist, agf_com
 
   return errcode;
 }
+
+//selects out the nearest distances:
+template <class real>
+void kinearest(real **xvec,		//sample vectors 
+		nel_ta n, 		//number of samples
+		dim_ta D, 		//dimension of each sample
+		real *xtest, 		//test point
+		nel_ta k,		//number to select
+		real *knearest,		//k-nearest distances
+		long *ind,		//indices
+		//the metric to use:
+		real (*metric2) (real *, real *, dim_ta)) {
+  real d2;
+  kiselect_base<real> *selector;
+  //most reliable:
+  selector=new kiselect_tree<real>(k);
+  for (nel_ta i=0; i<n; i++) {
+    d2=(*metric2)(xvec[i], xtest, D);
+    selector->add(d2);
+  }
+  selector->get(knearest, ind);
+  delete selector;
+}
+
+template <class real>
+void knearest(real **xvec, nel_ta n, dim_ta D, real *xtest, nel_ta k, real *knearest,
+		real (*metric2) (real *, real *, dim_ta)) {
+  real d2;
+  kselect_base<real> *selector;
+  selector=new kselect_tree<real>(k);
+  for (nel_ta i=0; i<n; i++) {
+    d2=(*metric2)(xvec[i], xtest, D);
+    selector->add(d2);
+  }
+  selector->get(knearest);
+  delete selector;
+}
+
+template void kinearest<float>(float **, nel_ta, dim_ta, float *, 
+		nel_ta, float *, long *,
+		float (*) (float *, float *, dim_ta));
+template void kinearest<double>(double **, nel_ta, dim_ta, double *, 
+		nel_ta, double *, long *,
+		double (*) (double *, double *, dim_ta));
+
+template void knearest<float>(float **, nel_ta, dim_ta, float *, nel_ta, float *,
+		float (*) (float *, float *, dim_ta));
+template void knearest<double>(double **, nel_ta, dim_ta, double *, nel_ta, double *,
+		double (*) (double *, double *, dim_ta));
+
 
 //given averages and std. devs., normalize a set of vectors:
 template <class real>

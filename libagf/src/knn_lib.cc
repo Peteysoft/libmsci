@@ -20,7 +20,6 @@ template <class real, class cls_t>
 cls_t libagf::knn(real (* metric) (real *, real *, dim_ta),
 		real **mat, dim_ta m, nel_ta n, cls_t *cl, cls_t ncl, real *vec,
 		nel_ta k, real *pdf, flag_a joint) {
-  real *d2;			//the distances (squared)
   real *knearest;		//distances of k nearest neighbours
   long *ind;			//indices of k nearest neighbours
   cls_t cls;			//estimated class
@@ -29,16 +28,9 @@ cls_t libagf::knn(real (* metric) (real *, real *, dim_ta),
   real r, V;			//radius, volume of hypersphere
   real sqrtpir;		//intermediate value
 
-  //first we calculate all the distances:
-  d2=new real[n];
-  for (nel_ta i=0; i<n; i++) {
-    //d2[i]=(*metric) (vec, mat[i], m);
-    d2[i]=metric2 (vec, mat[i], m);
-  }
-
   knearest=new real[k+joint];
   ind=new long[k+joint];
-  KLEAST_FUNC(d2, n, k+joint, knearest, ind);
+  kinearest(mat, n, m, vec, k+joint, knearest, ind);
  
   for (cls_t i=0; i<ncl; i++) pdf[i]=0;
   for (nel_ta i=0; i<k; i++) {
@@ -62,7 +54,6 @@ cls_t libagf::knn(real (* metric) (real *, real *, dim_ta),
   for (cls_t i=0; i<ncl; i++) pdf[i]/=V;
 
   //clean up:
-  delete [] d2;
   delete [] knearest;
   delete [] ind;
 
@@ -72,22 +63,15 @@ cls_t libagf::knn(real (* metric) (real *, real *, dim_ta),
 
 template <class real>
 real libagf::knn_pdf(real **mat, dim_ta m, nel_ta n, real *vec, nel_ta k) {
-  real *d2;			//the distances (squared)
-  real *knearest;		//distances of k nearest neighbours
+  real *kn;		//distances of k nearest neighbours
   //real *kn2;		//distances of k nearest neighbours
   real r, V;			//radius, volume of hypersphere
   real sqrtpir;		//intermediate value
   real pdf;
 
-  //first we calculate all the distances:
-  d2=new real[n];
-  for (nel_ta i=0; i<n; i++) {
-    d2[i]=metric2(vec, mat[i], m);
-  }
-
   //select out the k nearest:
-  knearest=new real[k+1];
-  KLEAST_FUNC(d2, n, k+1, knearest);
+  kn=new real[k+1];
+  knearest(mat, n, m, vec, k+1, kn);
   //kn2=new real[k+1];
   //kleast(d2, n, k+1, kn2);
 /*
@@ -102,7 +86,7 @@ real libagf::knn_pdf(real **mat, dim_ta m, nel_ta n, real *vec, nel_ta k) {
   //pdf is k divided by volume of hypersphere of radius intermediate
   //between farthest of the k samples and the next farthest:
   //calculate volume of hypersphere:
-  r=(sqrt(knearest[k-1])+sqrt(knearest[k]))/2;
+  r=(sqrt(kn[k-1])+sqrt(kn[k]))/2;
   sqrtpir=sqrt(M_PI)*r;
   V=1;
   for (dim_ta i=0; i<m; i++) V*=sqrtpir;
@@ -113,8 +97,7 @@ real libagf::knn_pdf(real **mat, dim_ta m, nel_ta n, real *vec, nel_ta k) {
   //printf("r=%g, V=%g\n", r, V);
 
   //clean up:
-  delete [] d2;
-  delete [] knearest;
+  delete [] kn;
   
   return pdf;
 
@@ -123,21 +106,17 @@ real libagf::knn_pdf(real **mat, dim_ta m, nel_ta n, real *vec, nel_ta k) {
 template <class real>
 real libagf::int_knn(real (* metric) (real *, real *, dim_ta),
 	real **mat, dim_ta D, nel_ta n, real *ord, real *vec, nel_ta k) {
-  real *d2;
   real *knearest;
   long *ind;
   real result;
 
-  d2=new real[n];
   knearest=new real[k];
   ind=new long[k];
+  kinearest(mat, n, D, vec, k, knearest, ind, metric);
 
-  for (nel_ta i=0; i<n; i++) d2[i]=(*metric) (mat[i], vec, D);
-  KLEAST_FUNC(d2, n, k, knearest, ind);
   result=0;
   for (nel_ta i=0; i<k; i++) result+=ord[ind[i]];
 
-  delete [] d2;
   delete [] knearest;
   delete [] ind;
 
@@ -147,19 +126,15 @@ real libagf::int_knn(real (* metric) (real *, real *, dim_ta),
 template <class real>
 real libagf::int_knn(real (* metric) (real *, real *, dim_ta),
 	real **mat, dim_ta D, nel_ta n, real *ord, real *vec, nel_ta k, real &rms) {
-  real *d2;
   real *knearest;
   long *ind;
   real diff;
   real result;
 
-  d2=new real[n];
   knearest=new real[k];
   ind=new long[k];
+  kinearest(mat, n, D, vec, k, knearest, ind, metric);
 
-  for (nel_ta i=0; i<n; i++) d2[i]=(*metric) (mat[i], vec, D);
-
-  KLEAST_FUNC(d2, n, k, knearest, ind);
   result=0;
   for (nel_ta i=0; i<k; i++) result+=ord[ind[i]];
   result/=k;
@@ -171,7 +146,6 @@ real libagf::int_knn(real (* metric) (real *, real *, dim_ta),
   }
   rms=sqrt(rms/(k-1));
 
-  delete [] d2;
   delete [] knearest;
   delete [] ind;
 

@@ -13,7 +13,8 @@ EXE_EXT=.exe
 
 CC = g++
 
-BASE_PATH = /home/lenovo
+#BASE_PATH = /home/lenovo
+BASE_PATH = /home/Peter
 #BASE_PATH=/mnt/sdc1/home2/pete
 
 LIB_PATH = $(BASE_PATH)/lib

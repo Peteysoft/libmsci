@@ -24,29 +24,20 @@ namespace libagf {
 template <class real>
 real agf_calc_pdf(real **mat, dim_ta D, nel_ta n, real *vec, real var[2], 
 			nel_ta k, real Wc, agf_diag_param *diag_param) {
-  real *d2;			//the distances (squared)
   real var_f;			//final value of the filter width (as variance)
   real tw;			//total weight
-  real *knearest;		//distances of k nearest neighbours
+  real *kn;			//distances of k nearest neighbours
   real *weight;			//the current value for the weights
   real norm;			//normalisation coeff.
   real pdf;			//final calculated value of pdf
 
-  //first we calculate all the distances:
-  d2=new real[n];
-  for (nel_ta i=0; i<n; i++) {
-    d2[i]=metric2(vec, mat[i], D);
-    //printf("%g ", d2[i]);
-  }
-  //printf("\n");
-
   //select out the k nearest:
-  knearest=new real[k];
-  KLEAST_FUNC(d2, n, k, knearest);
+  kn=new real[k];
+  knearest(mat, n, D, vec, k, kn);
 
   //calculate the weights using the central "engine":
   weight=new real[k];
-  diag_param->nd=AGF_CALC_W_FUNC(knearest, k, Wc, var, weight, var_f);
+  diag_param->nd=AGF_CALC_W_FUNC(kn, k, Wc, var, weight, var_f);
   tw=0;
   for (nel_ta i=0; i<k; i++) tw+=weight[i];
 
@@ -62,8 +53,7 @@ real agf_calc_pdf(real **mat, dim_ta D, nel_ta n, real *vec, real var[2],
   diag_param->f=weight[k-1]/weight[0];
   diag_param->W=tw;
 
-  delete [] d2;
-  delete [] knearest;
+  delete [] kn;
   delete [] weight;
 
   return pdf;

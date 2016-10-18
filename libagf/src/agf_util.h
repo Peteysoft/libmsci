@@ -9,6 +9,7 @@
 #include "randomize.h"
 
 #include "agf_defs.h"
+#include "agf_metric2.h"
 
 namespace libagf {
 
@@ -68,6 +69,22 @@ namespace libagf {
     flag_a zflag;	//-z randomize
     flag_a Zflag;	//-Z use "in-house" SVM estimator
   };
+
+  //selects out the nearest distances:
+  template <class real>
+  void kinearest(real **xvec,		//sample vectors 
+		nel_ta n, 		//number of samples
+		dim_ta D, 		//dimension of each sample
+		real *xtest, 		//test point
+		nel_ta k,		//number to select
+		real *knearest,		//k-nearest
+		long *ind,		//indices
+		//metric to use:
+  		real (*metric2) (real *, real *, dim_ta)=&metric2);
+  template <class real>
+  void knearest(real **xvec, nel_ta n, dim_ta D, real *xtest, nel_ta k, real *knearest,
+  		real (*metric2) (real *, real *, dim_ta)=&metric2);
+
 
   //normalizes a set of vectors from averages and standard deviations:
   template <class real>

@@ -29,23 +29,18 @@ real libagf::adgaf(real **xmat,       //location of samples (n row by D col)
 	    agf_diag_param *diag_param)		//diagnostic parameters
 {
 
-  real *d2;                  //all the distances
-  real *knearest;            //distances of k nearest
-  long *ind;                  //indices of k nearest
-  real *weight;              //the weights
-  real tw;            		//sum of the weights
-  real result;                 //final value of the interpolate
-  real var_f;			//final filter variance
-
-  //first we calculate all the distances:
-  d2=new real[n];
-  for (nel_ta i=0; i<n; i++) d2[i]=metric2(xvec, xmat[i], D);
+  real *knearest;	//distances of k nearest
+  long *ind;		//indices of k nearest
+  real *weight;		//the weights
+  real tw;		//sum of the weights
+  real result;		//final value of the interpolate
+  real var_f;		//final filter variance
 
   //select out the k nearest:
   knearest=new real[k];
   ind=new long[k];
-  KLEAST_FUNC(d2, n, k, knearest, ind);
-
+  kinearest(xmat, n, D, xvec, k, knearest, ind);
+  
   //calculate the weights:
   weight=new real[k];
   diag_param->nd=AGF_CALC_W_FUNC(knearest, k, Wc, var, weight, var_f);
@@ -63,7 +58,6 @@ real libagf::adgaf(real **xmat,       //location of samples (n row by D col)
   diag_param->f=weight[k-1]/weight[0];
 
   //clean up:
-  delete [] d2;
   delete [] knearest;
   delete [] ind;
   delete [] weight;
@@ -92,7 +86,6 @@ template double adgaf<double>(double **xmat, dim_ta D, double *y, nel_ta n,
 template <class real>
 real libagf::adgaf_err(real **xmat, dim_ta D, real *y, nel_ta n, real *vec, real var[2], 
 		nel_ta k, real wc, real &err, agf_diag_param *diag_param) {
-  real *d2;			//all the distances
   real *knearest;		//distances of k nearest
   long *ind;			//indices of k nearest
   real *weight;		//the weights
@@ -105,16 +98,10 @@ real libagf::adgaf_err(real **xmat, dim_ta D, real *y, nel_ta n, real *vec, real
 
   real **dwdx;			//gradients of weights
 
-  //first we calculate all the distances:
-  d2=new real[n];
-  for (nel_ta i=0; i<n; i++) {
-    d2[i]=metric2(vec, xmat[i], D);
-  }
-
   //select out the k nearest:
   knearest=new real[k];
   ind=new long[k];
-  KLEAST_FUNC(d2, n, k, knearest, ind);
+  kinearest(xmat, n, D, vec, k, knearest, ind);
 
   //rearrange the training samples:
   mat2=new real * [k];
@@ -175,7 +162,6 @@ real libagf::adgaf_err(real **xmat, dim_ta D, real *y, nel_ta n, real *vec, real
   delete [] dwdx[0];
   delete [] dwdx;
 
-  delete [] d2;
   delete [] knearest;
   delete [] ind;
   delete [] weight;

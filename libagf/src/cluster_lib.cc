@@ -10,6 +10,7 @@
 #include "peteys_tmpl_lib.h"
 
 #include "cluster_lib.h"
+#include "agf_util.h"
 
 using namespace std;
 using namespace libpetey;
@@ -452,13 +453,9 @@ void fill_cluster(real **x,
 
   if (calc[sub]==1) return;
 
-  //calculate distances:
-  d2=new real[n];
-  for (nel_ta j=0; j<n; j++) d2[j]=metric2(x[sub], x[j], d);
   //find nearest-neighbours:
   kl=new real[k+1];
-  KLEAST_FUNC(d2, n, k+1, kl, ind);
-  delete [] d2;			//run out of heap pretty quick otherwise
+  kinearest(x, n, d, x[sub], k, kl, ind);
 
   //calculate pdf:
   r=(sqrt(kl[k-1])+sqrt(kl[k]))/2;
