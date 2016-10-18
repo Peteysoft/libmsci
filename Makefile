@@ -18,7 +18,8 @@ OPT=-g
 # C++ compiler:
 CPP = g++
 
-BASE_PATH = /home/lenovo
+#BASE_PATH = /home/lenovo
+BASE_PATH = /home/Peter
 #BASE_PATH = /mnt/sdc1/home2/pete
 #BASE_PATH = /home/pmills
 
@@ -31,11 +32,11 @@ MANPATH=$(BASE_PATH)/man
 #MANPATH=/usr/local/man
 
 # GSL include location:
-#GSL_INCLUDE = /usr/include
-GSL_INCLUDE = $(INCLUDE_PATH)
+GSL_INCLUDE = /usr/local/include
+#GSL_INCLUDE = $(INCLUDE_PATH)
 # GSL library locations:
-#GSL_LIB = /usr/lib
-GSL_LIB = $(LIB_PATH)
+GSL_LIB = /usr/local/lib
+#GSL_LIB = $(LIB_PATH)
 
 # C++ compiler options:
 #CFLAGS = $(OPT) -Wno-deprecated -I$(INCLUDE_PATH) -I$(GSL_INCLUDE) -g
@@ -56,7 +57,7 @@ LIBLEX=fl
 # linker options for interactive utilities sparse_calc and date_calc:
 INT_UTIL_LDF = -L$(READLINE_LIB) -l$(LIBLEX) -lreadline -lncurses
 
-# extension for executables (for libsparse):
+# extension for executables (for libsparse and libagf):
 EXE_EXT=.exe
 
 #----------------------------------------------------------------#
@@ -72,7 +73,7 @@ FORTRAN_RUNTIME=gfortran
 # ARPACK library (for libsparse):
 ARPATH = /usr/local/lib
 #ARPATH = $(LIB_PATH)
-LIBARPACK=arpack_x86
+LIBARPACK=arpack_x86_64
 
 FFLAGS = -I$(INCLUDE_PATH) $(OPT) #-fno-underscoring
 
@@ -166,7 +167,6 @@ check:
 		CC=$(CPP) CFLAGS="$(CFLAGS)" \
 		GSL_INCLUDE=$(GSL_INCLUDE) GSL_LIB=$(GSL_LIB) \
 		LEX=$(LEX) YY=$(YY) INT_UTIL_LDF="$(INT_UTIL_LDF)"
-
 	make -C libagf test LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
 		BIN_PATH=$(BIN_PATH) \
 		OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT) \

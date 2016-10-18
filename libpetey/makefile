@@ -22,7 +22,8 @@ CPP = g++
 EXE_EXT = .exe
 
 # paths -- library, include, binary executables
-BASE_PATH = /home/lenovo
+#BASE_PATH = /home/lenovo
+BASE_PATH = /home/Peter
 #BASE_PATH = /mnt/sda1/home2/pete
 #BASE_PATH = /home/pmills
 
@@ -37,7 +38,7 @@ MANPATH=$(BASE_PATH)/man
 # GSL include location:
 GSL_INCLUDE = /usr/include
 # GSL library locations:
-GSL_LIB = /usr/lib
+GSL_LIB = /usr/local/lib
 
 # C++ compiler options:
 #CFLAGS = $(OPT) -Wno-deprecated -I$(INCLUDE_PATH) -I$(GSL_INCLUDE) -g
@@ -117,6 +118,7 @@ OBJECT =	symbol_table$(OPT).o \
 
 #list of executables:
 EXE = ignore_code
+EXE2=$(addsuffix $(EXE_EXT), $(EXE))
 
 #list of executables in the test suite:
 TEST = sorter \
@@ -125,6 +127,8 @@ TEST = sorter \
 		lp_test_suite \
 		test_libpetey
 		
+TEST2=$(addsuffix $(EXE_EXT), $(TEST))
+
 all: libpetey$(OPT).a $(EXE) date_calc 
 
 petey: libpetey$(OPT).a
@@ -161,7 +165,7 @@ install_allopt: libpetey-g.a libpetey-O2.a libpetey-pg.a
 	make install OPT=-pg
 	make install OPT=-O2
 
-test: test_libpetey $(TEST)
+test: $(TEST2)
 	./test_libpetey
 	./lp_test_suite
 
@@ -176,9 +180,8 @@ peteys_tmpl_lib.cc: heapsort_tmpl.cc bin_search.cc rk_dumb_tmpl.cc treesort.cpp
 $(OBJECT): %$(OPT).o: %.cc $(INCLUDE)
 	$(CPP) $(CFLAGS) -c $< -o $@
 
-EXE2=$(addsuffix $(EXE_EXT), $(EXE))
 
-$(EXE): %: %.cc $(PETEY)
+$(EXE2) $(TEST2): %$(EXE_EXT): %.cc libpetey$(OPT).a
 	$(CPP) $(CFLAGS) -o $@ $< libpetey$(OPT).a $(LDFLAGS)
 
 parse_grammar: parse_grammar.cc libpetey$(OPT).a
@@ -197,10 +200,4 @@ lex.yy.c: date_parse2.l time_class.h date_calc.tab.h
 date_calc.tab.c date_calc.tab.h: date_calc.y time_class.h
 	$(YY) -v -d date_calc.y
 
-
-#unit tests:
-TEST2=$(addsuffix $(EXE_EXT), $(TEST))
-
-$(TEST2): %: %.cc libpetey$(OPT).a 
-	$(CPP) $(CFLAGS) -o $@ $< libpetey$(OPT).a $(LDFLAGS)
 

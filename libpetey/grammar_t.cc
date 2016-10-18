@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "linked.h"
 #include "grammar_t.h"

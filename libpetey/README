@@ -13,6 +13,7 @@ Fortran				interface with ARPACK
 lex				build "date_calc" and "sparse_calc"
 yacc					"
 readline/history(+dependencies)	"date_calc" and "sparse_calc" interfaces
+ncurses				dependency for another lib (?)
 
 Take note of where they have been installed as you must modify the makefile
 macros with their locations.  See below.

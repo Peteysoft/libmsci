@@ -31,7 +31,8 @@ CC = g++
 OPT_VER = -g
 
 # paths for binaries and include files:
-BASE_PATH = /home/lenovo
+#BASE_PATH = /home/lenovo
+BASE_PATH = /home/Peter
 #BASE_PATH = /mnt/sdc1/home2/pete/
 
 LIB_PATH = $(BASE_PATH)/lib
@@ -51,7 +52,7 @@ NCDF_INC = $(NETCDF)/include
 
 # ARPACK library:
 ARPATH=/usr/local/lib
-LIBARPACK=arpack_x86
+LIBARPACK=arpack_x86_64
 
 # Fortran run-time libary:
 #FORTRAN_RUNTIME=g2c

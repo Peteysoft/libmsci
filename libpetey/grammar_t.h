@@ -1,8 +1,8 @@
 #include <stdio.h>
+#include <vector>
 
 #include "string_petey.h"
 #include "symbol_table.h"
-#include "vector_e.h"
 
 using namespace std;
 using namespace libpetey;
@@ -44,8 +44,8 @@ class compound: public expr_t {
   protected:
     grammar_t *grammar;		//each expression knows it's own identity
     long id;
-    vector_e<expr_t **> sub;	//list of sub-expressions 
-    vector_e<int> nsub;		//number of sub-expressions per version
+    vector<expr_t **> sub;	//list of sub-expressions 
+    vector<int> nsub;		//number of sub-expressions per version
     int ntyp;			//number of versions
 
   public:
@@ -84,7 +84,7 @@ class grammar_t {
   friend class compound;
   protected:
     symbol_table<string_petey> name;
-    vector_e<expr_t *> exprlist;
+    vector<expr_t *> exprlist;
     long last;		//id of last expression defined
   public:
     grammar_t();
