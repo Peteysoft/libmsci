@@ -215,12 +215,5 @@ void map_vector_inplace(dt * vector, long * indices, long n) {
 
 }
 
-//this is pretty elementary:
-template <typename type>
-int verify_ascending(type *list, int n) {
-  for (int i=1; i<n; i++) if (list[i]<list[i-1]) return 1;
-  return 0;
-}
-
 } //end namespace libpetey
 
