@@ -103,8 +103,17 @@ namespace libpetey {
     return err;
   }
 
+  template <typename type>
+  int verify_kleast(type *list, long n, long *ind, long k) {
+    type kl[k];
+    for (long i=0; i<k; i++) kl[i]=list[ind[i]];
+    return verify_kleast(list, n, kl, k);
+  }
+   
   template int verify_kleast<float>(float *, long, float *, long);
   template int verify_kleast<double>(double *, long, double *, long);
+  template int verify_kleast<float>(float *, long, long *, long);
+  template int verify_kleast<double>(double *, long, long *, long);
 
 } //end namespace libpetey
 

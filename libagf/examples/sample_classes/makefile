@@ -191,7 +191,7 @@ comp_clean:
 
 # K-nearest neighbours method:
 sctest.knn.cls sctest.knn.con time_knn.txt: sctrain.vec sctrain.cls sctest.vec #C2R
-	time -o time_knn.txt classify -k $(K) classify sctrain sctest.vec sctest.knn
+	time -o time_knn.txt knn -k 21 classify sctrain sctest.vec sctest.knn
 	C2R sctest.knn sctest.knn.r
 
 # LVQ training:
@@ -221,11 +221,11 @@ sctrain.svm.model time_svm_train.txt: sctrain.vec sctrain.cls #bincls2svm
 
 #SVM classification:
 sctest.svm.cls sctest.svm.con time_svm.txt: sctrain.svm.model sctest.vec \
-		sctest.cls #bincls2svm svmout2bin C2R
+		sctest.cls #bincls2svm svmout2agf C2R
 	agf2ascii -M sctest > sctest.svm
 	time -o time_svm.txt svm-predict -b 1 sctest.svm sctrain.svm.model \
 		sctest.svmout
-	svmout2bin sctest.svmout sctest.svm
+	svmout2agf sctest.svmout sctest.svm
 	C2R sctest.svm sctest.svm.r
 
 

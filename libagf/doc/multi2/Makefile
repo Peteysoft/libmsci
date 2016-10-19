@@ -4,7 +4,7 @@ SOURCE1 = binary_class_map.eps config1.eps rhist.eps sample_roc.eps skillvsr0.ep
 
 SOURCE2 = landclasstree.eps
 
-all: constrained.pdf multiclass_review.pdf
+all:
 	make TARGET=constrained SOURCE="$(SOURCE1)" constrained.pdf
 	make TARGET=multiclass_review SOURCE="$(SOURCE2)" multiclass_review.pdf
 

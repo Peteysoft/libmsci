@@ -12,6 +12,38 @@ namespace libpetey{
   int test_rk_ts2(int, real, int);
 }
 
+//this is pretty elementary:
+template <typename type>
+int verify_ascending(type *list, int n) {
+  for (int i=1; i<n; i++) if (list[i]<list[i-1]) return 1;
+  return 0;
+}
+
+template <typename type>
+int test_sorting(void (*sort)(type *, long), long n) {
+  type list[n];
+  //assumes a floating point type:
+  for (long i=0; i<n; i++) list[i]=ranu();
+  (*sort) (list, n);
+  return verify_ascending(list, n);
+}
+
+template <typename type>
+int test_sorting(void (*sort)(type *, long *, long), long n) {
+  type list1[n];
+  type list2[n];
+  long ind[n];
+  //assumes a floating point type:
+  for (long i=0; i<n; i++) {
+    list1[i]=ranu();
+    //agnostic about whether or not the function also sorts the list:
+    list2[i]=list[i];
+  }
+  (*sort) (list2, ind, n);
+  for (long i=0; i<n; i++) list1[ind[i]]
+  return verify_ascending(list1, n);
+}
+
 using namespace libpetey;
 
 int main(int argc, char **argv) {
@@ -100,6 +132,8 @@ int main(int argc, char **argv) {
   if (err!=0) exit_code=err;
   err=test_bit_array(100, 10);
   if (err!=0) exit_code=err;
+
+  
 
   ran_end();
 
