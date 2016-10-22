@@ -21,3 +21,8 @@ Generic Mapping Tools (GSL)
 python
 bash
 
+See individual sub-packages for detailed dependency breakdowns of each.
+Some dependencies are needed for only a small component or test script
+and so can be removed by commenting out part of the makefile or simply
+ignored.
+

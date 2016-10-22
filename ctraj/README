@@ -21,6 +21,7 @@ Tool					Application
 - Ghostview (gv)			plotting
 - Imagemagick				animation
 - bash					testing and analysis
+- bc (calculator)			needed for some of the test scripts
 
 
 INSTALLATION

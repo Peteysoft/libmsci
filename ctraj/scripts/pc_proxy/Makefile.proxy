@@ -13,9 +13,11 @@ DT=1		#Eulerian time-step
 T0=$(YEAR)/1/1
 TF=$(YEAR)/6/1
 
-VFIELD_PATH=/cygdrive/e/tmpdata/vfield
+#VFIELD_PATH=/cygdrive/e/tmpdata/vfield
+VFIELD_PATH=.
 #VFIELD_PATH=/mnt/sdc1/home2/pete/tmpdata/vfield
-DATA_PATH= /cygdrive/e/data/ncep/sixhour
+#DATA_PATH= /cygdrive/e/data/ncep/sixhour
+DATA_PATH= /home/Peter/data/ncep/oneday
 #DATA_PATH= /media/Lexar/ncep_data
 
 VFIELD_N = $(VFIELD_PATH)/vfield_ncep$(YEAR)_$(THETA)K_N.ds

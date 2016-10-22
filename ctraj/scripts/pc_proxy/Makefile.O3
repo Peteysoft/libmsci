@@ -5,7 +5,7 @@ YEAR=1999
 #(take two years of data and keep it local to guarantee no more stupid
 #range errors...)
 T0=1998/1/1
-TF=2000/1/1
+TF=1999/12/31
 
 #extent of tracer mapping:
 #T0a= 1998/12/1
@@ -32,38 +32,69 @@ NGRID = 100		#grid points per side
 TSTEP = 1		#"coarse" (Eulerian) time step
 NFINE = 6		#"fine" (Lagrangian) Runge-Kutta time step
 
-#specifications for interpolation:
-PC=1			#use PC proxy?
+#parameters for interpolation:
+PC=1			#use PC proxy
+#PC=			#use proxy tracer
 
+#parameters for proxy tracer:
+#order of the method:
+ORDER = 2
+
+#parameters for PC proxy:
 WINDOW = 1		#size of measurement window
+#integration time:
+INT_T = 60
+#lead time same as integration time:
+LEAD2=$(INT_T)
 
-HEMI1 =
-HEMI2 =
-#KFLAG = -K
-
-LEAD2=90
+#number of principal components to use:
 NEV = 5
+#number of Arnoldi vectors to use in calculating PCs:
 NCV = 25
 
+#add constant term when performing regressions:
+#KFLAG = -K
+
+#validation options:
+#limit interpolates to  this hemisphere
+HEMI1 =
+#limit validation to this hemisphere
+HEMI2 =
+#cheating a little bit:
+#TTHRESH="-t 0"
+
+#different arguments depending on whether we're using traditional proxy tracer
+#or PC proxy:
 ifdef PC
+  #command to calculate interpolates:
   PROXY_COMMAND=pc_proxy_predict
-  LEAD = 90
-  PROXY_OPTIONS=-v $(NEV) -A $(NCV) -l $(LEAD2) $(HEMI1)
-  BASE=l$(LEAD)_$(HEMI1)$(THETA)K
+  #arguments only used for PC proxy:
+  PC_ARGS = $(INT_T) $(WINDOW)
+  #options to PROXY_COMMAND:
+  PROXY_OPTIONS=$(KFLAG) -v $(NEV) -A $(NCV) -l $(LEAD2) $(HEMI1)
+  #base name of output files:
+  BASE=pc$(NEV)l$(INT_T)_$(HEMI1)$(THETA)K
+  #proxy field:
   PROXYFILE=$(CVMAT)
 else
+  #command to calculate interpolates:
   PROXY_COMMAND=proxy_tracer
-  PROXY_OPTIONS=$(HEMI1)
+  #options to PROXY_COMMAND:
+  PROXY_OPTIONS=$(HEMI1) -o $(ORDER)
+  #base name of output files:
   BASE=t$(HEMI1)$(THETA)K
+  #proxy field:
   PROXYFILE=$(PROXY_FIELD)
 endif
+
 
 #file names:
 #VFIELD_PATH=/cygdrive/e/tmpdata/vfield
 VFIELD_N=vfield_ncep_$(THETA)K_N.ds
 VFIELD_S=vfield_ncep_$(THETA)K_S.ds
 
-DATA_PATH = /cygdrive/e/data/ncep/sixhour/
+#DATA_PATH = /cygdrive/e/data/ncep/sixhour/
+DATA_PATH = /home/Peter/data/ncep/oneday
 
 #cross-validated proxy tracers:
 PROXY1=proxy1_$(BASE).vec
@@ -85,17 +116,17 @@ CVAL2=v2_$(BASE).txt
 
 #for "classic" proxy tracer:
 #passive proxy tracer field:
-PROXY_FIELD = proxy_field.vec
+PROXY_FIELD = proxy_$(THETA)K.vec
 
 all: $(PROXY_O3) $(PROXY_DATES) $(PROXY_O3) o3soundings$(THETA)K.txt
-	tracer_interpolate -d 24 -P $(HEMI2) -i $(T0b) -f $(TFb) $(PROXY_O3) \
-		$(PROXY_DATES) o3soundings$(THETA)K.txt
+	tracer_interpolate -d 24 $(TTHRESH) -P $(HEMI2) -i $(T0b) -f $(TFb) \
+		$(PROXY_O3) $(PROXY_DATES) o3soundings$(THETA)K.txt
 
 cross_validate: $(PROXY1) $(PROXY2) $(PDATES1) $(PDATES2) file1.txt file2.txt
-	tracer_interpolate -d 20 -P $(HEMI2) -i $(T0b) -f $(TFb) $(PROXY2) \
-		$(PDATES2) file1.txt > $(CVAL1)
-	tracer_interpolate -d 20 -P $(HEMI2) -i $(T0b) -f $(TFb) $(PROXY1) \
-		$(PDATES1) file2.txt > $(CVAL2)
+	tracer_interpolate -d 20 $(TTHRESH) -P $(HEMI2) -i $(T0b) -f $(TFb) \
+		$(PROXY2) $(PDATES2) file1.txt > $(CVAL1)
+	tracer_interpolate -d 20 $(TTHRESH) -P $(HEMI2) -i $(T0b) -f $(TFb) \
+		$(PROXY1) $(PDATES1) file2.txt > $(CVAL2)
 
 clean:
 	rm -f *$(BASE)*
@@ -105,11 +136,13 @@ clean:
 
 $(PROXY2) $(PDATES2): file2.txt $(PROXYFILE) $(DATES)
 	$(PROXY_COMMAND) $(PROXY_OPTIONS) -d 20 -i $(T0b) -f $(TFb) \
-		$(PROXYFILE) $(DATES) file2.txt $(LEAD) $(WINDOW) $(PROXY2) > $(PDATES2) 
+		$(PROXYFILE) $(DATES) file2.txt \
+		$(INT_T) $(WINDOW) $(PROXY2) > $(PDATES2) 
 
 $(PROXY1) $(PDATES1): file1.txt $(PROXYFILE) $(DATES)
 	$(PROXY_COMMAND) $(PROXY_OPTIONS) -d 20 -i $(T0b) -f $(TFb) \
-		$(PROXYFILE) $(DATES) file1.txt $(LEAD) $(WINDOW) $(PROXY1) > $(PDATES1)
+		$(PROXYFILE) $(DATES) file1.txt \
+		$(INT_T) $(WINDOW) $(PROXY1) > $(PDATES1)
 
 file1.txt file2.txt: POAMIII_$(THETA)K.txt
 	split_file POAMIII_$(THETA)K.txt file1.txt file2.txt
@@ -118,8 +151,9 @@ o3soundings$(THETA)K.txt: o3soundings$(THETA)K.txt.gz
 	gunzip -c o3soundings$(THETA)K.txt.gz > o3soundings$(THETA)K.txt
 
 $(PROXY_O3) $(PROXY_DATES): $(PROXYFILE) $(DATES) POAMIII_$(THETA)K.txt
-	$(PROXY_COMMAND) $(KFLAG) -d 20 -i $(T0b) -f $(TFb) $(PROXY_OPTIONS) $(PROXYFILE) $(DATES) \
-		POAMIII_$(THETA)K.txt $(LEAD) $(WINDOW) $(PROXY_O3) > $(PROXY_DATES)
+	$(PROXY_COMMAND) -d 20 -i $(T0b) -f $(TFb) $(PROXY_OPTIONS) \
+		$(PROXYFILE) $(DATES) POAMIII_$(THETA)K.txt \
+		$(INT_T) $(WINDOW) $(PROXY_O3) > $(PROXY_DATES)
 
 POAMIII_$(THETA)K.txt: POAMIII_$(THETA)K.txt.gz
 	gunzip -c POAMIII_$(THETA)K.txt.gz > POAMIII_$(THETA)K.txt
