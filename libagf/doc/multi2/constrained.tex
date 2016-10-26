@@ -502,7 +502,7 @@ We wish to solve the following minimization problem:
 \end{equation}
 subject to the constraints:
 \begin{eqnarray}
-	\sum_{i=1}{n_c} & p_i & = 1 \label{norm_constraint}\\
+	\sum_{i=1}^{n_c} & p_i & = 1 \label{norm_constraint}\\
 	0 \le & p_i & \le 1; ~i=0..n_c \label{prob_constraint}
 \end{eqnarray}
 The situation is illustrated in Figure \ref{fig1} for the case of three classes.
@@ -535,8 +535,8 @@ planes:
 	\vec v_i \cdot \vec x - b_i > 0 ~ | ~ i=[1, ~n_c]
 \label{generalized_constraint}
 \end{equation}
-Here we have switched to $\vec x \in \Re^{n_c-1}$ as the solution variable.  These can be 
-converted to a series of $n_c$ vertices.  By ommitting one of the constraints
+Here we have switched to $\vec x \in \Re^{n_p}$ as the solution variable.  These can be 
+converted to a series of $n_p$ vertices.  By ommitting one of the constraints
 and converting the remaining to a system of linear equations:
 \begin{equation}
 \vec v_i \cdot \vec c_j = b_i | ~ i \ne j
@@ -547,10 +547,21 @@ by the $j$th constraint.
 Likewise, we can return to the format in (\ref{generalized_constraint}) via the
 generalized cross-product or wedge product:
 \begin{eqnarray}
-	\vec v_i^\prime & = & \wedge \left ( \lbrace \vec c_j - \vec c_k |~ j \ne i;~k \ne i \rbrace \right ) \\
-	d & = & \mathrm{sgn} \left (\vec v_i^\prime \cdot \vec c_i - b_i^\prime) \right ) \\
-	\vec v_i & = & d \vec v_i^\prime \\
-	b_i &= & d \vec v_i^\prime \cdot \vec c_j | ~ i \ne j
+	%\vec v_i^\prime & = & \wedge \left ( \lbrace \vec c_j - \vec c_k |~ j \ne i;~k \ne i \rbrace \right ) \\
+	%just write it out term-by-term:
+	\vec n_i & = & \wedge \left (\vec c_k - \vec c_1,\vec c_k - \vec c_2,
+	...,\vec c_k-\vec c_j,...,\vec c_k-\vec c_n \right ) 
+	|~ j \ne i;~k \ne i;~j \ne k \\
+	\vec v_i & = & 
+	\left . 
+	\frac{\vec n_i \cdot \vec c_i - \vec n_i \cdot \vec c_j}
+	{\left | \vec n_i \cdot \vec c_i - \vec n_i \cdot \vec c_j \right |}
+	\vec n_i
+	~\right | ~j \ne i \\
+	b_i & = & \vec v_i \cdot \vec c_j ~|~j \ne i
+	%d & = & \mathrm{sgn} \left (\vec v_i^\prime \cdot \vec c_i - b_i^\prime) \right ) \\
+	%\vec v_i & = & d \vec v_i^\prime \\
+	%b_i &= & d \vec v_i^\prime \cdot \vec c_j | ~ i \ne j
 \end{eqnarray}
 [is this correct?]
 
@@ -580,7 +591,7 @@ Minimizing this expression:
 \begin{eqnarray}
 	\frac{\partial}{\partial x_k} \vec x \cdot \vec x = 2 x_k - 2 \frac{v_k}{v_i} \left (\frac{b}{v_i} - \frac{1}{v_i} \sum_{j \ne i} v_j x_j \right )^2 
 	& = & 0 \\
-	\frac{v_i}{v_k} x_k - \frac{b}{v_i^2} + \sum{j \ne i} v_j x_j & = & 0
+	\frac{v_i}{v_k} x_k - \frac{b}{v_i^2} + \sum_{j \ne i} v_j x_j & = & 0
 	\label{min_1constraint}
 \end{eqnarray}
 Substituting (\ref{solution_1constraint}) into (\ref{min_1constraint})
@@ -594,14 +605,12 @@ The vertices can also be acquired directly from the original constrained
 problem in (\ref{basic_min})-(\ref{prob_constraint})
 since they will lie in the following positions:
 \begin{eqnarray}
-	\vec p_i & = & \hat e | ~ i=[1..n_c] \\
-	\vec p_{n_c+1} & = & \vec 0
+	\vec p_i & = & \hat e_i | ~ i=[1..n_c] \\
 \end{eqnarray}
-where $\hat e$ are the basis-vectors and $\vec 0$ is a vector of all zeroes.
+where $\lbrace \hat e_i \rbrace$ are the basis-vectors.
 Substituting this into (\ref{basic_min}) produces the following:
 \begin{eqnarray}
 	\vec c_i & = & \vec a^{(i)} + \vec r | ~ i=[1..n_c] \label{vertex_i}\\
-	\vec c_{n_c+1} & = & \vec r \label{vertex_nplus1}
 \end{eqnarray}
 where $a^{(i)}$ is the $i$th column of $A$.
 
@@ -613,12 +622,11 @@ and (\ref{generalized_constraint}) can be formulated in terms of the vertices:
 	\vec k & \le & 0
 \end{eqnarray}
 Which looks suspiciously like a problem involving conditional probabilities.
-In fact if we substitute the vertices derived in (\ref{vertex_i}) and
-(\ref{vertex_nplus1}) into (\ref{vertex_formulation}) we get back the
-original problem:
+In fact if we substitute the vertices derived in (\ref{vertex_i} into 
+(\ref{vertex_formulation}) we get back the original problem:
 \begin{eqnarray}
-	& & \min_{\vec k} \left |\sum_{i=1}^{n_c} k_i (\vec a^{(i)} + \vec r) + k_{n+1} \vec r \right |^2\\
-	& = & \min_{\vec k} \left |\sum_{i=1}^{n_c} k_i \vec a^{(i)} + \sum_{i=1}^n k_i \vec r + k_{n+1} \vec r \right |^2\\
+	& & \min_{\vec k} \left |\sum_{i=1}^{n_c} k_i (\vec a^{(i)} + \vec r) \vec r \right |^2\\
+	& = & \min_{\vec k} \left |\sum_{i=1}^{n_c} k_i \vec a^{(i)} + \vec r \sum_{i=1}^n k_i \right |^2\\
 	& = & \min_{\vec k} \left |\sum_{i=1}^{n_c} k_i \vec a^{(i)} + \vec r \right |^2
 \end{eqnarray}
 Thus $k_i=p_i|i=[1..n]$.

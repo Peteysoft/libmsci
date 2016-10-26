@@ -69,7 +69,7 @@ ifdef PC
   #command to calculate interpolates:
   PROXY_COMMAND=pc_proxy_predict
   #arguments only used for PC proxy:
-  PC_ARGS = $(INT_T) $(WINDOW)
+  PC_ARGS = $(INT_T)
   #options to PROXY_COMMAND:
   PROXY_OPTIONS=$(KFLAG) -v $(NEV) -A $(NCV) -l $(LEAD2) $(HEMI1)
   #base name of output files:
@@ -82,7 +82,7 @@ else
   #options to PROXY_COMMAND:
   PROXY_OPTIONS=$(HEMI1) -o $(ORDER)
   #base name of output files:
-  BASE=t$(HEMI1)$(THETA)K
+  BASE=o$(ORDER)_$(HEMI1)$(THETA)K
   #proxy field:
   PROXYFILE=$(PROXY_FIELD)
 endif
@@ -93,8 +93,8 @@ endif
 VFIELD_N=vfield_ncep_$(THETA)K_N.ds
 VFIELD_S=vfield_ncep_$(THETA)K_S.ds
 
-#DATA_PATH = /cygdrive/e/data/ncep/sixhour/
-DATA_PATH = /home/Peter/data/ncep/oneday
+DATA_PATH = /cygdrive/d/data/ncep/sixhour/
+#DATA_PATH = /home/Peter/data/ncep/oneday
 
 #cross-validated proxy tracers:
 PROXY1=proxy1_$(BASE).vec
@@ -137,12 +137,12 @@ clean:
 $(PROXY2) $(PDATES2): file2.txt $(PROXYFILE) $(DATES)
 	$(PROXY_COMMAND) $(PROXY_OPTIONS) -d 20 -i $(T0b) -f $(TFb) \
 		$(PROXYFILE) $(DATES) file2.txt \
-		$(INT_T) $(WINDOW) $(PROXY2) > $(PDATES2) 
+		$(PC_ARGS) $(WINDOW) $(PROXY2) > $(PDATES2) 
 
 $(PROXY1) $(PDATES1): file1.txt $(PROXYFILE) $(DATES)
 	$(PROXY_COMMAND) $(PROXY_OPTIONS) -d 20 -i $(T0b) -f $(TFb) \
 		$(PROXYFILE) $(DATES) file1.txt \
-		$(INT_T) $(WINDOW) $(PROXY1) > $(PDATES1)
+		$(PC_ARGS) $(WINDOW) $(PROXY1) > $(PDATES1)
 
 file1.txt file2.txt: POAMIII_$(THETA)K.txt
 	split_file POAMIII_$(THETA)K.txt file1.txt file2.txt
@@ -153,7 +153,7 @@ o3soundings$(THETA)K.txt: o3soundings$(THETA)K.txt.gz
 $(PROXY_O3) $(PROXY_DATES): $(PROXYFILE) $(DATES) POAMIII_$(THETA)K.txt
 	$(PROXY_COMMAND) -d 20 -i $(T0b) -f $(TFb) $(PROXY_OPTIONS) \
 		$(PROXYFILE) $(DATES) POAMIII_$(THETA)K.txt \
-		$(INT_T) $(WINDOW) $(PROXY_O3) > $(PROXY_DATES)
+		$(PC_ARGS) $(WINDOW) $(PROXY_O3) > $(PROXY_DATES)
 
 POAMIII_$(THETA)K.txt: POAMIII_$(THETA)K.txt.gz
 	gunzip -c POAMIII_$(THETA)K.txt.gz > POAMIII_$(THETA)K.txt
