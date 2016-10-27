@@ -57,6 +57,8 @@ int main(int argc, char **argv) {
   float cov;
 
   float thresh;
+  float latmin=-90;
+  float latmax=90;
 
   time_class t0;
   time_class tf;
@@ -83,7 +85,9 @@ int main(int argc, char **argv) {
   optarg[3]=&dwid;
   optarg[6]=&N;
   optarg[9]=&thresh;
-  argc=parse_command_opts(argc, argv, "-+0difNPHt?", "%%%d%d%s%s%d%%%g%", optarg, flag, OPT_WHITESPACE);
+  optarg[10]=&latmin;
+  optarg[11]=&latmax;
+  argc=parse_command_opts(argc, argv, "-+0difNPHtIF?", "%%%d%d%s%s%d%%%g%g%g%", optarg, flag, OPT_WHITESPACE);
   if (argc < 0) exit(411);
   if (flag[0]) hemi=-1; else if (flag[1]) hemi=1;
   if (flag[4]) t0.read_string((char *) optarg[4]);
@@ -92,9 +96,9 @@ int main(int argc, char **argv) {
   Hflag=flag[8];
   tflag=flag[9];
 
-  if (argc<4 || flag[10]) {
+  if (argc<4 || flag[12]) {
     int err;
-    if (flag[9]) {
+    if (flag[12]) {
       docfs=stdout;
       err=0;
     } else {
@@ -190,6 +194,13 @@ int main(int argc, char **argv) {
   //exclude measurements outside the date range:
   samp2=select_meas(t0, tf, samp, nsamp, &nsamp2, hemi);
 
+  if (flag[10] || flag[11]) {
+    meas_data *samp4;
+    samp4=select_lat_range(samp2, nsamp2, latmin, latmax, &nsamp2);
+    delete [] samp2;
+    samp2=samp4;
+  }
+
 /*  for (long i=0; i<nsamp; i++) {
 	  dates[i].write_string(tstring);
 	  printf("%s\n", tstring);
@@ -200,16 +211,15 @@ int main(int argc, char **argv) {
   //do the interpolation:
   fprintf(docfs, "Performing interpolation...\n");
 
-  tracer_interp(qall+i0, t+i0, N, np, samp2, nsamp2);
-
   if (cflag || Hflag) {
-    //inefficient ... who cares...
-    samp3=select_meas(t0, tf, samp, nsamp, &nsamp2, hemi);
+    samp3=copy_meas(samp2, nsamp2);
   }
+
+  tracer_interp(qall+i0, t+i0, N, np, samp2, nsamp2);
 
   if (Hflag) {
     for (long i=0; i<nsamp2; i++) {
-      printf("%14.7g\n", (samp2[i].q-samp3[i].q)/samp[i].qerr);
+      printf("%14.7g\n", (samp2[i].q-samp3[i].q)/samp3[i].qerr);
     }
   }
 
@@ -241,7 +251,9 @@ int main(int argc, char **argv) {
     var1=0;
     var2=0;
     for (long i=0; i<nsamp2; i++) {
-      if (tflag==0 || (samp2[i].q > thresh && samp3[i].q > thresh)) {
+      //if (tflag==0 || (samp2[i].q > thresh && samp3[i].q > thresh)) {
+      //zero values for ozone sonde data are bad for sure:
+      if (tflag==0 || (samp3[i].q > thresh)) {
         diff1=samp2[i].q-ave1;
         diff2=samp3[i].q-ave2;
         cov+=diff1*diff2;

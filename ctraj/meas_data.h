@@ -36,12 +36,19 @@ namespace ctraj {
 
   int write_meas(meas_data *data, long n, FILE *fs);
 
+  inline meas_data *copy_meas(meas_data *dat, long n) {
+    meas_data *result=new meas_data[n];
+    for (long i=0; i<n; i++) result[i]=dat[i];
+    return result;
+  }
+
   meas_data * sort_meas(meas_data *dat, long n);
 
   meas_data * randomize_meas(meas_data *dat, long n);
 
   meas_data *select_meas(time_class t0, time_class t1, meas_data *dat, long n1, long *n2, int hemi=0);
 
+  meas_data *select_lat_range(meas_data *dat, long n1, float min, float max, long *n2);
 } //end namespace ctraj
 
 #endif

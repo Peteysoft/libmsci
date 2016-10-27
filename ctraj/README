@@ -136,7 +136,7 @@ Executables accept some subset of the following options.  These can also be foun
   -I   initial value for dependent variable (epsilon/z) [1.]
   -k   number of R-K 'fine' time steps per coarse step [6]
   -K   apply constant term in PC proxy
-  -l   lead time for the measurement window [default is the same as for the tracer]
+  -l   lead time [same as integration time]
   -m   minimum change in path in km [10.]
   -M   maximum number of points in advected contour
   -n   grid-points per side [120/100]

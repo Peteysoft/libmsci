@@ -28,13 +28,19 @@ int main(int argc, char **argv) {
   char c;
   long ncon;
 
+  //latitude range:
+  float min=-90;
+  float max=90;
+
   void *optarg[10];
   int flag[10];
   int sflag;
 
   optarg[2]=&twid;
-  argc=parse_command_opts(argc, argv, "ifd+-S?", "%s%s%d%%%%", optarg, flag, 
-		OPT_WHITESPACE);
+  optarg[7]=&min;
+  optarg[8]=&max;
+  argc=parse_command_opts(argc, argv, "ifd+-S?IF", "%s%s%d%%%%%g%g", 
+		  optarg, flag, OPT_WHITESPACE);
   if (argc<0) {
     fprintf(stderr, "select_meas: command option parse error\n");
     return FATAL_COMMAND_OPTION_PARSE_ERROR;
@@ -83,6 +89,14 @@ int main(int argc, char **argv) {
   if (flag[1]==0) t2=data[n-1].t;
 
   selected=select_meas(t1, t2, data, n, &n2, hemi);
+
+  if (flag[7] || flag[8]) {
+    meas_data *sel2;
+    sel2=select_lat_range(selected, n2, min, max, &n2);
+    delete [] selected;
+    selected=sel2;
+  }
+
   write_meas(selected, n2, stdout);
 
   delete [] data;

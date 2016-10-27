@@ -188,5 +188,27 @@ meas_data * select_meas(time_class t0, time_class t1, meas_data *dat, long n1, l
   return new_data;
 }
 
+  meas_data *select_lat_range(meas_data *dat, long n1, float min, float max, long *n2) {
+    meas_data *result;
+    result=new meas_data[n1];
+    *n2=0;
+    if (min > max) {
+      for (int i=0; i<n1; i++) {
+        if (dat[i].lat >= min || dat[i].lat <= max) {
+          result[*n2]=dat[i];
+	  (*n2)++;
+	}
+      }
+    } else {
+      for (int i=0; i<n1; i++) {
+        if (dat[i].lat >= min && dat[i].lat <= max) {
+          result[*n2]=dat[i];
+	  (*n2)++;
+	}
+      }
+    }
+    return result;
+  }
+
 } //end namespace ctraj
 
