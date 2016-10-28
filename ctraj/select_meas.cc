@@ -62,6 +62,8 @@ int main(int argc, char **argv) {
     }
     fprintf(docfs, "Usage: select_meas [-i t0] [-f tf] [-+|--] [-d dwid] [-S] infile\n");
     fprintf(docfs, "options:\n");
+    fprintf(docfs, "  -I   select measurements at this latitude or above\n");
+    fprintf(docfs, "  -F   select measurements at this latitude or below\n"); 
     ctraj_optargs(docfs, "ifd+-S?");
     return err;
   }

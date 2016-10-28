@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
     }
 
     fprintf(docfs, "\n");
-    fprintf(docfs, "usage: tracer_interpolate [-d dwid] [--] [-+] [-P]\n");
+    fprintf(docfs, "usage: tracer_interpolate [-d dwid] [--] [-+] [-P] [-I latmin] [-F latmax]\n");
     fprintf(docfs, "                          [-0 i0|-i t0] [-N n|-f tf]\n");
     fprintf(docfs, "                          tfile dates measurements\n");
     fprintf(docfs, "\n");
@@ -117,6 +117,8 @@ int main(int argc, char **argv) {
     fprintf(docfs, "  measurements  = ASCII file containing measurement locations\n");
     printf("\n");
     fprintf(docfs, "options:\n");
+    fprintf(docfs, "  -I   select measurements above this latitude\n");
+    fprintf(docfs, "  -F   select measurements below this latitude\n"); 
     ctraj_optargs(docfs, "d-+if0NPH?", 1);
     printf("\n");
     return err;

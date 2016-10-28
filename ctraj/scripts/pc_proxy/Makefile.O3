@@ -1,5 +1,7 @@
-#YEAR=1998
-YEAR=1999
+#file paths:
+#DATA_PATH = /cygdrive/d/data/ncep/sixhour/
+DATA_PATH = /home/Peter/data/ncep/oneday
+VFIELD_PATH=.
 
 #extent of velocity field:
 #(take two years of data and keep it local to guarantee no more stupid
@@ -62,6 +64,11 @@ HEMI1 =
 HEMI2 =
 #cheating a little bit:
 #TTHRESH="-t 0"
+#exclude measurement stations above this (absolute) latitude:
+LATTHRESH=50
+LATMIN=$(LATTHRESH)
+LATMAX=-$(LATTHRESH)
+LATBAND = -I $(LATMIN) -F $(LATMAX)
 
 #different arguments depending on whether we're using traditional proxy tracer
 #or PC proxy:
@@ -87,14 +94,9 @@ else
   PROXYFILE=$(PROXY_FIELD)
 endif
 
-
 #file names:
-#VFIELD_PATH=/cygdrive/e/tmpdata/vfield
-VFIELD_N=vfield_ncep_$(THETA)K_N.ds
-VFIELD_S=vfield_ncep_$(THETA)K_S.ds
-
-DATA_PATH = /cygdrive/d/data/ncep/sixhour/
-#DATA_PATH = /home/Peter/data/ncep/oneday
+VFIELD_N=$(VFIELD_PATH)/vfield_ncep_$(THETA)K_N.ds
+VFIELD_S=$(VFIELD_PATH)/vfield_ncep_$(THETA)K_S.ds
 
 #cross-validated proxy tracers:
 PROXY1=proxy1_$(BASE).vec
@@ -119,13 +121,16 @@ CVAL2=v2_$(BASE).txt
 PROXY_FIELD = proxy_$(THETA)K.vec
 
 all: $(PROXY_O3) $(PROXY_DATES) $(PROXY_O3) o3soundings$(THETA)K.txt
-	tracer_interpolate -d 24 $(TTHRESH) -P $(HEMI2) -i $(T0b) -f $(TFb) \
+	tracer_interpolate -d 24 -P \
+		$(TTHRESH) $(LATBAND) $(HEMI2) -i $(T0b) -f $(TFb) \
 		$(PROXY_O3) $(PROXY_DATES) o3soundings$(THETA)K.txt
 
 cross_validate: $(PROXY1) $(PROXY2) $(PDATES1) $(PDATES2) file1.txt file2.txt
-	tracer_interpolate -d 20 $(TTHRESH) -P $(HEMI2) -i $(T0b) -f $(TFb) \
+	tracer_interpolate -d 20 -P \
+		$(TTHRESH) $(HEMI2) $(LATBAND) -i $(T0b) -f $(TFb) \
 		$(PROXY2) $(PDATES2) file1.txt > $(CVAL1)
-	tracer_interpolate -d 20 $(TTHRESH) -P $(HEMI2) -i $(T0b) -f $(TFb) \
+	tracer_interpolate -d 20 -P \
+		$(TTHRESH) $(HEMI2) $(LATBAND) -i $(T0b) -f $(TFb) \
 		$(PROXY1) $(PDATES1) file2.txt > $(CVAL2)
 
 clean:
