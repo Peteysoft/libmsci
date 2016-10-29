@@ -140,6 +140,8 @@ int main(int argc, char **argv) {
         selector=new kselect_heap<float>(k);
       } else if (flag[4]) {
         selector=new kselect_tree<float>(k);
+      } else if (flag[8]) {
+        selector=new kselect_naive<float>(k);
       } else {
         selector=new kselect_quick<float>(k);
       }

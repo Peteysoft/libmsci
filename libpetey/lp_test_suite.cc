@@ -12,6 +12,8 @@ namespace libpetey{
   int test_rk_ts2(int, real, int);
 }
 
+using namespace libpetey;
+
 //this is pretty elementary:
 template <typename type>
 int verify_ascending(type *list, int n) {
@@ -37,17 +39,16 @@ int test_sorting(void (*sort)(type *, long *, long), long n) {
   for (long i=0; i<n; i++) {
     list1[i]=ranu();
     //agnostic about whether or not the function also sorts the list:
-    list2[i]=list[i];
+    list2[i]=list1[i];
   }
   (*sort) (list2, ind, n);
-  for (long i=0; i<n; i++) list1[ind[i]]
+  for (long i=0; i<n; i++) list1[ind[i]];
   return verify_ascending(list1, n);
 }
 
-using namespace libpetey;
 
 int main(int argc, char **argv) {
-
+  FILE *logfs=stdout;
   //test kselect classes (all four of them):
   const int nk=5;
   int k[nk]={1, 2, 5, 10, 20};
@@ -58,6 +59,8 @@ int main(int argc, char **argv) {
   int exit_code=0;
 
   ran_init();
+
+  fprintf(logfs, "Testing k-select object\n");
 
   for (int i=0; i<nk; i++) {
     for (int j=0; j<nn; j++) {
@@ -94,6 +97,7 @@ int main(int argc, char **argv) {
   }
 
   //test R-K integrator:
+  fprintf(logfs, "Testing R-K integrator\n");
   double h=0.01;
   int nterm=5;
   double t1=0.;
@@ -126,14 +130,13 @@ int main(int argc, char **argv) {
   err=test_rk_ts2<double>(5, 0.001, 100);
   err=test_rk_ts2<double>(5, 0.01, 1000);
 
+  fprintf(logfs, "Testing bit array\n");
   err=test_bit_array(1, 10);
   if (err!=0) exit_code=err;
   err=test_bit_array(10, 10);
   if (err!=0) exit_code=err;
   err=test_bit_array(100, 10);
   if (err!=0) exit_code=err;
-
-  
 
   ran_end();
 

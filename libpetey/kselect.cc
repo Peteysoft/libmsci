@@ -44,7 +44,7 @@ namespace libpetey {
     } else {
       for (long i=0; i<this->k; i++) {
         if (gind!=-1) {
-          if (select[i]>gind) gind=i;
+          if (select[i]>select[gind]) gind=i;
 	} else if (val<select[i]) {
 	  gind=i;
         }
@@ -120,14 +120,16 @@ namespace libpetey {
   template <class type>
   kselect_quick<type>::kselect_quick(long k1) {
     this->k=k1;
-    data=new vector<type>(this->k);
+    data=new vector<type>(0);
     ncur=0;
   }
 
   template <class type>
   kselect_quick<type>::kselect_quick(long k1, long n) {
     this->k=k1;
-    data=new vector<type>(n);
+    //since I can't figure out how to (easily) assign to a vector, extending
+    //it if necessaray, the n parameter is meaningless:
+    data=new vector<type>(0);
     ncur=0;
   }
 
@@ -138,7 +140,7 @@ namespace libpetey {
 
   template <class type>
   long kselect_quick<type>::add(type val) {
-    (*data)[int(ncur)]=val;
+    data->push_back(val);
     ncur++;
     //printf("kselect_quick: adding value; current list:\n");
     //data->print(stdout);
@@ -153,6 +155,8 @@ namespace libpetey {
     //d2=&((*data)[0]);
     d2=data->data();
     n=data->size();
+    for (long i=0; i<n; i++) printf("%g ", d2[i]);
+    printf("\n");
     kleast_quick(d2, n, this->k);
     for (long i=0; i<this->k; i++) kleast[i]=d2[i];
   }
@@ -386,36 +390,37 @@ namespace libpetey {
   template <class type>
   kiselect_quick<type>::kiselect_quick(long k1) {
     this->k=k1;
-    data=new vector<type>(this->k);
-    ind=new vector<long>(this->k);
+    data=new vector<type>(0);
+    ind=new vector<long>(0);
     this->ncur=0;
   }
 
   template <class type>
   kiselect_quick<type>::kiselect_quick(long k1, long n) {
     this->k=k1;
-    data=new vector<type>(n);
-    ind=new vector<long>(n);
+    data=new vector<type>(0);
+    ind=new vector<long>(0);
     this->ncur=0;
   }
 
   template <class type>
   kiselect_quick<type>::~kiselect_quick() {
     delete data;
+    delete ind;
   }
 
   template <class type>
   long kiselect_quick<type>::add(type val) {
-    (*data)[(int) this->ncur]=val;
-    (*ind)[(int) this->ncur]=this->ncur;
+    data->push_back(val);
+    ind->push_back(this->ncur);
     this->ncur++;
     return data->size();
   }
 
   template <class type>
   long kiselect_quick<type>::add(type val, long ind2) {
-    (*data)[(int) this->ncur]=val;
-    (*ind)[(int) this->ncur]=ind2;
+    data->push_back(val);
+    ind->push_back(ind2);
     this->ncur++;
     return data->size();
   }

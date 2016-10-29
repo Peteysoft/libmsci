@@ -22,8 +22,8 @@ CPP = g++
 EXE_EXT = .exe
 
 # paths -- library, include, binary executables
-#BASE_PATH = /home/lenovo
-BASE_PATH = /home/Peter
+BASE_PATH = /home/lenovo
+#BASE_PATH = /home/Peter
 #BASE_PATH = /mnt/sda1/home2/pete
 #BASE_PATH = /home/pmills
 

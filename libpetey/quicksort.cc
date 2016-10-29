@@ -182,6 +182,8 @@ void kleast_quick(type *array, long n, long k, long left, long right) {
          if (pivotNewIndex >= k) kleast_quick(array, n, k, left, pivotNewIndex - 1);
          //kleast(array, n, k, left, pivotNewIndex - 1);
          if (pivotNewIndex+1 < k) kleast_quick(array, n, k, pivotNewIndex + 1, right);
+         for (int i=0; i<n; i++) printf("%g ", array[i]);
+         printf("\n");
     }
 }
 
