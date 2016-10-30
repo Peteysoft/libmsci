@@ -155,8 +155,6 @@ namespace libpetey {
     //d2=&((*data)[0]);
     d2=data->data();
     n=data->size();
-    for (long i=0; i<n; i++) printf("%g ", d2[i]);
-    printf("\n");
     kleast_quick(d2, n, this->k);
     for (long i=0; i<this->k; i++) kleast[i]=d2[i];
   }

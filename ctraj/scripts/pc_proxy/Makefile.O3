@@ -62,13 +62,14 @@ NCV = 25
 HEMI1 =
 #limit validation to this hemisphere
 HEMI2 =
-#cheating a little bit:
-#TTHRESH="-t 0"
+#remove zero values from radiosonded data:
+TTHRESH="-t 0"
 #exclude measurement stations above this (absolute) latitude:
 LATTHRESH=50
 LATMIN=$(LATTHRESH)
 LATMAX=-$(LATTHRESH)
-LATBAND = -I $(LATMIN) -F $(LATMAX)
+#LATBAND = -I $(LATMIN) -F $(LATMAX)
+LATBAND = 
 
 #different arguments depending on whether we're using traditional proxy tracer
 #or PC proxy:

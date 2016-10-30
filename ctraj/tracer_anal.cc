@@ -525,17 +525,18 @@ eq_lat<real>::eq_lat(int32_t np) {
 template <typename real>
 real eq_lat<real>::operator () (real *q, real *el) {
   long *ind;
-  
-  real cum_area=0;
-  real cum_area_mid=0;
-  real mass=0;		//not exactly
-  real t2=0;
+
+  //do all the calculations double precision:  
+  double cum_area=0;
+  double cum_area_mid=0;
+  double mass=0;		//not exactly
+  double t2=0;
 
   //printf("total area=%g\n", total_area);
   ind=heapsort(q, n);
   for (int32_t i=0; i<n; i++) t2+=area[ind[i]];		//order matters, apparently...
   for (int32_t i=0; i<n; i++) {
-    real test;
+    double test;
     cum_area+=area[ind[i]];
     cum_area_mid=(cum_area_mid+cum_area)/2;
     cum_area_mid=cum_area;
