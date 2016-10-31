@@ -6,7 +6,9 @@ VFIELD_PATH=.
 #extent of velocity field:
 #(take two years of data and keep it local to guarantee no more stupid
 #range errors...)
-T0=1998/1/1
+#T0=1998/1/1
+#TF=1999/12/31
+T0=1997/1/1
 TF=1999/12/31
 
 #extent of tracer mapping:

@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
  
   AT=A;
   AT.transpose();
-  if (sa_dir < 0) A.mat_mult(AT, A2); else AT.mat_mult(A, A2);
+  if (sa_dir > 0) A.mat_mult(AT, A2); else AT.mat_mult(A, A2);
   n=A.dimension();
 
   eval=new float[ncv];

@@ -16,16 +16,12 @@ TF=$(YEAR)/6/1
 #VFIELD_PATH=/cygdrive/e/tmpdata/vfield
 VFIELD_PATH=.
 #VFIELD_PATH=/mnt/sdc1/home2/pete/tmpdata/vfield
-#DATA_PATH= /cygdrive/e/data/ncep/sixhour
-DATA_PATH= /home/Peter/data/ncep/oneday
+DATA_PATH= /cygdrive/e/data/ncep/sixhour
+#DATA_PATH= /home/Peter/data/ncep/oneday
 #DATA_PATH= /media/Lexar/ncep_data
 
 VFIELD_N = $(VFIELD_PATH)/vfield_ncep$(YEAR)_$(THETA)K_N.ds
 VFIELD_S = $(VFIELD_PATH)/vfield_ncep$(YEAR)_$(THETA)K_S.ds
-
-#deprecated:
-#LEAD=240		#lead time for PC proxy
-#LEAD=60		#lead time for PC proxy
 
 SKIP=4		#plot only every fourth frame
 
@@ -84,7 +80,7 @@ pccorr.txt: lyap_spec.txt tracer1.vec
 	./correlate_pcs.sh -N 1500 animation_frames/pc tracer1.vec > pccorr.txt
 
 lyap_spec.txt: $(MATFILE)
-	./pcs_all.sh -N 500 $(MATFILE) animation_frames/pc > lyap_spec.txt
+	./pcs_all.sh -l -N 500 $(MATFILE) animation_frames/pc > lyap_spec.txt
 
 clean:
 #	rm -f $(VFIELD_N)

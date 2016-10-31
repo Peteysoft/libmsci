@@ -1,7 +1,11 @@
+#include <vector>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+
+#include "sparse_element.h"
 
 #include "error_codes.h"
 #include "parse_command_opts.h"
@@ -13,9 +17,7 @@
 #include "ctraj_defaults.h"
 #include "av.h"
 
-//*FLAG* -- fixed-length data structure
-#define MAXN 10000
-
+using namespace std;
 using namespace libpetey;
 using namespace libsparse;
 using namespace ctraj;
@@ -54,12 +56,12 @@ int main(int argc, char **argv) {
   float **qvec;
 
   //for calculating lead times:
-  float lead;		//length in days of tracer map 
+  float int_t;		//length in days of tracer map 
   			//(should really be called, "integration time"...)
-  float lead2;		//days between start of tracer map and measurement window
+  float lead;		//days between start of tracer map and measurement window
   float window;
   time_class tf;		//date at end of lead time
-  time_class tf2;		//date at end of lead2 time
+  time_class tf2;		//date at end of lead time
   time_class t1, t2;		//measurement time window
   double l2;			//for truncating matrix array
   int32_t N2;			//size of matrix array to use
@@ -90,7 +92,6 @@ int main(int argc, char **argv) {
   int32_t nfield=0;
 
   i0=0;
-  nall=MAXN;
   N=-1;
 
   ncv=NARNOLDI;
@@ -101,7 +102,7 @@ int main(int argc, char **argv) {
   optarg[4]=&N;
   optarg[7]=&ncv;
   optarg[8]=&nev;
-  optarg[11]=&lead2;
+  optarg[11]=&lead;
   argc=parse_command_opts(argc, argv, "d-+0NifAvCKl?", 
 		"%d%%%d%d%s%s%d%d%%%g%", optarg, flag, OPT_WHITESPACE);
   if (argc<0) exit(21);
@@ -122,13 +123,13 @@ int main(int argc, char **argv) {
     }
     fprintf(docfs, "\n");
     fprintf(docfs, "usage: pc_proxy_predict [-0 i0|-i t0] [-N N|-f tf] [-A ncv] [-v nev] \n");
-    fprintf(docfs, "                  matfile dates measurements lead window outfile\n");
+    fprintf(docfs, "                  matfile dates measurements int_t window outfile\n");
     fprintf(docfs, "\n");
     fprintf(docfs, "where:\n");
     fprintf(docfs, "  matfile      = binary file containing array of matrices representing tracer mapping\n");
     fprintf(docfs, "  dates        = ASCII file containing dates corresponding to each sparse matrix\n");
     fprintf(docfs, "  measurements = ASCII file containing measurements and locations\n");
-    fprintf(docfs, "  lead         = lead time in days\n");
+    fprintf(docfs, "  int_t        = tracer integration time in days\n");
     fprintf(docfs, "  window       = measurement window in days\n");
     fprintf(docfs, "  outfile      = binary file containing interpolated tracer field\n");
     fprintf(docfs, "\n");
@@ -140,57 +141,35 @@ int main(int argc, char **argv) {
   matfile=argv[1];
   datefile=argv[2];
   measurement_file=argv[3];
-  sscanf(argv[4], "%f", &lead);
-  if (flag[11]==0) lead2=lead;
+  sscanf(argv[4], "%f", &int_t);
+  if (flag[11]==0) lead=int_t;
   sscanf(argv[5], "%f", &window);
   if (cflag==0) outfile=argv[6];
-
-  //read in the array of sparse matrices:
-  //if (cflag!=1) {
-    fprintf(docfs, "Reading file: %s\n", matfile);
-    fs=fopen(matfile, "r");
-
-//*FLAG* -- fixed-length data structure
-    matall=new sparse_matrix[nall];
-
-    for (int32_t i=0; i<nall; i++) {
-      //printf("%d\n", i);
-      ncon=matall[i].read(fs);
-      if (ncon==0) {
-        nall=i;
-        break;
-      }
-    }
-    fprintf(docfs, "%d sparse matrices read in\n", nall);
-
-    //determine the dimensions of the matrics:
-    matall[0].dimensions(m, n);
-    assert(m==n);			//only square matrices need apply...
-
-    fclose(fs);
-  //}
-
-  //read in the dates:
-  t=new time_class[nall+1];
 
   //get time grids:
   fs=fopen(datefile, "r");
   //line=fget_line(fs);		//throw away first grid
-  for (int32_t i=0; i<=nall; i++) {
+  vector<time_class> alldates(0);
+  while (feof(fs)==0) {
     int32_t ind;
+    int ncon;
+    time_class thist;
     line=fget_line(fs);
-    sscanf(line, "%d %s", &ind, tstring);
-    t[i].read_string(tstring);
+    if (line==NULL) break;
+    ncon=sscanf(line, "%d %s", &ind, tstring);
+    if (ncon!=2) break;
+    thist.read_string(tstring);
+    alldates.push_back(thist);
     delete [] line;
   }
+  nall=alldates.size()-1;
+  t=alldates.data();
   fclose(fs);
 
   //if we are specifying dates, then we are interested in the final,
   //output fields:
   if (flag[5]) {
-    date0.write_string(tstring);
-    date0.add(-lead2);
-    date0.write_string(tstring);
+    date0.add(-lead);
     i0=ceil(interpolate(t, nall+1, date0, -1));
     if (i0<0) {
       fprintf(stderr, "Insufficient date coverage in tracer mapping\n");
@@ -199,19 +178,78 @@ int main(int argc, char **argv) {
   }
 
   if (flag[6]) {
-    datef.add(-lead2);
+    datef.add(-lead);
     N=bin_search_g(t, nall+1, datef, -1)-i0+1;
   }
 
   if (N < 0 || N+i0>nall) {
-    tf=t[nall-1];
-    tf.add(-lead-window);
+    tf=t[nall];
+    tf.add(-int_t-window);
     N=bin_search_g(t, nall+1, tf, -1)-i0+1;
   }
 
   if (N<0) {
     fprintf(stderr, "Insufficient date coverage in tracer mapping\n");
     exit(PARAMETER_OUT_OF_RANGE);
+  }
+
+  //now that we've calculated all these dates and indices, it's time to read
+  //in the sparse matrices:
+  //we need data starting at this date:
+  if (cflag!=1) {
+    int start=i0;
+    t1=t[i0];
+    t1.add(lead-window);
+    if (t1<t[i0]) start=bin_search_g(t, alldates.size(), t1, -1);
+    fprintf(docfs, "Reading file: %s\n", matfile);
+    fs=fopen(matfile, "r");
+    //scan ahead to the data that we need:
+    for (int i=0; i<start; i++) {
+      int32_t nel;
+      int ncon, err;
+      ncon=fread(&m, sizeof(m), 1, fs);
+      ncon+=fread(&n, sizeof(n), 1, fs);
+      ncon+=fread(&nel, sizeof(nel), 1, fs);
+      err=fseek(fs, nel*sizeof(sparse_el<int32_t, float>), SEEK_CUR);
+      if (ncon!=3 || err!=0) {
+        fprintf(stderr, "pc_proxy_predict: error reading file, %s\n", matfile);
+        exit(FILE_READ_ERROR);
+      }
+    }
+    if (m!=n) {
+      fprintf(stderr, "pc_proxy_predict: dimension mismatch in sparse matrices\n");
+      exit(DIMENSION_MISMATCH);
+    }
+    //and ending at this date:
+    t1=t[i0+N-1];
+    t1.add(lead+window);
+    t2=t[i0+N-1];
+    t2.add(int_t);
+    if (t1>t2) {
+      nall=ceil(interpolate(t, alldates.size(), t1))-start+1;
+    } else {
+      nall=ceil(interpolate(t, alldates.size(), t2))-start+1;
+    }
+    matall=new sparse_matrix[nall];
+    for (int32_t i=0; i<nall; i++) {
+      int32_t m1, n1;
+      //printf("%d\n", i);
+      ncon=matall[i].read(fs);
+      if (ncon==0) {
+        fprintf(stderr, "pc_proxy_predict: insufficient data found in sparse matrix file, %s\n", matfile);
+        exit(SAMPLE_COUNT_MISMATCH);
+      }
+      matall[i].dimensions(m1, n1);
+      if (m1!=m || n1!=n) {
+        fprintf(stderr, "pc_proxy_predict: dimension mismatch in sparse matrices\n");
+        exit(DIMENSION_MISMATCH);
+      }
+    }
+    fclose(fs);
+    fprintf(docfs, "%d sparse matrices read in\n", nall);
+    //correct date array and indices:
+    i0-=start;
+    t+=start;
   }
   
   //read in measurements:
@@ -233,12 +271,12 @@ int main(int argc, char **argv) {
     tf.write_string(tstring);
     //printf("%d %s\n", i, tstring);
 
-    tf.add(lead);
+    tf.add(int_t);
     l2=interpolate(t, nall+1, tf, -1);
     N2=(int32_t) (ceil(l2)-i);		//number of sparse matrix elements
 
     tf2=t[i];
-    tf2.add(lead2);
+    tf2.add(lead);
     t1=tf2;
     t1.add(-window);
     t2=tf2;
@@ -298,7 +336,7 @@ int main(int argc, char **argv) {
   }
 
   //if (cflag!=1) delete [] matall;
-  delete [] t;
+  //delete [] t;
   delete [] samp;
 
   return err;
