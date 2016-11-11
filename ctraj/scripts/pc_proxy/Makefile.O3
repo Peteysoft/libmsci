@@ -1,13 +1,17 @@
 #file paths:
-#DATA_PATH = /cygdrive/d/data/ncep/sixhour/
-DATA_PATH = /home/Peter/data/ncep/oneday
+DATA_PATH = /cygdrive/e/data/ncep/sixhour/
+#DATA_PATH = /home/Peter/data/ncep/oneday
 VFIELD_PATH=.
+#to make it easier to clone this directory:
+#MASTER=.
+MASTER=/home/lenovo/my_software/libmsci/ctraj/scripts/pc_proxy
 
 #extent of velocity field:
 #(take two years of data and keep it local to guarantee no more stupid
 #range errors...)
 #T0=1998/1/1
 #TF=1999/12/31
+#take three years of data for some "spin up" for traditional proxy:
 T0=1997/1/1
 TF=1999/12/31
 
@@ -15,7 +19,7 @@ TF=1999/12/31
 #T0a= 1998/12/1
 #TFa= 1999/4/1
 
-T0a = 1998/6/1
+T0a = 1997/1/1
 TFa= 1999/1/1
 
 #interpolate POAM data between these two dates:
@@ -32,20 +36,25 @@ TFb= 1998/11/17
 #vertical level:
 THETA = 500
 
-NGRID = 100		#grid points per side
-TSTEP = 1		#"coarse" (Eulerian) time step
-NFINE = 6		#"fine" (Lagrangian) Runge-Kutta time step
+#grid points per side
+NGRID = 100
+#"coarse" (Eulerian) time step
+TSTEP = 1
+#"fine" (Lagrangian) Runge-Kutta time step
+NFINE = 6
 
 #parameters for interpolation:
-PC=1			#use PC proxy
-#PC=			#use proxy tracer
+#use PC proxy? (or proxy tracer)
+PC=1
+#PC=
 
 #parameters for proxy tracer:
 #order of the method:
 ORDER = 2
 
 #parameters for PC proxy:
-WINDOW = 1		#size of measurement window
+#size of measurement window
+WINDOW = 1
 #integration time:
 INT_T = 60
 #lead time same as integration time:
@@ -123,10 +132,27 @@ CVAL2=v2_$(BASE).txt
 #passive proxy tracer field:
 PROXY_FIELD = proxy_$(THETA)K.vec
 
-all: $(PROXY_O3) $(PROXY_DATES) $(PROXY_O3) o3soundings$(THETA)K.txt
+#data files:
+SONDE_DATA = $(MASTER)/o3soundings$(THETA)K.txt
+POAM_DATA = $(MASTER)/POAMIII_$(THETA)K.txt
+
+#experiment: log everything to a single file and use the parameters as
+#a "key":
+KEY = "$(T0) $(TF) $(T0a) $(TFa) $(T0b) $(TFb) $(INT_T) $(LEAD) $(NEV) $(WINDOW) $(NGRID) $(THETA) $(HEMI1) $(DATA_PATH)"
+RESULTS=results.txt
+CHECK!=grep $(KEY) $(RESULTS)
+
+all: $(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
 	tracer_interpolate -d 24 -P \
 		$(TTHRESH) $(LATBAND) $(HEMI2) -i $(T0b) -f $(TFb) \
-		$(PROXY_O3) $(PROXY_DATES) o3soundings$(THETA)K.txt
+		$(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
+
+version: $(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
+	ifndef CHECK
+	  tracer_interpolate -d 24 -P \
+		$(TTHRESH) $(LATBAND) $(HEMI2) -i $(T0b) -f $(TFb) \
+		$(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA) >> $(RESULTS)
+	endif
 
 cross_validate: $(PROXY1) $(PROXY2) $(PDATES1) $(PDATES2) file1.txt file2.txt
 	tracer_interpolate -d 20 -P \
@@ -152,19 +178,19 @@ $(PROXY1) $(PDATES1): file1.txt $(PROXYFILE) $(DATES)
 		$(PROXYFILE) $(DATES) file1.txt \
 		$(PC_ARGS) $(WINDOW) $(PROXY1) > $(PDATES1)
 
-file1.txt file2.txt: POAMIII_$(THETA)K.txt
-	split_file POAMIII_$(THETA)K.txt file1.txt file2.txt
+file1.txt file2.txt: $(POAM_DATA)
+	split_file $(POAM_DATA) file1.txt file2.txt
 
-o3soundings$(THETA)K.txt: o3soundings$(THETA)K.txt.gz
-	gunzip -c o3soundings$(THETA)K.txt.gz > o3soundings$(THETA)K.txt
+$(SONDE_DATA): $(SONDE_DATA).gz
+	gunzip -c $(SONDE_DATA).gz > $(SONDE_DATA)
 
-$(PROXY_O3) $(PROXY_DATES): $(PROXYFILE) $(DATES) POAMIII_$(THETA)K.txt
+$(PROXY_O3) $(PROXY_DATES): $(PROXYFILE) $(DATES) $(POAM_DATA)
 	$(PROXY_COMMAND) -d 20 -i $(T0b) -f $(TFb) $(PROXY_OPTIONS) \
-		$(PROXYFILE) $(DATES) POAMIII_$(THETA)K.txt \
+		$(PROXYFILE) $(DATES) $(POAM_DATA) \
 		$(PC_ARGS) $(WINDOW) $(PROXY_O3) > $(PROXY_DATES)
 
-POAMIII_$(THETA)K.txt: POAMIII_$(THETA)K.txt.gz
-	gunzip -c POAMIII_$(THETA)K.txt.gz > POAMIII_$(THETA)K.txt
+$(POAM_DATA): $(POAM_DATA).gz
+	gunzip -c $(POAM_DATA).gz > $(POAM_DATA)
 
 $(CVMAT): $(VFIELD_S) $(VFIELD_N)
 	ctraj_tracer -n $(NGRID) -h $(TSTEP) -k $(NFINE) \
