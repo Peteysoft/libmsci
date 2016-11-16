@@ -140,19 +140,24 @@ POAM_DATA = $(MASTER)/POAMIII_$(THETA)K.txt
 #a "key":
 KEY = "$(T0) $(TF) $(T0a) $(TFa) $(T0b) $(TFb) $(INT_T) $(LEAD) $(NEV) $(WINDOW) $(NGRID) $(THETA) $(HEMI1) $(DATA_PATH)"
 RESULTS=results.txt
-CHECK!=grep $(KEY) $(RESULTS)
+CHECK!=grep -n $(KEY) $(RESULTS)
 
 all: $(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
 	tracer_interpolate -d 24 -P \
 		$(TTHRESH) $(LATBAND) $(HEMI2) -i $(T0b) -f $(TFb) \
 		$(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
 
+ifndef CHECK
 version: $(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
-	ifndef CHECK
-	  tracer_interpolate -d 24 -P \
+	echo $(KEY) >> $(RESULTS)
+	tracer_interpolate -d 24 -P \
 		$(TTHRESH) $(LATBAND) $(HEMI2) -i $(T0b) -f $(TFb) \
 		$(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA) >> $(RESULTS)
-	endif
+else
+version:
+	@echo "Case has already been tried. Check file, $(RESULTS):"
+	@echo $(CHECK)
+endif
 
 cross_validate: $(PROXY1) $(PROXY2) $(PDATES1) $(PDATES2) file1.txt file2.txt
 	tracer_interpolate -d 20 -P \

@@ -183,6 +183,7 @@ long ctraj_boundary_list<real, vreal>::fix() {
   int * hnew;
   long j, k;
   long offset;		//for removing redundant nodes
+  int32_t refd;		//reference domain
 
   vreal mcoef[2];
   real gcurv;
@@ -208,7 +209,7 @@ long ctraj_boundary_list<real, vreal>::fix() {
   if (domain[0] == 0) {
     x1[0]=x[0];
     x1[1]=y[0];
-    vfield->reference(domain[0], x1);
+    refd=vfield->reference(domain[0], x1);
     x[0]=x1[0];
     y[0]=x1[1];
   }
@@ -374,7 +375,7 @@ long ctraj_boundary_list<real, vreal>::fix() {
 
   delete [] domain;
   domain=new int[totaln];
-  for (long i=0; i<totaln; i++) domain[i]=1;
+  for (long i=0; i<totaln; i++) domain[i]=refd;
 
   n=totaln-wrap_flag;
 

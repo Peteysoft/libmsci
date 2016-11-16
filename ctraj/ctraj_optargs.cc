@@ -76,6 +76,9 @@ void ctraj_optargs(FILE *fs, const char *optargs, int flag) {
       case ('h'):
         fprintf(fs, "  -h   non-dimensional 'coarse' time step [%g]\n", TSTEP_COARSE);
         break;
+      case ('H'):
+        //fprintf(fs, "  -H   for generating histograms (?)\n");
+        break;
       case ('i'):
         fprintf(fs, "  -i   initial date [first available]\n");
         break;

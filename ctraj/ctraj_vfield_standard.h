@@ -40,11 +40,11 @@ namespace ctraj {
       az_eq_t<real> *metric;
 
       //for inputting data:
-    simple<real> *lon;           //lon. grid
-    simple<real> *lat;           //lat. grid
+      simple<real> *lon;           //lon. grid
+      simple<real> *lat;           //lat. grid
 
-    dependent<interpol_index> *c1[2];        //interpolation coefficients (longitude)
-    dependent<interpol_index> *c2[2];        //interpolation coefficients (latitude
+      dependent<interpol_index> *c1[2];        //interpolation coefficients (longitude)
+      dependent<interpol_index> *c2[2];        //interpolation coefficients (latitude
 
     public:
       ctraj_vfield_standard();

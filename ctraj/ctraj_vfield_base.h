@@ -18,10 +18,16 @@ namespace ctraj {
       virtual void help(FILE *fs)=0;
 
       //convert to and from "absolute" coords: (i.e. lon-lat)
-      virtual int32_t absolute(int32_t domain, real *x)=0;
+      virtual int32_t absolute(int32_t domain, 	//-1: to transformed coords
+		      				//>=0: to absolute coords;
+						//number determines domain
+		      real *x)=0;		//coords in and out
 
       //convert to and from "reference" coords: (i.e. for interpolation within advected contour)
-      virtual int32_t reference(int32_t domain, real *x)=0;
+      //returns domain
+      virtual int32_t reference(int32_t domain, //-1 return to "correct" domain
+		      				//>=0 move to "reference" domain
+		      real *x)=0;		//coords in and out
 
       //returns the velocity field at a given location:
       virtual int v(int32_t domain, 	//domain of point

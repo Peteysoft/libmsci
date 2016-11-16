@@ -11,6 +11,7 @@
 #include "ctraj_defaults.h"
 
 #include "tracer_anal.h"
+#include "ctraj_vfield_standard.h"
 
 #define TLEN 30
 
@@ -21,18 +22,14 @@ int main(int argc, char **argv) {
   FILE *docfs=stderr;
 
   FILE *fs;
-  char *tfile;
-  char *datefile;
+  char *vfiles;
+  char *vfilen;
   char *measurement_file;
   char *outfile;
   char c;
   size_t ncon;
 
-  int32_t nt;
-
-  time_class *t;
-  char tstring[TLEN];
-  char *line;
+  ctraj_vfield_standard<float> *vfield;
 
   //for reading and storing the samples:
   long nsamp;
@@ -43,10 +40,6 @@ int main(int argc, char **argv) {
   int32_t i0;
   int32_t N;
 
-  //the array tracers
-  float **qall;
-
-  int32_t dwid=TFIELD_WIDTH;
   short hemi=0;
   int cflag=0;
 
@@ -107,13 +100,13 @@ int main(int argc, char **argv) {
     }
 
     fprintf(docfs, "\n");
-    fprintf(docfs, "usage: tracer_interpolate [-d dwid] [--] [-+] [-P] [-I latmin] [-F latmax]\n");
+    fprintf(docfs, "usage: tfield_interpolate [-d dwid] [--] [-+] [-P] [-I latmin] [-F latmax]\n");
     fprintf(docfs, "                          [-0 i0|-i t0] [-N n|-f tf]\n");
-    fprintf(docfs, "                          tfile dates measurements\n");
+    fprintf(docfs, "                          vfileS vfileN measurements\n");
     fprintf(docfs, "\n");
     fprintf(docfs, "where:\n");
-    fprintf(docfs, "  tfile         = binary file containing tracer fields\n");
-    fprintf(docfs, "  dates         = ASCII file containing dates corresponding to each field\n");
+    fprintf(docfs, "  vfileS        = binary file containing S. hemisphere velocity field\n");
+    fprintf(docfs, "  vfileN        = binary file containing N. hemisphere velocity field\n");
     fprintf(docfs, "  measurements  = ASCII file containing measurement locations\n");
     printf("\n");
     fprintf(docfs, "options:\n");
@@ -124,51 +117,14 @@ int main(int argc, char **argv) {
     return err;
   }
 
-  tfile=argv[1];
-  datefile=argv[2];
+  vfiles=argv[1];
+  vfilen=argv[2];
   measurement_file=argv[3];
 
-  //read in the array of tracer fields:
+  //read in the velocity fields:
   //nmap=calc_nmap(np);
-  fprintf(docfs, "Reading file: %s\n", tfile);
-  fs=fopen(tfile, "r");
-  fread(&nvar, sizeof(nvar), 1, fs);
-  np=2*(int32_t) sqrt(nvar/M_PI/2);
-  fseek(fs, 0, SEEK_END);
-  fsize=ftell(fs);
-  nt=(fsize-sizeof(nvar))/(nvar*sizeof(float));
-  assert((fsize-sizeof(nvar))%(nvar*sizeof(float)) == 0);
-
-  fprintf(docfs, "Found %d records in %s\n", nt, tfile);
-
-  qall=new float *[nt];
-  qall[0]=new float [nt*nvar];
-  for (int32_t i=1; i<nt; i++) qall[i]=qall[0]+i*nvar;
-  fseek(fs, sizeof(nvar), SEEK_SET);
-  fread(qall[0], sizeof(float), nt*nvar, fs);
-  fclose(fs);
-/*
-  for (int i=0; i<nt; i++) {
-	  for (int j=0; j<nmap*2; j++) printf("%g ", qall[i][j]);
-	  printf("\n");
-  }
-  */
-
-  //read in the dates:
-  fprintf(docfs, "Reading dates from %s\n", datefile);
-  t=new time_class[nt];
-
-  fs=fopen(datefile, "r");
-  //fgets(line, MAXLL, fs);		//"tracer" does not print a header
-
-  for (int32_t i=0; i<nt; i++) {
-    int32_t ind;
-    line=fget_line(fs);
-    sscanf(line, "%d %s", &ind, tstring);
-    t[i].read_string(tstring);
-    delete [] line;
-  }
-  fclose(fs);
+  fprintf(docfs, "Reading files: %s %s\n", vfiles, vfilen);
+  vfield=new ctraj_vfield_standard(vfiles, vfilen);
 
   //normally we have to choose between date and index specification
   //(assuming user might try to use both)
@@ -178,8 +134,8 @@ int main(int argc, char **argv) {
   if (flag[6]==0) N=nt-i0-1;
   if (N >= nt-i0) N=nt-i0-1;
 
-  if (flag[4]==0) t0=t[i0];
-  if (flag[5]==0) tf=t[N+i0];
+  if (flag[4]==0) t0=vfield->get_t(i0);
+  if (flag[5]==0) tf=vfield->get_t(N+i0);
 /*
   for (int32_t i=0; i<nt; i++) {
 	  t[i].write_string(tstring);
@@ -217,12 +173,18 @@ int main(int argc, char **argv) {
     samp3=copy_meas(samp2, nsamp2);
   }
 
-  tracer_interp(qall+i0, t+i0, N, np, samp2, nsamp2);
-
-  if (Hflag) {
-    for (long i=0; i<nsamp2; i++) {
-      printf("%14.7g\n", (samp2[i].q-samp3[i].q)/samp3[i].qerr);
-    }
+  for (int i=0; i<nsamp2; i++) {
+    float loc[2];		//location in transformed coords
+    float v[2];			//velocity
+    int32_t domain;		//hemisphere
+    float r2;			//distance from pole
+    loc[0]=samp2[i].lon;
+    loc[1]=samp2[i].lat;
+    domain=vfield->absolute(-1, loc);
+    vfield->v(domain, vfield->get_tind(samp2[i].t), loc, v);
+    r2=loc[0]*loc[0]+loc[1]*loc[1];
+    samp2[i].q=REARTH*sin(sqrt(r2)/REARTH)*loc[1]*(-v[0]*loc[1]/loc[0]+v[1])/r2;
+    samp2[i].qerr=(-v[1]*loc[0]+v[0]*loc[1])/sqrt(r2);
   }
 
   if (cflag) {
@@ -239,8 +201,7 @@ int main(int argc, char **argv) {
     ave2=0;
     int nbad=0;
     for (long i=0; i<nsamp2; i++) {
-      //if (tflag && (samp2[i].q <= thresh || samp3[i].q <= thresh)) {
-      if (tflag && samp3[i].q <= thresh) {
+      if (tflag && (samp2[i].q <= thresh || samp3[i].q <= thresh)) {
 	nbad++;
       } else {
         ave1+=samp2[i].q;

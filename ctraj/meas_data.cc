@@ -210,5 +210,36 @@ meas_data * select_meas(time_class t0, time_class t1, meas_data *dat, long n1, l
     return result;
   }
 
+  float correlate_meas(meas_data *samp1, 
+		  meas_data *samp2, 
+		  long nsamp) {
+    float ave1, ave2;
+    float cov, var1, var2;
+    float corr;
+    //calculate averages:
+    ave1=0;
+    ave2=0;
+    for (long i=0; i<nsamp; i++) {
+      ave1+=samp1[i].q;
+      ave2+=samp2[i].q;
+    }
+    ave1/=nsamp;
+    ave2/=nsamp;
+    //calculate covariance and standard deviations:
+    cov=0;
+    var1=0;
+    var2=0;
+    for (long i=0; i<nsamp; i++) {
+      float diff1=samp1[i].q-ave1;
+      float diff2=samp2[i].q-ave2;
+      cov+=diff1*diff2;
+      var1+=diff1*diff1;
+      var2+=diff2*diff2;
+    }
+    corr=cov/sqrt(var1/(nsamp2-1))/sqrt(var2/(nsamp2-1))/(nsamp2-1);
+
+    return corr;
+  }
+
 } //end namespace ctraj
 

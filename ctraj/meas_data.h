@@ -49,6 +49,8 @@ namespace ctraj {
   meas_data *select_meas(time_class t0, time_class t1, meas_data *dat, long n1, long *n2, int hemi=0);
 
   meas_data *select_lat_range(meas_data *dat, long n1, float min, float max, long *n2);
+
+  float correlate_meas(meas_data *samp1, mead_data *samp2, long n);
 } //end namespace ctraj
 
 #endif
