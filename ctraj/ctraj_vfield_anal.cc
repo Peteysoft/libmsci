@@ -60,7 +60,7 @@ void ctraj_vfield_anal<real>::help(FILE *fs) {
   fprintf(fs, "    int v(double t, float *x, float *v, void *param);\n");
   fprintf(fs, "    and specify the shareable object library and entry point.\n");
   fprintf(fs, "where:\n");
-  ctraj_optargs(fs, "t", 1);
+  ctraj_optargs(fs, "b", 1);
   fprintf(fs, "  arg1 object file\n");
   fprintf(fs, "  arg2 entry point\n");
   fprintf(fs, "  [arg3] first parameter\n");
@@ -76,9 +76,9 @@ int ctraj_vfield_anal<real>::setup(int argc, char **argv) {
   int flag[10];
   int ret, err, err2;
 
-  optarg[1]=&nparam;
+  optarg[0]=&nparam;
 
-  ret=parse_command_opts(argc, argv, "t", "%d", optarg, flag, OPT_WHITESPACE+2);
+  ret=parse_command_opts(argc, argv, "b", "%d", optarg, flag, OPT_WHITESPACE+2);
   if (ret < 0) {
     fprintf(stderr, "vfield_anal: error parsing command line");
     err=-1;

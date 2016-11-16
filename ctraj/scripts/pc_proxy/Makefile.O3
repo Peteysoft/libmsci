@@ -74,7 +74,7 @@ HEMI1 =
 #limit validation to this hemisphere
 HEMI2 =
 #remove zero values from radiosonded data:
-TTHRESH="-t 0"
+TTHRESH="-G 0"
 #exclude measurement stations above this (absolute) latitude:
 LATTHRESH=50
 LATMIN=$(LATTHRESH)
@@ -143,14 +143,14 @@ RESULTS=results.txt
 CHECK!=grep -n $(KEY) $(RESULTS)
 
 all: $(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
-	tracer_interpolate -d 24 -P \
+	tracer_interpolate -t 24 -P \
 		$(TTHRESH) $(LATBAND) $(HEMI2) -i $(T0b) -f $(TFb) \
 		$(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
 
 ifndef CHECK
 version: $(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
 	echo $(KEY) >> $(RESULTS)
-	tracer_interpolate -d 24 -P \
+	tracer_interpolate -t 24 -P \
 		$(TTHRESH) $(LATBAND) $(HEMI2) -i $(T0b) -f $(TFb) \
 		$(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA) >> $(RESULTS)
 else
@@ -160,10 +160,10 @@ version:
 endif
 
 cross_validate: $(PROXY1) $(PROXY2) $(PDATES1) $(PDATES2) file1.txt file2.txt
-	tracer_interpolate -d 20 -P \
+	tracer_interpolate -t 20 -P \
 		$(TTHRESH) $(HEMI2) $(LATBAND) -i $(T0b) -f $(TFb) \
 		$(PROXY2) $(PDATES2) file1.txt > $(CVAL1)
-	tracer_interpolate -d 20 -P \
+	tracer_interpolate -t 20 -P \
 		$(TTHRESH) $(HEMI2) $(LATBAND) -i $(T0b) -f $(TFb) \
 		$(PROXY1) $(PDATES1) file2.txt > $(CVAL2)
 
@@ -174,12 +174,12 @@ clean:
 	rm -f $(DATES)
 
 $(PROXY2) $(PDATES2): file2.txt $(PROXYFILE) $(DATES)
-	$(PROXY_COMMAND) $(PROXY_OPTIONS) -d 20 -i $(T0b) -f $(TFb) \
+	$(PROXY_COMMAND) $(PROXY_OPTIONS) -t 20 -i $(T0b) -f $(TFb) \
 		$(PROXYFILE) $(DATES) file2.txt \
 		$(PC_ARGS) $(WINDOW) $(PROXY2) > $(PDATES2) 
 
 $(PROXY1) $(PDATES1): file1.txt $(PROXYFILE) $(DATES)
-	$(PROXY_COMMAND) $(PROXY_OPTIONS) -d 20 -i $(T0b) -f $(TFb) \
+	$(PROXY_COMMAND) $(PROXY_OPTIONS) -t 20 -i $(T0b) -f $(TFb) \
 		$(PROXYFILE) $(DATES) file1.txt \
 		$(PC_ARGS) $(WINDOW) $(PROXY1) > $(PDATES1)
 

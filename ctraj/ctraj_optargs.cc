@@ -35,9 +35,7 @@ void ctraj_optargs(FILE *fs, const char *optargs, int flag) {
         fprintf(fs, "  -A   number of Arnoldi vectors [%d]\n", NARNOLDI);
         break;
       case ('b'):
-        fprintf(fs, "  -b   boundary condition [0.]\n");
-        fprintf(fs, "         <number>=fixed\n");
-        fprintf(fs, "         f=floating\n");
+        fprintf(fs, "  -b   number of constant parameters\n");
         break;
       case ('B'):
         fprintf(fs, "  -B   data file page size in bytes\n");
@@ -49,7 +47,7 @@ void ctraj_optargs(FILE *fs, const char *optargs, int flag) {
         fprintf(fs, "  -C   count the number of measurements in PC proxy\n");
         break;
       case ('d'):
-        fprintf(fs, "  -d   width of date field [%d]\n", TFIELD_WIDTH);
+        fprintf(fs, "  -d   number of dimensions [2]\n");
         break;
       case ('D'):
         fprintf(fs, "  -D   factal dimension type [u]\n");
@@ -95,7 +93,7 @@ void ctraj_optargs(FILE *fs, const char *optargs, int flag) {
         fprintf(fs, "  -l   lead time for the measurement window [default is the same as for the tracer]\n");
         break;
       case ('L'):
-        fprintf(fs, "  -L   number of dimensions [2]\n");
+        fprintf(fs, "  -L   use long form\n");
         break;
       case ('m'):
         fprintf(fs, "  -m   minimum change in path in km [%g]\n", DSMIN);
@@ -149,7 +147,7 @@ void ctraj_optargs(FILE *fs, const char *optargs, int flag) {
         fprintf(fs, "  -S   sort measurement data by date\n");
         break;
       case ('t'):
-        fprintf(fs, "  -t   number of constant parameters\n");
+        fprintf(fs, "  -t   width of date field [%d]\n", TFIELD_WIDTH);
         break;
       case ('T'):
         fprintf(fs, "  -T   use theta (potential temperature) levels\n");

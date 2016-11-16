@@ -17,8 +17,6 @@
 
 #include "ctraj_vfield_base.h"
 
-#define DATE_WIDTH 30
-
 // syntax:
 // model1 vfile initfile outfile
 //
@@ -79,7 +77,7 @@ int main(int argc, char *argv[]) {
   int32_t *nt;				//number of time steps
   long ninit;
   double *tstep;				//time step
-  char date_str[DATE_WIDTH];		//a date as a string
+  char date_str[TSTRING_LEN];		//a date as a string
   int32_t *tind;			//**number of time steps already taken
   double *tind0;
   double tind0min, tind0max;
@@ -126,7 +124,7 @@ int main(int argc, char *argv[]) {
   optarg[1]=&twid;
   optarg[2]=&checkint;
 
-  argc=parse_command_opts(argc, argv, "kdh?", "%d%d%g%d%", optarg, flag, OPT_WHITESPACE+2);
+  argc=parse_command_opts(argc, argv, "kth?", "%d%d%g%d%", optarg, flag, OPT_WHITESPACE+2);
   if (argc < 0) {
     fprintf(stderr, "ctraj_model: error parsing command line\n");
     argc=-argc;
@@ -161,7 +159,7 @@ int main(int argc, char *argv[]) {
     fprintf(docfs, "            The format of each one-column record is as follows:\n");
     fprintf(docfs, "\n");
     fprintf(docfs, "             date                    x0 y0 dt nt\n\n");
-    fprintf(docfs, "             date is a fixed width (%d) field and has the following format:\n", DATE_WIDTH);
+    fprintf(docfs, "             date is a fixed width (%d) field and has the following format:\n", TFIELD_WIDTH);
     fprintf(docfs, "                  year/month/day-hour:minute:second\n");
     fprintf(docfs, "\n");
     fprintf(docfs, "             x0   floating point fields giving the initial position\n");
@@ -181,7 +179,7 @@ int main(int argc, char *argv[]) {
     fprintf(docfs, "    checkint Interval to check for switching hemispheres\n");
     fprintf(docfs, "\n");
     fprintf(docfs, "options:\n");
-    ctraj_optargs(docfs, "Vhif0Ndk", 1);
+    ctraj_optargs(docfs, "Vhif0Ntk", 1);
     if (vfield!=NULL) vfield->help(docfs);
     return err;
   }

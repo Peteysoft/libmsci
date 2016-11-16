@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
   optarg[9]=&thresh;
   optarg[10]=&latmin;
   optarg[11]=&latmax;
-  argc=parse_command_opts(argc, argv, "-+0difNPHtIF?", "%%%d%d%s%s%d%%%g%g%g%", optarg, flag, OPT_WHITESPACE);
+  argc=parse_command_opts(argc, argv, "-+0tifNPHGIF?", "%%%d%d%s%s%d%%%g%g%g%", optarg, flag, OPT_WHITESPACE);
   if (argc < 0) exit(411);
   if (flag[0]) hemi=-1; else if (flag[1]) hemi=1;
   if (flag[4]) t0.read_string((char *) optarg[4]);
@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
     fprintf(docfs, "options:\n");
     fprintf(docfs, "  -I   select measurements above this latitude\n");
     fprintf(docfs, "  -F   select measurements below this latitude\n"); 
-    ctraj_optargs(docfs, "d-+if0NPH?", 1);
+    ctraj_optargs(docfs, "t-+if0NPH?", 1);
     printf("\n");
     return err;
   }

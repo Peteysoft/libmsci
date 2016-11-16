@@ -236,7 +236,7 @@ meas_data * select_meas(time_class t0, time_class t1, meas_data *dat, long n1, l
       var1+=diff1*diff1;
       var2+=diff2*diff2;
     }
-    corr=cov/sqrt(var1/(nsamp2-1))/sqrt(var2/(nsamp2-1))/(nsamp2-1);
+    corr=cov/sqrt(var1/(nsamp-1))/sqrt(var2/(nsamp-1))/(nsamp-1);
 
     return corr;
   }

@@ -23,8 +23,6 @@
 #include "ctraj_tfield_standard.h"
 #include "ctraj_tfield_nd.h"
 
-#define DATE_WIDTH 23
-
 using namespace libpetey;
 using namespace libsparse;
 using namespace ctraj;
@@ -52,7 +50,7 @@ int main(int argc, char *argv[]) {
   float tstep=TSTEP_COARSE;		//time step for tracer field
 
   //general date variables:
-  char date_str[DATE_WIDTH];		//a date as a string
+  char date_str[TSTRING_LEN];		//a date as a string
 
   //time indices:
   double tind1, tind2;

@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
   optarg[4]=&N;
   optarg[7]=&ncv;
   optarg[8]=&nev;
-  argc=parse_command_opts(argc, argv, "dK?0NifAvW", "%d%%%d%d%s%s%d%d%", optarg, flag, OPT_WHITESPACE);
+  argc=parse_command_opts(argc, argv, "tK?0NifAvW", "%d%%%d%d%s%s%d%d%", optarg, flag, OPT_WHITESPACE);
   cflag=flag[1];
   if (argc<0) exit(21);
   wflag=flag[9];
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
       err=INSUFFICIENT_COMMAND_ARGS;
     }
     fprintf(docfs, "\n");
-    fprintf(docfs, "usage: pc_proxy [-A ncv] [-v nev] [-d dwid] [-W]\n");
+    fprintf(docfs, "usage: pc_proxy [-A ncv] [-v nev] [-t dwid] [-W]\n");
     fprintf(docfs, "               [-i t0|-0 i0] [-f tf|-N n]\n");
     fprintf(docfs, "                  matfile dates measurements outfile\n");
     fprintf(docfs, "\n");
@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
     fprintf(docfs, "  outfile      = binary file containing initial interpolated tracer field\n");
     fprintf(docfs, "\n");
     fprintf(docfs, "options:\n");
-    ctraj_optargs(docfs, "d0NifAv-+WK");
+    ctraj_optargs(docfs, "t0NifAv-+WK");
     fprintf(docfs, "\n");
     return err;
   }

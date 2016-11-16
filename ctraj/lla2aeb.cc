@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
 
   optargs[0]=&nvar;
   optargs[1]=&vtype;
-  argc=parse_command_opts(argc, argv, "LV?", "%d%d%", 
+  argc=parse_command_opts(argc, argv, "dV?", "%d%d%", 
 		  optargs, flags, OPT_WHITESPACE+2);
   if (argc < 0) {
     fprintf(stderr, "Error parsing command line\n");
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
     fprintf(docfs, "                             [infile] outfile\n");
     fprintf(docfs, "\n");
     fprintf(docfs, "options:\n");
-    ctraj_optargs(docfs, "nrxyLV?", 1);
+    ctraj_optargs(docfs, "nrxydV?", 1);
     if (flags[0]) {
       tracer->help(docfs);
     }

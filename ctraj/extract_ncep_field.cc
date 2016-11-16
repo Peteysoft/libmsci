@@ -26,6 +26,7 @@ int main(int argc, char *argv[]) {
 
   float lev;			//sigma level
   time_class date;
+  int32_t dwid=TFIELD_WIDTH;	//width of date field
 
   int yr1, yr2;
   long it1, it2;		//these are long for compatibility with netcdf
@@ -63,7 +64,7 @@ int main(int argc, char *argv[]) {
 
   char c;
   size_t ncon;
-  char tstring[30];
+  char tstring[TSTRING_LEN];
 
   size_t nlen;
 
@@ -78,15 +79,18 @@ int main(int argc, char *argv[]) {
   FILE *ps;
   int yr1a, yr2a;
 
+  int Lflag=0;
   int err=0;
 
   path=new char [0];
   strcpy(path, "./");
+  optargs[5]=&dwid;
 
   //parse command options:
-  argc=parse_command_opts(argc, argv, "pT?H", "%s%%%", 
+  argc=parse_command_opts(argc, argv, "pT?HLt", "%s%%%%%d", 
 		  optargs, flags, OPT_WHITESPACE);
   if (argc < 0) exit(21);
+  Lflag=flags[4];
 
   if (flags[0]) {
     delete [] path;
@@ -107,7 +111,7 @@ int main(int argc, char *argv[]) {
       err=INSUFFICIENT_COMMAND_ARGS;
     }
     fprintf(docfs, "\n");
-    fprintf(docfs, "Syntax:  extract_ncep_field [-T] [-p path] variable level date\n");
+    fprintf(docfs, "Syntax:  extract_ncep_field [-L] [-T] [-p path] variable level date\n");
     fprintf(docfs, "\n");
     fprintf(docfs, "where:\n");
     fprintf(docfs, "  variable =  variable name\n");
@@ -115,7 +119,7 @@ int main(int argc, char *argv[]) {
     fprintf(docfs, "  date     =  date to extract\n");
     fprintf(docfs, "\n");
     fprintf(docfs, "options:\n");
-    ctraj_optargs(docfs, "pT?");
+    ctraj_optargs(docfs, "pLT?");
     fprintf(docfs, "\n");
     return err;
   }
@@ -185,7 +189,8 @@ int main(int argc, char *argv[]) {
   it1=tind;
   it2=it1+1;
 
-  //fprintf(docfs, "Reading in grid %lg...\n", tind);
+  fprintf(docfs, "Reading in grid %lg...\n", tind);
+  tgrid->print();
 
   //read in the data from the ncep files:
   //printf("Interpolating to desired level...\n");
@@ -212,19 +217,24 @@ int main(int argc, char *argv[]) {
     if (it1!=tind) get_ncep_tz(nc_V, var, it2, c3val, vv1);
   }
 
-  if (it1==tind) {
-    for (int j=0; j<nlat; j++) {
-      for (int i=0; i<nlon; i++) {
+  date.write_string(tstring);
+  float lonval, latval;
+  for (int j=0; j<nlat; j++) {
+    lat->get(latval, j);
+    for (int i=0; i<nlon; i++) {
+      lon->get(lonval, i);
+      float val2;
+      if (it1==tind) {
         vv->get(val, i, j);
-        printf("%g\n", val);
+      } else {
+        vv->get(val1, i, j);
+        vv1->get(val2, i, j);
+        val=val1+(val2-val1)*(tind-it1);
       }
-    }
-  } else {
-    for (int j=0; j<nlat; j++) {
-      for (int i=0; i<nlon; i++) {
-        vv->get(val, i, j);
-        vv1->get(val1, i, j);
-        printf("%g\n", val+(val1-val)*(tind-it1));
+      if (Lflag) {
+        printf("%23s %9.3f %9.3f %14.7g %14.7g\n", tstring, lonval, latval, val, 0.);
+      } else {
+        printf("%g\n", val);
       }
     }
   }

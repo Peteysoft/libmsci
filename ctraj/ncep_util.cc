@@ -104,7 +104,7 @@ int get_ncep_grid(NcFile *nci,			//netcdf file handle
   if (t0.year()==1) toffs=TOFFS;
 
   //if (nt > 366) tconv=HOURSPERDAY; else tconv=1;
-  if (nt > 366) tconv=HOURSPERDAY;
+  tconv=HOURSPERDAY;
   
   //convert time to our format:
   fprintf(stderr, "Converting time grids...\n");
@@ -174,9 +174,16 @@ int read_ncep_2d(NcVar *ncv,			//netcdf variable handle
   long n2d;			//size of horizontal slice
   NcDim *ncd;
 
-  for (int i=0; i<2; i++) {
-    ncd=ncv->get_dim(i+1);
-    dim[i]=ncd->size();
+  if (zind<0) {
+    ncd=ncv->get_dim(1);
+    dim[0]=ncd->size();
+    ncd=ncv->get_dim(2);
+    dim[1]=ncd->size();
+  } else {
+    ncd=ncv->get_dim(2);
+    dim[0]=ncd->size();
+    ncd=ncv->get_dim(3);
+    dim[1]=ncd->size();
   }
 
   n2d=dim[0]*dim[1];
@@ -254,9 +261,16 @@ int read_ncep_2d_old(NcVar *ncv,		//netcdf variable handle
   long n2d;			//size of horizontal slice
   NcDim *ncd;
 
-  for (int i=0; i<3; i++) {
-    ncd=ncv->get_dim(i+1);
-    dim[i]=ncd->size();
+  if (zind<0) {
+    ncd=ncv->get_dim(1);
+    dim[0]=ncd->size();
+    ncd=ncv->get_dim(2);
+    dim[1]=ncd->size();
+  } else {
+    ncd=ncv->get_dim(2);
+    dim[0]=ncd->size();
+    ncd=ncv->get_dim(3);
+    dim[1]=ncd->size();
   }
 
   n2d=dim[0]*dim[1];

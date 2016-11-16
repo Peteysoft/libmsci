@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
   optarg[7]=&ncv;
   optarg[8]=&nev;
   optarg[11]=&lead;
-  argc=parse_command_opts(argc, argv, "d-+0NifAvCKl?", 
+  argc=parse_command_opts(argc, argv, "t-+0NifAvCKl?", 
 		"%d%%%d%d%s%s%d%d%%%g%", optarg, flag, OPT_WHITESPACE);
   if (argc<0) exit(21);
   if (flag[1]) hemi=-1; else if (flag[2]) hemi=1;
@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
     fprintf(docfs, "  window       = measurement window in days\n");
     fprintf(docfs, "  outfile      = binary file containing interpolated tracer field\n");
     fprintf(docfs, "\n");
-    ctraj_optargs(docfs, "d0NifAvl-+CK?");
+    ctraj_optargs(docfs, "t0NifAvl-+CK?");
     fprintf(docfs, "\n");
     return err;
   }

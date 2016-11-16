@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
   optargs[0]=&ndim;
   optargs[1]=&vtype;
   optargs[2]=&missing;
-  argc=parse_command_opts(argc, argv, "LVa?", "%d%d%g%", 
+  argc=parse_command_opts(argc, argv, "dVa?", "%d%d%g%", 
 		  optargs, flags, OPT_WHITESPACE+2);
   if (argc < 0) {
     fprintf(stderr, "Error parsing command line\n");
@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
     fprintf(docfs, "             (- if argument is absent, returns number of records;\n");
     fprintf(docfs, "              - gridding is specified by -x and -y options.)\n\n");
     fprintf(docfs, "options:\n");
-    ctraj_optargs(docfs, "anrxyLV?", 1);
+    ctraj_optargs(docfs, "anrxydV?", 1);
     if (flags[0]) {
       tracer->help(docfs);
     }

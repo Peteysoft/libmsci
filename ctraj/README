@@ -116,10 +116,11 @@ Executables accept some subset of the following options.  These can also be foun
   -2   index of record in second file [0]
   -a   missing/fill value
   -A   number of Arnoldi vectors [20]
+  -b   number of constant parameters [0]
   -B   data file page size in bytes
   -c   maximum degrees of arc between pairs of points [1.]
   -C   count the number of measurements in PC proxy
-  -d   width of date field [23]
+  -d   number of dimensions [2]
   -D   calculate fractal dimension of type:
          u=uncertainty exponent
          0=box-counting dimension
@@ -137,6 +138,7 @@ Executables accept some subset of the following options.  These can also be foun
   -k   number of R-K 'fine' time steps per coarse step [6]
   -K   apply constant term in PC proxy
   -l   lead time [same as integration time]
+  -L   long form
   -m   minimum change in path in km [10.]
   -M   maximum number of points in advected contour
   -n   grid-points per side [120/100]
@@ -151,6 +153,7 @@ Executables accept some subset of the following options.  These can also be foun
   -R   (return) record size
   -s   maximum change in path in km [100/20]
   -S   sort measurement data by date
+  -t   width of date field [23]
   -T   use theta (potential temperature) levels
   -u   epsilon-uncertain: minimum number [100]
   -U   epsilon-uncertain: maximum trials [10000]
