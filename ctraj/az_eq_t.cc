@@ -97,7 +97,7 @@ void az_eq_t<real>::to(real *lonlat, int hemi, real *x) {
 template<class real>
 int az_eq_t<real>::to(real *lonlat, real *x) {
   int hemi;
-  hemi=(short) (lonlat[1]/fabs(lonlat[1]));
+  hemi=lonlat[1]/fabs(lonlat[1]);
   to(lonlat, hemi, x);
   return hemi;
 }

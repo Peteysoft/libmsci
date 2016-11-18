@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+#include <string.h>
 
 #include "error_codes.h"
 #include "time_class.h"
@@ -22,8 +23,6 @@ int main(int argc, char **argv) {
   FILE *docfs=stderr;
 
   FILE *fs;
-  char *vfiles;
-  char *vfilen;
   char *measurement_file;
   char *outfile;
   char c;
@@ -39,6 +38,7 @@ int main(int argc, char **argv) {
   long nsamp2;
   int32_t i0;
   int32_t N;
+  int32_t nt; 
 
   short hemi=0;
   int cflag=0;
@@ -67,11 +67,10 @@ int main(int argc, char **argv) {
   int Hflag;		//for generationg histograms
   int tflag;		//we're cheating...
 
-  //for generating the interpolation coefficients:
-  int32_t np;
-  //sub_1d_type nmap;
+  int64_t page_size=-1;
+  int32_t dwid=TFIELD_WIDTH;
+  int component=-1;
 
-  np=NGRID_Q;
   i0=0;
 
   optarg[2]=&i0;
@@ -80,7 +79,8 @@ int main(int argc, char **argv) {
   optarg[9]=&thresh;
   optarg[10]=&latmin;
   optarg[11]=&latmax;
-  argc=parse_command_opts(argc, argv, "-+0tifNPHGIF?", "%%%d%d%s%s%d%%%g%g%g%", optarg, flag, OPT_WHITESPACE);
+  optarg[12]=&page_size;
+  argc=parse_command_opts(argc, argv, "-+0tifNPHGIFB?", "%%%d%d%s%s%d%%%g%g%g%ld%", optarg, flag, OPT_WHITESPACE);
   if (argc < 0) exit(411);
   if (flag[0]) hemi=-1; else if (flag[1]) hemi=1;
   if (flag[4]) t0.read_string((char *) optarg[4]);
@@ -89,9 +89,9 @@ int main(int argc, char **argv) {
   Hflag=flag[8];
   tflag=flag[9];
 
-  if (argc<4 || flag[12]) {
+  if (argc<4 || flag[13]) {
     int err;
-    if (flag[12]) {
+    if (flag[13]) {
       docfs=stdout;
       err=0;
     } else {
@@ -100,11 +100,14 @@ int main(int argc, char **argv) {
     }
 
     fprintf(docfs, "\n");
-    fprintf(docfs, "usage: tfield_interpolate [-d dwid] [--] [-+] [-P] [-I latmin] [-F latmax]\n");
+    fprintf(docfs, "usage: vfield_interpolate [-t dwid] [--] [-+] [-P] [-I latmin] [-F latmax]\n");
     fprintf(docfs, "                          [-0 i0|-i t0] [-N n|-f tf]\n");
-    fprintf(docfs, "                          vfileS vfileN measurements\n");
+    fprintf(docfs, "                          [component] vfileS vfileN measurements\n");
     fprintf(docfs, "\n");
     fprintf(docfs, "where:\n");
+    fprintf(docfs, "  component     = u  for zonal wind\n");
+    fprintf(docfs, "                  v  for meridional wind\n");
+    fprintf(docfs, "                  w  for vertical wind\n");
     fprintf(docfs, "  vfileS        = binary file containing S. hemisphere velocity field\n");
     fprintf(docfs, "  vfileN        = binary file containing N. hemisphere velocity field\n");
     fprintf(docfs, "  measurements  = ASCII file containing measurement locations\n");
@@ -112,19 +115,28 @@ int main(int argc, char **argv) {
     fprintf(docfs, "options:\n");
     fprintf(docfs, "  -I   select measurements above this latitude\n");
     fprintf(docfs, "  -F   select measurements below this latitude\n"); 
-    ctraj_optargs(docfs, "t-+if0NPH?", 1);
+    ctraj_optargs(docfs, "t-+if0NPHB?", 1);
     printf("\n");
     return err;
   }
 
-  vfiles=argv[1];
-  vfilen=argv[2];
+  if (argc>4) {
+    if (strcmp(argv[1], "u")==0) {
+      component=0;
+    } else if (strcmp(argv[1], "v")==0) {
+      component=1;
+    } else if (strcmp(argv[1], "w")==0) {
+      component=2;
+    }
+  }
+  argv++;
   measurement_file=argv[3];
 
   //read in the velocity fields:
-  //nmap=calc_nmap(np);
-  fprintf(docfs, "Reading files: %s %s\n", vfiles, vfilen);
-  vfield=new ctraj_vfield_standard(vfiles, vfilen);
+  fprintf(docfs, "Reading files: %s %s\n", argv[1], argv[2]);
+  vfield=new ctraj_vfield_standard<float>();
+  vfield->init(argv+1, page_size, "r");
+  nt=vfield->maxt()+1;
 
   //normally we have to choose between date and index specification
   //(assuming user might try to use both)
@@ -177,64 +189,62 @@ int main(int argc, char **argv) {
     float loc[2];		//location in transformed coords
     float v[2];			//velocity
     int32_t domain;		//hemisphere
+    int hemi;
     float r2;			//distance from pole
+    double tind;		//time index
+    double vunit;		//number of days per time grid
+    time_class t1, t2;
     loc[0]=samp2[i].lon;
     loc[1]=samp2[i].lat;
+    //figure out time stuff:
+    tind=vfield->get_tind(samp2[i].t);
+    if (tind>=nt-1) {
+      t1=vfield->get_t((int) tind-1);
+      t2=vfield->get_t((int) tind);
+    } else if (tind<=0) {
+      t1=vfield->get_t(0);
+      t2=vfield->get_t(1);
+    } else {
+      t1=vfield->get_t((int) tind);
+      t2=vfield->get_t((int) tind+1);
+    }
+    vunit=t2.diff(t1)*SECPERDAY/MPERKM;
+
+    //printf("%g %g\n", loc[0], loc[1]);
     domain=vfield->absolute(-1, loc);
+    hemi=domain*2-1;
+    //printf("%g %g %g %d\n", loc[0], loc[1], vfield->get_tind(samp2[i].t), domain);
     vfield->v(domain, vfield->get_tind(samp2[i].t), loc, v);
     r2=loc[0]*loc[0]+loc[1]*loc[1];
-    samp2[i].q=REARTH*sin(sqrt(r2)/REARTH)*loc[1]*(-v[0]*loc[1]/loc[0]+v[1])/r2;
-    samp2[i].qerr=(-v[1]*loc[0]+v[0]*loc[1])/sqrt(r2);
+    samp2[i].qerr=0;
+    switch (component) {
+      case (0):
+        samp2[i].q=REARTH*sin(sqrt(r2)/REARTH)*(-v[0]*loc[1]/loc[0]+v[1]*loc[0])/r2;
+	samp2[i].q/=vunit;
+        break;
+      case (1):
+	if (loc[0]!=0 && loc[1]!=0) {
+          samp2[i].q=(v[0]*loc[0]+v[1]*loc[1])/sqrt(r2);
+	} else {
+          samp2[i].q=v[0]*cos(M_PI*samp2[i].lon/180)+v[1]*sin(M_PI*samp2[i].lon/180);
+	}
+        samp2[i].q*=-hemi/vunit;
+        break;
+      case (2):
+        samp2[i].q=0;
+	break;
+      default:
+        samp2[i].q=REARTH*sin(sqrt(r2)/REARTH)*loc[1]*(-v[0]*loc[1]/loc[0]+v[1])/r2;
+        samp2[i].qerr=REARTH*(v[0]*loc[0]+v[1]*loc[1])/sqrt(r2);
+    }
+    if (cflag) printf("%g %g\n", samp2[i].q, samp3[i].q);
   }
 
+  write_meas(samp2, nsamp2, stdout);
   if (cflag) {
-    //inefficient ... who cares...
-    if (Hflag==0) {
-      for (long i=0; i<nsamp2; i++) {
-        samp2[i].t.write_string(tstr);
-        printf("%23s %9.3f %9.3f %14.7g %14.7g\n", tstr, 
-		      samp2[i].lon, samp2[i].lat, samp3[i].q, samp2[i].q);
-      }
-    }
-    //calculate averages:
-    ave1=0;
-    ave2=0;
-    int nbad=0;
-    for (long i=0; i<nsamp2; i++) {
-      if (tflag && (samp2[i].q <= thresh || samp3[i].q <= thresh)) {
-	nbad++;
-      } else {
-        ave1+=samp2[i].q;
-        ave2+=samp3[i].q;
-      }
-    }
-    ave1/=nsamp2-nbad;
-    ave2/=nsamp2-nbad;
-    //calculate covariance and standard deviations:
-    cov=0;
-    var1=0;
-    var2=0;
-    for (long i=0; i<nsamp2; i++) {
-      //if (tflag==0 || (samp2[i].q > thresh && samp3[i].q > thresh)) {
-      //zero values for ozone sonde data are bad for sure:
-      if (tflag==0 || (samp3[i].q > thresh)) {
-        diff1=samp2[i].q-ave1;
-        diff2=samp3[i].q-ave2;
-        cov+=diff1*diff2;
-        var1+=diff1*diff1;
-        var2+=diff2*diff2;
-      }
-    }
-    printf("r=%g\n", cov/sqrt(var1/(nsamp2-nbad-1))/sqrt(var2/(nsamp2-nbad-1))/(nsamp2-nbad-1));
-
-  } else if (Hflag==0) {
-    write_meas(samp2, nsamp2, stdout);
+    printf("r=%lg\n", correlate_meas(samp2, samp3, nsamp2));
   }
 
-  delete [] qall[0];
-  delete [] qall;
-
-  delete [] t;
   delete [] samp;
   delete [] samp2;
 

@@ -94,7 +94,8 @@ EXE = ctraj_model \
 	ctraj_tracer \
 	tracer_step2_w_renorm \
 	proxy_tracer \
-	pc_proxy tracer_interpolate pc_proxy_predict \
+	pc_proxy pc_proxy_predict \
+	tracer_interpolate vfield_interpolate \
 	contour_dimension contour_length eq_lat
 
 UTIL = zonally_symmetric_tracer lla2aeb extract_field \

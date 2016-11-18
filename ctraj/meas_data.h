@@ -50,7 +50,10 @@ namespace ctraj {
 
   meas_data *select_lat_range(meas_data *dat, long n1, float min, float max, long *n2);
 
-  float correlate_meas(meas_data *samp1, meas_data *samp2, long n);
+  double correlate_meas(meas_data *samp1, 	//first set of samples
+		  meas_data *samp2, 		//second set of samples
+		  long n,			//number of samples
+		  int flag=0);			//correlate error
 } //end namespace ctraj
 
 #endif

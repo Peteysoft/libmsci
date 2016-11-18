@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
   //for parsing command options:
   void *optargs[20];
   int flags[20];
-  int64_t page_size;
+  int64_t page_size=-1;
 
   char *command;
   FILE *ps;

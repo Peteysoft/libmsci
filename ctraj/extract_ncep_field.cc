@@ -190,7 +190,6 @@ int main(int argc, char *argv[]) {
   it2=it1+1;
 
   fprintf(docfs, "Reading in grid %lg...\n", tind);
-  tgrid->print();
 
   //read in the data from the ncep files:
   //printf("Interpolating to desired level...\n");
