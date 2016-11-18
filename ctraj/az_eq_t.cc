@@ -98,7 +98,7 @@ template<class real>
 int az_eq_t<real>::to(real *lonlat, real *x) {
   int hemi;
   //if it's right on the equator, stick it in the N. hemisphere:
-  if (lonlat[1]!=0) hemi=lonlat[1]/fabs(lonlat[1]); else hemi=1;
+  if (lonlat[1]<0) hemi=-1; else hemi=1;
   to(lonlat, hemi, x);
   return hemi;
 }

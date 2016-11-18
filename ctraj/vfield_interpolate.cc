@@ -187,12 +187,13 @@ int main(int argc, char **argv) {
 
   for (int i=0; i<nsamp2; i++) {
     float loc[2];		//location in transformed coords
-    float v[2];			//velocity
+    float v[3];			//velocity
     int32_t domain;		//hemisphere
     int hemi;
     float r2;			//distance from pole
     double tind;		//time index
     double vunit;		//number of days per time grid
+    double q;
     time_class t1, t2;
     loc[0]=samp2[i].lon;
     loc[1]=samp2[i].lat;
@@ -214,34 +215,60 @@ int main(int argc, char **argv) {
     domain=vfield->absolute(-1, loc);
     hemi=domain*2-1;
     //printf("%g %g %g %d\n", loc[0], loc[1], vfield->get_tind(samp2[i].t), domain);
+    v[2]=0;
     vfield->v(domain, vfield->get_tind(samp2[i].t), loc, v);
     r2=loc[0]*loc[0]+loc[1]*loc[1];
-    samp2[i].qerr=0;
     switch (component) {
       case (0):
-        samp2[i].q=REARTH*sin(sqrt(r2)/REARTH)*(-v[0]*loc[1]/loc[0]+v[1]*loc[0])/r2;
-	samp2[i].q/=vunit;
+	if (loc[0]!=0 || loc[1]!=0) {
+          q=REARTH*sin(sqrt(r2)/REARTH)*(v[1]*loc[0]-v[0]*loc[1])/r2;
+	} else {
+          q=v[1]*cos(M_PI*samp2[i].lon/180)-v[0]*sin(M_PI*samp2[i].lon/180);
+	}
+	q/=vunit;
         break;
       case (1):
 	if (loc[0]!=0 || loc[1]!=0) {
-          samp2[i].q=(v[0]*loc[0]+v[1]*loc[1])/sqrt(r2);
+          q=(v[0]*loc[0]+v[1]*loc[1])/sqrt(r2);
 	} else {
-          samp2[i].q=v[0]*cos(M_PI*samp2[i].lon/180)+v[1]*sin(M_PI*samp2[i].lon/180);
+          q=v[0]*cos(M_PI*samp2[i].lon/180)+v[1]*sin(M_PI*samp2[i].lon/180);
 	}
-        samp2[i].q*=-hemi/vunit;
+        q*=-hemi/vunit;
         break;
       case (2):
-        samp2[i].q=0;
+        samp2[i].q=v[2];
 	break;
       default:
-        samp2[i].q=REARTH*sin(sqrt(r2)/REARTH)*loc[1]*(-v[0]*loc[1]/loc[0]+v[1])/r2;
-        samp2[i].qerr=REARTH*(v[0]*loc[0]+v[1]*loc[1])/sqrt(r2);
+	if (loc[0]!=0 || loc[1]!=0) {
+          samp2[i].q=REARTH*sin(sqrt(r2)/REARTH)*(v[1]*loc[0]-v[0]*loc[1])/r2;
+	} else {
+          samp2[i].q=v[1]*cos(M_PI*samp2[i].lon/180)-v[0]*sin(M_PI*samp2[i].lon/180);
+	}
+	samp2[i].q/=vunit;
+	if (loc[0]!=0 || loc[1]!=0) {
+          samp2[i].qerr=(v[0]*loc[0]+v[1]*loc[1])/sqrt(r2);
+	} else {
+          samp2[i].qerr=v[0]*cos(M_PI*samp2[i].lon/180)+v[1]*sin(M_PI*samp2[i].lon/180);
+	}
+        samp2[i].qerr*=-hemi/vunit;
+    }
+    if (component>=0) { 
+      samp2[i].q=q;
+      samp2[i].qerr=0;
     }
   }
 
-  write_meas(samp2, nsamp2, stdout);
   if (cflag) {
+    for (int i=0; i<nsamp2; i++) {
+      samp2[i].t.write_string(tstr);
+      printf("%23s %9.3f %9.3f %14.7lg %14.7lg\n", tstr, 
+		      samp2[i].lon, samp2[i].lat, samp3[i].q, samp2[i].q);
+    }
     printf("r=%lg\n", correlate_meas(samp2, samp3, nsamp2));
+  } else {
+    int flag=0;
+    if (component<0) flag=1;
+    write_meas(samp2, nsamp2, stdout, flag);
   }
 
   delete [] samp;

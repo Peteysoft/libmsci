@@ -94,13 +94,20 @@ meas_data *read_meas(FILE *fs, long *n, int32_t twid) {
 
 }
 
-int write_meas(meas_data *data, long n, FILE *fs) {
+int write_meas(meas_data *data, long n, FILE *fs, int flag) {
   char tstring[30];
+  char format[40];
+
+  if (flag) {
+    sprintf(format, "%%%ds %%9.3f %%9.3f %%14.7lg %%14.7lg\n", TFIELD_WIDTH);
+  } else {
+    sprintf(format, "%%%ds %%9.3f %%9.3f %%14.7lg %%8.2lg\n", TFIELD_WIDTH);
+  }
 
   for (long i=0; i<n; i++) {
     data[i].t.write_string(tstring);
     //this is annoying: you can't stick a macro in a string (I don't think...)
-    fprintf(fs, "%23s %9.3f %9.3f %14.7lg %8.2lg\n", tstring, data[i].lon, data[i].lat, data[i].q, data[i].qerr);
+    fprintf(fs, format, tstring, data[i].lon, data[i].lat, data[i].q, data[i].qerr);
   }
 
 }

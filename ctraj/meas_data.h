@@ -34,7 +34,8 @@ namespace ctraj {
 
   }
 
-  int write_meas(meas_data *data, long n, FILE *fs);
+  //if flag is set, .qerr is printed as regular data with a wider format
+  int write_meas(meas_data *data, long n, FILE *fs, int flag=0);
 
   inline meas_data *copy_meas(meas_data *dat, long n) {
     meas_data *result=new meas_data[n];
