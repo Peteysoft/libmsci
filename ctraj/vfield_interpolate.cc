@@ -223,7 +223,7 @@ int main(int argc, char **argv) {
 	samp2[i].q/=vunit;
         break;
       case (1):
-	if (loc[0]!=0 && loc[1]!=0) {
+	if (loc[0]!=0 || loc[1]!=0) {
           samp2[i].q=(v[0]*loc[0]+v[1]*loc[1])/sqrt(r2);
 	} else {
           samp2[i].q=v[0]*cos(M_PI*samp2[i].lon/180)+v[1]*sin(M_PI*samp2[i].lon/180);
@@ -237,7 +237,6 @@ int main(int argc, char **argv) {
         samp2[i].q=REARTH*sin(sqrt(r2)/REARTH)*loc[1]*(-v[0]*loc[1]/loc[0]+v[1])/r2;
         samp2[i].qerr=REARTH*(v[0]*loc[0]+v[1]*loc[1])/sqrt(r2);
     }
-    if (cflag) printf("%g %g\n", samp2[i].q, samp3[i].q);
   }
 
   write_meas(samp2, nsamp2, stdout);
