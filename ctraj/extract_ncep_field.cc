@@ -21,7 +21,7 @@ using namespace ctraj;
 #define FNAMELEN 14
 
 int main(int argc, char *argv[]) {
-  FILE *docfs=stdout;
+  FILE *docfs=stderr;
   char *var;			//output file name
 
   float lev;			//sigma level
