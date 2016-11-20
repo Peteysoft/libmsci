@@ -30,8 +30,8 @@ T0=$2
 TF=$3
 NTRIAL=$4
 
-#ID=$RANDOM
-ID=0
+ID=$RANDOM
+#ID=0
 
 NFILE=vfieldN.$ID.ds
 SFILE=vfieldS.$ID.ds
@@ -54,13 +54,16 @@ do
   echo "extract_ncep_field -L $TFLAG -p $DATAPATH vwnd $ZLEV $DATE > $VWND"
   extract_ncep_field -L $TFLAG -p $DATAPATH vwnd $ZLEV $DATE > $VWND
 
+  echo $DATE >> $RESULTS
   echo "vfield_interpolate u $SFILE $NFILE $UWND | tail -n 1 >> $RESULTS"
   vfield_interpolate -P u $SFILE $NFILE $UWND | tail -n 1 >> $RESULTS
   echo "vfield_interpolate v $SFILE $NFILE $VWND | tail -n 1 >> $RESULTS"
   vfield_interpolate -P v $SFILE $NFILE $VWND | tail -n 1 >> $RESULTS
   if test $WFLAG
   then
+    echo "extract_ncep_field -L $TFLAG -p $DATAPATH wwnd $ZLEV $DATE > $WWND"
     extract_ncep_field -L $TFLAG -p $DATAPATH wwnd $ZLEV $DATE > $WWND
+    echo "vfield_interpolate w $SFILE $NFILE $WWND | tail -n 1 >> $RESULTS"
     vfield_interpolate w $SFILE $NFILE $WWND | tail -n 1 >> $RESULTS
   fi
 done

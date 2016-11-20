@@ -128,8 +128,8 @@ int main(int argc, char **argv) {
     } else if (strcmp(argv[1], "w")==0) {
       component=2;
     }
+    argv++;
   }
-  argv++;
   measurement_file=argv[3];
 
   //read in the velocity fields:
