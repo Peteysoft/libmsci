@@ -216,7 +216,9 @@ int main(int argc, char *argv[]) {
   uu=vconv.empty_field();  
   vv=vconv.empty_field();  
 
-  if (strcmp(mode, "w")==0) vconv.write(1);
+  //if dataset is set up for paging, we write out the grids before adding
+  //the velocity field data:
+  if (strcmp(mode, "w")==0 && page_size!=-1) vconv.write(1);
 
   uu->get_dim(dim);
 
@@ -276,8 +278,10 @@ int main(int argc, char *argv[]) {
 
   vconv.add_field(time_ind, uu, vv);
 
-  //finish:
+  //datasets not set up for paging; held completely in RAM:
+  if (page_size==-1) vconv.write(1);
 
+  //clean up:
   fprintf(docfs, "Deleting:\n");
   fprintf(docfs, "arrays\n");
 

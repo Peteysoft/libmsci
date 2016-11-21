@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
   FILE *docfs=stderr;
 
   FILE *fs;
-  char *measurement_file;
+  char *measurement_file=NULL;
   char *outfile;
   char c;
   size_t ncon;
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
   int Hflag;		//for generationg histograms
   int tflag;		//we're cheating...
 
-  int64_t page_size=-1;
+  int64_t page_size=0;
   int32_t dwid=TFIELD_WIDTH;
   int component=-1;
 
@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
   Hflag=flag[8];
   tflag=flag[9];
 
-  if (argc<4 || flag[13]) {
+  if (argc<3 || flag[13]) {
     int err;
     if (flag[13]) {
       docfs=stdout;
@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
     fprintf(docfs, "\n");
     fprintf(docfs, "usage: vfield_interpolate [-t dwid] [--] [-+] [-P] [-I latmin] [-F latmax]\n");
     fprintf(docfs, "                          [-0 i0|-i t0] [-N n|-f tf]\n");
-    fprintf(docfs, "                          [component] vfileS vfileN measurements\n");
+    fprintf(docfs, "                          [component] vfileS vfileN [measurements]\n");
     fprintf(docfs, "\n");
     fprintf(docfs, "where:\n");
     fprintf(docfs, "  component     = u  for zonal wind\n");
@@ -120,17 +120,19 @@ int main(int argc, char **argv) {
     return err;
   }
 
-  if (argc>4) {
-    if (strcmp(argv[1], "u")==0) {
-      component=0;
-    } else if (strcmp(argv[1], "v")==0) {
-      component=1;
-    } else if (strcmp(argv[1], "w")==0) {
-      component=2;
+  if (argc>3) {
+    if (argc>4) {
+      if (strcmp(argv[1], "u")==0) {
+        component=0;
+      } else if (strcmp(argv[1], "v")==0) {
+        component=1;
+      } else if (strcmp(argv[1], "w")==0) {
+        component=2;
+      }
+      argv++;
     }
-    argv++;
+    measurement_file=argv[3];
   }
-  measurement_file=argv[3];
 
   //read in the velocity fields:
   fprintf(docfs, "Reading files: %s %s\n", argv[1], argv[2]);
@@ -156,6 +158,22 @@ int main(int argc, char **argv) {
   tf.write_string(tstring);*/
   //printf("%s\n", tstring);
   //printf("i0=%d, N=%d\n", i0, N);
+  
+  //if there is no measurement file, just print out basic data:
+  if (measurement_file==NULL) {
+    printf("t0\\tf\\nt\\level\n");
+    N=vfield->maxt();
+    t0=vfield->get_t(0);
+    tf=vfield->get_t(N);
+    t0.write_string(tstr);
+    printf("%s\n", tstr);
+    tf.write_string(tstr);
+    printf("%s\n", tstr);
+    printf("%d\n", N+1);
+    printf("%g\n", vfield->get_lev());
+    delete vfield;
+    return 0;
+  }
 
   //read in measurements:
   fprintf(docfs, "Reading in measurements from, %s\n", measurement_file);
@@ -216,7 +234,9 @@ int main(int argc, char **argv) {
     hemi=domain*2-1;
     //printf("%g %g %g %d\n", loc[0], loc[1], vfield->get_tind(samp2[i].t), domain);
     v[2]=0;
+    //fprintf(docfs, "Getting %dth interpolate\n", i);
     vfield->v(domain, vfield->get_tind(samp2[i].t), loc, v);
+    //fprintf(docfs, "Transforming interpolate\n", i);
     r2=loc[0]*loc[0]+loc[1]*loc[1];
     switch (component) {
       case (0):
@@ -274,6 +294,10 @@ int main(int argc, char **argv) {
   delete [] samp;
   delete [] samp2;
 
+  delete vfield;
+
   if (cflag || Hflag) delete [] samp3;
+
+  return 0;
 }
 

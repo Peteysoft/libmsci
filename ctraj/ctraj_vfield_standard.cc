@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include <typeinfo>
 
 #include "parse_command_opts.h"
 #include "error_codes.h"
@@ -26,9 +27,9 @@ int ctraj_vfield_standard<real>::setup(int argc, char **argv) {
   int err=1;
   int err2;
   char *fname[2];
-  int64_t page_size=-1;		//vfield page size in bytes
+  int64_t ps=0;			//vfield page size in bytes
 
-  optarg[2]=&page_size;
+  optarg[2]=&ps;
 
   ret=parse_command_opts(argc, argv, "-+B", "%%%ld", optarg, flag, OPT_WHITESPACE+2);
   if (ret < 0) {
@@ -46,7 +47,7 @@ int ctraj_vfield_standard<real>::setup(int argc, char **argv) {
   fname[0]=argv[1];
   fname[1]=argv[2];
 
-  err2=init(fname, page_size, "r", ref);
+  err2=init(fname, ps, "r", ref);
 
   if (err2!=0) err=-1;
 
@@ -68,7 +69,7 @@ void ctraj_vfield_standard<real>::help(FILE *fs) {
 }
 
 template <class real>
-int ctraj_vfield_standard<real>::init(char **fname, int64_t page_size, const char *mode, int32_t ref) {
+int ctraj_vfield_standard<real>::init(char **fname, int64_t ps, const char *mode, int32_t ref) {
   simple<real> *z1[2];
   simple<real> *h[2];
   real h1, h2;
@@ -77,6 +78,7 @@ int ctraj_vfield_standard<real>::init(char **fname, int64_t page_size, const cha
   double dt0, dt1;
 
   refd=ref;
+  page_size=ps;
 
   for (int i=0; i<2; i++) {
     fprintf(stderr, "Opening: %s\n", fname[i]);
@@ -125,18 +127,23 @@ int ctraj_vfield_standard<real>::init(char **fname, int64_t page_size, const cha
         fprintf(stderr, "vfield_standard: variable, %s, not found in, %s\n", "u", fname[i]);
         return FILE_READ_ERROR;
       }
-      U[i]=(dependent_swap<real> *) all[i]->get_var(loc);
+      U[i]=(dependent<real> *) all[i]->get_var(loc);
       loc=all[i]->search_var("v", dum);
       if (loc<0) {
         fprintf(stderr, "vfield_standard: variable, %s, not found in, %s\n", "v", fname[i]);
         return FILE_READ_ERROR;
       }
-      V[i]=(dependent_swap<real> *) all[i]->get_var(loc);
+      V[i]=(dependent<real> *) all[i]->get_var(loc);
   
       //set page size:
       if (page_size > 0) {
-        U[i]->set_page_size(page_size, 1);
-        V[i]->set_page_size(page_size, 1);
+	printf("page_size: %ld\n", page_size);
+        if (typeid(*U[i])==typeid(dependent_swap<real>)) {
+          ((dependent_swap<real>*) U[i])->set_page_size(page_size, 1);
+	}
+        if (typeid(*V[i])==typeid(dependent_swap<real>)) {
+          ((dependent_swap<real>*) V[i])->set_page_size(page_size, 1);
+	}
       }
 
     }
@@ -219,9 +226,9 @@ int ctraj_vfield_standard<real>::init(char **fname, int64_t page_size, const cha
       if (lon!=NULL) {
         loc=all[refd]->search_var("c1", dum);
         if (loc >= 0) {
-          c1[refd]=(dependent_swap<interpol_index> *) all[refd]->get_var(loc);
+          c1[refd]=(dependent<interpol_index> *) all[refd]->get_var(loc);
           loc=all[refd]->search_var("c2", dum);
-          c2[refd]=(dependent_swap<interpol_index> *) all[refd]->get_var(loc);
+          c2[refd]=(dependent<interpol_index> *) all[refd]->get_var(loc);
         } else {
           c1[refd]=new dependent<interpol_index>(x[refd], y[refd]);
           c2[refd]=new dependent<interpol_index>(x[refd], y[refd]);
@@ -233,9 +240,9 @@ int ctraj_vfield_standard<real>::init(char **fname, int64_t page_size, const cha
         if (*lon==*loncheck && *lat==*latcheck) {
           loc=all[ref]->search_var("c1", dum);
           if (loc > 0) {
-            c1[ref]=(dependent_swap<interpol_index> *) all[ref]->get_var(loc);
+            c1[ref]=(dependent<interpol_index> *) all[ref]->get_var(loc);
             loc=all[ref]->search_var("c2", dum);
-            c2[ref]=(dependent_swap<interpol_index> *) all[ref]->get_var(loc);
+            c2[ref]=(dependent<interpol_index> *) all[ref]->get_var(loc);
           }
         }
         if (c1[ref]==NULL) {
@@ -272,6 +279,19 @@ ctraj_vfield_standard<real>::ctraj_vfield_standard() {
   fs[0]=NULL;
   fs[1]=NULL;
   metric=NULL;
+  for (int i=0; i<2; i++) {
+    t[i]=NULL;
+    x[i]=NULL;
+    y[i]=NULL;
+    U[i]=NULL;
+    V[i]=NULL;
+    c1[i]=NULL;
+    c2[i]=NULL;
+  }
+  z=NULL;
+  lon=NULL;
+  lat=NULL;
+  page_size=0;
 }
 
 template <class real>
@@ -289,9 +309,11 @@ int ctraj_vfield_standard<real>::v(int32_t domain, double tind, real *x1, real *
 
   if (domain!=refd) tind=tind*tmult+tdiff;
 
+  //printf("calculating interpolation coeffs\n");
   xind=x[domain]->interp(x1[0]);
   yind=y[domain]->interp(x1[1]);
 
+  //printf("getting interpolate at %d %lg %lg %lg\n", domain, xind, yind, tind);
   U[domain]->interpol(v[0], xind, yind, 0, tind);
   V[domain]->interpol(v[1], xind, yind, 0, tind);
 
@@ -385,6 +407,13 @@ double ctraj_vfield_standard<real>::get_tind(char *date) {
   interpol_index tind;
   t0.read_string(date);
   return t[refd]->interp(t0);
+}
+
+template <class real>
+real ctraj_vfield_standard<real>::get_lev() {
+  real lev;
+  z->get(lev, 0);
+  return lev;
 }
 
 template <class real>
@@ -583,6 +612,38 @@ int ctraj_vfield_standard<real>::set_ingrid(const simple<real> &lonin, const sim
 }
 
 template <class real>
+void ctraj_vfield_standard<real>::init_vvar() {
+  long loc, dum;
+  simple<real> *z1;
+  if (U[0]!=NULL) return;
+  for (int i=0; i<2; i++) {
+    loc=all[i]->search_var("zgrid", dum);
+    z1=(simple<real> *) all[i]->get_var(loc);
+    printf("ctraj_vfield_standard::init_vvar: page_size=%ld\n", page_size);
+    if (page_size!=int64_t(-1)) {
+      //assert (page_size<0);
+      assert (page_size!=int64_t(-1));
+      printf("ctraj_vfield_standard::init_vvar: initializing U and V as paging\n");
+      printf("ctraj_vfield_standard::init_vvar: page_size=%ld\n", page_size);
+      U[i]=new dependent_swap<real>(x[i], y[i], z1, t[i]);
+      V[i]=new dependent_swap<real>(x[i], y[i], z1, t[i]);
+      if (page_size>0) {
+        ((dependent_swap<real>*) U[i])->set_page_size(page_size, 1);
+        ((dependent_swap<real>*) V[i])->set_page_size(page_size, 1);
+      }
+    } else {
+      printf("ctraj_vfield_standard::init_vvar: initializing U and V\n");
+      U[i]=new dependent<real>(x[i], y[i], z1, t[i]);
+      V[i]=new dependent<real>(x[i], y[i], z1, t[i]);
+    }
+    loc=all[i]->add_var("u");
+    all[i]->cvar(loc, (dataset *) U[i]);
+    loc=all[i]->add_var("v");
+    all[i]->cvar(loc, (dataset *) V[i]);
+  }
+}
+
+template <class real>
 int ctraj_vfield_standard<real>::write(int keep_input_grids) {
   long loc, dum; 
   int32_t unref;
@@ -618,16 +679,7 @@ int ctraj_vfield_standard<real>::write(int keep_input_grids) {
     }
   }
 
-  for (int i=0; i<2; i++) {
-    loc=all[i]->search_var("zgrid", dum);
-    z1=(simple<real> *) all[i]->get_var(loc);
-    U[i]=new dependent_swap<real>(x[i], y[i], z1, t[i]);
-    V[i]=new dependent_swap<real>(x[i], y[i], z1, t[i]);
-    loc=all[i]->add_var("u");
-    all[i]->cvar(loc, (dataset *) U[i]);
-    loc=all[i]->add_var("v");
-    all[i]->cvar(loc, (dataset *) V[i]);
-  }
+  init_vvar();
 
   all[0]->write(fs[0]);
   all[1]->write(fs[1]);
@@ -652,6 +704,7 @@ int ctraj_vfield_standard<real>::add_field(int32_t tind, dependent<real> *uu, de
   double tindf;
   int32_t tind1;
 
+  init_vvar();
   for (int dom=0; dom<2; dom++) {
     //calculate time interval which is used to normalize the velocities
     nt=t[dom]->nel();

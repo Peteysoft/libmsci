@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
   //for parsing command options:
   void *optargs[20];
   int flags[20];
-  int64_t page_size=-1;
+  int32_t page_size=0;
 
   char *command;
   FILE *ps;
@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
     exit(420);
   }
   fprintf(docfs, "Converting data from %s to %s at level %f\n", tstr1, tstr2, lev);
-  fprintf(docfs, "sidelength = %g; ngrid = %d\n", rmax, ngrid);
+  fprintf(docfs, "sidelength = %g; ngrid = %d; page size = %ld\n", rmax, ngrid, page_size);
   fprintf(docfs, "Writing to files: %s %s\n", outfile[0], outfile[1]);
 
   yr1=t1.year();
@@ -285,7 +285,9 @@ int main(int argc, char *argv[]) {
   uu=new dependent<float>(lon, lat);  
   vv=new dependent<float>(lon, lat);
 
-  vconv.write();
+  //if dataset is set up for paging, write out grids before filling in
+  //velocity data:
+  if (page_size!=-1) vconv.write();
 
   //let's make this really un-ambigous:
   //there's the time index for the input files
@@ -386,6 +388,9 @@ int main(int argc, char *argv[]) {
   }
 
   //finish:
+  //if dataset is not set up for paging, it is held completely in RAM and
+  //must be written at the end:
+  if (page_size==-1) vconv.write();
 
   //must not be moved above deletion of variables u and v...
   fprintf(docfs, "Deleting:\n");

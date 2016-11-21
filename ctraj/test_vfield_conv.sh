@@ -4,9 +4,15 @@ set -e
 
 DATAPATH=.
 
-while getopts 'n:r:p:B:Tw' ARG; do
+while getopts 'i:f:n:r:p:B:TK:w' ARG; do
   case $ARG in
-    n)  OPTS="$OPTS -n $OPTARG"
+    i) T0=$OPTARG
+      ;;
+    f) TF=$OPTARG
+      ;;
+    K) KFLAG=$OPTARG
+      ;;
+    n) OPTS="$OPTS -n $OPTARG"
       ;;
     r) OPTS="$OPTS -r $OPTARG"
       ;;
@@ -18,30 +24,54 @@ while getopts 'n:r:p:B:Tw' ARG; do
       ;;
     w) WFLAG="-w"
       ;;
-    H) echo "test_vfield_conv.sh [-p path] [-T] level t0 tf ntrial"
+    H) echo "test_vfield_conv.sh [-p path] [-T] [level -i T0 -f TF | vfieldS vfieldN] ntrial"
       ;;
   esac
 done
 
 shift $(($OPTIND -1))
 
-ZLEV=$1
-T0=$2
-TF=$3
-NTRIAL=$4
-
 ID=$RANDOM
+
+if [ $# -eq 2 ]
+then
+  ZLEV=$1
+  NTRIAL=$2
+else
+  INFO=info.$ID.txt
+  NFILE=$1
+  SFILE=$2
+  vfield_interpolate $SFILE $NFILE > $INFO
+  if test -z $T0
+  then
+    T0=$(head -n 2 $INFO | tail -n 1)
+  fi
+  if test -z $TF
+  then
+    TF=$(head -n 3 $INFO | tail -n 1)
+  fi
+  ZLEV=$(head -n 5 $INFO | tail -n 1)
+  NTRIAL=$3
+  if test -z $KFLAG
+  then
+    KFLAG=0
+  fi
+fi
+
 #ID=0
 
-NFILE=vfieldN.$ID.ds
-SFILE=vfieldS.$ID.ds
 UWND=uwnd.$ID.txt
 VWND=vwnd.$ID.txt
 WWND=wwnd.$ID.txt
 RESULTS=results.$ID.txt
 
-echo "nc2ds -p $DATAPATH $OPTS -i $T0 -f $TF $TFLAG $ZLEV $SFILE $NFILE"
-nc2ds -p $DATAPATH $OPTS -i $T0 -f $TF $TFLAG $ZLEV $SFILE $NFILE
+if test -z $NFILE
+then
+  NFILE=vfieldN.$ID.ds
+  SFILE=vfieldS.$ID.ds
+  echo "nc2ds -p $DATAPATH $OPTS -i $T0 -f $TF $TFLAG $ZLEV $SFILE $NFILE"
+  nc2ds -p $DATAPATH $OPTS -i $T0 -f $TF $TFLAG $ZLEV $SFILE $NFILE
+fi
 
 for ((I=0; I<$NTRIAL; I++))
 do
@@ -70,12 +100,24 @@ done
 
 more $RESULTS
 
-rm -f $RESULTS
-rm -f $UWND
-rm -f $VWND
-if test $WFLAG
+if test -z $KFLAG
 then
-  rm -f $WWND
+  rm -f $RESULTS
+  rm -f $UWND
+  rm -f $VWND
+  if test $WFLAG
+  then
+    rm -f $WWND
+  fi
+  rm -f $SFILE $NFILE
+elif [ $KFLAG -eq 0 ]
+then
+  rm -f $RESULTS
+  rm -f $UWND
+  rm -f $VWND
+  if test $WFLAG
+  then
+    rm -f $WWND
+  fi
 fi
-rm -f $SFILE $NFILE
 

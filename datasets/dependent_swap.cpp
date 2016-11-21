@@ -422,6 +422,148 @@ void dependent_swap<int32_t>::set_type() {
   type=DEPENDENT_LONG_S;
 }
 
+template <class dtype>
+errtype dependent_swap<dtype>::cel_1d(dtype new_data, sub_1d_type sub) {
+  sub_1d_type new_sub;
+
+  new_sub=check_page(sub);
+
+  if (new_sub != -1) {
+    dchange=1;
+    this->data[new_sub]=new_data;
+  }
+
+  return new_sub;
+}
+
+template <class dtype>
+errtype dependent_swap<dtype>::cel(dtype new_data, ind_type index1) {
+  if (this->rank != 1) return RANK_ERROR;
+  return cel_1d(new_data, index1);
+}
+
+template <class dtype>
+errtype dependent_swap<dtype>::cel(dtype new_data, ind_type index1, 
+		ind_type index2) {
+  if (this->rank != 2) return RANK_ERROR;
+  sub_1d_type sub=index1+index2*this->dim[0];
+  return cel_1d(new_data, sub);
+}
+
+template <class dtype>
+errtype dependent_swap<dtype>::cel(dtype new_data, ind_type index1, 
+		ind_type index2, ind_type index3) {
+  if (this->rank != 3) return RANK_ERROR;
+  sub_1d_type sub=index1+this->dim[0]*(index2+this->dim[1]*index3);
+  return cel_1d(new_data, sub);
+}
+
+template <class dtype>
+errtype dependent_swap<dtype>::cel(dtype new_data, ind_type index1, 
+		ind_type index2, ind_type index3, ind_type index4) {
+  if (this->rank != 4) return RANK_ERROR;
+  sub_1d_type sub=index1+this->dim[0]*(index2+this->dim[1]*(index3+this->dim[2]*index4));
+  //printf("%f\n", new_data);
+  return cel_1d(new_data, sub);
+}
+
+template <class dtype>
+errtype dependent_swap<dtype>::cel(dtype new_data, ind_type *indices) {
+  sub_1d_type sub;
+
+  sub=this->calc_sub(indices);
+  return cel_1d(new_data, sub);
+}
+
+template <class dtype>
+errtype dependent_swap<dtype>::get_1d(dtype &value, sub_1d_type sub) {
+  sub_1d_type new_sub;
+  new_sub=check_page(sub);
+  if (new_sub >= 0) value=this->data[new_sub];
+  return new_sub;
+}
+
+template <class dtype>
+errtype dependent_swap<dtype>::get(dtype &value, ind_type *indices) {
+  sub_1d_type sub;
+
+  sub=this->calc_sub(indices);
+  return get_1d(value, sub);
+}
+
+template <class dtype>
+errtype dependent_swap<dtype>::get(dtype &value, ind_type index1) {
+  if (this->rank != 1) return RANK_ERROR;
+  return get_1d(value, index1);
+}
+
+template <class dtype>
+errtype dependent_swap<dtype>::get(dtype &value, ind_type index1, 
+		ind_type index2) {
+  if (this->rank != 2) return RANK_ERROR;
+  sub_1d_type sub=index1+index2*this->dim[0];
+  return get_1d(value, sub);
+}
+
+template <class dtype>
+errtype dependent_swap<dtype>::get(dtype &value, ind_type index1, 
+		ind_type index2, ind_type index3) {
+  if (this->rank != 3) return RANK_ERROR;
+  sub_1d_type sub=index1+this->dim[0]*(index2+this->dim[1]*index3);
+  return get_1d(value, sub);
+}
+
+template <class dtype>
+errtype dependent_swap<dtype>::get(dtype &value, ind_type index1, 
+		ind_type index2, ind_type index3, ind_type index4) {
+  if (this->rank != 4) return RANK_ERROR;
+  sub_1d_type sub=index1+this->dim[0]*(index2+this->dim[1]*(index3+this->dim[2]*index4));
+  get_1d(value, sub);
+}
+
+template <class dtype>
+errtype dependent_swap<dtype>::interpol(dtype &value, interpol_index index1) {
+  if (this->rank != 1) return RANK_ERROR;
+  return interpol(value, &index1);
+}
+
+template <class dtype>
+errtype dependent_swap<dtype>::interpol(dtype &value, interpol_index index1,
+	       interpol_index index2) {
+  interpol_index indices[2];
+
+  if (this->rank != 2) return RANK_ERROR;
+  indices[0]=index1;
+  indices[1]=index2;
+  return interpol(value, indices);
+}
+
+template <class dtype>
+errtype dependent_swap<dtype>::interpol(dtype &value, interpol_index index1, 
+		interpol_index index2, interpol_index index3) {
+  interpol_index indices[3];
+
+  if (this->rank != 3) return RANK_ERROR;
+  indices[0]=index1;
+  indices[1]=index2;
+  indices[2]=index3;
+  return interpol(value, indices);
+}
+
+template <class dtype>
+errtype dependent_swap<dtype>::interpol(dtype &value, interpol_index index1, 
+		interpol_index index2, interpol_index index3, interpol_index index4) {
+  interpol_index indices[4];
+
+  if (this->rank != 4) return RANK_ERROR;
+  indices[0]=index1;
+  indices[1]=index2;
+  indices[2]=index3;
+  indices[3]=index4;
+
+  return interpol(value, indices);
+}
+
 template class dependent_swap<float>;
 template class dependent_swap<double>;
 template class dependent_swap<int32_t>;

@@ -30,8 +30,8 @@ namespace ctraj {
       simple<time_class> *t[2];
       simple<real> *x[2];
       simple<real> *y[2];
-      dependent_swap<real> *U[2];
-      dependent_swap<real> *V[2];
+      dependent<real> *U[2];
+      dependent<real> *V[2];
       FILE *fs[2];
 
       double tdiff;
@@ -46,13 +46,18 @@ namespace ctraj {
       dependent<interpol_index> *c1[2];        //interpolation coefficients (longitude)
       dependent<interpol_index> *c2[2];        //interpolation coefficients (latitude
 
+      void init_vvar();
+
+      //redundant, but needed for set-up:
+      int64_t page_size;
+
     public:
       ctraj_vfield_standard();
       virtual ~ctraj_vfield_standard();
 
       //initializes the object, returns 0 for success:
       int init(char **fname,              //S. hemi. file, N. hemi. file
-                int64_t page_size,      //pages size for swapping datasets
+                int64_t ps, 		     //pages size for swapping datasets
                 const char *mode,       //"r" read only access, 
                                         //"r+" to add to an existing dataset
                                         //"w" to start a new one
@@ -108,6 +113,7 @@ namespace ctraj {
 
       double get_tind(time_class date);
       time_class get_t(double tind);
+      real get_lev();
 
       az_eq_t<real> *get_metric();
 

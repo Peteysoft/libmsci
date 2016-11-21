@@ -375,6 +375,200 @@ void dependent<int64_t>::set_type() {
   type=DEPENDENT_INT64;
 }
 
+template <class dtype>
+errtype dependent<dtype>::cel_1d(dtype new_data, sub_1d_type sub) {
+	if (sub < 0 || sub >= n_data) return SUBSCRIPT_OUT_OF_RANGE;
+
+	data[sub]=new_data;
+
+	return 0;
+
+}
+
+template <class dtype>
+errtype dependent<dtype>::cel(dtype data_el, ind_type *indices) {
+	sub_1d_type sub;
+
+	sub=calc_sub(indices);
+	if (sub < 0) return sub;
+	data[sub]=data_el;
+	return 0;
+}
+
+template <class dtype>
+errtype dependent<dtype>::cel(dtype new_data, ind_type index1) {
+	if (rank != 1) return -1;
+	if (index1 < 0 || index1 >= dim[0]) return INDEX1_OUT_OF_RANGE;
+
+	data[index1]=new_data;
+
+	return 0;
+
+}
+
+template <class dtype>
+errtype dependent<dtype>::cel(dtype new_data, ind_type index1, ind_type index2) {
+	sub_1d_type sub;
+
+        if (rank != 2) return RANK_ERROR;
+	if (index1<0 || index1 >= dim[0]) return INDEX1_OUT_OF_RANGE;
+	if (index2<0 || index2 >= dim[1]) return INDEX2_OUT_OF_RANGE;
+
+//	cout << "Changing element at: " << index1 << " " << index2 <<
+//			" to: " << new_data << "\n";
+
+	sub=index1+index2*dim[0];
+	data[sub]=new_data;
+
+	return 0;
+}
+
+template <class dtype>
+errtype dependent<dtype>::cel(dtype new_data, ind_type index1, ind_type index2,
+		ind_type index3) {
+
+  if (rank != 3) return RANK_ERROR;
+  if (index1<0 || index1 >= dim[0]) return INDEX1_OUT_OF_RANGE;
+  if (index2<0 || index2 >= dim[1]) return INDEX2_OUT_OF_RANGE;
+  if (index3<0 || index3 >= dim[2]) return INDEX3_OUT_OF_RANGE;
+
+  data[index1+dim[0]*(index2+index3*dim[1])]=new_data;
+
+  return 0;
+}
+
+template <class dtype>
+errtype dependent<dtype>::cel(dtype new_data, ind_type index1, ind_type index2,
+		ind_type index3, ind_type index4) {
+  sub_1d_type sub;
+
+  if (rank != 4) return RANK_ERROR;
+  if (index1<0 || index1 >= dim[0]) return INDEX1_OUT_OF_RANGE;
+  if (index2<0 || index2 >= dim[1]) return INDEX2_OUT_OF_RANGE;
+  if (index3<0 || index3 >= dim[2]) return INDEX3_OUT_OF_RANGE;
+  if (index4<0 || index4 >= dim[3]) return INDEX4_OUT_OF_RANGE;
+
+  sub=index1+dim[0]*(index2+dim[1]*(index3+index4*dim[2]));
+  data[sub]=new_data;
+
+  return 0;
+}
+
+template <class dtype>
+errtype dependent<dtype>::get_1d(dtype &value, sub_1d_type sub) {
+  if (sub<0 || sub >= n_data) return SUBSCRIPT_OUT_OF_RANGE;
+  value=data[sub];
+
+  return sub;
+}
+
+template <class dtype>
+errtype dependent<dtype>::get(dtype &value, ind_type *indices) {
+	sub_1d_type sub;
+
+	sub=calc_sub(indices);
+	if (sub < 0) return sub;
+
+	value=data[sub];
+
+	return sub;
+}
+
+template <class dtype>
+errtype dependent<dtype>::get(dtype &value, ind_type index1) {
+  if (rank != 1L) return RANK_ERROR;
+  if (index1<0 || index1 >= dim[0]) return INDEX1_OUT_OF_RANGE;
+  value=data[index1];
+
+  return index1;
+}
+
+template <class dtype>
+errtype dependent<dtype>::get(dtype &value, ind_type index1, ind_type index2) {
+  sub_1d_type sub;
+
+  if (rank != 2L) return RANK_ERROR;
+  if (index1<0 || index1 >= dim[0]) return INDEX1_OUT_OF_RANGE;
+  if (index2<0 || index2 >= dim[1]) return INDEX2_OUT_OF_RANGE;
+  sub=index1+dim[0]*index2;
+  value=data[sub];
+
+  return sub;
+}
+
+template <class dtype>
+errtype dependent<dtype>::get(dtype &value, ind_type index1, ind_type index2, 
+			ind_type index3) {
+  sub_1d_type sub;
+
+  if (rank != 3L) return RANK_ERROR;
+  if (index1<0 || index1 >= dim[0]) return INDEX1_OUT_OF_RANGE;
+  if (index2<0 || index2 >= dim[1]) return INDEX2_OUT_OF_RANGE;
+  if (index3<0 || index3 >= dim[2]) return INDEX3_OUT_OF_RANGE;
+  sub=index1+dim[0]*(index2+dim[1]*index3);
+  value=data[sub];
+
+  return sub;
+}
+
+template <class dtype>
+errtype dependent<dtype>::get(dtype &value, ind_type index1, ind_type index2,
+			ind_type index3, ind_type index4) {
+  sub_1d_type sub;
+
+  if (rank != 4L) return RANK_ERROR;
+  if (index1<0 || index1 >= dim[0]) return INDEX1_OUT_OF_RANGE;
+  if (index2<0 || index2 >= dim[1]) return INDEX2_OUT_OF_RANGE;
+  if (index3<0 || index3 >= dim[2]) return INDEX3_OUT_OF_RANGE;
+  if (index4<0 || index4 >= dim[3]) return INDEX4_OUT_OF_RANGE;
+  sub=index1+dim[0]*(index2+dim[1]*(index3+index4*dim[2]));
+  value=data[sub];
+
+  return sub;
+}
+
+template <class dtype>
+errtype dependent<dtype>::interpol(dtype &value, interpol_index index1) {
+  if (rank != 1) return RANK_ERROR;
+  return interpol(value, &index1);
+}
+
+template <class dtype>
+errtype dependent<dtype>::interpol(dtype &value, interpol_index index1, 
+			interpol_index index2) {
+  interpol_index indices[2];
+
+  if (rank != 2) return RANK_ERROR;
+  indices[0]=index1;
+  indices[1]=index2;
+  return interpol(value, indices);
+}
+
+template <class dtype>
+ errtype dependent<dtype>::interpol(dtype &value, interpol_index index1, 
+		interpol_index index2, interpol_index index3) {
+  interpol_index indices[3];
+
+  if (rank != 3) return RANK_ERROR;
+  indices[0]=index1;
+  indices[1]=index2;
+  indices[2]=index3;
+  return interpol(value, indices);
+}
+
+template <class dtype>
+errtype dependent<dtype>::interpol(dtype &value, interpol_index index1, 
+		interpol_index index2, interpol_index index3, interpol_index index4) {
+  interpol_index indices[4];
+
+  if (rank != 4) return RANK_ERROR;
+  indices[0]=index1;
+  indices[1]=index2;
+  indices[2]=index3;
+  indices[3]=index4;
+
+  return interpol(value, indices);
+}
 
 template class dependent<float>;
 template class dependent<double>;
