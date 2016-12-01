@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+namespace libpetey {
+
 template <typename real>
 real nd_interpol(real *data, int32_t rank, int64_t *sub, double *coeff) {
   int32_t n=1<<rank;
@@ -67,4 +69,6 @@ int interpol_coeff(int32_t rank, int32_t *dim, double *indices,
 
   return 0;
 }
+
+} //end namespace libpetey
 

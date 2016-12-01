@@ -67,13 +67,15 @@ namespace libagf {
       //returns derivative in drdx:
       real R_deriv(real *x, cls_t i, cls_t j, real *drdx);
 
+      virtual int save(FILE *fs);
   };
 
   template <class real, class cls_t>
   class borders1v1:public onevone<real, cls_t> {
     protected:
+      //binary classifiers:
       agf2class<real, cls_t> **classifier;
-      int *pol;			//"polarities"
+      int *pol;					//"polarities"
       virtual real ** classify_raw(real *x);
     public:
       borders1v1();
@@ -92,7 +94,7 @@ namespace libagf {
       //virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       //virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
 
-      int save(FILE *fs);
+      virtual int save(FILE *fs);
   };
 }
 

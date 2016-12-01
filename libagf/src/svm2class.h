@@ -18,11 +18,12 @@ namespace libagf {
     public:
       svm2class();
       svm2class(char *modfile); 		//file containing LIBSVM model
+
       //convert 1 vs. 1 multi-class classifier into binary classifier:
-      svm2class(svm_multi<real, cls_t> *other, 		//1 vs. 1 multi-class classifier
-		      cls_t i, 				//index of first class
-		      cls_t j,				//index of second class
-		      int cflag=0);			//copy the multi-class classifier?
+      svm2class(svm_multi<real, cls_t> *other, 	//1 vs. 1 multi-class classifier
+		      cls_t i, 			//index of first class
+		      cls_t j,			//index of second class
+		      int cflag=0);		//copy the multi-class classifier?
       virtual ~svm2class();
 
       virtual real R(real *x, real *praw=NULL);

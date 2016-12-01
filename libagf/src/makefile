@@ -13,8 +13,8 @@ EXE_EXT=.exe
 
 CC = g++
 
-#BASE_PATH = /home/lenovo
-BASE_PATH = /home/Peter
+BASE_PATH = /home/lenovo
+#BASE_PATH = /home/Peter
 #BASE_PATH=/mnt/sdc1/home2/pete
 
 LIB_PATH = $(BASE_PATH)/lib
@@ -78,7 +78,7 @@ EXECUTABLES =	class_borders \
 		print_control \
 		agf_testsuite \
 		sort_discrete_vectors \
-		search_discrete_vectors 
+		search_discrete_vectors
 # more experimental stuff:
 #		optimize_r0 calibrate_p2 calc_joint_entropy \
 #		calibrate_p3 class_triangle 

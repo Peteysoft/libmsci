@@ -33,7 +33,7 @@
 
   Download the source from Github (\url{https://github/peteysoft/libmsci}) or your favourite mirror.  Unzip and unpack the tarball to the desired directory.  Modify the makefile with the appropriate directories, compiler names and compiler flags.  Type \verb"make" from inside the libagf directory to perform the build and \verb"make install" to copy the executables, libraries and include files to the appropriate directories.
 
-  A configure script is not supplied: please refer to the Peteysoft coding standards \verb\peteysoft_standards.txt\ in the base of the installation directory (\url{https://github.com/peteysoft/libmsci/blob/master/coding_standards.txt}).
+  A configure script is not supplied: please refer to the Peteysoft coding standards \verb\coding_standards.txt\ in the base of the installation directory (\url{https://github.com/peteysoft/libmsci/blob/master/doc/coding_standards.txt}).
 
   Make sure the following macros have been set properly in the make file:
 
@@ -187,7 +187,7 @@ To read the output files, examine the routines \verb"read_clsfile" for reading c
   delete [] data;
 \end{verbatim}
 
-In addition, the {\it libpetey} satellite library contains a utility called \verb/sparse_calc/ that can operate on both types of binary files containing floating point data (but not class data).  To read in and print a file of vector data called, \verb"foo.vec" type the following commands:
+In addition, the {\it sparse} satellite library contains a utility called \verb/sparse_calc/ that can operate on both types of binary files containing floating point data (but not class data).  To read in and print a file of vector data called, \verb"foo.vec" type the following commands:
 
 \begin{verbatim}
 $>sparse_calc
@@ -380,7 +380,9 @@ Multi-class classification using a series of class-borders:
 		      & PDF as the training data.\\
 \verb/validate_pdf.sh/ & Validates probability density function (PDF) estimates.\\
 \verb/agf_correlate/ & Correlates two binary files containing scalar \\
-			    & floating point data.
+			    & floating point data.\\
+\verb/roc_curve/ & Computes the receiver operatoring characteristic \\
+		& (ROC) using three different methods.
 \end{tabular}
 
 \subsection{Clustering}
@@ -635,7 +637,7 @@ The results will be stored in \verb"result.cls" and \verb"result.con".
 
   In the control language, going up a level in the hierarchical scheme is denoted by a left curly brace (\verb'{') while going down is denoted by a right curly brace (\verb$}$).  In a non-hierarchical model, we specify the parameters (file name) of each of the binary partition followed by the partitions themselves: two lists of classes separated by a forward slash (\verb'/').  Class labels for non-hierarchical partitions are relative, that is they go from 0 to the number of classes in the non-hierarchical model less one.  Class labels in the top level partitions are absolute, therefore must be unique.  These should also go from 0 to one less than the total number of classes in the over-all model, but need not.
 
-  In this example, there are six classes.  They are first partioned into a group of two and a group of four.  The group of four is partitioned into a group of three, the first of which is partitioned into two classes and the second and third of which are single classes.  
+  In this example, there are six classes.  They are first partioned into a group of two and a group of four.  The group of four is partitioned into a group of three, the first of which is partitioned into two classes and the second and third of which are single classes. The \verb/print_control/ command can be used to generate common control files.
 
 A good way to understand the ``multi-borders'' paradigm is to look at the example cases in the \verb"examples/humidity" data directory.  There is also a draft paper contained in the \verb"docs/" sub-directory.
 
@@ -704,7 +706,7 @@ where:
 \item $<$model$>$ is the output model reconizable to the prediction command, see below.
 \end{itemize}
 
-Once the training has completed, classifications are performed by passing the prediction command, \verb"svm-predict", from LIBSVM to \verb"classify_m" using the -0 option:
+Once the training has completed, classifications are performed by passing the prediction command, \verb"svm-predict", from LIBSVM to \verb"classify_m" using the \verb/-O/ option:
 
 \begin{verbatim}
 $>classify_m -M -O "svm-predict -b 1" foobar.txt test.svm output.svmout
@@ -800,7 +802,7 @@ Next, all the binary classifiers are listed as pairs of matrices:
 first the border vectors, then the gradient vectors. 
 Each matrix has a one line header with the number of vectors plus the size of each vector.
 
-Running the commands, \verb"multi_borders", \verb"classify_m", \verb"class_borders", \verb/svm_accelerate/, or \verb/mbh2mbm/ without arguments prints a generous help screen including a description of most of the features explained in this section.  There is also an example contained in the second half of the makefile under the \verb"examples/humidity_data" directory (see, Section \ref{EXAMPLES}, EXAMPLES, above).
+Running the commands, \verb/print_control/, \verb"multi_borders", \verb"classify_m", \verb"class_borders", \verb/svm_accelerate/, or \verb/mbh2mbm/ without arguments prints a generous help screen including a description of most of the features explained in this section.  There is also an example contained in the second half of the makefile under the \verb"examples/humidity_data" directory (see, Section \ref{EXAMPLES}, EXAMPLES, above).
 
 \nocite{Kohonen2000}
 \nocite{Michie_etal1994}

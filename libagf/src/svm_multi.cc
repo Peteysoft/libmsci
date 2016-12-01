@@ -152,6 +152,20 @@ namespace libagf {
   template <class real, class cls_t>
   svm_multi<real, cls_t>::svm_multi(char *file, int vflag) {
     FILE *fs=fopen(file, "r");
+    if (fs==NULL) {
+      fprintf(stderr, "svm2class: failed to open model file, %s\n", file);
+      throw UNABLE_TO_OPEN_FILE_FOR_READING;
+    }
+    this->voteflag=vflag;
+    probA=NULL;
+    probB=NULL;
+    load(fs);
+    fclose(fs);
+  }
+
+  //initialize from LIBSVM model file:
+  template <class real, class cls_t>
+  int svm_multi<real, cls_t>::load(FILE *fs) {
     char *line=NULL;
     char **substr=NULL;
     int nsub;
@@ -168,15 +182,6 @@ namespace libagf {
     //this->mat=NULL;
     //this->b=NULL;
     //this->id=-1;
-    
-    probA=NULL;
-    probB=NULL;
-    this->voteflag=vflag;
-
-    if (fs==NULL) {
-      fprintf(stderr, "svm2class: failed to open model file, %s\n", file);
-      throw UNABLE_TO_OPEN_FILE_FOR_READING;
-    }
 
     rho=0;
     param=new real[3];
@@ -192,21 +197,18 @@ namespace libagf {
       //printf("\n");
       if (nsub == 0) continue;
       if (strcmp(substr[0], "SV")!=0 && nsub<2) {
-        fprintf(stderr, "svm_multi: error in initialization file, %s; unrecognized keywordi (%s)/not enough parameters\n", substr[0], file);
-        fclose(fs);
+        fprintf(stderr, "svm_multi: error in initialization file; unrecognized keywordi (%s)/not enough parameters\n", substr[0]);
         throw FILE_READ_ERROR;
       }
       if (strcmp(substr[0], "svm_type")==0) {
         if (strcmp(substr[1], "c_svc")!=0 && strcmp(substr[1], "nu-svc")!=0) {
-          fprintf(stderr, "svm_multi: not a classifier SVM in file, %s (%s)\n", file, substr[1]);
-	  fclose(fs);
+          fprintf(stderr, "svm_multi: not a classifier SVM: %s\n", substr[1]);
 	  throw PARAMETER_OUT_OF_RANGE;
         }
       } else if (strcmp(substr[0], "nr_class")==0) {
         this->ncls=atoi(substr[1]);
 	if (this->ncls < 2) {
-          fprintf(stderr, "svm_multi: one class classifiers not accepted (file, %s)\n", file);
-	  fclose(fs);
+          fprintf(stderr, "svm_multi: one class classifiers not accepted\n");
 	  throw PARAMETER_OUT_OF_RANGE;
         }
 	nparam=this->ncls*(this->ncls-1)/2;
@@ -225,8 +227,7 @@ namespace libagf {
           kernel=&sigmoid_basis<real>;
           kernel_deriv=&sigmoid_basis_deriv<real>;
 	} else {
-          fprintf(stderr, "svm2class: basis function, %s, not recognized (file, %s)\n", substr[1], file);
-	  fclose(fs);
+          fprintf(stderr, "svm2class: basis function, %s, not recognized\n", substr[1]);
 	  throw PARAMETER_OUT_OF_RANGE;
         }
       } else if (strcmp(substr[0], "gamma")==0) {
@@ -240,26 +241,23 @@ namespace libagf {
         nsv_total=atoi(substr[1]);
       } else if (strcmp(substr[0], "nr_sv")==0) {
         if (nsub<this->ncls+1) {
-          fprintf(stderr, "svm_multi: error in initialization file: not enough parameters (nr_sv) (file, %s)\n", file);
-	  fclose(fs);
+          fprintf(stderr, "svm_multi: error in initialization file: not enough parameters (nr_sv)\n");
 	  throw FILE_READ_ERROR;
 	}
 	nsv=new nel_ta[this->ncls];
 	for (int i=0; i<this->ncls; i++) nsv[i]=atoi(substr[i+1]);
 	//for (int i=0; i<this->ncls; i++) printf("%d ", nsv[i]);
-	printf("\n");
+	//printf("\n");
       } else if (strcmp(substr[0], "rho")==0) {
         if (nsub<nparam+1) {
-          fprintf(stderr, "svm_multi: error in initialization file: not enough parameters (rho) (file, %s)\n", file);
-	  fclose(fs);
+          fprintf(stderr, "svm_multi: error in initialization file: not enough parameters (rho)\n");
 	  throw FILE_READ_ERROR;
 	}
         rho=new real[nparam];
 	for (int i=0; i<nparam; i++) rho[i]=atof(substr[i+1]);
       } else if (strcmp(substr[0], "probA")==0) {
         if (nsub<nparam+1) {
-          fprintf(stderr, "svm_multi: error in initialization file: not enough parameters (probA) (file, %s)\n", file);
-	  fclose(fs);
+          fprintf(stderr, "svm_multi: error in initialization file: not enough parameters (probA)\n");
 	  throw FILE_READ_ERROR;
 	}
         probA=new real[nparam];
@@ -270,8 +268,7 @@ namespace libagf {
 	pfound++;
       } else if (strcmp(substr[0], "probB")==0) {
         if (nsub<nparam+1) {
-          fprintf(stderr, "svm_multi: error in initialization file: not enough parameters (probB) (file, %s)\n", file);
-	  fclose(fs);
+          fprintf(stderr, "svm_multi: error in initialization file: not enough parameters (probB)\n");
 	  throw FILE_READ_ERROR;
 	}
         probB=new real[nparam];
@@ -282,8 +279,7 @@ namespace libagf {
 	pfound++;
       } else if (strcmp(substr[0], "label")==0) {
         if (nsub<this->ncls+1) {
-          fprintf(stderr, "svm_multi: error in initialization file: not enough parameters (label) (file, %s)\n", file);
-	  fclose(fs);
+          fprintf(stderr, "svm_multi: error in initialization file: not enough parameters (label)\n");
 	  throw FILE_READ_ERROR;
 	}
         this->label=new cls_t[this->ncls];
@@ -311,14 +307,14 @@ namespace libagf {
         nread=sscanf(line+pos, format, coef[j]+i, &rel);
 	//printf("%g ", coef[j][i]);
 	if (nread!=1) {
-          fprintf(stderr, "svm_multi: error reading coefficients from %s line %d\n", file, lineno+i);
+          fprintf(stderr, "svm_multi: error reading coefficients, line %d\n", lineno+i);
 	  throw FILE_READ_ERROR;
 	}
 	pos+=rel;
       }
       nf[i]=scan_svm_features(line+pos, ind[i], raw[i]);
       if (nf[i]<=0) {
-        fprintf(stderr, "svm_multi: error reading support vectors from %s line %d\n", file, lineno+i);
+        fprintf(stderr, "svm_multi: error reading support vectors, line %d\n", lineno+i);
 	throw FILE_READ_ERROR;
       }
       for (int j=0; j<nf[i]; j++) {
@@ -352,8 +348,7 @@ namespace libagf {
 
     //cls_t cls[nsv_total];
     //print_lvq_svm(stdout, sv, cls, nsv_total, this->D1, 1);
-
-    fclose(fs);
+    return 0;
   }
 
   //copy constructor:
@@ -605,15 +600,79 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  int svm_multi<real, cls_t>::save(FILE *fs) {
+    int nparam=this->ncls*(this->ncls-1)/2;	//number of binary classifiers
+    fprintf(fs, "svm_type c_svc\n");
+    //kernel type and parameters:
+    fprintf(fs, "kernel_type ");
+    if (kernel==&linear_basis<real>) {
+      fprintf(fs, "linear\n");
+    } else if (kernel==&polynomial_basis<real>) {
+      fprintf(fs, "polynomial\n");
+      fprintf(fs, "gamma %g\n", param[0]);
+      fprintf(fs, "coef0 %g\n", param[1]);
+      fprintf(fs, "degree %g\n", param[2]);
+    } else if (kernel==&radial_basis<real>) {
+      fprintf(fs, "rbf\n");
+      fprintf(fs, "gamma %g\n", param[0]);
+    } else if (kernel=&sigmoid_basis<real>) {
+      fprintf(fs, "sigmoid\n");
+      fprintf(fs, "gamma %g\n", param[0]);
+      fprintf(fs, "coef0 %g\n", param[1]);
+    }
+    //number of classes:
+    fprintf(fs, "nr_class %d\n", this->ncls);
+    //total number of support vectors:
+    fprintf(fs, "total_sv %d\n", nsv_total);
+    //constant parameter:
+    fprintf(fs, "rho");
+    for (int i=0; i<nparam; i++) fprintf(fs, " %g", rho[i]);
+    fprintf(fs, "\n");
+    //class labels:
+    fprintf(fs, "label");
+    for (int i=0; i<this->ncls; i++) fprintf(fs, " %d", this->label[i]);
+    fprintf(fs, "\n");
+    //for calculating probabilities:
+    if (probA!=NULL) {
+      fprintf(fs, "probA");
+      for (int i=0; i<nparam; i++) fprintf(fs, " %g", probA[i]);
+      fprintf(fs, "\n");
+      fprintf(fs, "probB");
+      for (int i=0; i<nparam; i++) fprintf(fs, " %g", probB[i]);
+      fprintf(fs, "\n");
+    }
+    //support vectors for each class:
+    fprintf(fs, "nr_sv");
+    for (int i=0; i<this->ncls; i++) fprintf(fs, " %d", nsv[i]);
+    fprintf(fs, "\n");
+    //support vectors and corresponding coefficients:
+    fprintf(fs, "SV\n");
+    for (int i=0; i<nsv_total; i++) {
+      for (int j=0; j<this->ncls-1; j++) fprintf(fs, "%g ", coef[j][i]);
+      for (int j=0; j<this->D1; j++) fprintf(fs, "%d:%g ", j+1, sv[i][j]);
+      fprintf(fs, "\n");
+    }
+    return 0;
+    
+  }
+
+  template <class real, class cls_t>
   borders1v1<real, cls_t>::borders1v1(char *file, int vflag) {
-    //how do we want to store the borders?
-    int err=0;
     FILE *fs=fopen(file, "r");
     if (fs==NULL) throw UNABLE_TO_OPEN_FILE_FOR_READING;
+    this->voteflag=vflag;
+    load(fs);
+    fclose(fs);
+  }
+
+  template <class real, class cls_t>
+  int borders1v1<real, cls_t>::load(FILE *fs) {
+    //how do we want to store the borders?
+    int err=0;
     //read in number of classes:
     char *line=fget_line(fs, 1);
     if (strcmp(line, "1v1")!=0) {
-      fprintf(stderr, "borders1v1: file, %s, wrong type (%s)\n", file, line);
+      fprintf(stderr, "borders1v1: initialization file wrong type (%s)\n", line);
       throw PARAMETER_OUT_OF_RANGE;
     }
     delete [] line;
@@ -628,7 +687,7 @@ namespace libagf {
     int nsub;
     sub=split_string_destructive(line, nsub);
     if (nsub<this->ncls) {
-      fprintf(stderr, "borders1v1: Not enough labels found in initialization file, %s\n", file);
+      fprintf(stderr, "borders1v1: Not enough labels found in initialization file\n");
       fprintf(stderr, "  %d vs. %d\n", this->ncls, nsub);
       throw DIMENSION_MISMATCH;
     }
@@ -638,23 +697,22 @@ namespace libagf {
     line=fget_line(fs);
     sub=split_string_destructive(line, nsub);
     if (nsub<nmod) {
-      fprintf(stderr, "borders1v1: Not enough \"polarities\" found in initialization file, %s\n", file);
+      fprintf(stderr, "borders1v1: Not enough \"polarities\" found in initialization file\n");
       fprintf(stderr, "  %d vs. %d\n", this->ncls, nsub);
       throw DIMENSION_MISMATCH;
     }
     pol=new int[nmod];
     for (int i=0; i<nmod; i++) pol[i]=atoi(sub[i]);
-    fprintf(fs, "\n");
     delete [] line;
     delete [] sub;
     //read in individual binary classifiers:
     classifier=new agf2class<real, cls_t>*[nmod];
     for (int i=0; i<nmod; i++) {
       classifier[i]=new agf2class<real, cls_t>();
-      err=classifier[i]->load(fs, vflag);
+      err=classifier[i]->load(fs, this->voteflag);
       if (err!=0) throw err;
     }
-    fclose(fs);
+
     //book-keeping--check dimensions and make sure they are all the same:
     dim_ta D1, D;
     this->D1=classifier[0]->n_feat();
@@ -663,12 +721,12 @@ namespace libagf {
       D1=classifier[i]->n_feat();
       D=classifier[i]->n_feat_t();
       if (D1!=this->D1 || D!=this->D) {
-        fprintf(stderr, "borders1v1: Dimension of classifier %d does not match that of first one in file, %s\n", i, file);
+        fprintf(stderr, "borders1v1: Dimension of classifier %d does not match that of first one in file\n", i);
         fprintf(stderr, "  %d vs. %d\n", this->D1, D1);
         throw DIMENSION_MISMATCH;
       }
     }
-    this->voteflag=vflag;
+    return 0;
   }
 
   template <class real, class cls_t>

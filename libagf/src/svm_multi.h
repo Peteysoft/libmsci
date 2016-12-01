@@ -67,6 +67,8 @@ namespace libagf {
       //returns derivative in drdx:
       real R_deriv(real *x, cls_t i, cls_t j, real *drdx);
 
+      virtual int load(FILE *fs);
+      virtual int save(FILE *fs);
   };
 
   template <class real, class cls_t>
@@ -93,7 +95,8 @@ namespace libagf {
       //virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       //virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
 
-      int save(FILE *fs);
+      virtual int load(FILE *fs);
+      virtual int save(FILE *fs);
   };
 }
 

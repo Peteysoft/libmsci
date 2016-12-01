@@ -10,8 +10,11 @@
 namespace libagf {
 
   //scans a single line for features data in LIBSVM format:
+  //returns number of features scanned
   template <class real>
-  dim_ta scan_svm_features(char *line, dim_ta *&ind2, real *&raw);
+  dim_ta scan_svm_features(char *line, 	//one line of data (one sample)
+		  dim_ta *&ind2, 	//returned feature indices
+		  real *&raw);		//returned corresponding features
 
   //gets format code for different data types:
   template <class type>

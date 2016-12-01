@@ -8,7 +8,7 @@
 //that my algorithms are stable:
 #define SIGFUN_TYPE double
 
-#include "agf_defs.h"
+#include "classifier_obj.h"
 
 namespace libagf {
   template <class real, class cls_t>

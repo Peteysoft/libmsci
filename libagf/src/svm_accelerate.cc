@@ -144,6 +144,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  //calculations are done in double precision:
   test2=allocate_matrix<calc_t, int32_t>(ntest, nvar);
   for (nel_ta i=0; i<ntest; i++) {
     for (dim_ta j=0; j<nvar; j++) test2[i][j]=test[i][j];
