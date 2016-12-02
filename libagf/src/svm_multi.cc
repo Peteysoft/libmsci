@@ -601,7 +601,13 @@ namespace libagf {
 
   template <class real, class cls_t>
   int svm_multi<real, cls_t>::save(FILE *fs) {
+    char fcode[4];
+    char format[10];
     int nparam=this->ncls*(this->ncls-1)/2;	//number of binary classifiers
+
+    get_format_code<real>(fcode);
+    sprintf(format, " %%%s", fcode);
+
     fprintf(fs, "svm_type c_svc\n");
     //kernel type and parameters:
     fprintf(fs, "kernel_type ");
@@ -609,16 +615,28 @@ namespace libagf {
       fprintf(fs, "linear\n");
     } else if (kernel==&polynomial_basis<real>) {
       fprintf(fs, "polynomial\n");
-      fprintf(fs, "gamma %g\n", param[0]);
-      fprintf(fs, "coef0 %g\n", param[1]);
-      fprintf(fs, "degree %g\n", param[2]);
+      fprintf(fs, "gamma");
+      fprintf(fs, format, param[0]);
+      fprintf(fs, "\n");
+      fprintf(fs, "coef0");
+      fprintf(fs, format, param[1]);
+      fprintf(fs, "\n");
+      fprintf(fs, "degree");
+      fprintf(fs, format, param[2]);
+      fprintf(fs, "\n");
     } else if (kernel==&radial_basis<real>) {
       fprintf(fs, "rbf\n");
-      fprintf(fs, "gamma %g\n", param[0]);
+      fprintf(fs, "gamma");
+      fprintf(fs, format, param[0]);
+      fprintf(fs, "\n");
     } else if (kernel=&sigmoid_basis<real>) {
       fprintf(fs, "sigmoid\n");
-      fprintf(fs, "gamma %g\n", param[0]);
-      fprintf(fs, "coef0 %g\n", param[1]);
+      fprintf(fs, "gamma");
+      fprintf(fs, format, param[0]);
+      fprintf(fs, "\n");
+      fprintf(fs, "coef0");
+      fprintf(fs, format, param[1]);
+      fprintf(fs, "\n");
     }
     //number of classes:
     fprintf(fs, "nr_class %d\n", this->ncls);
@@ -626,7 +644,7 @@ namespace libagf {
     fprintf(fs, "total_sv %d\n", nsv_total);
     //constant parameter:
     fprintf(fs, "rho");
-    for (int i=0; i<nparam; i++) fprintf(fs, " %g", rho[i]);
+    for (int i=0; i<nparam; i++) fprintf(fs, format, rho[i]);
     fprintf(fs, "\n");
     //class labels:
     fprintf(fs, "label");
@@ -635,10 +653,10 @@ namespace libagf {
     //for calculating probabilities:
     if (probA!=NULL) {
       fprintf(fs, "probA");
-      for (int i=0; i<nparam; i++) fprintf(fs, " %g", probA[i]);
+      for (int i=0; i<nparam; i++) fprintf(fs, format, probA[i]);
       fprintf(fs, "\n");
       fprintf(fs, "probB");
-      for (int i=0; i<nparam; i++) fprintf(fs, " %g", probB[i]);
+      for (int i=0; i<nparam; i++) fprintf(fs, format, probB[i]);
       fprintf(fs, "\n");
     }
     //support vectors for each class:
@@ -648,8 +666,11 @@ namespace libagf {
     //support vectors and corresponding coefficients:
     fprintf(fs, "SV\n");
     for (int i=0; i<nsv_total; i++) {
-      for (int j=0; j<this->ncls-1; j++) fprintf(fs, "%g ", coef[j][i]);
-      for (int j=0; j<this->D1; j++) fprintf(fs, "%d:%g ", j+1, sv[i][j]);
+      for (int j=0; j<this->ncls-1; j++) fprintf(fs, format, coef[j][i]);
+      for (int j=0; j<this->D1; j++) {
+        fprintf(fs, " %d:", j+1);
+        fprintf(fs, format, sv[i][j]);
+      }
       fprintf(fs, "\n");
     }
     return 0;
@@ -755,11 +776,9 @@ namespace libagf {
     int nmod;
     int m=0;
     svm2class<real, cls_t> *svmbin;
-    bordparam<real> param;
     cls_t csel[ntrain];			//selected classes
-    int (*sfunc) (void *, real_a *, real_a *);		//sampling function
     real **xtran;			//transformed training data
-    int ntest=10;
+    int ntest=100;
 
     this->ncls=svm->n_class();
     this->D1=svm->n_feat();
@@ -802,6 +821,7 @@ namespace libagf {
 	classifier[m]=new agf2class<real, cls_t>(svmbin, xtran, csel, this->D1, 
 			ntrain,	ns, tol);
         //lets test the result:
+	printf("%d vs %d comparison:\n", this->label[i], this->label[j]);
 	for (int ti=0; ti<ntest; ti++) {
           real r1, r2;
 	  int ind=ranu()*ntrain;

@@ -1,5 +1,5 @@
 
-all:
+all: libagf_guide.pdf
 	make -C agf2
 	make -C multiborders
 	make -C directions
