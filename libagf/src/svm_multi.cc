@@ -778,7 +778,6 @@ namespace libagf {
     svm2class<real, cls_t> *svmbin;
     cls_t csel[ntrain];			//selected classes
     real **xtran;			//transformed training data
-    int ntest=100;
 
     this->ncls=svm->n_class();
     this->D1=svm->n_feat();
@@ -809,9 +808,9 @@ namespace libagf {
       for (int j=i+1; j<this->ncls; j++) {
 	//select out pair of classes:
         for (nel_ta k=0; k<ntrain; k++) {
-          if (cls[k]==i) {
+          if (cls[k]==this->label[i]) {
             csel[k]=0;
-          } else if (cls[k]==j) {
+          } else if (cls[k]==this->label[j]) {
             csel[k]=1;
           } else {
             csel[k]=-1;
@@ -820,17 +819,19 @@ namespace libagf {
         svmbin=new svm2class<real, cls_t>(svm, i, j);
 	classifier[m]=new agf2class<real, cls_t>(svmbin, xtran, csel, this->D1, 
 			ntrain,	ns, tol);
+	m++;
+	delete svmbin;
+	continue;
+
         //lets test the result:
 	printf("%d vs %d comparison:\n", this->label[i], this->label[j]);
-	for (int ti=0; ti<ntest; ti++) {
+	for (int ti=0; ti<100; ti++) {
           real r1, r2;
 	  int ind=ranu()*ntrain;
 	  r1=svmbin->R(xtran[ind]);
 	  r2=classifier[m]->R(xtran[ind]);
 	  printf("%g %g\n", r1, r2);
 	}
-	m++;
-	delete svmbin;
       }
     }
 

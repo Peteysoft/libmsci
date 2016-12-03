@@ -354,7 +354,7 @@ int main (int argc, char **argv) {
     }
     chars.add('\0');
     buffer=chars.make_array(bufsize);
-    infs=fmemopen(buffer, bufsize, "w+");
+    infs=fmemopen(buffer, bufsize, "r");
   }
 
   //output control file (last argument):
