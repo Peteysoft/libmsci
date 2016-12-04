@@ -1,4 +1,5 @@
-MAXSAMPLE=100
+MINSAMPLE=5
+MAXSAMPLE=200
 NTEST=10
 NTRIAL=10
 
@@ -54,17 +55,24 @@ clean:
 
 #find number of border samples SVM-borders:
 $(NBORDER_SVM): $(SVMMODEL).svc $(TRAIN).vec $(TRAIN).cls
-	$(SCRIPTDIR)/mb_nb.sh -g -q $(NTEST) -N $(NTRIAL) -s $(MAXSAMPLE) -Z $(SVMMODEL).svc $(TRAIN) $(NBORDER_SVM)
+	$(SCRIPTDIR)/mb_nb.sh -g -q $(NTEST) -N $(NTRIAL) -M \
+		-s $(MINSAMPLE) -S $(MAXSAMPLE) \
+		$(SVMMODEL).svmmod $(TRAIN) $(NBORDER_SVM)
 
 #find number of border samples AGF-borders:
 $(NBORDER_AGF): $(MULTICONTROL) $(TRAIN).vec $(TRAIN).cls
-	$(SCRIPTDIR)/mb_nb.sh -g -q $(NTEST) -N $(NTRIAL) -s $(MAXSAMPLE) $(AGFOPT) $(MULTICONTROL) $(TRAIN) $(NBORDER_AGF)
+	$(SCRIPTDIR)/mb_nb.sh -g -q $(NTEST) -N $(NTRIAL) \
+		-s $(MINSAMPLE) -S $(MAXSAMPLE) $(AGFOPT) \
+		$(MULTICONTROL) $(TRAIN) $(NBORDER_AGF)
 
 $(NSUPPORT): $(TRAIN).svm
 	$(SCRIPTDIR)/svm_nsv.sh -G -q $(NTEST) $(SVMOPT) $(TRAIN) $(NSUPPORT)
 
 $(ACCELERATOR): $(MULTICONTROL) $(SVMMODEL).svc $(TRAIN).vec $(TRAIN).cls
 	multi_borders -Z $(SVMMODEL).svc $(TRAIN) $(ACCELERATOR) $(ACCELERATOR).mbc &>> svmmulti.log
+
+$(SVMMODEL).svmmod: $(TRAIN).svm
+	svm-predict -b 1 $(SVMOPT) $(TRAIN).svm $(SVMMODEL).svmmod
 
 $(SVMMODEL).svc: $(MULTICONTROL) $(TRAIN).svm
 	multi_borders -M -- "svm-train $(SVMOPT)" $(MULTICONTROL) $(TRAIN).svm $(SVMMODEL) $(SVMMODEL).svc &> svmmulti.log

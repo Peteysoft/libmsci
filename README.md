@@ -20,6 +20,9 @@ Generic Mapping Tools (GSL)
   zlib
 python
 bash
+latex
+  url.sty
+  apa.bst
 
 See individual sub-packages for detailed dependency breakdowns of each.
 Some dependencies are needed for only a small component or test script

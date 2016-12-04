@@ -6,10 +6,11 @@ set -e
 #numbers:
 NTRIAL=20
 NTEST=10
+MINSAMPLE=5
 MAXSAMPLE=50
 FRAC=0.2
 
-while getopts 'gKMZN:f:k:q:s:t:W:' DUM
+while getopts 'gKMZN:f:k:q:s:S:t:W:' DUM
 do
   case $DUM in
     g) LOGFLAG=1
@@ -18,7 +19,7 @@ do
       ;;
     M) SVMFLAG=1
       TRAIN_COMMAND=svm_accelerate
-      CLASSIFY_COMMAND=classify_c
+      CLASSIFY_COMMAND=classify_s
       ;;
     Z) ZFLAG=1
       TRAIN_COMMAND="multi_borders -Z"
@@ -30,7 +31,9 @@ do
       ;;
     q) NTEST=$OPTARG
       ;;
-    s) MAXSAMPLE=$OPTARG
+    s) MINSAMPLE=$OPTARG
+      ;;
+    S) MAXSAMPLE=$OPTARG
       ;;
     t) ALLOPT="$ALLOPT -t $OPTARG"
       ;;
@@ -69,8 +72,8 @@ elif [ $# -eq 2 ]; then
 else
   echo "   MULTI-BORDERS NUMBER OF BORDERS"
   echo
-  echo "mb_nb.sh [-g] [-M] [-K] [-N ntrial] [-q ntest] [-s maxsample]\\"
-  echo "        [-f frac] [model] train output"
+  echo "mb_nb.sh [-g] [-M] [-K] [-N ntrial] [-q ntest] [-s minsample]\\"
+  echo "        [-S maxsample] [-f frac] [model] train output"
   echo
   echo "  model     = LIBSVM model or multi-borders control file"
   echo "  train     = training data"
@@ -83,6 +86,7 @@ else
   echo
   echo "  ntrial    = number of repeated trials [$NTRIAL]"
   echo "  ntest     = number of sample sizes [$NTEST]"
+  echo "  minsample = maximum number of border samples [$MINSAMPLE]"
   echo "  maxsample = maximum number of border samples [$MAXSAMPLE]"
   echo "  frac      = fraction to reserve for testing [$FRAC]"
   exit 0
@@ -106,9 +110,9 @@ done
 
 for ((I=0; I<NTEST; I++)); do
   if [ $LOGFLAG ]; then
-    n=$(echo "e(($I+1)*l($MAXSAMPLE)/$NTEST)" | bc -l)
+    n=$(echo "e(l($MINSAMPLE)+$I*(l($MAXSAMPLE)-l($MINSAMPLE))/($NTEST-1))" | bc -l)
   else
-    n=$(((I+1)*MAXSAMPLE/NTEST))
+    n=$((MINSAMPLE+I*(MAXSAMPLE-MINSAMPLE)/(NTEST-1)))
   fi
 
   for ((J=0; J<NTRIAL; J++)); do

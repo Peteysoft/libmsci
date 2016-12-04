@@ -22,6 +22,7 @@ Tool					Application
 - Imagemagick				animation
 - bash					testing and analysis
 - bc (calculator)			needed for some of the test scripts
+- latex w/ url.sty + apa.bst		compile manual and working papers
 
 
 INSTALLATION
