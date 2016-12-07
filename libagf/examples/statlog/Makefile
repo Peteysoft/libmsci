@@ -1,42 +1,61 @@
+#minimum number of border samples:
 MINSAMPLE=5
+#maximum number of border samples:
 MAXSAMPLE=200
 NTEST=10
 NTRIAL=10
+#fraction of data used for testing:
+FRAC=0.2
 
-V=1
+V=2
 
-VER1=australian
-VER2=german
-VER3=heart
+VER1=heart
+VER2=sat
+VER3=segment
+VER4=shuttle
+VER5=vehicle
 
 NCLS1=2
-NCLS2=2
-NCLS3=2
+NCLS2=6
+NCLS3=7
+NCLS4=7
+NCLS5=4
 
 NCLS=$(NCLS$(V))
 
 AGFOPT1=
-AGFOPT2="-W 2"
+AGFOPT2=-W 5 -k 100
 AGFOPT3=
+AGFOPT4=-W 2
+AGFOPT5=
 
 AGFOPT=$(AGFOPT$(V))
 
 SVMOPT1=
 SVMOPT2=
 SVMOPT3=
+SVMOPT4=
+SVMOPT5=
 
 SVMOPT=$(SVMOPT$(V))
 
+K1=3
+K2=11
+K3=11
+K4=1
+K5=5
+
+K=$(K$V)
+
 SCRIPTDIR=../../scripts
 
-DATADIR=statlog_data/$(VER$(V))
+DATADIR=data/$(VER$(V))
 
 WORKDIR=work/VER$(V)
 
-TRAINFILE0=$(DATADIR)/$(VER$(V)).dat.txt
-
 BASE=$(WORKDIR)/$(VER$(V))
-TRAIN=$(BASE)
+TRAIN=$(BASE).trn
+TEST=$(BASE).tst
 
 MULTICONTROL=onevsone.mbc
 
@@ -48,16 +67,48 @@ NBORDER_AGF=$(WORKDIR)/nborder_agf.txt
 NBORDER_SVM=$(WORKDIR)/nborder_svm.txt
 NSUPPORT=$(WORKDIR)/nsupport.txt
 
-all: $(NBORDER_SVM) $(NBORDER_AGF) $(NSUPPORT)
+all: $(TEST).knn.cls $(TEST).agf.cls $(TEST).svm.cls $(TEST).acc.cls $(NBORDER_SVM)
+	echo "KNN:"
+	cat $(WORKDIR)/knn_time.txt
+	cls_comp_stats $(TEST).cls $(TEST).knn
+	echo
+	echo "AGF-borders:"
+	cat $(WORKDIR)/agf_ttime.txt
+	cat $(WORKDIR)/agf_time.txt
+	cls_comp_stats $(TEST).cls $(TEST).agf
+	echo
+	echo "SVM:"
+	cat $(WORKDIR)/svm_ttime.txt
+	cat $(WORKDIR)/svm_time.txt
+	cls_comp_stats $(TEST).cls $(TEST).svm
+	echo
+	echo "SVM-borders:"
+	cat $(WORKDIR)/accel_ttime.txt
+	cat $(WORKDIR)/acc_time.txt
+	cls_comp_stats $(TEST).cls $(TEST).acc
 
 clean:
-	rm -f $(BASE).*
+	rm -r $(WORKDIR)/*
+
+#testing:
+$(TEST).knn.cls $(TEST).knn.cor: $(TRAIN).vec $(TRAIN).cls $(TEST).vec
+	time -o $(WORKDIR)/knn_time.txt knn -k $K classify $(TRAIN) $(TEST).vec $(TEST).knn
+
+$(TEST).svm.cls $(TEST).svm.cor: $(SVMMODEL) $(TEST).svm
+	time -o $(WORKDIR)/svm_time.txt svm-predict -b 1 $(TEST).svm $(SVMMODEL) $(TEST).svm.txt
+	svmout2agf $(TEST).svm.txt $(TEST).svm
+
+$(TEST).agf.cls $(TEST).agf.cor: $(AGFMODEL).mbc $(TEST).vec
+	time -o $(WORKDIR)/agf_time.txt classify_m $(AGFMODEL).mbc $(TEST).vec $(TEST).agf
+
+$(TEST).acc.cls $(TEST).acc.cor: $(ACCELERATOR) $(TEST).vec
+	time -o $(WORKDIR)/acc_time.txt classify_s $(ACCELERATOR) $(TEST).vec $(TEST).acc
 
 #find number of border samples SVM-borders:
-$(NBORDER_SVM): $(SVMMODEL).svc $(TRAIN).vec $(TRAIN).cls
+$(NBORDER_SVM): $(SVMMODEL) $(TRAIN).vec $(TRAIN).cls
 	$(SCRIPTDIR)/mb_nb.sh -g -q $(NTEST) -N $(NTRIAL) -M \
 		-s $(MINSAMPLE) -S $(MAXSAMPLE) \
-		$(SVMMODEL).svmmod $(TRAIN) $(NBORDER_SVM)
+		$(SVMMODEL) $(TRAIN) $(NBORDER_SVM)
 
 #find number of border samples AGF-borders:
 $(NBORDER_AGF): $(MULTICONTROL) $(TRAIN).vec $(TRAIN).cls
@@ -68,22 +119,55 @@ $(NBORDER_AGF): $(MULTICONTROL) $(TRAIN).vec $(TRAIN).cls
 $(NSUPPORT): $(TRAIN).svm
 	$(SCRIPTDIR)/svm_nsv.sh -G -q $(NTEST) $(SVMOPT) $(TRAIN) $(NSUPPORT)
 
-$(ACCELERATOR): $(MULTICONTROL) $(SVMMODEL).svc $(TRAIN).vec $(TRAIN).cls
-	multi_borders -Z $(SVMMODEL).svc $(TRAIN) $(ACCELERATOR) $(ACCELERATOR).mbc &>> svmmulti.log
+#svm-borders "accelerated" svm model
+$(ACCELERATOR): $(SVMMODEL) $(TRAIN).vec $(TRAIN).cls
+	time -o $(WORKDIR)/accel_ttime.txt svm_accelerate $(SVMMODEL) $(TRAIN) $(ACCELERATOR)
 
-$(SVMMODEL).svmmod: $(TRAIN).svm
-	svm-predict -b 1 $(SVMOPT) $(TRAIN).svm $(SVMMODEL).svmmod
+#svm model:
+$(SVMMODEL): $(TRAIN).svm
+	time -o $(WORKDIR)/svm_ttime.txt svm-train -b 1 $(SVMOPT) $(TRAIN).svm $(SVMMODEL)
 
-$(SVMMODEL).svc: $(MULTICONTROL) $(TRAIN).svm
-	multi_borders -M -- "svm-train $(SVMOPT)" $(MULTICONTROL) $(TRAIN).svm $(SVMMODEL) $(SVMMODEL).svc &> svmmulti.log
+#agf borders model:
+$(AGFMODEL).mbc: $(TRAIN).svm
+	time -o $(WORKDIR)/agf_ttime.txt print_control -Q 6 $(NCLS) | multi_borders $(AGFOPT) $(TRAIN) $(AGFMODEL) $(AGFMODEL).mbc
 
+#convert to LIBSVM format:
 $(TRAIN).svm: $(TRAIN).cls $(TRAIN).vec
 	agf2ascii -M $(TRAIN) $(TRAIN).svm
 
-$(TRAIN).cls $(TRAIN).vec: $(TRAINFILE0)
-	lvq2agf -H $(TRAINFILE0) $(TRAIN)
-	agf_preprocess -Un $(TRAIN) $(TRAIN)
+$(TEST).svm: $(TEST).cls $(TEST).vec
+	agf2ascii -M $(TEST) $(TEST).svm
 
 $(MULTICONTROL):
 	print_control -Q 6 $(NCLS) > $(MULTICONTROL)
+
+$(TRAIN).vec $(TEST).cls $(TEST).vec: $(TRAIN).cls
+
+$(WORKDIR)/heart.trn.cls $(WORKDIR)/segment.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%.dat.txt
+	lvq2agf -H $< $(WORKDIR)/$(VER$(V))
+	agf_preprocess -f $(FRAC) $(WORKDIR)/$(VER$(V)) $(TRAIN) $(TEST)
+	agf_preprocess -Un $(TRAIN) $(TRAIN)
+	agf_preprocess -Un $(TEST) $(TEST)
+
+$(WORKDIR)/sat.trn.cls $(WORKDIR)/shuttle.trn.cls: $(WORKDIR)/%.cls: $(DATADIR)/%.txt
+	cp $(DATADIR)/$(VER$(V)).trn.txt $(WORKDIR)/$(VER$(V)).trn.txt
+	cp $(DATADIR)/$(VER$(V)).tst.txt $(WORKDIR)/$(VER$(V)).tst.txt
+	lvq2agf -H $(WORKDIR)/$(VER$(V)).trn.txt $(TRAIN)
+	lvq2agf -H $(WORKDIR)/$(VER$(V)).tst.txt $(TEST)
+	agf_preprocess -Un $(TRAIN) $(TRAIN)
+	agf_preprocess -Un $(TEST) $(TEST)
+
+VEHICLE_FILES=xaa.dat xab.dat xac.dat xad.dat xae.dat xaf.dat xag.dat xah.dat xai.dat
+VEHICLE_TEST=xaa.dat
+VEHICLE_TRAIN=$(VEHICLE_FILES, $(VEHICLE_TEST)=)
+
+$(WORKDIR)/vehicle.trn.cls: $(addprefix, $(DATADIR)/, $(VEHICLE_FILES))
+	cat $(addprefix, $(DATADIR)/, $(VEHICLE_TRAIN)) > $(WORKDIR)/vehicle/vehicle.trn.txt
+	cp $(addprefix, $(DATADIR)/, VEHICLE_TEST) $(WORKDIR)/vehicle/vehicle.tst.txt
+	sed 's/opel/0; s/saab/1; s/bus/2; s/van/3' $(WORKDIR)/$(VER$(V)).trn.txt
+	sed 's/opel/0; s/saab/1; s/bus/2; s/van/3' $(WORKDIR)//$(VER$(V)).tst.txt
+	lvq2agf -H $< $(WORKDIR)/$(VER$(V)).trn.txt $(TRAIN)
+	lvq2agf -H $< $(WORKDIR)/$(VER$(V)).tst.txt $(TEST)
+	agf_preprocess -Un $(TRAIN) $(TRAIN)
+	agf_preprocess -Un $(TEST) $(TEST)
 
