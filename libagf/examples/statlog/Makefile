@@ -7,29 +7,21 @@ NTRIAL=10
 #fraction of data used for testing:
 FRAC=0.2
 
-V=2
+#VER=heart
+#VER=shuttle
+VER=covtype
 
-VER1=heart
-VER2=sat
-VER3=segment
-VER4=shuttle
-VER5=vehicle
+NCLS_heart=2
+NCLS_shuttle=7
+NCLS_covtype=7
 
-NCLS1=2
-NCLS2=6
-NCLS3=7
-NCLS4=7
-NCLS5=4
+NCLS=$(NCLS_$(VER))
 
-NCLS=$(NCLS$(V))
+AGFOPT_heart=-W 5 -k 100
+AGFOPT_shuttle=-W 2
+AGFOPT_covtype=
 
-AGFOPT1=
-AGFOPT2=-W 5 -k 100
-AGFOPT3=
-AGFOPT4=-W 2
-AGFOPT5=
-
-AGFOPT=$(AGFOPT$(V))
+AGFOPT=$(AGFOPT_$(VER))
 
 SVMOPT1=
 SVMOPT2=
@@ -37,23 +29,21 @@ SVMOPT3=
 SVMOPT4=
 SVMOPT5=
 
-SVMOPT=$(SVMOPT$(V))
+SVMOPT=$(SVMOPT_$(VER))
 
-K1=3
-K2=11
-K3=11
-K4=1
-K5=5
+K_heart=11
+K_shuttle=1
+K_covtype=11
 
-K=$(K$V)
+K=$(K_$(VER))
 
 SCRIPTDIR=../../scripts
 
-DATADIR=data/$(VER$(V))
+DATADIR=data/$(VER)
 
-WORKDIR=work/VER$(V)
+WORKDIR=work/$(VER)
 
-BASE=$(WORKDIR)/$(VER$(V))
+BASE=$(WORKDIR)/$(VER)
 TRAIN=$(BASE).trn
 TEST=$(BASE).tst
 
@@ -68,24 +58,31 @@ NBORDER_SVM=$(WORKDIR)/nborder_svm.txt
 NSUPPORT=$(WORKDIR)/nsupport.txt
 
 all: $(TEST).knn.cls $(TEST).agf.cls $(TEST).svm.cls $(TEST).acc.cls $(NBORDER_SVM)
-	echo "KNN:"
-	cat $(WORKDIR)/knn_time.txt
-	cls_comp_stats $(TEST).cls $(TEST).knn
-	echo
-	echo "AGF-borders:"
-	cat $(WORKDIR)/agf_ttime.txt
-	cat $(WORKDIR)/agf_time.txt
-	cls_comp_stats $(TEST).cls $(TEST).agf
-	echo
-	echo "SVM:"
-	cat $(WORKDIR)/svm_ttime.txt
-	cat $(WORKDIR)/svm_time.txt
-	cls_comp_stats $(TEST).cls $(TEST).svm
-	echo
-	echo "SVM-borders:"
-	cat $(WORKDIR)/accel_ttime.txt
-	cat $(WORKDIR)/acc_time.txt
-	cls_comp_stats $(TEST).cls $(TEST).acc
+	@echo "KNN:"
+	@echo
+	@cat $(WORKDIR)/knn_time.txt
+	@cls_comp_stats $(TEST).cls $(TEST).knn
+	@echo
+	@echo "AGF-borders:"
+	@echo
+	@cat $(WORKDIR)/agf_ttime.txt
+	@cat $(WORKDIR)/agf_time.txt
+	@echo
+	@cls_comp_stats $(TEST).cls $(TEST).agf
+	@echo
+	@echo "SVM:"
+	@echo
+	@cat $(WORKDIR)/svm_ttime.txt
+	@cat $(WORKDIR)/svm_time.txt
+	@echo
+	@cls_comp_stats $(TEST).cls $(TEST).svm
+	@echo
+	@echo "SVM-borders:"
+	@echo
+	@cat $(WORKDIR)/accel_ttime.txt
+	@cat $(WORKDIR)/acc_time.txt
+	@echo
+	@cls_comp_stats $(TEST).cls $(TEST).acc
 
 clean:
 	rm -r $(WORKDIR)/*
@@ -143,17 +140,22 @@ $(MULTICONTROL):
 
 $(TRAIN).vec $(TEST).cls $(TEST).vec: $(TRAIN).cls
 
-$(WORKDIR)/heart.trn.cls $(WORKDIR)/segment.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%.dat.txt
-	lvq2agf -H $< $(WORKDIR)/$(VER$(V))
-	agf_preprocess -f $(FRAC) $(WORKDIR)/$(VER$(V)) $(TRAIN) $(TEST)
+#file conversion:
+#steps:
+#1. copy to working directory
+#2. split into test and training, if applicable
+#3. normalize and make class labels go from 0 to Nc-1
+$(WORKDIR)/heart.trn.cls $(WORKDIR)/segment.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%.dat.txt $(WORKDIR)
+	lvq2agf -H $< $(WORKDIR)/$(VER))
+	agf_preprocess -f $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
 	agf_preprocess -Un $(TRAIN) $(TRAIN)
 	agf_preprocess -Un $(TEST) $(TEST)
 
-$(WORKDIR)/sat.trn.cls $(WORKDIR)/shuttle.trn.cls: $(WORKDIR)/%.cls: $(DATADIR)/%.txt
-	cp $(DATADIR)/$(VER$(V)).trn.txt $(WORKDIR)/$(VER$(V)).trn.txt
-	cp $(DATADIR)/$(VER$(V)).tst.txt $(WORKDIR)/$(VER$(V)).tst.txt
-	lvq2agf -H $(WORKDIR)/$(VER$(V)).trn.txt $(TRAIN)
-	lvq2agf -H $(WORKDIR)/$(VER$(V)).tst.txt $(TEST)
+$(WORKDIR)/sat.trn.cls $(WORKDIR)/shuttle.trn.cls: $(WORKDIR)/%.cls: $(DATADIR)/%.txt $(WORKDIR)
+	cp $(DATADIR)/$(VER).trn.txt $(WORKDIR)/$(VER).trn.txt
+	cp $(DATADIR)/$(VER).tst.txt $(WORKDIR)/$(VER)).tst.txt
+	lvq2agf -H $(WORKDIR)/$(VER).trn.txt $(TRAIN)
+	lvq2agf -H $(WORKDIR)/$(VER).tst.txt $(TEST)
 	agf_preprocess -Un $(TRAIN) $(TRAIN)
 	agf_preprocess -Un $(TEST) $(TEST)
 
@@ -161,13 +163,19 @@ VEHICLE_FILES=xaa.dat xab.dat xac.dat xad.dat xae.dat xaf.dat xag.dat xah.dat xa
 VEHICLE_TEST=xaa.dat
 VEHICLE_TRAIN=$(VEHICLE_FILES, $(VEHICLE_TEST)=)
 
-$(WORKDIR)/vehicle.trn.cls: $(addprefix, $(DATADIR)/, $(VEHICLE_FILES))
+$(WORKDIR)/vehicle.trn.cls: $(addprefix, $(DATADIR)/, $(VEHICLE_FILES)) $(WORKDIR)
 	cat $(addprefix, $(DATADIR)/, $(VEHICLE_TRAIN)) > $(WORKDIR)/vehicle/vehicle.trn.txt
 	cp $(addprefix, $(DATADIR)/, VEHICLE_TEST) $(WORKDIR)/vehicle/vehicle.tst.txt
-	sed 's/opel/0; s/saab/1; s/bus/2; s/van/3' $(WORKDIR)/$(VER$(V)).trn.txt
-	sed 's/opel/0; s/saab/1; s/bus/2; s/van/3' $(WORKDIR)//$(VER$(V)).tst.txt
-	lvq2agf -H $< $(WORKDIR)/$(VER$(V)).trn.txt $(TRAIN)
-	lvq2agf -H $< $(WORKDIR)/$(VER$(V)).tst.txt $(TEST)
+	sed 's/opel/0; s/saab/1; s/bus/2; s/van/3' $(WORKDIR)/$(VER).trn.txt
+	sed 's/opel/0; s/saab/1; s/bus/2; s/van/3' $(WORKDIR)//$(VER).tst.txt
+	lvq2agf -H $< $(WORKDIR)/$(VER).trn.txt $(TRAIN)
+	lvq2agf -H $< $(WORKDIR)/$(VER).tst.txt $(TEST)
 	agf_preprocess -Un $(TRAIN) $(TRAIN)
 	agf_preprocess -Un $(TEST) $(TEST)
 
+$(WORKDIR)/covtype.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/% $(WORKDIR)
+	svm2agf -E 0 $(DATADIR)/$(VER) $(WORKDIR)/$(VER)
+	agf_preprocess -Unf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
+
+$(WORKDIR): $(WORKDIR)
+	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
