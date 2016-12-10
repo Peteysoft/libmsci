@@ -36,7 +36,6 @@ OBJECT_FILES = sample_class1_obj.o sample_class2_obj.o
 all: $(SAMPLE_CLASS)
 
 install:
-	install $(FILE_UT) $(BIN_PATH)
 	install $(SAMPLE_CLASS) $(BIN_PATH)
 
 #think I want to move these to a separate directory:

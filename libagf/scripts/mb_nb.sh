@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 #set -xe
 set -e
@@ -9,6 +9,12 @@ NTEST=10
 MINSAMPLE=5
 MAXSAMPLE=50
 FRAC=0.2
+
+#if we want to do it with the synthetic test classes:
+SAMPLE_DIR=/home/lenovo/my_software/libmsci/libagf/examples/sample_classes
+#fixed numbers (have to fix that...)
+NSCTEST=5000
+#NSCTRAIN=10000
 
 while getopts 'gKMZN:f:k:q:s:S:t:W:' DUM
 do
@@ -69,6 +75,14 @@ elif [ $# -eq 2 ]; then
       CLASSIFY_COMMAND=classify_b
     fi
   fi
+elif [ $# -eq 1 ]; then
+  OUTFILE=$1
+  if [ -z $SVMFLAG ]; then
+    if [ -z $ZFLAG ]; then
+      TRAIN_COMMAND="class_borders $AGFOPT"
+      CLASSIFY_COMMAND=classify_b
+    fi
+  fi
 else
   echo "   MULTI-BORDERS NUMBER OF BORDERS"
   echo
@@ -79,10 +93,10 @@ else
   echo "  train     = training data"
   echo "  output    = output skill scores"
   echo
-  echo "  g         = use logarithmic progression"
-  echo "  K         = keep temporary files"
-  echo "  M         = use LIBSVM model--native multi-class"
-  echo "  Z         = use LIBSVM model--libAGF multi-class"
+  echo "  -g        = use logarithmic progression"
+  echo "  -K        = keep temporary files"
+  echo "  -M        = use LIBSVM model--native multi-class"
+  echo "  -Z        = use LIBSVM model--libAGF multi-class"
   echo
   echo "  ntrial    = number of repeated trials [$NTRIAL]"
   echo "  ntest     = number of sample sizes [$NTEST]"
@@ -104,27 +118,48 @@ rm -f train.log
 rm -f test.log
 
 for ((I=0; I<NTRIAL; I++)); do
-  #/home/lenovo/my_software/libmsci/libagf/examples/sample_classes/sample_class -R 1000 2000 ${TEST}$I > stuff.txt
-  agf_preprocess -zf $FRAC ${TRAINING_DATA} $BASE.$I.trn $BASE.$I.tst
+  if [ -z ${TRAINING_DATA} ]; then
+    ${SAMPLE_DIR}/sample_class -R $NSCTEST $((2*NSCTEST)) $BASE.$I.tst > $BASE.$I.tst.txt
+  else
+    agf_preprocess -zf $FRAC ${TRAINING_DATA} $BASE.$I.trn $BASE.$I.tst
+  fi
 done
 
 for ((I=0; I<NTEST; I++)); do
   if [ $LOGFLAG ]; then
-    n=$(echo "e(l($MINSAMPLE)+$I*(l($MAXSAMPLE)-l($MINSAMPLE))/($NTEST-1))" | bc -l)
+    n=$(echo "a=e(l($MINSAMPLE)+$I*(l($MAXSAMPLE)-l($MINSAMPLE))/($NTEST-1)); scale=0; (a+1)/1" | bc -l)
   else
     n=$((MINSAMPLE+I*(MAXSAMPLE-MINSAMPLE)/(NTEST-1)))
   fi
 
   for ((J=0; J<NTRIAL; J++)); do
-    TRAIN="$CONTROL $BASE.$J.trn"
     TEST="$BASE.$J.tst"
-    echo "(time ${TRAIN_COMMAND} -s $n ${ALLOPT} ${TRAIN} ${MODELFILEBASE} ${MODEL}) 2>> train.log"
-    (time ${TRAIN_COMMAND} -s $n ${ALLOPT} ${TRAIN} ${MODELFILEBASE} ${MODEL}) 2>> train.log
-    echo "(time ${CLASSIFY_COMMAND} ${MODEL} ${TEST}.vec ${OUTPUT} > junk.txt ) 2>> test.log"
-    (time ${CLASSIFY_COMMAND} ${MODEL} ${TEST}.vec ${OUTPUT} > junk.txt ) 2>> test.log
+    TRAIN="$CONTROL $BASE.$J.trn"
+    if [ -z ${TRAINING_DATA} ]; then
+      echo "${SAMPLE_DIR}/sc_borders -s $n $MODEL"
+      ${SAMPLE_DIR}/sc_borders -s $n $MODEL
+    else
+      echo "(time ${TRAIN_COMMAND} -s $n ${ALLOPT} ${TRAIN} ${MODELFILEBASE} ${MODEL}) 2>> train.log"
+      time -o ${TRAIN}.tm ${TRAIN_COMMAND} -s $n ${ALLOPT} ${TRAIN} ${MODELFILEBASE} ${MODEL}
+    fi
+    #echo "(time ${CLASSIFY_COMMAND} ${MODEL} ${TEST}.vec ${OUTPUT} > junk.txt ) 2>> test.log"
+    echo "time -o ${TEST}.tm ${CLASSIFY_COMMAND} ${MODEL} ${TEST}.vec ${OUTPUT}"
+    time -o ${TEST}.tm \
+	    ${CLASSIFY_COMMAND} ${MODEL} ${TEST}.vec ${OUTPUT}
+
     echo -n "$n " >> ${OUTFILE}
     echo "cls_comp_stats -Hb ${TEST}.cls ${OUTPUT} >> ${OUTFILE}"
-    cls_comp_stats -Hb ${TEST}.cls ${OUTPUT} >> ${OUTFILE}
+    cls_comp_stats -Hb ${TEST}.cls ${OUTPUT} | tr -d "\n" >> ${OUTFILE}
+    echo -n " " >> $OUTFILE
+    if [ ${TRAINING_DATA} ]; then
+      grep -o "[0-9]*\.[0-9]*" $TRAIN.tm | sed '1q;d' | tr -d '\n' >> $OUTFILE
+      echo -n " " >> $OUTFILE
+      grep -o "[0-9]*\.[0-9]*" $TRAIN.tm | sed '2q;d' | tr -d '\n' >> $OUTFILE
+      echo -n " " >> $OUTFILE
+    fi
+    grep -o "[0-9]*\.[0-9]*" $TEST.tm | sed '1q;d' | tr -d '\n' >> $OUTFILE
+    echo -n " " >> $OUTFILE
+    grep -o "[0-9]*\.[0-9]*" $TEST.tm | sed '2q;d' >> $OUTFILE
   done
   echo $NTRIAL
 done

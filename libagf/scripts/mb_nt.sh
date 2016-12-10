@@ -6,10 +6,11 @@ set -e
 #numbers:
 NTRIAL=20
 NTEST=10
-MAXSAMPLE=50
+MINSAMPLE=50
+MAXSAMPLE=200
 FRAC=0.2
 
-while getopts 'gKMSZN:f:k:q:s:t:W:' DUM
+while getopts 'gKMS:ZN:f:k:q:s:t:W:' DUM
 do
   case $DUM in
     g) LOGFLAG=1
@@ -18,9 +19,9 @@ do
       ;;
     M) SVMFLAG=1
       TRAIN_COMMAND=svm-train
-      CLASSIFY_COMMAND=svm-predict
+      CLASSIFY_COMMAND=classify_s
       ;;
-    S) SCFLAG=1
+    S) MAXSAMPLE=$OPTARG
       ;;
     Z) ZFLAG=1
       TRAIN_COMMAND="multi_borders -Z"
@@ -32,7 +33,7 @@ do
       ;;
     q) NTEST=$OPTARG
       ;;
-    s) MAXSAMPLE=$OPTARG
+    s) MINSAMPLE=$OPTARG
       ;;
     t) ALLOPT="$ALLOPT -t $OPTARG"
       ;;
@@ -68,11 +69,19 @@ elif [ $# -eq 2 ]; then
       CLASSIFY_COMMAND=classify_b
     fi
   fi
+elif [ $# -eq 1 ]; then
+  OUTFILE=$1
+  if [ -z $SVMFLAG ]; then
+    if [ -z $ZFLAG ]; then
+      TRAIN_COMMAND="class_borders $AGFOPT"
+      CLASSIFY_COMMAND=classify_b
+    fi
+  fi
 else
   echo "   MULTI-BORDERS NUMBER OF TRAINING SAMPLES"
   echo
   echo "mb_nt.sh [-g] [-M] [-K] [-N ntrial] [-q ntest] [-s maxsample]\\"
-  echo "        [-f frac] [model] train output"
+  echo "        [-f frac] [[model] train] output"
   echo
   echo "  model     = LIBSVM model or multi-borders control file"
   echo "  train     = training data"
@@ -102,20 +111,35 @@ rm -f train.log
 rm -f test.log
 
 for ((I=0; I<NTRIAL; I++)); do
-  #/home/lenovo/my_software/libmsci/libagf/examples/sample_classes/sample_class -R 1000 2000 ${TEST}$I > stuff.txt
+  if [ -z ${TRAINING_DATA} ]; then
+    /home/lenovo/my_software/libmsci/libagf/examples/sample_classes/sample_class -R 1000 2000 ${TEST}$I > stuff.txt
+  fi
   agf_preprocess -zf $FRAC ${TRAINING_DATA} $BASE.$I.trn $BASE.$I.tst
 done
 
 for ((I=0; I<NTEST; I++)); do
-  if [ $LOGFLAG ]; then
-    f=$(echo "e(($I+1)/$NTEST)" | bc)
+  if [ -z ${TRAINING_DATA} ]; then
+    if [ $LOGFLAG ]; then
+      N1=$(echo "a=e(l($MINSAMPLE/3)+$I*(l($MAXSAMPLE/3)-l($MINSAMPLE/3))/($NTEST-1)); scale=0; (a+1)/1" | bc -l)
+      N2=$((2*N1))
+    else
+      N1=$((MINSAMPLE+I*(MAXSAMPLE-MINSAMPLE)/(NTEST-1)/3))
+      N2=$((N1*2))
+    fi
   else
-    f=$(echo "((I+1)/NTEST)" | bc)
+    if [ $LOGFLAG ]; then
+      f=$(echo "scale=8; e(($I+1)/$NTEST)" | bc -l)
+    else
+      f=$(echo "scale=8; ((I+1)/NTEST)" | bc -l)
+    fi
   fi
 
-  agf_preprocess -f $f $BASE.$J.trn $BASE.$J.1 $BASE.$J.2
-
   for ((J=0; J<NTRIAL; J++)); do
+    if [ -z ${TRAINING_DATA} ]; then
+      sample_class $N1 $N2 $BASE.$J.2
+    else
+      agf_preprocess -f $f $BASE.$J.trn $BASE.$J.1 $BASE.$J.2
+    fi
     TRAIN="$CONTROL $BASE.$J.2.trn"
     TEST="$BASE.$J.tst"
     echo "(time ${TRAIN_COMMAND} -s $n ${ALLOPT} ${TRAIN} ${MODELFILEBASE} ${MODEL}) 2>> train.log"

@@ -1,0 +1,15 @@
+Name		Size			Attributes	Classes
+
+australian	690			14		2
+german		1000			24		2
+heart 		270			13		2
+shuttle		43500/14500		9		7
+sat		4435/2000		36		7
+segment		2310			19		7
+vehicle		846			18		4
+
+cover type*	581012			53		8
+mnist		60000/10000		780		10
+aloi		108000			128		1000
+**news		15935			62061		20
+poker		25,010/1,000,000	10		10
