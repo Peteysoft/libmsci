@@ -380,6 +380,19 @@ conditional probability and $\lmult$ is a Lagrange multiplier.
 They also show that it can be solved iteratively so that the constraints 
 not included in the problem, that the probabilities are all positive, are satisfied.
 
+\section{Software and data}
+
+\subsection{LIBSVM}
+
+LIBSVM is a library of support vector machine software developed by
+Chih-Chung Chang and Chih-Jen Lin of 
+the National Taiwan University, Taipei, Taiwan \citep{Chang_Lin2011}.
+It includes statistical classification using two regularization methods 
+for minimizing over-fitting: 
+\it{C-SVM} and \it{$\nu$-SVM} [add citations?].
+It also includes code for regression and density estimation or
+``one-class SVM''.
+
 \section{A simple example}
 
 \begin{figure}
@@ -480,13 +493,61 @@ Putting it together, we can relate the two as follows:
 where $n_{b0}$ is the minimum number of border vectors required for good
 accuracy.
 
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{svm_time}
+\caption{Classification time for a SVM for a single test point as a function of the number of support vectors.}
+\label{svm_time}
+\end{figure}
+
 In other words, mapping only the border between classes should always be
 faster than techniques that map the entirety of the class locations.
 This includes kernel density methods including SVM as well
 as similar methods such as learning vector quantization (LVQ) 
 \citep{Kohonen2000, LVQ_PAK}
 that attempt to create an ``idealized'' representation of the classes through
-as set of ``codebook'' vectors.
+a set of ``codebook'' vectors.
+
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{border_time}
+\caption{Classification time for a border classifier for a single test point as a function of the number of border samples.}
+\label{border_time}
+\end{figure}
+
+To make this more concrete, Figure \ref{svm_time}
+plots the classification time as a function of the number of support vectors
+for a SVM
+while Figure \ref{border_time} plots the classification time
+as function of the number of border samples for a border classifier.
+Classification time are for a single test point.
+Fitted curves are overlaid for each and the slope and intercept printed in
+the subtitle.
+
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{break_even}
+\caption{Number of border samples versus number of support vectors for equal classification times.}
+\label{break_even}
+\end{figure}
+
+Figure \ref{break_even} plots the number of border vectors versus the number
+of support vectors at the ``break even'' point: that is, the classfication
+time is the same for each method.
+This graph was simply derived from the fitted coefficents of the previous
+two graphs.
+It is misleadingly optimistic
+since LIBSVM has a much larger overhead than the border classifiers.
+This overhead would be less significant for larger problems 
+with the ``rule of thumb'' suggested by the slope 
+that the number of border vectors should be less than three times the support
+for reasonable gain in efficiency.
+
+The graph is fairly general since both algorithms will scale in a similar
+fashion for problems with more features.
+The number of classes should little effect so long as we compare the total
+number of support vectors with the total number of border samples
+irrespective of the binary classifier to which they belong,
+although situations is complicated somewhat since some support vectors are 
+shared by multiple classifiers with some, but not all, calculations
+shared between them.
 
 \section{Case studies}
 

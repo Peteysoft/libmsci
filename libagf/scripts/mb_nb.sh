@@ -87,10 +87,10 @@ else
   echo "   MULTI-BORDERS NUMBER OF BORDERS"
   echo
   echo "mb_nb.sh [-g] [-M] [-K] [-N ntrial] [-q ntest] [-s minsample]\\"
-  echo "        [-S maxsample] [-f frac] [model] train output"
+  echo "        [-S maxsample] [-f frac] [[model] train] output"
   echo
   echo "  model     = LIBSVM model or multi-borders control file"
-  echo "  train     = training data"
+  echo "  train     = training data--if omitted uses synthetic test classes"
   echo "  output    = output skill scores"
   echo
   echo "  -g        = use logarithmic progression"

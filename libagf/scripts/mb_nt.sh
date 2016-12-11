@@ -84,7 +84,7 @@ else
   echo "        [-f frac] [[model] train] output"
   echo
   echo "  model     = LIBSVM model or multi-borders control file"
-  echo "  train     = training data"
+  echo "  train     = training data--if omitted uses synthetic test classes"
   echo "  output    = output skill scores"
   echo
   echo "  g         = use logarithmic progression"

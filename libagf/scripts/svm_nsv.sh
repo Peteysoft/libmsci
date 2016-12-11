@@ -68,10 +68,10 @@ else
   echo "   SUPPORT-VECTOR-MACHINE NUMBER OF SUPPORT VECTORS"
   echo
   echo "svm_nsv.sh [-G] [-M] [-K] [-N ntrial] [-q ntest] [-s min] [-S max]\\"
-  echo "        [options] train output"
+  echo "        [options] [train] output"
   echo
   echo "  options   = options to pass to svm-train"
-  echo "  train     = training data"
+  echo "  train     = training data--if omitted uses synthetic test classes"
   echo "  output    = output stats"
   echo
   echo "  -G         = use logarithmic progression"
