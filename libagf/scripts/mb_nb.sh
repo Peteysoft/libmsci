@@ -1,7 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 
 #set -xe
 set -e
+
+#keep this a bash script (cygwin bash version of time doesn't support -o option):
+TIME=/usr/bin/time
 
 #numbers:
 NTRIAL=20
@@ -134,17 +137,20 @@ for ((I=0; I<NTEST; I++)); do
 
   for ((J=0; J<NTRIAL; J++)); do
     TEST="$BASE.$J.tst"
+    TIMING="$BASE.$J.tm"
     TRAIN="$CONTROL $BASE.$J.trn"
     if [ -z ${TRAINING_DATA} ]; then
       echo "${SAMPLE_DIR}/sc_borders -s $n $MODEL"
       ${SAMPLE_DIR}/sc_borders -s $n $MODEL
     else
-      echo "(time ${TRAIN_COMMAND} -s $n ${ALLOPT} ${TRAIN} ${MODELFILEBASE} ${MODEL}) 2>> train.log"
-      time -o ${TRAIN}.tm ${TRAIN_COMMAND} -s $n ${ALLOPT} ${TRAIN} ${MODELFILEBASE} ${MODEL}
+      echo $TRAIN
+      echo ${TRAIN_COMMAND}
+      echo "$TIME -o $TIMING ${TRAIN_COMMAND} -s $n ${ALLOPT} ${TRAIN} ${MODELFILEBASE} ${MODEL}"
+      $TIME -o $TIMING ${TRAIN_COMMAND} -s $n ${ALLOPT} ${TRAIN} ${MODELFILEBASE} ${MODEL}
     fi
     #echo "(time ${CLASSIFY_COMMAND} ${MODEL} ${TEST}.vec ${OUTPUT} > junk.txt ) 2>> test.log"
-    echo "time -o ${TEST}.tm ${CLASSIFY_COMMAND} ${MODEL} ${TEST}.vec ${OUTPUT}"
-    time -o ${TEST}.tm \
+    echo "$TIME -o ${TEST}.tm ${CLASSIFY_COMMAND} ${MODEL} ${TEST}.vec ${OUTPUT}"
+    $TIME -o ${TEST}.tm \
 	    ${CLASSIFY_COMMAND} ${MODEL} ${TEST}.vec ${OUTPUT}
 
     echo -n "$n " >> ${OUTFILE}
@@ -152,9 +158,9 @@ for ((I=0; I<NTEST; I++)); do
     cls_comp_stats -Hb ${TEST}.cls ${OUTPUT} | tr -d "\n" >> ${OUTFILE}
     echo -n " " >> $OUTFILE
     if [ ${TRAINING_DATA} ]; then
-      grep -o "[0-9]*\.[0-9]*" $TRAIN.tm | sed '1q;d' | tr -d '\n' >> $OUTFILE
+      grep -o "[0-9]*\.[0-9]*" $TIMING | sed '1q;d' | tr -d '\n' >> $OUTFILE
       echo -n " " >> $OUTFILE
-      grep -o "[0-9]*\.[0-9]*" $TRAIN.tm | sed '2q;d' | tr -d '\n' >> $OUTFILE
+      grep -o "[0-9]*\.[0-9]*" $TIMING | sed '2q;d' | tr -d '\n' >> $OUTFILE
       echo -n " " >> $OUTFILE
     fi
     grep -o "[0-9]*\.[0-9]*" $TEST.tm | sed '1q;d' | tr -d '\n' >> $OUTFILE

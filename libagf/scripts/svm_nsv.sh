@@ -1,6 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
 echo on
+
+#time command:
+TIME=/usr/bin/time
 
 SCDIR=/home/lenovo/my_software/libmsci/libagf/examples/sample_classes
 
@@ -112,7 +115,9 @@ for ((I=0; I<NTEST; I++)); do
 
   for ((J=0; J<NTRIAL; J++)); do
     if [ -z ${TRAINING_DATA} ]; then
+      echo "$SCDIR/sample_class $((n/3)) $((2*n/3)) $BASE.trn > $BASE.trn.lvq"
       $SCDIR/sample_class $((n/3)) $((2*n/3)) $BASE.trn > $BASE.trn.lvq
+      echo "$SCDIR/sample_class -R $((NSCTEST/3)) $((2*NSCTEST/3)) $BASE.tst > $BASE.trn.lvq"
       $SCDIR/sample_class -R $((NSCTEST/3)) $((2*NSCTEST/3)) $BASE.tst > $BASE.trn.lvq
     else
       echo "agf_preprocess -zf $f ${TRAINING_DATA} $BASE.trn $BASE.tst"
@@ -125,8 +130,8 @@ for ((I=0; I<NTEST; I++)); do
 
     echo "svm-train $BFLAG $SVMOPT $BASE.tst.svm $BASE.svmmod"
     svm-train $BFLAG $SVMOPT $BASE.trn.svm $BASE.svmmod
-    echo "svm-predict $BFLAG $BASE.tst.svm $BASE.svmmod $BASE.svmout"
-    time -o $BASE.tm svm-predict $BFLAG $BASE.tst.svm $BASE.svmmod $BASE.svmout
+    echo "$TIME -o $BASE.tm svm-predict $BFLAG $BASE.tst.svm $BASE.svmmod $BASE.svmout"
+    $TIME -o $BASE.tm svm-predict $BFLAG $BASE.tst.svm $BASE.svmmod $BASE.svmout
 
     echo -n "$(wc -l < $BASE.trn.svm) " >> $OUTFILE
     grep nr_sv $BASE.svmmod | tr -d '\n' >> $OUTFILE

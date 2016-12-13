@@ -816,6 +816,7 @@ namespace libagf {
             csel[k]=-1;
           }
         }
+	fprintf(stderr, "Training %d vs. %d\n", this->label[i], this->label[j]);
         svmbin=new svm2class<real, cls_t>(svm, i, j);
 	classifier[m]=new agf2class<real, cls_t>(svmbin, xtran, csel, this->D1, 
 			ntrain,	ns, tol);
