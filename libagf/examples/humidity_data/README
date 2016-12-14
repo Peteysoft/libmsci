@@ -1,0 +1,11 @@
+Types of control files:
+
+Number	Type
+
+1	One-vs.-the-rest
+2	Hierarchical (strict bisection)
+3	Partition adjacent classes
+4	One-vs.-one
+5	Exhaustive
+6	Bisection as non-hierarchical
+7	Orthogonal

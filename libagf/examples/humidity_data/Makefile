@@ -138,33 +138,33 @@ SVMTRAIN = svmtrain
 SVMTEST = svmtest
 
 #prepend to SVM stuff:
-SVMBASE = sq_svm$(VER)/
+SVMBASE = svm_multi$(VER)
+SVMDIR = $(SVMBASE)
 
 #output control file
-SVMCONTROL = $(SVMBASE)control$(VER)$(LSVMCONTROL_SFX)
-#training script
-SVMSCRIPT = $(SVMBASE)svmscript$(VER).sh
+SVMCONTROL = $(SVMDIR)/$(SVMBASE)(LSVMCONTROL_SFX)
 #base name for model data
-SVMMODEL = $(SVMBASE)svmmodel$(VER)
+SVMMODEL = $(SVMDIR)/$(SVMBASE)
 #output classifications
-SVMOUT = svmtest.svm$(VER)
+SVMOUT = $(SVMBASE)
 
 #output from time command:
-SVMTRAINTIME=$(SVMBASE)svmtraintime$(VER).txt
-SVMCLASSTIME=svmclasstime$(VER).txt
+SVMTRAINTIME=$(SVMDIR)/$(SVMBASE).tm
+SVMCLASSTIME=$(SVMBASE).tm
 
 # "native" SVM (one-against-one, isn't passed through AGF multi-borders):
-SVMRAW = svmtest0
-SVMRAWMODEL = svmmodel0.svm
-RAWSVMTRAINTIME=rawsvmtraintime.txt
-RAWSVMCLASSTIME=rawsvmclasstime.txt
+SVMRAW = svm
+SVMRAWMODEL = $(SVMRAW).svmmod
+RAWSVMTRAINTIME=$(SVMRAW).trn.tm
+RAWSVMCLASSTIME=$(SVMRAW).tst.tm
 
 #"accelerated" version:
-ACCBASE = sq_acc$(VER)/
-ACCSCRIPT = $(ACCBASE)svm_acc$(VER).sh
-ACCCONTROL = $(ACCBASE)svm_acc$(VER).txt
-ACCMODEL = $(ACCBASE)svmaccel$(VER)
-ACCTRAINTIME=$(ACCBASE)acctraintime$(VER).txt
+ACCBASE = acc_mb$(VER)/
+ACCDIR = $(ACCBASE)/
+ACCSCRIPT = $(ACCDIR)svm_acc$(VER).sh
+ACCCONTROL = $(ACCDIR)svm_acc$(VER).txt
+ACCMODEL = $(ACCDIR)svmaccel$(VER)
+ACCTRAINTIME=$(ACCDIR)acctraintime$(VER).txt
 ACCOUT = svmtest.acc$(VER)
 ACCCLASSTIME=accclasstime$(VER).txt
 
@@ -215,32 +215,23 @@ svmclean:
 	rm -f svmall.cls svmall.vec
 	rm -f therest.vec therest.cls
 	rm -f $(SVMTRAIN).vec $(SVMTRAIN).cls $(SVMTRAIN).svm
-	rm -f $(SVMRAWMODEL)
 	rm -f $(SVMTEST).vec $(SVMTEST).cls $(SVMTEST).svm
-	rm -f $(SVMRAW).cls $(SVMRAW).con $(SVMRAW).svmout
-	rm -f $(RAWSVMTRAINTIME) $(RAWSVMCLASSTIME)
-	rm -f $(SVMBASE)*
-	rm -f $(SVMOUT).cls $(SVMOUT).con $(SVMOUT).svmout
-	rm -f results.svm$(VER).txt
-	rm -f $(SVMCLASSTIME)
-	rm -f svmerr$(VER).txt
-	rm -f $(ACCBASE)*
-	rm -f $(ACCOUT).cls $(ACCOUT).con $(ACCOUT).svmout
-	rm -f results.acc$(VER).txt
-	rm -f $(ACCCLASSTIME)
-	rm -f accerr$(VER).txt
+	rm -f $(SVMRAW).*
+	rm -f $(SVMBASE).*
+	rm -f $(SVMDIR)/*
+	if [ -d $(SVMDIR) ]; then rmdir $(SVMDIR); fi
 
 #perform classifications with classify_m calling svm-predict:
 $(SVMOUT).cls $(SVMOUT).con $(SVMCLASSTIME): $(SVMCONTROL)
 	( time ( classify_m -M -O "svm-predict -b 1" $(SVMCONTROL) $(SVMTEST).svm \
-		$(SVMOUT).svmout > results.svm$(VER).txt 2> svmerr$(VER).txt ) ) 2> $(SVMCLASSTIME)
+		$(SVMOUT).svmout > $(SVMOUT).txt 2> $(SVMBASE).log ) ) 2> $(SVMCLASSTIME)
 	svmout2agf $(SVMOUT).svmout $(SVMOUT)
 
 #create script, model control file and perform training with svm-train:
-$(SVMCONTROL) $(SVMSCRIPT) $(SVMTRAINTIME): $(SVMTRAIN).svm $(SVMTEST).svm $(TRN_CONTR)
-	if [ ! -d $(SVMBASE) ]; then mkdir $(SVMBASE); fi
+$(SVMCONTROL) $(SVMTRAINTIME): $(SVMTRAIN).svm $(SVMTEST).svm $(TRN_CONTR)
+	if [ ! -d $(SVMDIR) ]; then mkdir $(SVMDIR); fi
 	( time ( multi_borders -M -- svm-train -+ "-b 1 $(SVMTRAINOPT)" $(TRN_CONTR) \
-		$(SVMTRAIN).svm $(SVMMODEL) $(SVMCONTROL) 2> $(SVMBASE)svmtrainerr.txt ) ) 2> $(SVMTRAINTIME)
+		$(SVMTRAIN).svm $(SVMMODEL) $(SVMCONTROL) 2> $(SVMDIR)svmtrainerr.txt ) ) 2> $(SVMTRAINTIME)
 
 # native SVM multi-class:
 #classifications with svm-predict:
@@ -262,16 +253,44 @@ $(SVMTRAIN).svm $(SVMTEST).svm $(SVMTRAIN).vec $(SVMTRAIN).cls $(SVMTEST).vec $(
 	agf2ascii -M $(SVMTEST) > $(SVMTEST).svm
 
 #"accelerated" SVM:
+#"accelerated" version:
+ACCBASE = acc_mb$(VER)
+ACCDIR = $(ACCBASE)
+ACCCONTROL = $(ACCDIR)/$(ACCBASE).sbc
+ACCMODEL = $(ACCDIR)/$(ACCBASE)
+ACCTRAINTIME=$(ACCDIR)/$(ACCBASE).tm
+ACCOUT = $(ACCBASE)
+ACCCLASSTIME=$(ACCBASE).tm
+
+acc: $(ACCOUT).cls $(ACCOUT).con $(ACCTRAINTIME) $(ACCCLASSTIME) \
+	$(SVMTEST).cls $(SVMRAW).cls $(SVMRAW).con
+	@echo "Truth vs. accelerated SVM:"
+	cls_comp_stats $(SVMTEST).cls $(ACCOUT)
+	@echo "Native SVM vs. accelerated SVM:"
+	cls_comp_stats $(SVMRAW).cls $(ACCOUT)
+	@echo "Native SVM vs. accelerated SVM conditional probabilities:"
+	agf_correlate $(SVMRAW).con $(ACCOUT).con
+	@echo
+	@echo "Training time:"
+	@more $(ACCTRAINTIME)
+	@echo
+	@echo "Classification time:"
+	@more $(ACCCLASSTIME)
+
+accclean:
+	rm -f $(ACCBASE).*
+	rm -f $(ACCDIR)/*
+	if [ -d $(ACCDIR) ]; then rmdir $(ACCDIR); fi
 
 #perform classifications with classify_m:
 $(ACCOUT).cls $(ACCOUT).con $(ACCCLASSTIME): $(ACCCONTROL) $(SVMTEST).vec
 	( time ( classify_m $(ACCCONTROL) $(SVMTEST).vec $(ACCOUT) \
-		> results.acc$(VER).txt 2> accerr$(VER).txt ) ) 2> $(ACCCLASSTIME)
+		> $(ACCBASE).txt 2> $(ACCBASE).log ) ) 2> $(ACCCLASSTIME)
 
 #create script, model control file and perform training with class_borders 
 #calling svm-predict:
 $(ACCSCRIPT) $(ACCCONTROL) $(ACCTRAINTIME): $(SVMCONTROL) $(SVMTRAIN).svm
-	if [ ! -d $(ACCBASE) ]; then mkdir $(ACCBASE); fi
+	if [ ! -d $(ACCDIR) ]; then mkdir $(ACCDIR); fi
 	multi_borders -M -O "svm-predict -b 1" $(SVMCONTROL) $(SVMTRAIN).svm \
 		$(ACCMODEL) $(ACCCONTROL) > $(ACCSCRIPT)
 	chmod u+x $(ACCSCRIPT)
