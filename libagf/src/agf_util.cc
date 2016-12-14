@@ -487,7 +487,7 @@ void kinearest(real **xvec,		//sample vectors
   real d2;
   kiselect_base<real> *selector;
   //most reliable:
-  selector=new kiselect_tree<real>(k);
+  selector=new kiselect_quick<real>(k);
   for (nel_ta i=0; i<n; i++) {
     d2=(*metric2)(xvec[i], xtest, D);
     selector->add(d2);
@@ -501,7 +501,8 @@ void knearest(real **xvec, nel_ta n, dim_ta D, real *xtest, nel_ta k, real *knea
 		real (*metric2) (real *, real *, dim_ta)) {
   real d2;
   kselect_base<real> *selector;
-  selector=new kselect_tree<real>(k);
+  selector=new kselect_quick<real>(k);
+
   for (nel_ta i=0; i<n; i++) {
     d2=(*metric2)(xvec[i], xtest, D);
     selector->add(d2);

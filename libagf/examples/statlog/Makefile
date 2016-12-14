@@ -7,10 +7,12 @@ NTRIAL=5
 #fraction of data used for testing:
 FRAC=0.3
 
+#which dataset to use:
 #VER=heart
 #VER=shuttle
 VER=covtype
 
+#number of classes in each dataset:
 NCLS_heart=2
 NCLS_shuttle=7
 NCLS_covtype=7
@@ -19,10 +21,12 @@ NCLS_sat=6
 
 NCLS=$(NCLS_$(VER))
 
+#special pre-processing:
 PRE_sat=-S 10
 
 PRE=$(PRE_$(VER))
 
+#options for AGF-borders:
 AGFOPT_heart=-W 5 -k 100
 AGFOPT_shuttle=-W 2
 AGFOPT_covtype=
@@ -31,24 +35,33 @@ AGFOPT_sat=-W 10
 
 AGFOPT=$(AGFOPT_$(VER))
 
+#options for svm-train:
 SVMOPT_sat=-c 25
 
 SVMOPT=$(SVMOPT_$(VER))
 
-K_heart=11
-K_shuttle=1
-K_covtype=11
-K_segment=3
-K_sat=15
+#number of nearest neighbours for knn:
+K_heart=-k 11
+K_shuttle=-k 1
+K_covtype=-k 11
+K_segment=-k 3
+K_sat=-k 15
 
 K=$(K_$(VER))
 
+#number of border samples (or other options) for "accelerated" SVM model:
+NSAMP=$(NSAMP_$(VER))
+
+#where to find scripts (for testing acc. vs. border samples):
 SCRIPTDIR=../../scripts
 
+#directory containing data:
 DATADIR=data/$(VER)
 
+#working directory for processing data:
 WORKDIR=work/$(VER)
 
+#file names:
 BASE=$(WORKDIR)/$(VER)
 TRAIN=$(BASE).trn
 TEST=$(BASE).tst
@@ -63,6 +76,7 @@ NBORDER_AGF=$(WORKDIR)/nborder_agf.txt
 NBORDER_SVM=$(WORKDIR)/nborder_svm.txt
 NSUPPORT=$(WORKDIR)/nsupport.txt
 
+#output results:
 all: $(TEST).knn.cls $(TEST).agf.cls $(TEST).svm.cls $(TEST).acc.cls $(NBORDER_SVM)
 	@echo "KNN:"
 	@echo
@@ -95,7 +109,7 @@ clean:
 
 #testing:
 $(TEST).knn.cls $(TEST).knn.cor: $(TRAIN).vec $(TRAIN).cls $(TEST).vec
-	time -o $(WORKDIR)/knn_time.txt knn -k $K classify $(TRAIN) $(TEST).vec $(TEST).knn
+	time -o $(WORKDIR)/knn_time.txt knn $K classify $(TRAIN) $(TEST).vec $(TEST).knn
 
 $(TEST).svm.cls $(TEST).svm.cor: $(SVMMODEL) $(TEST).svm
 	time -o $(WORKDIR)/svm_time.txt svm-predict -b 1 $(TEST).svm $(SVMMODEL) $(TEST).svm.txt
@@ -119,12 +133,13 @@ $(NBORDER_AGF): $(MULTICONTROL) $(TRAIN).vec $(TRAIN).cls
 		-s $(MINSAMPLE) -S $(MAXSAMPLE) $(AGFOPT) \
 		$(MULTICONTROL) $(TRAIN) $(NBORDER_AGF)
 
+#find number of support vectors:
 $(NSUPPORT): $(TRAIN).svm
 	$(SCRIPTDIR)/svm_nsv.sh -G -q $(NTEST) $(SVMOPT) $(TRAIN) $(NSUPPORT)
 
 #svm-borders "accelerated" svm model
 $(ACCELERATOR): $(SVMMODEL) $(TRAIN).vec $(TRAIN).cls
-	time -o $(WORKDIR)/accel_ttime.txt svm_accelerate $(SVMMODEL) $(TRAIN) $(ACCELERATOR)
+	time -o $(WORKDIR)/accel_ttime.txt svm_accelerate $(NSAMP) $(SVMMODEL) $(TRAIN) $(ACCELERATOR)
 
 #svm model:
 $(SVMMODEL): $(TRAIN).svm
@@ -141,9 +156,7 @@ $(TRAIN).svm: $(TRAIN).cls $(TRAIN).vec
 $(TEST).svm: $(TEST).cls $(TEST).vec
 	agf2ascii -M $(TEST) $(TEST).svm
 
-$(MULTICONTROL):
-	print_control -Q 6 $(NCLS) > $(MULTICONTROL)
-
+#since multiple targets aren't possible with suffix rules (I don't think):
 $(TRAIN).vec $(TEST).cls $(TEST).vec: $(TRAIN).cls
 
 #file conversion:

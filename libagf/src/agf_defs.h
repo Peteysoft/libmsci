@@ -13,6 +13,7 @@
 #define AGF_PARTCOM "agf_preprocess"
 
 //names of important functions
+//#define AGF_CALC_W_FUNC agf_calc_w	//function for calculating AGF weights
 #define AGF_CALC_W_FUNC agf_calc_w2	//function for calculating AGF weights
 
 namespace libagf {

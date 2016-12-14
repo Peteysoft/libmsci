@@ -24,17 +24,18 @@ TEST = test
 #file extensions:
 MBTRAIN_SFX = .mbt		#mULTI-bORDERS tRAINING CONTROL FILE
 MBCONTROL_SFX = .mbc		#mULTI-bORDERS CLASSIFICATION cONTROL FILE
+TRN_CONTR = sq_control$(VER)$(MBTRAIN_SFX)
 
 # control as in control experiment:
-RAW = test.a
-OPTIONS0 = -W 40 -k 400
-
-TRN_CONTR = sq_control$(VER)$(MBTRAIN_SFX)
+RAWBASE = agfraw
+RAWRESULT = $(RAWBASE)
+RAWOPT = -W 40 -k 400
+RAWTIME = $(RAWBASE).tm
 
 #we preppend this to the names of all the expendable files involved in 
 #multi-borders classification
 #to make it easy to clean up:
-BASE = test_multi$(VER)/
+BASE = agf_mb$(VER)
 
 #really need default for this...
 OPTIONS1 = -s 100 -W 40 -k 450
@@ -55,58 +56,61 @@ OPTIONS12 = -s 100 -W 25 -k 400
 OPTIONS12a = -s 100 -W 25 -k 400
 OPTIONS12b = -s 200 -W 25 -k 400
 
-SCRIPT = $(BASE)script$(VER).sh
-OUTPUT = $(BASE)borders$(VER)
-CLS_CONTR = $(BASE)cls_control$(VER)$(MBCONTROL_SFX)
+#directory containing the AGF multi-borders model:
+MODELDIR = $(BASE)
+#base names for the binary classification models:
+MODELBASE =$(MODELDIR)/$(BASE)
 
-TRAIN_TIME = $(BASE)train_time$(VER).txt
-CLASS_TIME = class_time$(VER).txt
+#control file for making classifications:
+CLS_CONTR = $(MODELDIR)/$(BASE)$(MBCONTROL_SFX)
 
-all: $(TEST).m$(VER).cls $(RAW).cls $(TRAIN_TIME) $(CLASS_TIME) raw_time.txt results$(VER).txt
+#time it takes to train model
+TRAIN_TIME = $(MODELDIR)/$(BASE).tm
+
+all: $(BASE).cls $(RAWBASE).cls $(TRAIN_TIME) $(BASE).tm $(RAWBASE).tm $(BASE).txt
 	@echo "Truth vs. AGF (raw):"
-	cls_comp_stats $(TEST).cls $(RAW)
+	cls_comp_stats $(TEST).cls $(RAWBASE)
 	@echo "Time for raw AGF:"
-	@more raw_time.txt
+	@more $(RAWBASE).tm
 	@echo
 	@echo "Truth vs. multi-class:"
-	cls_comp_stats $(TEST).cls $(TEST).m$(VER)
+	cls_comp_stats $(TEST).cls $(BASE)
 	@echo "AGF vs. multi-class:"
-	cls_comp_stats -b $(RAW).cls $(TEST).m$(VER)
+	cls_comp_stats -b $(RAWBASE).cls $(BASE)
 	@echo "AGF vs. multi-class conditional probabilities:"
-	agf_correlate $(RAW).con $(TEST).m$(VER).con
+	agf_correlate $(RAWBASE).con $(BASE).con
 	@echo
 	@echo "Training time:"
 	@more $(TRAIN_TIME)
 	@echo
 	@echo "Classification time:"
-	@more $(CLASS_TIME)
+	@more $(BASE).tm
+
+clean_all: clean clean_database clean_raw
 
 clean:
-	rm -f $(BASE)*
-	rm -f test.m$(VER).*
-	rm -f results$(VER).txt
-	rm -f $(CLASS_TIME)
-	rm -f classerr$(VER).txt
+	rm -f $(MODELDIR)/*
+	if [ -d $(MODELDIR) ]; then rmdir $(MODELDIR); fi
+	rm -f $(BASE)/*
 
 clean_database:
 	rm -f $(DATABASE).cls
 	rm -f $(TEST).cls $(TEST).vec
 	rm -f $(TRAIN).cls $(TRAIN).vec $(TRAIN).std
-	rm -f $(RAW).*
-	rm -f results0.txt
-	rm -f raw_time.txt
-	rm -f rawerr.txt
 
-$(TEST).m$(VER).cls $(TEST).m$(VER).con results$(VER).txt $(CLASS_TIME): $(CLS_CONTR) $(TEST).vec
-	( time ( classify_m $(CLS_CONTR) $(TEST).vec $(TEST).m$(VER) > results$(VER).txt 2> classerr$(VER).txt ) ) 2> $(CLASS_TIME)
+clean_raw:
+	rm -f $(RAWBASE).*
+
+$(BASE).cls $(BASE).con $(BASE).txt $(BASE).tm: $(CLS_CONTR) $(TEST).vec
+	( time ( classify_m $(CLS_CONTR) $(TEST).vec $(BASE) > $(BASE).txt 2> $(BASE).log ) ) 2> $(BASE).tm
 
 $(CLS_CONTR) $(TRAIN_TIME): $(TRAIN).cls $(TRAIN).vec $(TRN_CONTR)
-	if [ ! -d $(BASE) ]; then mkdir $(BASE); fi
-	( time (multi_borders $(OPTIONS$(VER)) $(TRN_CONTR) $(TRAIN) $(OUTPUT) \
-		$(CLS_CONTR) 2> $(BASE)/trainerr.txt ) ) 2> $(TRAIN_TIME)
+	if [ ! -d $(MODELDIR)/ ]; then mkdir $(MODELDIR)/; fi
+	( time (multi_borders $(OPTIONS$(VER)) $(TRN_CONTR) $(TRAIN) $(MODELBASE) \
+		$(CLS_CONTR) 2> $(MODELBASE).log ) ) 2> $(TRAIN_TIME)
 
-$(RAW).cls $(RAW).vec results0.txt raw_time.txt: $(TRAIN).vec $(TRAIN).cls $(TEST).vec
-	( time ( agf $(OPTIONS0) classify $(TRAIN) $(TEST).vec $(RAW) > results0.txt 2> rawerr.txt ) ) 2> raw_time.txt
+$(RAWBASE).cls $(RAWBASE).vec $(RAWBASE).txt $(RAWBASE).tm: $(TRAIN).vec $(TRAIN).cls $(TEST).vec
+	( time ( agf $(RAWOPT) classify $(TRAIN) $(TEST).vec $(RAWBASE) > $(RAWBASE).txt 2> $(RAWBASE).log ) ) 2> $(RAWBASE).tm
 
 $(TRAIN).vec $(TRAIN).cls $(TEST).vec $(TEST).cls: $(DATABASE).cls $(DATABASE).vec
 	agf_preprocess -R -n -f $(FRAC) $(DATABASE) $(TRAIN) $(TEST)
