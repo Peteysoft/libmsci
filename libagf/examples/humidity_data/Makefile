@@ -142,7 +142,7 @@ SVMBASE = svm_multi$(VER)
 SVMDIR = $(SVMBASE)
 
 #output control file
-SVMCONTROL = $(SVMDIR)/$(SVMBASE)(LSVMCONTROL_SFX)
+SVMCONTROL = $(SVMDIR)/$(SVMBASE)$(LSVMCONTROL_SFX)
 #base name for model data
 SVMMODEL = $(SVMDIR)/$(SVMBASE)
 #output classifications
@@ -158,21 +158,9 @@ SVMRAWMODEL = $(SVMRAW).svmmod
 RAWSVMTRAINTIME=$(SVMRAW).trn.tm
 RAWSVMCLASSTIME=$(SVMRAW).tst.tm
 
-#"accelerated" version:
-ACCBASE = acc_mb$(VER)/
-ACCDIR = $(ACCBASE)/
-ACCSCRIPT = $(ACCDIR)svm_acc$(VER).sh
-ACCCONTROL = $(ACCDIR)svm_acc$(VER).txt
-ACCMODEL = $(ACCDIR)svmaccel$(VER)
-ACCTRAINTIME=$(ACCDIR)acctraintime$(VER).txt
-ACCOUT = svmtest.acc$(VER)
-ACCCLASSTIME=accclasstime$(VER).txt
-
-svm: $(SVMOUT).cls $(SVMRAW).cls $(ACCOUT).cls \
-		$(SVMOUT).con $(SVMRAW).con $(ACCOUT).con \
+svm: $(SVMOUT).cls $(SVMRAW).cls $(SVMOUT).cls $(SVMRAW).con $(SVMOUT).con \
 		$(SVMTRAINTIME) $(SVMCLASSTIME) \
-		$(RAWSVMTRAINTIME) $(RAWCLASSTIME) \
-		$(ACCTRAINTIME) $(ACCCLASSTIME) 
+		$(RAWSVMTRAINTIME) $(RAWCLASSTIME)
 	@echo "Truth vs. native SVM:"
 	cls_comp_stats $(SVMTEST).cls $(SVMRAW)
 	@echo "Time for native SVM:"
@@ -182,9 +170,9 @@ svm: $(SVMOUT).cls $(SVMRAW).cls $(ACCOUT).cls \
 	@echo "Classification:"
 	@more $(RAWSVMCLASSTIME)
 	@echo
-	@echo "Truth vs. SVM multi-borders:"
+	@echo "Truth vs. SVM multi hybrid:"
 	cls_comp_stats $(SVMTEST).cls $(SVMOUT)
-	@echo "Native SVM vs. SVM multi-borders:"
+	@echo "Native SVM vs. SVM multi hybrid:"
 	cls_comp_stats $(SVMRAW).cls $(SVMOUT)
 	@echo "Native SVM vs. SVM multi-borders conditional probabilities:"
 	agf_correlate $(SVMRAW).con $(SVMOUT).con
@@ -195,19 +183,6 @@ svm: $(SVMOUT).cls $(SVMRAW).cls $(ACCOUT).cls \
 	@echo "Classification time:"
 	@more $(SVMCLASSTIME)
 	@echo
-	@echo
-	@echo "Truth vs. accelerated SVM:"
-	cls_comp_stats $(SVMTEST).cls $(ACCOUT)
-	@echo "Native SVM vs. accelerated SVM:"
-	cls_comp_stats $(SVMRAW).cls $(ACCOUT)
-	@echo "Native SVM vs. accelerated SVM conditional probabilities:"
-	agf_correlate $(SVMRAW).con $(ACCOUT).con
-	@echo
-	@echo "Training time:"
-	@more $(ACCTRAINTIME)
-	@echo
-	@echo "Classification time:"
-	@more $(ACCCLASSTIME)
 
 #note to self: to reduce number of files to clean up, should probably
 #use some kind of distinctive base name for all files to use as a "template"
@@ -231,7 +206,7 @@ $(SVMOUT).cls $(SVMOUT).con $(SVMCLASSTIME): $(SVMCONTROL)
 $(SVMCONTROL) $(SVMTRAINTIME): $(SVMTRAIN).svm $(SVMTEST).svm $(TRN_CONTR)
 	if [ ! -d $(SVMDIR) ]; then mkdir $(SVMDIR); fi
 	( time ( multi_borders -M -- svm-train -+ "-b 1 $(SVMTRAINOPT)" $(TRN_CONTR) \
-		$(SVMTRAIN).svm $(SVMMODEL) $(SVMCONTROL) 2> $(SVMDIR)svmtrainerr.txt ) ) 2> $(SVMTRAINTIME)
+		$(SVMTRAIN).svm $(SVMMODEL) $(SVMCONTROL) 2> $(SVMDIR)/$(SVMBASE).log ) ) 2> $(SVMTRAINTIME)
 
 # native SVM multi-class:
 #classifications with svm-predict:
@@ -247,13 +222,17 @@ $(SVMRAWMODEL) $(RAWSVMTRAINTIME): $(SVMTRAIN).svm
 #because svm is effing slow we use only a fraction of the data:
 $(SVMTRAIN).svm $(SVMTEST).svm $(SVMTRAIN).vec $(SVMTRAIN).cls $(SVMTEST).vec $(SVMTEST).cls: \
 		$(TRAIN).vec $(TRAIN).cls
-	agf_preprocess -z -f $(SVMFRAC) $(TRAIN) therest svmall
-	agf_preprocess -R -f $(FRAC) svmall $(SVMTRAIN) $(SVMTEST)
+	#agf_preprocess -z -f $(SVMFRAC) $(TRAIN) therest svmall
+	#agf_preprocess -R -f $(FRAC) svmall $(SVMTRAIN) $(SVMTEST)
+	cp $(TRAIN).vec $(SVMTRAIN).vec
+	cp $(TRAIN).cls $(SVMTRAIN).cls
+	cp $(TEST).vec $(SVMTEST).vec
+	cp $(TEST).cls $(SVMTEST).cls
 	agf2ascii -M $(SVMTRAIN) > $(SVMTRAIN).svm
 	agf2ascii -M $(SVMTEST) > $(SVMTEST).svm
 
 #"accelerated" SVM:
-#"accelerated" version:
+#using native LIBSVM codes:
 ACCBASE = acc_mb$(VER)
 ACCDIR = $(ACCBASE)
 ACCCONTROL = $(ACCDIR)/$(ACCBASE).sbc
@@ -262,9 +241,22 @@ ACCTRAINTIME=$(ACCDIR)/$(ACCBASE).tm
 ACCOUT = $(ACCBASE)
 ACCCLASSTIME=$(ACCBASE).tm
 
+#using "in-house" SVM codes:
+ACZBASE = acz_mb$(VER)
+ACZDIR = $(ACZBASE)
+ACZCONTROL = $(ACZDIR)/$(ACZBASE).sbc
+ACZMODEL = $(ACZDIR)/$(ACZBASE)
+ACZTRAINTIME=$(ACZDIR)/$(ACZBASE).tm
+ACZOUT = $(ACZBASE)
+ACZCLASSTIME=$(ACZBASE).tm
+
+SVMACC = svm_acc
+
 acc: $(ACCOUT).cls $(ACCOUT).con $(ACCTRAINTIME) $(ACCCLASSTIME) \
-	$(SVMTEST).cls $(SVMRAW).cls $(SVMRAW).con
-	@echo "Truth vs. accelerated SVM:"
+		$(SVMTEST).cls $(SVMRAW).cls $(SVMRAW).con $(SVMOUT).cls $(SVMOUT).con \
+		$(ACZOUT).cls $(ACZOUT).con $(ACZTRAINTIME) $(ACZCLASSTIME) \
+		$(SVMACC).cls $(SVMACC).con $(SVMACC).trn.tm $(SVMACC).tst.tm
+	@echo "Truth vs. accelerated SVM (native codes):"
 	cls_comp_stats $(SVMTEST).cls $(ACCOUT)
 	@echo "Native SVM vs. accelerated SVM:"
 	cls_comp_stats $(SVMRAW).cls $(ACCOUT)
@@ -276,11 +268,42 @@ acc: $(ACCOUT).cls $(ACCOUT).con $(ACCTRAINTIME) $(ACCCLASSTIME) \
 	@echo
 	@echo "Classification time:"
 	@more $(ACCCLASSTIME)
+	@echo
+	@echo "Truth vs. accelerated SVM (in-house codes on hybrid model):"
+	cls_comp_stats $(SVMTEST).cls $(ACZOUT)
+	@echo "Native SVM vs. accelerated SVM conditional probabilities:"
+	agf_correlate $(SVMRAW).con $(ACZOUT).con
+	@echo "Hybrid SVM vs. accelerated SVM:"
+	cls_comp_stats $(SVMOUT).cls $(ACZOUT)
+	@echo
+	@echo "Training time:"
+	@more $(ACZTRAINTIME)
+	@echo
+	@echo "Classification time:"
+	@more $(ACZCLASSTIME)
+	@echo
+	@echo "Truth vs. accelerated SVM (in-house codes on LIBSVM model):"
+	cls_comp_stats $(SVMTEST).cls $(SVMACC)
+	@echo "Native SVM vs. accelerated SVM conditional probabilities:"
+	agf_correlate $(SVMRAW).con $(SVMACC).con
+	@echo "Native SVM vs. accelerated SVM:"
+	cls_comp_stats $(SVMRAW).cls $(SVMACC)
+	@echo
+	@echo "Training time:"
+	@more $(SVMACC).trn.tm
+	@echo
+	@echo "Classification time:"
+	@more $(SVMACC).tst.tm
+	@echo
 
 accclean:
 	rm -f $(ACCBASE).*
 	rm -f $(ACCDIR)/*
 	if [ -d $(ACCDIR) ]; then rmdir $(ACCDIR); fi
+	rm -f $(ACZBASE).*
+	rm -f $(ACZDIR)/*
+	if [ -d $(ACZDIR) ]; then rmdir $(ACZDIR); fi
+	rm -f $(SVMACC).*
 
 #perform classifications with classify_m:
 $(ACCOUT).cls $(ACCOUT).con $(ACCCLASSTIME): $(ACCCONTROL) $(SVMTEST).vec
@@ -289,10 +312,27 @@ $(ACCOUT).cls $(ACCOUT).con $(ACCCLASSTIME): $(ACCCONTROL) $(SVMTEST).vec
 
 #create script, model control file and perform training with class_borders 
 #calling svm-predict:
-$(ACCSCRIPT) $(ACCCONTROL) $(ACCTRAINTIME): $(SVMCONTROL) $(SVMTRAIN).svm
+$(ACCCONTROL) $(ACCTRAINTIME): $(SVMCONTROL) $(SVMTRAIN).svm
 	if [ ! -d $(ACCDIR) ]; then mkdir $(ACCDIR); fi
-	multi_borders -M -O "svm-predict -b 1" $(SVMCONTROL) $(SVMTRAIN).svm \
-		$(ACCMODEL) $(ACCCONTROL) > $(ACCSCRIPT)
-	chmod u+x $(ACCSCRIPT)
-	( time ./$(ACCSCRIPT) ) 2> $(ACCTRAINTIME)
+	( time (multi_borders -M -O "svm-predict -b 1" $(SVMCONTROL) $(SVMTRAIN).svm \
+		$(ACCMODEL) $(ACCCONTROL) 2> $(ACCDIR)/$(ACCBASE).log ) ) 2> $(ACCTRAINTIME)
 
+#perform classifications with classify_m:
+$(ACZOUT).cls $(ACZOUT).con $(ACZCLASSTIME): $(ACZCONTROL) $(SVMTEST).vec
+	( time ( classify_m $(ACZCONTROL) $(SVMTEST).vec $(ACZOUT) \
+		> $(ACZBASE).txt 2> $(ACZBASE).log ) ) 2> $(ACZCLASSTIME)
+
+#create script, model control file and perform training with class_borders 
+#calling svm-predict:
+$(ACZSCRIPT) $(ACZCONTROL) $(ACZTRAINTIME): $(SVMCONTROL) $(TRAIN).vec $(TRAIN).cls
+	if [ ! -d $(ACZDIR) ]; then mkdir $(ACZDIR); fi
+	( time (multi_borders -Z $(SVMCONTROL) $(TRAIN) \
+		$(ACZMODEL) $(ACZCONTROL) 2> $(ACZDIR)/$(ACZBASE).log ) ) 2> $(ACZTRAINTIME)
+
+#use classify_s to perform classifications:
+$(SVMACC).cls $(SVMACC).con: $(SVMACC).agf $(SVMTEST).vec
+	( time classify_s $(SVMACC).agf $(SVMTEST).vec $(SVMACC) ) 2> $(SVMACC).tst.tm
+
+#use svm_accelerate:
+$(SVMACC).agf: $(TRAIN).vec $(TRAIN).cls $(SVMRAWMODEL)
+	( time ( svm_accelerate $(SVMRAWMODEL) $(TRAIN) $(SVMACC).agf 2> $(SVMACC).log ) ) 2> $(SVMACC).trn.tm
