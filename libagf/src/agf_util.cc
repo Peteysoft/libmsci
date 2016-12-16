@@ -705,7 +705,7 @@ nel_ta * sort_classes_n(real **mat, nel_ta n, cls_t *cl, cls_t ncl) {
   cls_t swpcls;
   nel_ta *clind;
   nel_ta clptr[ncl];
-  real **matnew;
+  real *matnew[n];
 
   clind=new nel_ta[ncl+1];
 
@@ -718,7 +718,6 @@ nel_ta * sort_classes_n(real **mat, nel_ta n, cls_t *cl, cls_t ncl) {
   }
 
   //need to figure out a way to do it in-place:
-  matnew=new real[n];
   for (nel_ta i=0; i<n; i++) {
     matnew[clptr[cl[i]]]=mat[i];
     //clnew[clptr[cl[i]]]=cl[i];
@@ -731,9 +730,10 @@ nel_ta * sort_classes_n(real **mat, nel_ta n, cls_t *cl, cls_t ncl) {
     for (nel_ta j=clind[i]; j<clind[i+1]; j++) cl[j]=i-1;
   }
 
-  //ruins the neat allocation scheme (but then so did the old algorithm)
-  delete [] mat;
-  mat=matnew;
+  //ruins the neat allocation scheme (but then so did the old algorithm):
+  //(should really pass back rearranged array separately or pass back a
+  //list of indices...)
+  for (nel_ta i=0; i<n; i++) mat[i]=matnew[i];
 
   return clind;
 

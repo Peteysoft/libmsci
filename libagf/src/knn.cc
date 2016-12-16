@@ -142,6 +142,10 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Unable to open file for reading: %s\n", argv[2]);
     return UNABLE_TO_OPEN_FILE_FOR_READING;
   }
+  if (nvar1 != nvar) {
+    fprintf(stderr, "knn: Dimension of training data (%d) does not match dimension of test data (%d).\n", nvar, nvar1);
+    exit(DIMENSION_MISMATCH);
+  }
 
   //normalize test data:
   real_a **mat;

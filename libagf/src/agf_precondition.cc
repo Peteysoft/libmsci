@@ -162,17 +162,40 @@ int main(int argc, char *argv[]) {
   }
 
   //calculate the averages and standard deviations:
-  std=new real_a[nvar];
-  ave=new real_a[nvar];
+  std=new real_a[nvar2];
+  ave=new real_a[nvar2];
   if (opt_args.normflag) {
+    dim_ta nzerostd=0;
     calc_norm(train, nvar2, ntrain, ave, std);
-    for (nel_ta i=0; i<ntrain; i++) {
-      for (dim_ta j=0; j<nvar2; j++) {
-        train[i][j]=(train[i][j]-ave[j])/std[j];
+    //want to remove variables with standard-deviation of zero:
+    for (dim_ta i=0; i<nvar2; i++) {
+      ind[i-nzerostd]=ind[i];
+      if (std[i]==0) {
+        nzerostd++;
       }
     }
-    //if (argc>=2) print_stats(diagfs, ave, std, nvar2);
+    for (nel_ta i=0; i<ntrain; i++) {
+      for (dim_ta j=0; j<nvar2; j++) {
+        if (std[j]!=0) train[i][j]=(train[i][j]-ave[j])/std[j];
+      }
+    }
     print_stats(diagfs, ave, std, nvar2);
+    if (nzerostd!=0) {
+      //not terribly efficient, but expedient:
+      dim_ta m=0;
+      real_a **result2;
+      result2=allocate_matrix<real_a, int32_t>(ntrain, nvar2);
+      for (dim_ta j=0; j<nvar2; j++) {
+        for (nel_ta i=0; i<ntrain; i++) {
+          result2[i][m]=train[i][j];
+        }
+        if (std[j]!=0) m++;
+      }
+      delete_matrix(train);
+      train=result2;
+      nvar2-=nzerostd;
+    }
+    //if (argc>=2) print_stats(diagfs, ave, std, nvar2);
   } else {
     //(kind of a stupid way of doing it... oh well)
     for (dim_ta i=0; i<nvar2; i++) {

@@ -18,11 +18,17 @@ NCLS_shuttle=7
 NCLS_covtype=7
 NCLS_segment=7
 NCLS_sat=6
+NCLS_mnist=10
 
 NCLS=$(NCLS_$(VER))
 
 #special pre-processing:
-PRE_sat=-S 10
+PRE_heart=-n
+PRE_shuttle=-n
+PRE_covtype=-n
+PRE_segment=-n
+PRE_sat=-nS 10
+#PRE_mnist=-nS 20
 
 PRE=$(PRE_$(VER))
 
@@ -32,6 +38,7 @@ AGFOPT_shuttle=-W 2
 AGFOPT_covtype=
 AGFOPT_segment=-W 5
 AGFOPT_sat=-W 10
+AGFOPT_mnist=-k 400 -W 25
 
 AGFOPT=$(AGFOPT_$(VER))
 
@@ -75,6 +82,11 @@ ACCELERATOR=$(BASE).accel
 NBORDER_AGF=$(WORKDIR)/nborder_agf.txt
 NBORDER_SVM=$(WORKDIR)/nborder_svm.txt
 NSUPPORT=$(WORKDIR)/nsupport.txt
+
+#need this to normalize test data same as training data, if applicable:
+ifneq ($(strip, $(PRE)),)
+  NORMCLAUSE=-a $(TRAIN).std
+endif
 
 #output results:
 all: $(TEST).knn.cls $(TEST).agf.cls $(TEST).svm.cls $(TEST).acc.cls $(NBORDER_SVM)
@@ -161,35 +173,30 @@ $(TRAIN).vec $(TEST).cls $(TEST).vec: $(TRAIN).cls
 
 #file conversion:
 #steps:
-#1. copy to working directory
+#1. convert to libAGF format and copy to working directory
 #2. split into test and training, if applicable
-#3. normalize and make class labels go from 0 to Nc-1
+#3. pre-processing: 
+#     - normalization (optional)
+#     - SVD (optional)
+#     - make class labels go from 0 to Nc-1
 $(WORKDIR)/heart.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%.dat.txt
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
 	lvq2agf -H $< $(WORKDIR)/$(VER)
-	agf_preprocess -Unf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
+	agf_preprocess $(PRE) -Uf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
 
 #3rd feature must be removed before normalization 
 #since it only takes on one value:
 $(WORKDIR)/segment.trn.cls: $(DATADIR)/segment.dat.txt
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
 	lvq2agf -H $< $(WORKDIR)/$(VER)
-	agf_preprocess -FUnf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST) 0 1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
+	agf_preprocess $(PRE) -FUf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST) 0 1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
 
 $(WORKDIR)/sat.trn.cls $(WORKDIR)/shuttle.trn.cls: $(WORKDIR)/%.cls: $(DATADIR)/%.txt
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
 	lvq2agf -H $(DATADIR)/$(VER).trn.txt $(TRAIN)
 	lvq2agf -H $(DATADIR)/$(VER).tst.txt $(TEST)
-	agf_preprocess -Un $(PRE) $(TRAIN) $(TRAIN)
-	agf_preprocess -a $(TRAIN).std -U $(TEST) $(TEST)
-
-#same as above, but we don't normalize the training data:
-#$(WORKDIR)/sat.trn.cls: $(WORKDIR)/%.cls: $(DATADIR)/%.txt
-#	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
-#	lvq2agf -H $(DATADIR)/$(VER).trn.txt $(TRAIN)
-#	lvq2agf -H $(DATADIR)/$(VER).tst.txt $(TEST)
-#	agf_preprocess -U $(TRAIN) $(TRAIN)
-#	agf_preprocess -U $(TEST) $(TEST)
+	agf_preprocess -U $(PRE) $(TRAIN) $(TRAIN)
+	agf_preprocess $(NORMCLAUSE) -U $(TEST) $(TEST)
 
 VEHICLE_FILES=xaa.dat xab.dat xac.dat xad.dat xae.dat xaf.dat xag.dat xah.dat xai.dat
 VEHICLE_TEST=xaa.dat
@@ -203,11 +210,18 @@ $(WORKDIR)/vehicle.trn.cls: $(addprefix, $(DATADIR)/, $(VEHICLE_FILES))
 	sed 's/opel/0; s/saab/1; s/bus/2; s/van/3' $(WORKDIR)//$(VER).tst.txt
 	lvq2agf -H $< $(WORKDIR)/$(VER).trn.txt $(TRAIN)
 	lvq2agf -H $< $(WORKDIR)/$(VER).tst.txt $(TEST)
-	agf_preprocess -Un $(TRAIN) $(TRAIN)
-	agf_preprocess -a $(TRAIN).std -U $(TEST) $(TEST)
+	agf_preprocess -U $(PRE) $(TRAIN) $(TRAIN)
+	agf_preprocess $(NORMCLAUSE) -U $(TEST) $(TEST)
 
 $(WORKDIR)/covtype.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
 	svm2agf -E 0 $(DATADIR)/$(VER) $(WORKDIR)/$(VER)
-	agf_preprocess -Unf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
+	agf_preprocess $(PRE) -Uf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
+
+$(WORKDIR)/mnist.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
+	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
+	svm2agf -E 0 $(DATADIR)/$(VER) $(TRAIN)
+	svm2agf -E 0 $(DATADIR)/$(VER).t $(TEST)
+	agf_preprocess $(PRE) -U $(TRAIN) $(TRAIN)
+	agf_preprocess $(NORMCLAUSE) $(TEST) $(TEST)
 
