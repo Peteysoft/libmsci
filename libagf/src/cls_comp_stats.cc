@@ -56,7 +56,7 @@ int main(int argc, char ** argv) {
 
   if (argc < 2) {
     printf("\nCompares two sets of classes.  Prints out a set of statistics\n");
-    printf("Optionally checks the accuracy of estimated conditionaly probabilities\n");
+    printf("Optionally checks the accuracy of estimated conditional probabilities\n");
     printf("by comparing with calculated accuracies\n\n");
     printf("usage:  cls_comp_stats [-b] file1 file2\n\n");
     printf("where:\n");

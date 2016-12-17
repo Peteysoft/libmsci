@@ -73,7 +73,8 @@ do
        echo "  -Q     1 = rewrite control file with strictly hierarchical setup"
        echo "  -Q     2 = rewrite control file with strictly non-hierarchical setup "
        echo
-       multi_borders | tail -n 39 
+       echo "trainopt:"
+       class_borders | tail -n 49 | head -n 27
        exit
        ;;
   esac

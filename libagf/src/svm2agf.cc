@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
   if (argc < 1) {
     printf("Converts class training data in LIBSVM compatible ascii format\n");
     printf("to libAGF compatible binary format.\n");
-    printf("* Note: will not convert multi-class formats.\n\n");
+    printf("* Note: will not convert multi-label formats.\n\n");
     printf("usage: svm2agf2 [-H] [-R] [-U] [-E missing] [infile] basename\n\n");
     printf("    where:\n");
     printf("infile   = name of ASCII input file\n");

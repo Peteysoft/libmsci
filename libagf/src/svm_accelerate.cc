@@ -71,8 +71,8 @@ int main(int argc, char *argv[]) {
     printf("  -i maxit1   maximum number of iterations when searching for class border (%d)\n", (int32_t) agf_global_borders_maxiter);
     printf("  -s n        number of times to sample the border (default=%d)\n", (int32_t) opt_args.n);
     printf("  -t tol      tolerance of border samples (default=%g)\n", (float) opt_args.tol);
-    printf("  -A          ASCII format for test data and output\n");
-    printf("  -M          LIBSVM format for test data and output\n");
+    printf("  -A          training data is in ASCII format\n");
+    printf("  -M          training data is in LIBSVM format\n");
     printf("  -E missing  missing value for LIBSVM features data\n");
     printf("  -N maxit3   maximum number of iterations in supernewton (%d, %d)\n", (int32_t) agf_global_weights_maxiter, (int32_t) agf_global_borders_maxiter);
     printf("\n");

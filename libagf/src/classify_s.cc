@@ -50,7 +50,11 @@ int main(int argc, char *argv[]) {
 
   //parse the command line arguments:
   if (argc != 3) {
-    printf("Syntax:   classify_s \\\n");
+    printf("\n");
+    printf("purpose:  Performs statistical classification using a 1-vs.-1 multi-class model,\n");
+    printf("          either LIBSVM or all-in-one libAGF multi-borders.\n");
+    printf("\n");
+    printf("syntax:   classify_s \\\n");
     printf("                  [-A [-M [-E missing]]] \\\n");
     printf("                  [-n] [-u] [-a normfile] \\\n");
     printf("                  modelfile test output\n");
@@ -178,11 +182,11 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "Unable to open file, %s, for writing\n", outfile);
       return UNABLE_TO_OPEN_FILE_FOR_WRITING;
     }
-    fprintf(fs, "labels\n");
+    fprintf(fs, "labels");
     for (cls_ta i=0; i<ncls; i++) fprintf(fs, " %d", clist[i]);
     fprintf(fs, "\n");
     for (nel_ta i=0; i<ntest; i++) {
-      fprintf(fs, "%d", clist[result[i]]);
+      fprintf(fs, "%d", result[i]);
       for (cls_ta j=0; j<ncls; j++) fprintf(fs, " %lg", prob[i][j]);
       fprintf(fs, "\n");
     }
@@ -202,13 +206,12 @@ int main(int argc, char *argv[]) {
     p2=new real_a[maxcls+1];
     fprintf(fs, "%d\n", maxcls+1);
     for (nel_ta i=0; i<ntest; i++) {
-      fprintf(fs, "%d", result[i]);
       for (cls_ta j=0; j<nclass; j++) p2[j]=0;
       for (cls_ta j=0; j<nclass; j++) p2[clist[j]]=prob[i][j];
       for (cls_ta j=0; j<nclass; j++) {
-        fprintf(fs, " %g", p2[j]);
+        fprintf(fs, "%g ", p2[j]);
       }
-      fprintf(fs, "\n");
+      fprintf(fs, "%d\n", result[i]);
       con[i]=(nclass*p2[result[i]]-1)/(nclass-1);
     }
     delete [] p2;

@@ -54,7 +54,9 @@ int main(int argc, char **argv) {
   //parse the command line arguments:
   if (argc < 4) {
     printf("\n");
-    printf("Syntax:       knn [-n] [-k k] [..] action train test output\n");
+    printf("purpose:      k-nearest neighbours machine learning algorithms\n");
+    printf("\n");
+    printf("syntax:       knn [-n] [-k k] [..] action train test output\n");
     printf("\n");
     printf("arguments:\n");
     printf("    action    action to perform\n");

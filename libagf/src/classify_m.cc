@@ -51,12 +51,14 @@ int main(int argc, char *argv[]) {
   if (argc != 3) {
     FILE *helpfs=stdout;
     fprintf(helpfs, "\n");
+    fprintf(helpfs, "purpose:  Performs statistical classification using a multi-borders model\n");
+    fprintf(helpfs, "\n");
     fprintf(helpfs, "Syntax:   classify_m [-Q type] [-c funcode] [-a normfile [-u]] \\\n");
     fprintf(helpfs, "                       [-O command [-K] [-M [-E missing] | [-H] [-C]]] \\\n");
     fprintf(helpfs, "                       control test output\n");
     fprintf(helpfs, "\n");
     fprintf(helpfs, "where:\n");
-    fprintf(helpfs, "  control     control file\n");
+    fprintf(helpfs, "  control     control file or all-in-one model\n");
     fprintf(helpfs, "  test        file containing vector data to be classified\n");
     fprintf(helpfs, "  output      files containing the results of the classification:\n");
     fprintf(helpfs, "                .cls for classes, .con for confidence ratings\n");

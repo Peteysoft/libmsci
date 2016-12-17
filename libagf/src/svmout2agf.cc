@@ -38,10 +38,10 @@ int main(int argc, char **argv) {
   int32_t stradv;
 
   if (argc < 3) {
-    printf("Usage: svmout2agf SVMclass AGFbase\n");
     printf("\nConverts classification output from LIBSVM to libAGF format\n");
-    printf("\nwhere:\n\n");
-    printf("SVMclass is the output from LIBSVM\n");
+    printf("\nUsage: svmout2agf SVMclass AGFbase\n");
+    printf("\nwhere:\n");
+    printf("\nSVMclass is the output from LIBSVM\n");
     printf("AGFbase  is the base name for libAGF class output:\n");
     printf("            .cls for classes, .con for confidence ratings\n");
     exit(FATAL_COMMAND_OPTION_PARSE_ERROR);

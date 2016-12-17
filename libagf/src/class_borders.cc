@@ -72,7 +72,9 @@ int main(int argc, char *argv[]) {
 
   if (argc < 2) {
     printf("\n");
-    printf("syntax:  class_borders [-n] [-s nsv] [-u] [-a normfile] \\\n");
+    printf("purpose:  maps the class borders of a binary statistical classifier\n");
+    printf("\n");
+    printf("syntax:   class_borders [-n] [-s nsv] [-u] [-a normfile] \\\n");
     printf("                   [-k k] [-W Wc] [-s n] [-t tol] [-r r0] [-v var1] [-v var2] \\\n");
     printf("                   [-O command [-K] [-M] model]  train border \\\n");
     printf("                   [cls1a cls1b cls1c ... %c cls2a cls2b cls2c ...] \n", PARTITION_SYMBOL);

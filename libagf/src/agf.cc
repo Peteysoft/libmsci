@@ -58,7 +58,9 @@ int main(int argc, char **argv) {
 
   if (argc < 4) {
     printf("\n");
-    printf("Syntax:      agf [-n] [-j] [-W Wc] [-v var1] [-V var2] [-k k] [..] \\\n");
+    printf("purpose:     Adaptive Gaussian filtering variable kernel density estimation\n");
+    printf("\n");
+    printf("syntax:      agf [-n] [-j] [-W Wc] [-v var1] [-V var2] [-k k] [..] \\\n");
     printf("                   action train test output\n");
     printf("\n");
     printf("arguments:\n");

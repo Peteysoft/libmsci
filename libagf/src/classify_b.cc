@@ -42,7 +42,10 @@ int main(int argc, char *argv[]) {
 
   //parse the command line arguments:
   if (argc != 3) {
-    printf("Syntax:   classify_b \\\n");
+    printf("\n");
+    printf("purpose:  performs statistical classification with a borders binary model\n");
+    printf("\n");
+    printf("syntax:   classify_b \\\n");
     printf("                  [-Z] [-A [-M [-E missing]]] [-c funcode]\\\n");
     printf("                  [-n] [-u] [-a normfile] \\\n");
     printf("                  border test output\n");

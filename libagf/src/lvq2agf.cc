@@ -59,9 +59,9 @@ int main(int argc, char **argv) {
   argv+=optind;
 
   if (argc < 1 && (cflag==0)) {
-    printf("Usage: lvq2agf [-C] [-o] [-H] [lvqfile [agfbase]]\n");
     printf("\nConverts LVQPAK compatible ASCII files\n");
     printf("to libAGF compatible binary files.\n\n");
+    printf("Usage: lvq2agf [-C] [-o] [-H] [lvqfile [agfbase]]\n\n");
     printf("where:\n\n");
     printf("lvqfile is the input file name\n");
     printf("agfbase is the base name of the output files:\n");

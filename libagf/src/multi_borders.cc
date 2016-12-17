@@ -107,7 +107,10 @@ int main (int argc, char **argv) {
 
   if (argc1<3) {
     FILE *helpfs=stdout;
-    fprintf(helpfs, "\nsyntax: multi_borders [-n] [-a normfile] [-S nsv] [-O pcom] [trainopt] \\\n");
+    fprintf(helpfs, "\n");
+    fprintf(helpfs, "purpose:   trains a multi-borders statistical classification model\n");
+    fprintf(helpfs, "\n");
+    fprintf(helpfs, "syntax:    multi_borders [-n] [-a normfile] [-S nsv] [-O pcom] [trainopt] \\\n");
     fprintf(helpfs, "                          [-- command [-M] [-+ extra] [-^ fcom]] \\\n");
     fprintf(helpfs, "                          [control] train border out\n");
     fprintf(helpfs, "\n");
