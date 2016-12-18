@@ -57,6 +57,8 @@ K_sat=-k 15
 K=$(K_$(VER))
 
 #number of border samples (or other options) for "accelerated" SVM model:
+NSAMP_segment=-s 20
+
 NSAMP=$(NSAMP_$(VER))
 
 #where to find scripts (for testing acc. vs. border samples):
@@ -128,10 +130,10 @@ $(TEST).svm.cls $(TEST).svm.cor: $(SVMMODEL) $(TEST).svm
 	svmout2agf $(TEST).svm.txt $(TEST).svm
 
 $(TEST).agf.cls $(TEST).agf.cor: $(AGFMODEL).mbc $(TEST).vec
-	time -o $(WORKDIR)/agf_time.txt classify_m $(AGFMODEL).mbc $(TEST).vec $(TEST).agf
+	time -o $(WORKDIR)/agf_time.txt classify_m $(AGFMODEL).mbc $(TEST).vec $(TEST).agf > $(TEST).agf.txt
 
 $(TEST).acc.cls $(TEST).acc.cor: $(ACCELERATOR) $(TEST).vec
-	time -o $(WORKDIR)/acc_time.txt classify_s $(ACCELERATOR) $(TEST).vec $(TEST).acc
+	time -o $(WORKDIR)/acc_time.txt classify_s $(ACCELERATOR) $(TEST).vec $(TEST).acc > $(TEST).acc.txt
 
 #find number of border samples SVM-borders:
 $(NBORDER_SVM): $(SVMMODEL) $(TRAIN).vec $(TRAIN).cls
