@@ -18,6 +18,7 @@ NCLS_shuttle=7
 NCLS_covtype=7
 NCLS_segment=7
 NCLS_sat=6
+NCLS_poker=10
 NCLS_mnist=10
 
 NCLS=$(NCLS_$(VER))
@@ -27,7 +28,8 @@ PRE_heart=-n
 PRE_shuttle=-n
 PRE_covtype=-n
 PRE_segment=-n
-PRE_sat=-nS 10
+PRE_sat=-nS 9
+PRE_poker=-n
 #PRE_mnist=-nS 20
 
 PRE=$(PRE_$(VER))
@@ -38,6 +40,7 @@ AGFOPT_shuttle=-W 2
 AGFOPT_covtype=
 AGFOPT_segment=-W 5
 AGFOPT_sat=-W 10
+AGFOPT_poker=-k 200 -W 2
 AGFOPT_mnist=-k 400 -W 25
 
 AGFOPT=$(AGFOPT_$(VER))
@@ -86,7 +89,7 @@ NBORDER_SVM=$(WORKDIR)/nborder_svm.txt
 NSUPPORT=$(WORKDIR)/nsupport.txt
 
 #need this to normalize test data same as training data, if applicable:
-ifneq ($(strip, $(PRE)),)
+ifneq ($(strip $(PRE)),)
   NORMCLAUSE=-a $(TRAIN).std
 endif
 
@@ -127,7 +130,7 @@ $(TEST).knn.cls $(TEST).knn.cor: $(TRAIN).vec $(TRAIN).cls $(TEST).vec
 
 $(TEST).svm.cls $(TEST).svm.cor: $(SVMMODEL) $(TEST).svm
 	time -o $(WORKDIR)/svm_time.txt svm-predict -b 1 $(TEST).svm $(SVMMODEL) $(TEST).svm.txt
-	svmout2agf $(TEST).svm.txt $(TEST).svm
+	svmout2agf $(TEST).svm.txt > $(TEST).svm
 
 $(TEST).agf.cls $(TEST).agf.cor: $(AGFMODEL).mbc $(TEST).vec
 	time -o $(WORKDIR)/agf_time.txt classify_m $(AGFMODEL).mbc $(TEST).vec $(TEST).agf > $(TEST).agf.txt
@@ -220,7 +223,7 @@ $(WORKDIR)/covtype.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
 	svm2agf -E 0 $(DATADIR)/$(VER) $(WORKDIR)/$(VER)
 	agf_preprocess $(PRE) -Uf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
 
-$(WORKDIR)/mnist.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
+$(WORKDIR)/mnist.trn.cls $(WORKDIR)/poker.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
 	svm2agf -E 0 $(DATADIR)/$(VER) $(TRAIN)
 	svm2agf -E 0 $(DATADIR)/$(VER).t $(TEST)

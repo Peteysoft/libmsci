@@ -1,0 +1,233 @@
+\documentclass{article}
+
+\begin{document}
+
+\title{Sparse Matrix Calculator}
+
+\subtitle{specification document}
+
+\author{Peter Mills}
+
+\maketitle
+
+\section{Introduction}
+
+Sparse matrices are invaluable for calculations relevant to many types of both physical and mathematical 
+problemns. They are particularly useful for solving partial differential equations.
+In the past, it was common when solving a sparse matrix to represent it directly
+as code so that, for instance, a Fortran subroutine would perform a 
+matrix multiplication with the specific type of matrix being solved.
+This was common for instance not only in highly symmetric problems such as 
+solving the Laplace or Helmholtz equations, but also when computing singular 
+vectors of linearized prognostic weather simulations for use in ensemble forecasting and data assimilation.
+In the latter case, the model itself serves as a stand in for the sparse Jacobi
+matrix.
+
+In the first case, such an approach has the advantage of speed while in the
+second, simplicity. Both require less storage.
+In either case, however, what has been lost is generality as a new program
+must be written for any new type of problem.
+Moreover, the storage requirements are not all that onerous since the matrices
+themselves are sparse and typically scale linearly with the size of the problem
+rather than to the square.
+
+If we can adapt the physical simulations to generate sparse matrices
+as output rather than integrating the computations into the models, 
+a simple scripting language that can operate on sparse matrices using a small set
+of operators could be extremely powerful.
+Different types of operations and numerical experiments could be tried with
+very little programming effort.
+
+\section{General operation}
+
+Like many computer languages, the software can be operated in two modes:
+batch and interactive. Since variables correspond to files, source files can
+be treated as either a main routine accepting arguments from the command
+line or as a subroutine in another program.
+
+Command line options can be used to specify both the location of the
+data and of the source code for all the subroutines, e.g.:
+\begin{verbatim}
+sparse_calc [-p datapath] [-s path] [-h] [-e script] [-f source] [arg1 [arg2 [arg3 ...]]]
+\end{verbatim}
+where \verb\datapath\ is the data path where the variables are stored,
+\verb\path\ is the path to the source files, and
+\verb\-h\ prints the help screen.
+Default path for both source and data is the current one.
+\verb\source\ is the name of a file containing a program or subroutine
+and \verb\arg1\, \verb\arg2\, etc are arguments to that program.
+The \verb\-e\ option supplies a script that the software executes before
+starting up in interactive mode.
+
+\section{Types}
+
+The language would have seven different types: literals, scalars, vectors, 
+full matrices, sparse matrices, sparse matrix arrays, and lists.
+We describe each in turn.
+
+\subsection{Literals}
+
+A literal is like a string except it is immutable. It has two main purposes:
+to sever as a form of indirection similar to variable or function pointers and to pass options
+to a function. For the first use, built-in operators will be supplied to take
+the name of a subroutine and call that subroutine or to take the name of a variable
+and perform operations, other than numerical, on that variable.
+More on this later.
+A literal is distinguished from a variable or subroutine by being enclosed
+in double quotation marks.
+
+\subsection{Scalars}
+
+Scalars are double-precision floating point numerals.
+They are represented in the usual fashion through one or more decimal
+digits, plus optional decimal point, plus optional decimal fraction.
+
+\subsection{Vectors}
+
+Vectors are ordered lists of scalars. 
+To create a vector of consecutive integers, use the \verb\:\ operator, e.g.:
+\begin{verbatim}
+> print(1:5)
+1
+2
+3
+4
+5
+\end{verbatim}
+returns a vector containing the values $[1,2,3,4,5]$.
+To create an empty vector (all zeroes) use the built-in function, 
+\verb\empty\:
+\begin{verbatim}
+> print(empty(5))
+0
+0
+0
+0
+0
+\end{verbatim}
+returns a vector containing the values, $[0, 0, 0 ,0,0]$.
+To access an element of a vector, use the subscript operator, \verb\[]\:
+\begin{verbatim}
+> print(1:5[2])
+3
+\end{verbatim}
+Note that subscripting is zero-based.
+
+Storages pattern for vector data: straight binary dump of data [include type
+info?]
+
+\subsection{Full matrices}
+
+A full matrix is a two-dimensional array of scalars. All values are stored,
+including non-zero ones. This is what distinguishes them from sparse
+matrices: see below.
+For calculation, a full matrix should be indistinguishable
+from a sparse matrix.
+Care should be made, however, to choose the right type since calculations may
+be slower for one type or the other depending on the properties of the matrix
+in question.
+
+Storage patter for matrices: four byte header giving number of columns for each
+row plus straight binary dump of data, row-major.
+
+\subsection{Sparse matrices}
+
+A sparse matrix stores only the non-zero values of a matrix.
+To create an empty sparse matrix, use the \verb\empty\ built-in:
+\begin{verbatim}
+> print(empty(3,3))
+3 3
+\end{verbatim}
+To create an identity matrix, use the \verb\identity\ built-in:
+\begin{verbatim}
+> print(identity(5,5))
+5 5
+0 0 1
+1 1 1
+2 2 1
+3 3 1
+4 4 1
+\end{verbatim}
+This example nicely illustrates the storage scheme of a sparse matrix:
+an orded pair of integers for the location of each non-zero element,
+plus its value.
+
+Like with vectors, elements of a matrix are accessed through subscripting.
+A single subscript returns a row:
+\begin{verbatim}
+> print(identity(4,4)[2]
+0
+0
+1
+0
+\end{verbatim}
+while a double subscript returns a single elements.
+Both forms, \verb\[i,j]\, and \verb\[i][j]\ are accepted, however note that
+the second form is a compound operation returning first the row and then
+subscripting that row. Therefore it is less efficient.
+
+Storage pattern for sparse matrices: twelve-byte header comprising three
+four-byte integers: number of rows, number of columns, number of non-zero
+elements.
+Each element is written in turn: row, column, value. Row and column are both
+four-byte integers. Value can be either single or double-precision (eight
+or sixteen bytes). Elements are sorted by location: row first, then column.
+
+\subsection{Arrays of sparse matrices}
+
+Sparse matrix arrays are ordered lists of sparse matrices which are treated
+as a single matrix. To this end, when used in a calculation they are 
+consecutively multiplied and they must be square and all the same size.
+For matrices of different sizes, use the list type.
+To extract a single matrix from the array, round brackets, \verb\()\, are 
+used. Otherwise, the a sparse array can be treated as any other matrix
+except that individual elements cannot be modified directly.
+
+Storage: each sparse matrix is written consecutively in same format as above.
+
+\subsection{List}
+
+A list is an ordered collection of other numerical types, including other
+lists. Like sparse arrays, when used in numerical calculations, they are
+treated as a single object and multiplied through.
+Like with sparse arrays, round brackets are used to access a single element 
+of the list.
+
+Storage: to be determined...
+
+\section{Variables}
+
+Each numeric variable correspond to a file with the exception of scalar
+variables. The name of the variable is the same as the name of the file.
+If a variable is declared within a session this means that it is a pre-existing
+file and will not be deleted on exit.
+If a variable is created (as opposed to declared) then the corresponding file
+will be deleted at the end of a session.
+
+Variables are declared using the following syntax:
+\begin{verbatim}
+> <type>(<name>)
+\end{verbatim}
+where <type> is one of: \verb\vector\, \verb\full\, \verb\sparse\
+or \verb\sparse_array\ corresponding to the vector type, full matrix type
+sparse matrix type and sparse matrix array type
+and <name> is the name of a file containing data for the desired type.
+[Note: issue with prototype; type system is poor: has all the disadvantages
+of a static type system with none of the advantages...
+would like to move to weak typing but this requires putting type information
+into the files]
+
+Variables are created through the assignment operator:
+\begin{verbatim}
+> a=1.5
+\end{verbatim}
+assigns the scalar value \verb\1.5\ to the variable, \verb\a\.
+If \verb\a\ doesn't exist, it is created.
+
+\subsection{Scoping}
+
+Variables are scoped within a single source file which defines a single
+routine/subroutine. More on this in the section on subroutines.
+
+\section{Statements}
+

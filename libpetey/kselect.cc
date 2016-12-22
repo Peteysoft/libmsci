@@ -87,6 +87,7 @@ namespace libpetey {
   kselect_heap<type>::kselect_heap(long k1) {
     this->k=k1;
     data=new vector<type>(0);
+    data->reserve(k1);
   }
 
   template <class type>
@@ -127,9 +128,8 @@ namespace libpetey {
   template <class type>
   kselect_quick<type>::kselect_quick(long k1, long n) {
     this->k=k1;
-    //since I can't figure out how to (easily) assign to a vector, extending
-    //it if necessaray, the n parameter is meaningless:
     data=new vector<type>(0);
+    data->reserve(n);
     ncur=0;
   }
 
@@ -330,6 +330,7 @@ namespace libpetey {
   kiselect_heap<type>::kiselect_heap(long k1) {
     this->k=k1;
     data=new vector<heap_ind_el<type> >(0);
+    data->reserve(k1);
     this->ncur=0;
   }
 
@@ -397,7 +398,9 @@ namespace libpetey {
   kiselect_quick<type>::kiselect_quick(long k1, long n) {
     this->k=k1;
     data=new vector<type>(0);
+    data->reserve(n);
     ind=new vector<long>(0);
+    data->reserve(n);
     this->ncur=0;
   }
 

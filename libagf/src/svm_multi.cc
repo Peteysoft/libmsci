@@ -426,39 +426,33 @@ namespace libagf {
     int si, sj;
     int p=0;
 
+    //calculate kernels for each support vector:
     for (int i=0; i<nsv_total; i++) {
       kv[i]=(*kernel)(x, sv[i], this->D1, param);
-      //printf("kv[%d]=%g\n", i, kv[i]);
     }
 
     result=new real *[this->ncls];
     //wastes space, but it's simpler this way:
     result[0]=new real[this->ncls*this->ncls];
 
+    //multiply kernels by the coefficients:
     for (int i=0; i<this->ncls; i++) {
       result[i]=result[0]+i*this->ncls;
       si=start[i];
       for (int j=i+1; j<this->ncls; j++) {
 	sj=start[j];
         result[i][j]=0;
-	for (int k=0; k<nsv[i]; k++) {
-		result[i][j]+=coef[j-1][si+k]*kv[si+k];
-		//printf("%g ", coef[j-1][si+k]);
-	}
-	//printf("\n");
+	//coefficients are organized rather awkardly:
+	for (int k=0; k<nsv[i]; k++) result[i][j]+=coef[j-1][si+k]*kv[si+k];
 	for (int k=0; k<nsv[j]; k++) result[i][j]+=coef[i][sj+k]*kv[sj+k];
 	result[i][j] -= rho[p];
 	//sign is reversed relative to LIBSVM implementation:
         if (this->voteflag) {
           result[i][j]=-result[i][j];
 	} else {
+          //approximate probabilities:
           result[i][j]=1-1./(1+exp(probA[p]*result[i][j]+probB[p]));
 	}
-	//printf("%d %d %d\n", i, j, p);
-	//real deriv[this->D1];
-	//svm2class<real, cls_t> svm(this, i, j);
-	//printf("%g %g\n", result[i][j], (1-svm.R(x))/2);
-	//printf("%g %g\n", result[i][j], (1-svm.R_deriv(x, deriv))/2);
 	p++;
       }
     }
