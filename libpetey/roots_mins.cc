@@ -99,7 +99,7 @@ real root_false_position(void (*func) (real, void *, real *),
   real xerr, yerr;
 
   if (y1*y2>0) {
-    fprintf(stderr, "supernewton: ordinates must have opposite sign\n");
+    fprintf(stderr, "root_false_position: ordinates must have opposite sign\n");
     err=-1;
     return (x1+x2)/2;
   }
@@ -113,7 +113,7 @@ real root_false_position(void (*func) (real, void *, real *),
     printf("          [%g, %g]\n", dydx1, dydx2);
 */
 
-    x0=x1+y1*(x2-x1)/(y2-y1);
+    x0=x1-y1*(x2-x1)/(y2-y1);
     (*func) (x0, params, &y0);
 
     //test for convergence:

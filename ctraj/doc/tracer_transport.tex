@@ -866,6 +866,8 @@ the relationships will only be approximate.
 
 \section{Practical considerations}
 
+\label{practical_considerations}
+
 The traditional method of testing Eulerian tracer simulations for stability
 is von Neumann analysis.
 Equation (\ref{simple_finite_difference}) provides a simple, finite
@@ -928,6 +930,7 @@ the following properties:
 \item rows sum to 1:
 \begin{equation}
 \sum_j r_{ij} = 1
+\label{rowssumtoone}
 \end{equation}
 \end{itemize}
 The first condition holds for linear interpolation methods which will have
@@ -989,6 +992,103 @@ and multiplying through:
   & = & R(t_0,~t_n-t_0) \cdot \vec q(t_0) + 
   \sum_{i=1}^{n} \Delta t_{i-1} R(t_i,~t_n-t_i) \cdot \vec \sigma(t_{i-1})
 \end{eqnarray}
+
+\subsection{Diffusion}
+
+Unlike external sources and sinks, we can add diffusion to the model without
+fundamentally changing it or its linearity. Consider the diffusion equation
+in one dimension:
+\begin{equation}
+  \frac{\partial q}{\partial t}=d \frac{\partial^2 q}{\partial x^2}
+\end{equation}
+where $d$ is the diffusion coefficient.
+Solving by separation of variables:
+\begin{equation}
+  q=q_0 e^{-d \omega^2 t} e^{i \omega x}
+  \label{diffusion_solution}
+\end{equation}
+where $\omega$ is the angular frequency of a stationary wave
+and $q_0$ is its initial amplitude.
+In other words, if we decompose a function using Fourier analysis, the speed
+with which each component will decay is proportional to the square of the
+angular frequency times the diffusion coefficient.
+
+Now consider a point distribution centred at the origin 
+which will be evenly spread
+in frequency space, leaving only the first factor in 
+Equation (\ref{diffusion_solution}). 
+This is a Gaussian function and transformed
+back into regular ($x$) space returns another Gaussion:
+\begin{equation}
+	\frac{1}{2 \pi} \int e^{-d \omega^2 t} e^{i \omega x} \mathrm d \omega = \frac{e^{-\frac{x^2}{4 d t}}}{2 \sqrt{\pi d t}}
+	\label{Gaussian_diffusion}
+\end{equation}
+Thus applying diffusion to a function for time $t$ is equivalent to
+convolution with a Gaussian of width $\sqrt{2 d t}$.
+
+A convenient property Gaussian functions 
+is that they are dimensionally separable
+making results easy to generalize from one to multiple dimensions:
+\begin{eqnarray}
+	\left (2 \pi \right )^{-N/2} e^{-| \vec x |^2/2} 
+	& = & \left ( 2 \pi \right )^{-N/2} \exp \left ( \frac{1}{2} \sum_{i=1}^N x_i^2 \right ) \\
+	& = & \prod_{i=1}^N \frac{e^{x_i^2/2}}{\sqrt{2 \pi}}
+\end{eqnarray}
+where $N$ is the number of dimensions.
+
+There are a number of different approaches to adding diffusion.
+If the transport matrix, $R$, is integrated from a coefficient matrix,
+$A$, as in Equation (\ref{linear_ODE_system_matrix_soln}), then a diffusion
+term can be included in the coefficient matrix, 
+as in the finite difference example in (\ref{finite_difference_diffusion}).
+
+In a semi-Lagrangian scheme, the transport matrix is generated directly
+by gathering the interpolation coefficients, so diffusion must be added
+separately.
+Since interpolation of back-trajectories provides a small amount of implicit
+diffusion, we should first calculate how much that is before adding it in
+more explicitly.
+For a linearly-interpolated semi-Lagrangian scheme in one dimension, 
+if we assume the back-trajectory falls directly in
+the centre of the grid, then the coefficients form a truncated kernel each
+at half-maximum of the Gaussian in (\ref{Gaussian_diffusion}):
+\begin{equation}
+e^{-\frac{\left(\Delta x/2 \right)^2}{4d \Delta t}} = 1/2
+\end{equation}
+where $\Delta x$ is the grid spacing and $\Delta t$ is the Eulerian time step.
+Since the series is truncated and the normalization is the sum of the 
+interpolation coefficients, the normalization coefficient in the denominator
+of (\ref{Gaussian_diffusion}) has been left off. 
+Solving for the approximate diffusion coefficient:
+\begin{eqnarray}
+	d_0 & = & \frac{\Delta x^2}{16 \ln 2 \Delta t} \\
+	& = & \frac{\Delta x^2}{11.09 \Delta t}
+\end{eqnarray}
+Because of the dimensional separability of the normal distribution,
+and because of how the number of points used per interpolate scales, 
+the result generalizes to higher dimensions.
+If the desired diffusion is not too large, the diffusion coefficient can
+be set by varying the time step.
+
+The convolution of a Gaussian with another Gaussian is a third Gaussian whose variance is the sum of the variances of the other two:
+\begin{equation}
+	\frac{1}{2 \pi \sigma_1 \sigma_2} \int e^{-\frac{{x^\prime}^2}{2 \sigma_1^2}} e ^{-\frac{(x^\prime - x)^2}{2 \sigma_2^2}} \mathrm d x^\prime
+	= \frac{e^{-\frac{x^2}{2(\sigma_1^2 + \sigma_2^2)}}}{\sqrt{2 \pi (\sigma_1^2 + \sigma_2^2)}}
+\end{equation}
+Thus, if we wish to add diffusion through a smoothing matrix,
+applied after each time step, we calculate the diffusion
+to use for the Gaussian kernel from the desired diffusion 
+less the implicit diffusion from interpolation:
+\begin{equation}
+	d_s = d - \frac{\Delta x^2}{11.09 \Delta t}
+\end{equation}
+where $d$ is the desired diffusion coefficient and $d_s$ is the diffusion
+coefficient for the smoothing matrix. 
+The advantage to this scheme is that varying amounts of diffusion can be
+added after integrating the transport matrix.
+Alternatively, rather than linear interpolation, the interpolation
+coefficients can be calculated based on a Gaussian kernel according to
+(\ref{Gaussian_diffusion}).
 
 \section{Conclusions}
 
