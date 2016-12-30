@@ -46,9 +46,10 @@ in which the tracer dynamics are represented as a matrix and the largest
 principal components correlated with a series of sparse measurements.
 The method is called ``principal component proxy tracer analysis''.
 
-Because such processes are linear, matrix methods represent a powerful and
-general set of techniques to apply to problems in tracer advection and the
-related issues of mixing and stretching.
+Because the processes of tracer advection as well as the related ones
+of local stretching and diffusion are linear, 
+matrix methods represent a powerful and
+general set of techniques to apply to these problems.
 This review summarizes some of these techniques as well as special properties
 of the matrices as used to represent transport processes.  In particular, 
 we review methods of solving systems of linear ordinary differential
@@ -995,9 +996,9 @@ and multiplying through:
 
 \subsection{Diffusion}
 
-Unlike external sources and sinks, we can add diffusion to the model without
-fundamentally changing it or its linearity. Consider the diffusion equation
-in one dimension:
+Unlike external sources and sinks, we can add diffusion to the matrix model 
+without fundamentally changing it or its linearity. 
+Consider the diffusion equation in one dimension:
 \begin{equation}
   \frac{\partial q}{\partial t}=d \frac{\partial^2 q}{\partial x^2}
 \end{equation}
@@ -1023,10 +1024,12 @@ back into regular ($x$) space returns another Gaussion:
 	\frac{1}{2 \pi} \int e^{-d \omega^2 t} e^{i \omega x} \mathrm d \omega = \frac{e^{-\frac{x^2}{4 d t}}}{2 \sqrt{\pi d t}}
 	\label{Gaussian_diffusion}
 \end{equation}
-Thus applying diffusion to a function for time $t$ is equivalent to
-convolution with a Gaussian of width $\sqrt{2 d t}$.
+Thus, by convolution theorem, 
+applying diffusion to a function for time $t$ 
+with diffusion coefficient $d$ 
+is equivalent to convolution with a Gaussian of width $\sqrt{2 d t}$.
 
-A convenient property Gaussian functions 
+A convenient property of Gaussian functions 
 is that they are dimensionally separable
 making results easy to generalize from one to multiple dimensions:
 \begin{eqnarray}
@@ -1037,9 +1040,9 @@ making results easy to generalize from one to multiple dimensions:
 where $N$ is the number of dimensions.
 
 There are a number of different approaches to adding diffusion.
-If the transport matrix, $R$, is integrated from a coefficient matrix,
+If the transport matrix, $R$, is integrated from an ``evolution matrix'',
 $A$, as in Equation (\ref{linear_ODE_system_matrix_soln}), then a diffusion
-term can be included in the coefficient matrix, 
+term can be included in it directly, 
 as in the finite difference example in (\ref{finite_difference_diffusion}).
 
 In a semi-Lagrangian scheme, the transport matrix is generated directly
@@ -1053,9 +1056,10 @@ if we assume the back-trajectory falls directly in
 the centre of the grid, then the coefficients form a truncated kernel each
 at half-maximum of the Gaussian in (\ref{Gaussian_diffusion}):
 \begin{equation}
-e^{-\frac{\left(\Delta x/2 \right)^2}{4d \Delta t}} = 1/2
+e^{-\frac{\left(\Delta x/2 \right)^2}{4d_0 \Delta t}} = 1/2
 \end{equation}
-where $\Delta x$ is the grid spacing and $\Delta t$ is the Eulerian time step.
+where $\Delta x$ is the grid spacing and $\Delta t$ is the Eulerian time step,
+and $d_0$ is the ``implicit'' diffusion.
 Since the series is truncated and the normalization is the sum of the 
 interpolation coefficients, the normalization coefficient in the denominator
 of (\ref{Gaussian_diffusion}) has been left off. 
@@ -1076,23 +1080,21 @@ The convolution of a Gaussian with another Gaussian is a third Gaussian whose va
 	= \frac{e^{-\frac{x^2}{2(\sigma_1^2 + \sigma_2^2)}}}{\sqrt{2 \pi (\sigma_1^2 + \sigma_2^2)}}
 \end{equation}
 Thus, if we wish to add diffusion through a smoothing matrix,
-applied after each time step, we calculate the diffusion
-to use for the Gaussian kernel from the desired diffusion 
-less the implicit diffusion from interpolation:
+applied after each time step, we calculate the diffusion coefficient, $d_s$,
+to use for the Gaussian kernel from the desired diffusion coefficient, $d$,
+less the implicit diffusion coefficient, $d_0$:
 \begin{equation}
 	d_s = d - \frac{\Delta x^2}{11.09 \Delta t}
 \end{equation}
-where $d$ is the desired diffusion coefficient and $d_s$ is the diffusion
-coefficient for the smoothing matrix. 
 The advantage to this scheme is that varying amounts of diffusion can be
-added after integrating the transport matrix.
+added as needed after integrating the transport matrix.
 Alternatively, rather than linear interpolation, the interpolation
-coefficients can be calculated based on a Gaussian kernel according to
-(\ref{Gaussian_diffusion}).
+coefficients can be calculated in the same way as each row of the smoothing
+matrix: based on a Gaussian kernel according to (\ref{Gaussian_diffusion}).
 
 \section{Conclusions}
 
-Any Eulerian tracer simulation can be expressed as the product between a matrix,
+Any gridded Eulerian tracer simulation can be expressed as the product between a matrix,
 which captures the tracer dynamics, and a vector, which represents the tracer
 configuration.  If the matrix is considered as a multi-dimensional function
 taking as parameters the start time 
@@ -1108,7 +1110,7 @@ always equal to the dimension of the flow field.
 When tracer transport is treated using matrix methods, there
 are many special properties that can be derived for the solutions.  
 Matrix methods are also
-helpful in understanding and improving the stability of solutions.
+helpful in understanding and improving the stability of numerical solutions.
 
 \input{tt_symbol_list.tex}
 
