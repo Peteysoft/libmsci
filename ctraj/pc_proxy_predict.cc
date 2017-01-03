@@ -89,6 +89,8 @@ int main(int argc, char **argv) {
 
   //for getting sample statistics:
   float nsamp_ave=0;
+  int nsamp_min;
+  int nsamp_max=0;
   int32_t nfield=0;
 
   i0=0;
@@ -264,6 +266,7 @@ int main(int argc, char **argv) {
     fwrite(&n, sizeof(n), 1, fs);
   }
   nfield=0;
+  nsamp_min=N;
   for (int32_t i=i0; i<N+i0; i++) {
     int32_t nall_local;		//to save memory...
     //calculate lead times:
@@ -301,6 +304,8 @@ int main(int argc, char **argv) {
       printf("%d %s: %d\n", nfield, tstring, nsamp_w);
       nfield++;
       nsamp_ave+=nsamp_w;
+      if (nsamp_w<nsamp_min) nsamp_min=nsamp_w; 
+      		else if (nsamp_w>nsamp_max) nsamp_max=nsamp_w;
       delete [] samp_w;
       continue;
     }
@@ -331,6 +336,8 @@ int main(int argc, char **argv) {
   //fwrite(qvec[0], sizeof(float), n*(nall-i0), fs);
   if (cflag) {
     printf("Average: %f\n", nsamp_ave/nfield);
+    printf("Min:     %d\n", nsamp_min);
+    printf("Max:     %d\n", nsamp_max);
   } else {
     fclose(fs);
   }

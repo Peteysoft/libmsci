@@ -4,7 +4,7 @@ set -e
 
 DATAPATH=.
 
-while getopts 'i:f:n:r:p:B:TK:w' ARG; do
+while getopts 'i:f:n:r:p:B:TK:wH' ARG; do
   case $ARG in
     i) T0=$OPTARG
       ;;
@@ -25,6 +25,7 @@ while getopts 'i:f:n:r:p:B:TK:w' ARG; do
     w) WFLAG="-w"
       ;;
     H) echo "test_vfield_conv.sh [-p path] [-T] [level -i T0 -f TF | vfieldS vfieldN] ntrial"
+      exit 0 
       ;;
   esac
 done
@@ -110,6 +111,9 @@ then
     rm -f $WWND
   fi
   rm -f $SFILE $NFILE
+  if [ $INFO ]; then
+    rm -f $INFO
+  fi
 elif [ $KFLAG -eq 0 ]
 then
   rm -f $RESULTS
@@ -118,6 +122,9 @@ then
   if test $WFLAG
   then
     rm -f $WWND
+  fi
+  if [ $INFO ]; then
+    rm -f $INFO
   fi
 fi
 

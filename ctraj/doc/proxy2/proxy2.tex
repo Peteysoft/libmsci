@@ -214,7 +214,7 @@ Define the {\it tangent model}, $H$, such that:
 	\frac{\mathrm d}{\mathrm d t} H = \nabla_{\vect r} \vect f H \\
 \end{equation}
 
-An Eulerian tracer simulation is linear: the tangent vector is simply
+A passive Eulerian tracer simulation is linear: the tangent vector is simply
 the dynamics, that is,
 if we take Equation (\ref{linear_ODE}), a system of linear ODEs,
 as our system of ODEs in
@@ -262,7 +262,7 @@ We can show that:
 \end{eqnarray}
 See Appendix \ref{mass_conservation_derivation} for the derivation.
 
-All Eulerian tracer simulations are by necessity diffusive. 
+All gridded Eulerian tracer simulations are by necessity diffusive. 
 Given the constraints above in (\ref{columns_sum_to_one}) and
 (\ref{columns_sum_to_zero}) in addition, 
 we can also show that all the singular values are less-than-or-equal-to one.

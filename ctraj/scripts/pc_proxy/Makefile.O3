@@ -1,5 +1,5 @@
 #file paths:
-DATA_PATH = /cygdrive/e/data/ncep/sixhour/
+DATA_PATH = /cygdrive/e/data/ncep/oneday
 #DATA_PATH = /home/Peter/data/ncep/oneday
 VFIELD_PATH=.
 #to make it easier to clone this directory:
@@ -37,11 +37,11 @@ TFb= 1998/11/17
 THETA = 500
 
 #grid points per side
-NGRID = 100
+NGRID = 50
 #"coarse" (Eulerian) time step
 TSTEP = 1
 #"fine" (Lagrangian) Runge-Kutta time step
-NFINE = 6
+NFINE = 20
 
 #parameters for interpolation:
 #use PC proxy? (or proxy tracer)
@@ -54,11 +54,11 @@ ORDER = 2
 
 #parameters for PC proxy:
 #size of measurement window
-WINDOW = 1
+WINDOW=1
 #integration time:
-INT_T = 60
+INT_T=60
 #lead time same as integration time:
-LEAD2=$(INT_T)
+LEAD=$(INT_T)
 
 #number of principal components to use:
 NEV = 5
@@ -90,9 +90,9 @@ ifdef PC
   #arguments only used for PC proxy:
   PC_ARGS = $(INT_T)
   #options to PROXY_COMMAND:
-  PROXY_OPTIONS=$(KFLAG) -v $(NEV) -A $(NCV) -l $(LEAD2) $(HEMI1)
+  PROXY_OPTIONS=$(KFLAG) -v $(NEV) -A $(NCV) -l $(LEAD) $(HEMI1)
   #base name of output files:
-  BASE=pc$(NEV)l$(INT_T)_$(HEMI1)$(THETA)K
+  BASE=$(THETA)K$(shell date_calc -f "%Y.%m.%d" $(T0b))-$(shell date_calc -f "%Y.%m.%d" $(TFb))pc$(NEV)A$(NCV)S$(INT_T)l$(LEAD)$(HEMI1)
   #proxy field:
   PROXYFILE=$(CVMAT)
 else
@@ -107,8 +107,9 @@ else
 endif
 
 #file names:
-VFIELD_N=$(VFIELD_PATH)/vfield_ncep_$(THETA)K_N.ds
-VFIELD_S=$(VFIELD_PATH)/vfield_ncep_$(THETA)K_S.ds
+VBASE=$(THETA)K$(shell date_calc -f "%Y.%m.%d" $(T0))-$(shell date_calc -f "%Y.%m.%d" $(TF))
+VFIELD_N=$(VFIELD_PATH)/vfield_ncep_$(VBASE)_N.ds
+VFIELD_S=$(VFIELD_PATH)/vfield_ncep_$(VBASE)_S.ds
 
 #cross-validated proxy tracers:
 PROXY1=proxy1_$(BASE).vec
@@ -120,9 +121,10 @@ PDATES1=pdates1_$(BASE).txt
 PDATES2=pdates2_$(BASE).txt
 
 #tracer mapping:
-CVMAT=matO3_$(THETA)K.dat
+MAPBASE=$(THETA)K$(shell date_calc -f "%Y.%m.%d" $(T0a))-$(shell date_calc -f "%Y.%m.%d" $(TFa))n$(NGRID)dt$(TSTEP)h$(NFINE)
+CVMAT=matO3_$(MAPBASE).dat
 #corresponsing dates:
-DATES=datesO3.txt
+DATES=datesO3_$(MAPBASE).txt
 
 #cross-validation results:
 CVAL1=v1_$(BASE).txt
@@ -138,7 +140,18 @@ POAM_DATA = $(MASTER)/POAMIII_$(THETA)K.txt
 
 #experiment: log everything to a single file and use the parameters as
 #a "key":
-KEY = "$(T0) $(TF) $(T0a) $(TFa) $(T0b) $(TFb) $(INT_T) $(LEAD) $(NEV) $(WINDOW) $(NGRID) $(THETA) $(HEMI1) $(DATA_PATH)"
+#make sure parameters are in a common format:
+T0_1!=date_calc $(T0)
+TF_1!=date_calc $(TF)
+T0a_1!=date_calc $(T0a)
+TFa_1!=date_calc $(TFa)
+T0b_1!=date_calc $(T0b)
+TFb_1!=date_calc $(TFb)
+
+#create the "key":
+#(note: first four fields shouldn't matter but we are bug-hunting...)
+KEY = $(strip "vfield=$(T0_1):$(TF_1);tracer=$(T0a_1):$(TFa_1);interpolates=$(T0b_1):$(TFb_1);integration=$(INT_T);lead=$(LEAD);eigenvalues=$(NEV);Arnoldi-vectors=$(NCV);window=$(WINDOW);ngrid=$(NGRID);theta=$(THETA);$(HEMI1);data-path=$(DATA_PATH)")
+
 RESULTS=results.txt
 CHECK!=grep -n $(KEY) $(RESULTS)
 
@@ -156,7 +169,7 @@ version: $(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
 else
 version:
 	@echo "Case has already been tried. Check file, $(RESULTS):"
-	@echo $(CHECK)
+	@echo "$(CHECK)"
 endif
 
 cross_validate: $(PROXY1) $(PROXY2) $(PDATES1) $(PDATES2) file1.txt file2.txt
@@ -190,7 +203,7 @@ $(SONDE_DATA): $(SONDE_DATA).gz
 	gunzip -c $(SONDE_DATA).gz > $(SONDE_DATA)
 
 $(PROXY_O3) $(PROXY_DATES): $(PROXYFILE) $(DATES) $(POAM_DATA)
-	$(PROXY_COMMAND) -d 20 -i $(T0b) -f $(TFb) $(PROXY_OPTIONS) \
+	$(PROXY_COMMAND) -t 20 -i $(T0b) -f $(TFb) $(PROXY_OPTIONS) \
 		$(PROXYFILE) $(DATES) $(POAM_DATA) \
 		$(PC_ARGS) $(WINDOW) $(PROXY_O3) > $(PROXY_DATES)
 
