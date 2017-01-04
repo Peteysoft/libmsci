@@ -112,6 +112,7 @@ OBJECTS = 	ctraj_defaults.o \
 		ctraj_vfield_base.o \
 		ctraj_boundary_list.o \
 		ctraj_tfield_standard.o \
+		ctraj_tfield_diffusion.o \
 		ctraj_tfield_nd.o \
 		meas_data.o tracer_anal.o \
 		metric_base.o az_eq_t.o \

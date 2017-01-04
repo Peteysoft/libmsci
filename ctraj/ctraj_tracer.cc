@@ -20,7 +20,7 @@
 #include "ctraj_vfield_2d.h"
 #include "ctraj_vfield_anal.h"
 
-#include "ctraj_tfield_standard.h"
+#include "ctraj_tfield_diffusion.h"
 #include "ctraj_tfield_nd.h"
 
 using namespace libpetey;
@@ -115,6 +115,10 @@ int main(int argc, char *argv[]) {
     case (2):
       vfield=new ctraj_vfield_anal<float>(ndim);
       tracer=new ctraj_tfield_nd<float>(ndim);
+      break;
+    case (3):
+      vfield=new ctraj_vfield_standard<float>();
+      tracer=new ctraj_tfield_diffusion<float>();
       break;
     default:
       vfield=new ctraj_vfield_standard<float>();

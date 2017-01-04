@@ -20,14 +20,20 @@ namespace ctraj {
       real cutoff;		//cut-off size for weight
 
     public:
-      ctraj_tfield_standard();
-      virtual ~ctraj_tfield_standard();
+      ctraj_tfield_diffusion();
+      virtual ~ctraj_tfield_diffusion();
 
       //initialize object:
-      int init(int32_t np, real sld2=SIDELENGTH_Q, real d=DIFFUSION);	//points/side, sidelength/2
+      int init(int32_t np, 			//points pers side
+		      real sld2=SIDELENGTH_Q, 	//sidlength/2
+		      real d=DIFFUSION, 	//diffusion coefficient
+		      real co=GAUSS_CUTOFF);	//cut-off value for Gaussian kernel
 
       //sets up the object based on command line arguments:
       virtual int setup(int argc, char **argv);
+
+      //how many weight do you need, maximum?
+      virtual int32_t nwt();
 
       //returns interpolation coefficients for a given location:
       virtual int32_t 			//number of weighting coefficients
