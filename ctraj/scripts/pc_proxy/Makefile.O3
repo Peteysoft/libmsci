@@ -19,7 +19,8 @@ TF=1999/12/31
 #T0a= 1998/12/1
 #TFa= 1999/4/1
 
-T0a = 1997/1/1
+#T0a = 1997/1/1
+T0a = 1998/6/1
 TFa= 1999/1/1
 
 #interpolate POAM data between these two dates:
@@ -150,7 +151,7 @@ TFb_1!=date_calc $(TFb)
 
 #create the "key":
 #(note: first four fields shouldn't matter but we are bug-hunting...)
-KEY = $(strip "vfield=$(T0_1):$(TF_1);tracer=$(T0a_1):$(TFa_1);interpolates=$(T0b_1):$(TFb_1);integration=$(INT_T);lead=$(LEAD);eigenvalues=$(NEV);Arnoldi-vectors=$(NCV);window=$(WINDOW);ngrid=$(NGRID);theta=$(THETA);$(HEMI1);data-path=$(DATA_PATH)")
+KEY = $(strip "vfield=$(T0_1):$(TF_1);tracer=$(T0a_1):$(TFa_1);interpolates=$(T0b_1):$(TFb_1);ngrid=$(NGRID);tstep=$(TSTEP);nfine=$(NFINE);integration=$(INT_T);lead=$(LEAD);eigenvalues=$(NEV);Arnoldi-vectors=$(NCV);window=$(WINDOW);ngrid=$(NGRID);theta=$(THETA);$(HEMI1);data-path=$(DATA_PATH)")
 
 RESULTS=results.txt
 CHECK!=grep -n $(KEY) $(RESULTS)
@@ -210,13 +211,13 @@ $(PROXY_O3) $(PROXY_DATES): $(PROXYFILE) $(DATES) $(POAM_DATA)
 $(POAM_DATA): $(POAM_DATA).gz
 	gunzip -c $(POAM_DATA).gz > $(POAM_DATA)
 
-$(CVMAT): $(VFIELD_S) $(VFIELD_N)
+$(CVMAT) $(DATES): $(VFIELD_S) $(VFIELD_N)
 	ctraj_tracer -n $(NGRID) -h $(TSTEP) -k $(NFINE) \
 		-i $(T0a) -f $(TFa) $(VFIELD_S) $(VFIELD_N) $(CVMAT) > $(DATES)
 
-$(DATES): $(VFIELD_S) $(VFIELD_N)
-	ctraj_tracer -Q -n $(NGRID) -h $(TSTEP) -k $(NFINE) \
-		-i $(T0a) -f $(TFa) $(VFIELD_S) $(VFIELD_N) > $(DATES)
+#$(DATES): $(VFIELD_S) $(VFIELD_N)
+#	ctraj_tracer -Q -n $(NGRID) -h $(TSTEP) -k $(NFINE) \
+#		-i $(T0a) -f $(TFa) $(VFIELD_S) $(VFIELD_N) > $(DATES)
 
 #classic proxy tracer:
 

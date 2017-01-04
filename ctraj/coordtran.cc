@@ -48,8 +48,8 @@ void intcoeff(simple<float> *lon,
   ny=ygrid->nel();
   
   //printf("%d %d\n", nx, ny);
-  for (ind_type i=0; i<nx; i++) {
-    for (ind_type j=0; j<ny; j++) {
+  for (ind_type j=0; j<ny; j++) {
+    for (ind_type i=0; i<nx; i++) {
       xgrid->get(xval, i);
       ygrid->get(yval, j);
       //printf("%f %f\n", xval, yval);
@@ -183,10 +183,10 @@ void intcoeff2(simple<float> *lon,
   nlat=lat->nel();
   
   //printf("%d %d\n", nx, ny);
-  for (ind_type i=0; i<nlon; i++) {
-    for (ind_type j=0; j<nlat; j++) {
+  for (ind_type j=0; j<nlat; j++) {
+    lat->get(latp, j);
+    for (ind_type i=0; i<nlon; i++) {
       lon->get(lonp, i);
-      lat->get(latp, j);
       //printf("%f %f\n", xval, yval);
       //transform to lon-lat coords:
       tcoord2_2lonlat(xval, yval, -1, hemi, lonp, latp);

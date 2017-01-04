@@ -240,7 +240,7 @@ int32_t ctraj_tfield_nd<real>::get_loc(int32_t ind, real *loc) {
 }
 
 template <class real>
-int32_t ctraj_tfield_nd<real>::interpolate(int32_t domain, real *loc, int32_t *ind, double *wt) {
+int32_t ctraj_tfield_nd<real>::interpolate(int32_t domain, real *loc, int32_t *ind, double *wt, real dt) {
   double intind[n_dim];
   int32_t d1=nwt();
 

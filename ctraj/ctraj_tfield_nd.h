@@ -49,7 +49,8 @@ namespace ctraj {
 		interpolate(int32_t domain, 	//domain of point
 		real *loc, 			//relative coordinates
 		int32_t *ind, 			//point indices of weighting coefficients
-		double *wt);			//weighting coefficients
+		double *wt,			//weighting coefficients
+		real dt=1);
 
       virtual real *to(real *input, real *parm);
       virtual real *from(real *input, real *parm);

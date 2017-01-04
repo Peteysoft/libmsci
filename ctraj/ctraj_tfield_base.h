@@ -27,7 +27,8 @@ class ctraj_tfield_base {
 	interpolate(int32_t domain, 	//domain of point
 	real *loc, 			//relative coordinates
 	int32_t *ind, 			//point indices of weighting coefficients
-	double *wt)=0;			//weighting coefficients
+	double *wt,			//weighting coefficients
+	real dt=1)=0;			//time-step (for tunable diffusion)
 
     //convert from standard input format (lon-lat, with corners, etc.)
     //to the vector used by the codes:

@@ -44,7 +44,7 @@ void ctraj_optargs(FILE *fs, const char *optargs, int flag) {
         fprintf(fs, "  -c   maximum degrees of arc between pairs of points [%g]\n", MAXARC);
         break;
       case ('C'):
-        fprintf(fs, "  -C   count the number of measurements in PC proxy\n");
+        fprintf(fs, "  -C   diffusion coefficient [%g]\n", DIFFUSION);
         break;
       case ('d'):
         fprintf(fs, "  -d   number of dimensions [2]\n");
@@ -70,6 +70,10 @@ void ctraj_optargs(FILE *fs, const char *optargs, int flag) {
         break;
       case ('g'):
         fprintf(fs, "  -g   use geometric progression\n");
+        break;
+      case ('G'):
+        fprintf(fs, "  -G   cut-off value for interpolation coefficients in Gaussian diffusion \n");
+	fprintf(fs, "         scheme [%g]\n", GAUSS_CUTOFF);
         break;
       case ('h'):
         fprintf(fs, "  -h   non-dimensional 'coarse' time step [%g]\n", TSTEP_COARSE);

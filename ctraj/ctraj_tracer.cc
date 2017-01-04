@@ -184,8 +184,9 @@ int main(int argc, char *argv[]) {
     } else {
       n=ceil(vfield->get_tind((char *) optarg[6])-tind1);
     }
+    n/=tstep;
   } else if (flag[3]==0) {
-    n=vfield->maxt()-tind1;
+    n=(vfield->maxt()-tind1)/tstep;
   }
 
   outfile=new char[strlen(argv[1])+1];
@@ -237,7 +238,7 @@ int main(int argc, char *argv[]) {
   vfield->get_t(tind[0], date_str);
   printf("%d %s\n", 0, date_str);
 
-  for (ind_type it=1; it<n; it++) {
+  for (ind_type it=1; it<=n; it++) {
     //get date string and print it out:
     vfield->get_t(tind[it], date_str);
     printf("%d %s\n", it, date_str);
@@ -279,12 +280,7 @@ int main(int argc, char *argv[]) {
       for (int32_t j=0; j<nwt; j++) {
         map.add_el(wt[j], i, ind[j]);
         tw+=wt[j];
-        //printf("%d ", ind[j]);
-        //printf("[%5d, %5d]; (%2d %7.1f, %7.1f)-(%2d %7.1f, %7.1f): %lg\n",
-        //		i, ind[j], d0[i], x0[i][0], x0[i][1], domain, result[nfine][0], 
-        //	result[nfine][1], wt[j]);
       }
-      //printf("\n");
       if (tw > 1.000001) {
         fprintf(stderr, "ctraj_tracer: warning: total of weights at row %d exceeds unity:\n", i);
         fprintf(stderr, "              %g", wt[0]);

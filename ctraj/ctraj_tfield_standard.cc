@@ -121,7 +121,7 @@ int32_t ctraj_tfield_standard<real>::get_loc(int32_t ind, real *loc) {
 }
 
 template <class real>
-int32_t ctraj_tfield_standard<real>::interpolate(int32_t domain, real *loc, int32_t *ind, double *wt) {
+int32_t ctraj_tfield_standard<real>::interpolate(int32_t domain, real *loc, int32_t *ind, double *wt, real dt) {
   short hemi;
   real loc1[2]={loc[0], loc[1]};
   double xyind[2];

@@ -22,6 +22,11 @@ namespace ctraj {
   const int32_t NGRID_Q=100;		//a smaller grid size is probably a good idea as well...
   const float SIDELENGTH_Q=10000.;
 
+  //diffusion coefficient:
+  const float DIFFUSION=1.;
+  //cut-off value for interpolation coefficients in Gaussian diffusion:
+  const float GAUSS_CUTOFF=0.1;
+
   //default conversion to spherical-polar coords:
   const int32_t NLON=360;
   const int32_t NLAT=181;

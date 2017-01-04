@@ -120,7 +120,7 @@ Executables accept some subset of the following options.  These can also be foun
   -b   number of constant parameters [0]
   -B   data file page size in bytes
   -c   maximum degrees of arc between pairs of points [1.]
-  -C   count the number of measurements in PC proxy
+  -C   diffusion coefficient [1.]
   -d   number of dimensions [2]
   -D   calculate fractal dimension of type:
          u=uncertainty exponent
@@ -132,6 +132,8 @@ Executables accept some subset of the following options.  These can also be foun
   -f   final date [last available]
   -F   final value for dependent variable (epsilon/z) (1000.)
   -g   use geometric progression
+  -G   cut-off value for interpolation coefficients in Gaussian diffusion 
+         scheme [0.1]
   -h   non-dimensional 'coarse' time step [1.]
   -H   print header information
   -i   initial date [first available]
@@ -149,7 +151,9 @@ Executables accept some subset of the following options.  These can also be foun
   -p   data path [./]
   -P   calculate Pearson correlation coefficient
   -q   sidelengths of tracer field in the form: d1xd2xd3...
-  -Q   query time grids (write to stdout)
+  -Q   query: rather than performing usual action, print info to stdout
+         ctraj_tracer: query time grids
+         pc_proxy_predict: count the number of measurements per interpolate
   -r   sidelength/2 [12000/10000]
   -R   (return) record size
   -s   maximum change in path in km [100/20]

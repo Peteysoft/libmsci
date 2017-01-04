@@ -589,8 +589,8 @@ int theta_interp(dependent<float> *q1,
 
   q1->get_dim(dim);
 
-  for (ind_type i=0; i<dim[0]; i++) {
-    for (ind_type j=0; j<dim[1]; j++) {
+  for (ind_type j=0; j<dim[1]; j++) {
+    for (ind_type i=0; i<dim[0]; i++) {
       c->get(cc, i, j);
       q1->interpol(val, i, j, cc);
       q2->cel(val, i, j);
@@ -686,8 +686,8 @@ int interpolate_field(dependent<float> *q0,
   //2.  all coefficients matrices have same dimensions...)
   c[0]->get_dim(dim);
 
-  for (ind_type i=0; i<dim[0]; i++) {
-    for (ind_type j=0; j<dim[1]; j++) {
+  for (ind_type j=0; j<dim[1]; j++) {
+    for (ind_type i=0; i<dim[0]; i++) {
       for (ind_type k=0; k<ndim; k++) {
         c[k]->get(int_ind[k], i, j);
       }
@@ -717,10 +717,10 @@ int transform_vfield(simple<float> *xgrid,
   nx=xgrid->nel();
   ny=ygrid->nel();
 
-  for (ind_type i=0; i<nx; i++) {
-    xgrid->get(xval, i);
-    for (ind_type j=0; j<ny; j++) {
-      ygrid->get(yval, j);
+  for (ind_type j=0; j<ny; j++) {
+    ygrid->get(yval, j);
+    for (ind_type i=0; i<nx; i++) {
+      xgrid->get(xval, i);
       u->get(uval, i, j);
       v->get(vval, i, j);
       r=sqrt(xval*xval+yval*yval);

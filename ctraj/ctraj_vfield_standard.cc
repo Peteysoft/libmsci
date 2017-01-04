@@ -726,6 +726,7 @@ int ctraj_vfield_standard<real>::add_field(int32_t tind, dependent<real> *uu, de
     nx=x[dom]->nel();
     ny=y[dom]->nel();
 
+    //loop nesting is opposite from normal to optimize memory access:
     for (ind_type j=0; j<ny; j++) {
       for (ind_type i=0; i<nx; i++) {
         //do the interpolation:

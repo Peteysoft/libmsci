@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
   optarg[7]=&ncv;
   optarg[8]=&nev;
   optarg[11]=&lead;
-  argc=parse_command_opts(argc, argv, "t-+0NifAvCKl?", 
+  argc=parse_command_opts(argc, argv, "t-+0NifAvQKl?", 
 		"%d%%%d%d%s%s%d%d%%%g%", optarg, flag, OPT_WHITESPACE);
   if (argc<0) exit(21);
   if (flag[1]) hemi=-1; else if (flag[2]) hemi=1;
@@ -135,7 +135,8 @@ int main(int argc, char **argv) {
     fprintf(docfs, "  window       = measurement window in days\n");
     fprintf(docfs, "  outfile      = binary file containing interpolated tracer field\n");
     fprintf(docfs, "\n");
-    ctraj_optargs(docfs, "t0NifAvl-+CK?");
+    ctraj_optargs(docfs, "t0NifAvl-+K?");
+    fprintf(docfs, "  -Q   count the number of measurements per interpolate\n");
     fprintf(docfs, "\n");
     return err;
   }
@@ -175,7 +176,7 @@ int main(int argc, char **argv) {
     i0=ceil(interpolate(t, nall+1, date0, -1));
     if (i0<0) {
       fprintf(stderr, "Insufficient date coverage in tracer mapping\n");
-      exit(PARAMETER_OUT_OF_RANGE);
+      exit(SAMPLE_COUNT_MISMATCH);
     }
   }
 
@@ -192,7 +193,7 @@ int main(int argc, char **argv) {
 
   if (N<0) {
     fprintf(stderr, "Insufficient date coverage in tracer mapping\n");
-    exit(PARAMETER_OUT_OF_RANGE);
+    exit(SAMPLE_COUNT_MISMATCH);
   }
 
   //now that we've calculated all these dates and indices, it's time to read
