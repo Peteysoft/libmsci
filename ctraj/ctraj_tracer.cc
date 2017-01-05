@@ -206,7 +206,7 @@ int main(int argc, char *argv[]) {
   nmap=tracer->nel();
 
   //initialize the sparse matrix:
-  map.extend(nmap*nwtmax);
+  //map.extend(nmap*nwtmax);
 
   /*
   //initialize variables for initial conditions:

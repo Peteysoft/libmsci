@@ -167,6 +167,7 @@ void ctraj_optargs(FILE *fs, const char *optargs, int flag) {
         fprintf(fs, "         0=2-D global, azimuthal equidistant projection\n");
         fprintf(fs, "         1=2-D Cartesian, date-based time grid\n");
         fprintf(fs, "         2=analytical/n-D Cart.\n");
+        fprintf(fs, "         3=2-D global with diffusion/Gaussian kernel interpolation\n");
         break;
       case ('v'):
         fprintf(fs, "  -v   number of singular vectors [%d]\n", NEIG);

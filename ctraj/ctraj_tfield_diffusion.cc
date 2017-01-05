@@ -104,17 +104,19 @@ namespace ctraj {
     yind2=this->ygrid->interp(loc1[1]+sqrt(c[1])*maxd);
     if (yind2>=ny) yind2=ny-1;
     
-    for (int i=xind1; i<xind2; i++) {
+    for (int i=xind1; i<=xind2; i++) {
       this->xgrid->get(loc2[0], i);
-      for (int j=yind1; j<yind2; j++) {
+      for (int j=yind1; j<=yind2; j++) {
         this->ygrid->get(loc2[1], j);
 	ds2=this->metric->ds2(loc2, loc1);
-	if (ds2<=maxd*maxd) {
+	//printf("ds2=%g; maxd2=%g\n", ds2, maxd*maxd);
+	//remove "corners" extending past equator:
+        sub=ny*j+i;
+        this->map_map->get_1d(ind0, sub);
+	if (ds2<=maxd*maxd && ind0>=0) {
           wt[m]=exp(-k*ds2);
-	  norm+=wt[m];
-	  sub=ny*j+i;
-	  this->map_map->get_1d(ind0, sub);
-	  ind[m]=ind0+this->nmap*d1;
+          norm+=wt[m];
+          ind[m]=ind0+this->nmap*d1;
 	  m++;
 	}
       }
@@ -134,16 +136,17 @@ namespace ctraj {
     yind2=this->ygrid->interp(loc1[1]+sqrt(c[1])*maxd);
     if (yind2>=ny) yind2=ny-1;
     
-    for (int i=xind1; i<xind2; i++) {
+    for (int i=xind1; i<=xind2; i++) {
       this->xgrid->get(loc2[0], i);
-      for (int j=yind1; j<yind2; j++) {
+      for (int j=yind1; j<=yind2; j++) {
         this->ygrid->get(loc2[1], j);
 	ds2=this->metric->ds2(loc1, loc2);
-	if (ds2<=maxd*maxd) {
+	//remove "corners" extending past equator:
+        sub=ny*j+i;
+        this->map_map->get_1d(ind0, sub);
+	if (ds2<=maxd*maxd && ind0>=0) {
           wt[m]=exp(-k*ds2);
 	  norm+=wt[m];
-	  sub=ny*j+i;
-	  this->map_map->get_1d(ind0, sub);
 	  ind[m]=ind0+this->nmap*d1;
 	  m++;
 	}

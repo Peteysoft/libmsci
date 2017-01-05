@@ -23,9 +23,9 @@ namespace ctraj {
   const float SIDELENGTH_Q=10000.;
 
   //diffusion coefficient:
-  const float DIFFUSION=1.;
+  const float DIFFUSION=10000.;
   //cut-off value for interpolation coefficients in Gaussian diffusion:
-  const float GAUSS_CUTOFF=0.1;
+  const float GAUSS_CUTOFF=0.005;
 
   //default conversion to spherical-polar coords:
   const int32_t NLON=360;
