@@ -3,8 +3,10 @@ DATA_PATH = /cygdrive/e/data/ncep/oneday
 #DATA_PATH = /home/Peter/data/ncep/oneday
 VFIELD_PATH=.
 #to make it easier to clone this directory:
-#MASTER=.
-MASTER=/home/lenovo/my_software/libmsci/ctraj/scripts/pc_proxy
+MASTER=.
+#MASTER=/home/lenovo/my_software/libmsci/ctraj/scripts/pc_proxy
+#work directory:
+WORK=work
 
 #extent of velocity field:
 #(take two years of data and keep it local to guarantee no more stupid
@@ -43,6 +45,10 @@ NGRID = 50
 TSTEP = 1
 #"fine" (Lagrangian) Runge-Kutta time step
 NFINE = 20
+
+#diffusion coefficient:
+DCOEF=20000
+#DCOEF=-1
 
 #parameters for interpolation:
 #use PC proxy? (or proxy tracer)
@@ -113,27 +119,33 @@ VFIELD_N=$(VFIELD_PATH)/vfield_ncep_$(VBASE)_N.ds
 VFIELD_S=$(VFIELD_PATH)/vfield_ncep_$(VBASE)_S.ds
 
 #cross-validated proxy tracers:
-PROXY1=proxy1_$(BASE).vec
-PROXY2=proxy2_$(BASE).vec
-PROXY_O3 = proxyO3_$(BASE).vec
-PROXY_DATES = proxy_dates_$(BASE).txt
+PROXY1=$(WORK)/proxy1_$(BASE).vec
+PROXY2=$(WORK)/proxy2_$(BASE).vec
+PROXY_O3 = $(WORK)/proxyO3_$(BASE).vec
+PROXY_DATES = $(WORK)/proxy_dates_$(BASE).txt
 #corresponding dates:
-PDATES1=pdates1_$(BASE).txt
-PDATES2=pdates2_$(BASE).txt
+PDATES1=$(WORK)/pdates1_$(BASE).txt
+PDATES2=$(WORK)/pdates2_$(BASE).txt
 
 #tracer mapping:
-MAPBASE=$(THETA)K$(shell date_calc -f "%Y.%m.%d" $(T0a))-$(shell date_calc -f "%Y.%m.%d" $(TFa))n$(NGRID)dt$(TSTEP)h$(NFINE)
-CVMAT=matO3_$(MAPBASE).dat
+ifeq ($(strip $(DCOEF)),-1)
+  MAPBASE=$(THETA)K$(shell date_calc -f "%Y.%m.%d" $(T0a))-$(shell date_calc -f "%Y.%m.%d" $(TFa))n$(NGRID)dt$(TSTEP)h$(NFINE)
+  TRACER_OPT=-n $(NGRID) -h $(TSTEP) -k $(NFINE)
+else
+  MAPBASE=$(THETA)K$(shell date_calc -f "%Y.%m.%d" $(T0a))-$(shell date_calc -f "%Y.%m.%d" $(TFa))n$(NGRID)dt$(TSTEP)h$(NFINE)d$(DCOEF)
+  TRACER_OPT=-n $(NGRID) -h $(TSTEP) -k $(NFINE) -V 3 -C $(DCOEF)
+endif
+CVMAT=$(WORK)/matO3_$(MAPBASE).dat
 #corresponsing dates:
-DATES=datesO3_$(MAPBASE).txt
+DATES=$(WORK)/datesO3_$(MAPBASE).txt
 
 #cross-validation results:
-CVAL1=v1_$(BASE).txt
-CVAL2=v2_$(BASE).txt
+CVAL1=$(WORK)/v1_$(BASE).txt
+CVAL2=$(WORK)/v2_$(BASE).txt
 
 #for "classic" proxy tracer:
 #passive proxy tracer field:
-PROXY_FIELD = proxy_$(THETA)K.vec
+PROXY_FIELD = $(WORK)/proxy_$(THETA)K.vec
 
 #data files:
 SONDE_DATA = $(MASTER)/o3soundings$(THETA)K.txt
@@ -151,7 +163,7 @@ TFb_1!=date_calc $(TFb)
 
 #create the "key":
 #(note: first four fields shouldn't matter but we are bug-hunting...)
-KEY = $(strip "vfield=$(T0_1):$(TF_1);tracer=$(T0a_1):$(TFa_1);interpolates=$(T0b_1):$(TFb_1);ngrid=$(NGRID);tstep=$(TSTEP);nfine=$(NFINE);integration=$(INT_T);lead=$(LEAD);eigenvalues=$(NEV);Arnoldi-vectors=$(NCV);window=$(WINDOW);ngrid=$(NGRID);theta=$(THETA);$(HEMI1);data-path=$(DATA_PATH)")
+KEY = $(strip "vfield=$(T0_1):$(TF_1);tracer=$(T0a_1):$(TFa_1);interpolates=$(T0b_1):$(TFb_1);ngrid=$(NGRID);tstep=$(TSTEP);nfine=$(NFINE);dcoef=$(DCOEF);integration=$(INT_T);lead=$(LEAD);eigenvalues=$(NEV);Arnoldi-vectors=$(NCV);window=$(WINDOW);ngrid=$(NGRID);theta=$(THETA);$(HEMI1);data-path=$(DATA_PATH)")
 
 RESULTS=results.txt
 CHECK!=grep -n $(KEY) $(RESULTS)
@@ -186,19 +198,20 @@ clean:
 	rm -f $(CVMAT)
 	rm -f $(PROXY_FIELD)
 	rm -f $(DATES)
+	rm -f $(WORK)/file?.txt
 
-$(PROXY2) $(PDATES2): file2.txt $(PROXYFILE) $(DATES)
+$(PROXY2) $(PDATES2): $(WORK)/file2.txt $(PROXYFILE) $(DATES)
 	$(PROXY_COMMAND) $(PROXY_OPTIONS) -t 20 -i $(T0b) -f $(TFb) \
-		$(PROXYFILE) $(DATES) file2.txt \
+		$(PROXYFILE) $(DATES) $(WORK)/file2.txt \
 		$(PC_ARGS) $(WINDOW) $(PROXY2) > $(PDATES2) 
 
-$(PROXY1) $(PDATES1): file1.txt $(PROXYFILE) $(DATES)
+$(PROXY1) $(PDATES1): $(WORK)/file1.txt $(PROXYFILE) $(DATES)
 	$(PROXY_COMMAND) $(PROXY_OPTIONS) -t 20 -i $(T0b) -f $(TFb) \
-		$(PROXYFILE) $(DATES) file1.txt \
+		$(PROXYFILE) $(DATES) $(WORK)/file1.txt \
 		$(PC_ARGS) $(WINDOW) $(PROXY1) > $(PDATES1)
 
-file1.txt file2.txt: $(POAM_DATA)
-	split_file $(POAM_DATA) file1.txt file2.txt
+$(WORK)/file1.txt $(WORK)/file2.txt: $(POAM_DATA)
+	split_file $(POAM_DATA) $(WORK)/file1.txt $(WORK)/file2.txt
 
 $(SONDE_DATA): $(SONDE_DATA).gz
 	gunzip -c $(SONDE_DATA).gz > $(SONDE_DATA)
@@ -212,8 +225,9 @@ $(POAM_DATA): $(POAM_DATA).gz
 	gunzip -c $(POAM_DATA).gz > $(POAM_DATA)
 
 $(CVMAT) $(DATES): $(VFIELD_S) $(VFIELD_N)
-	ctraj_tracer -n $(NGRID) -h $(TSTEP) -k $(NFINE) \
-		-i $(T0a) -f $(TFa) $(VFIELD_S) $(VFIELD_N) $(CVMAT) > $(DATES)
+	if [ ! -d $(WORK) ]; then mkdir $(WORK); fi
+	ctraj_tracer $(TRACER_OPT) -i $(T0a) -f $(TFa) \
+		$(VFIELD_S) $(VFIELD_N) $(CVMAT) > $(DATES)
 
 #$(DATES): $(VFIELD_S) $(VFIELD_N)
 #	ctraj_tracer -Q -n $(NGRID) -h $(TSTEP) -k $(NFINE) \
