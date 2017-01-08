@@ -75,6 +75,8 @@ void intcoeff(simple<float> *lon,
 //since I haven't figured out a way to do this analytically...
 sub_1d_type calc_nmap(ind_type ngrid) {
 
+  return M_PI*ngrid*ngrid/2;
+
   simple<float> *xgrid;
   simple<float> *ygrid;
   sub_1d_type nmap;

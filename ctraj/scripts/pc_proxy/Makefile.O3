@@ -1,5 +1,9 @@
+SHELL=/bin/bash
+
 #file paths:
-DATA_PATH = /cygdrive/e/data/ncep/oneday
+#VFIELD_TGRID=sixhour
+VFIELD_TGRID=oneday
+DATA_PATH = /cygdrive/e/data/ncep/$(VFIELD_TGRID)
 #DATA_PATH = /home/Peter/data/ncep/oneday
 VFIELD_PATH=.
 #to make it easier to clone this directory:
@@ -40,15 +44,15 @@ TFb= 1998/11/17
 THETA = 500
 
 #grid points per side
-NGRID = 50
+NGRID = 100
 #"coarse" (Eulerian) time step
 TSTEP = 1
 #"fine" (Lagrangian) Runge-Kutta time step
 NFINE = 20
 
 #diffusion coefficient:
-DCOEF=20000
-#DCOEF=-1
+#DCOEF=20000
+DCOEF=-1
 
 #parameters for interpolation:
 #use PC proxy? (or proxy tracer)
@@ -99,7 +103,8 @@ ifdef PC
   #options to PROXY_COMMAND:
   PROXY_OPTIONS=$(KFLAG) -v $(NEV) -A $(NCV) -l $(LEAD) $(HEMI1)
   #base name of output files:
-  BASE=$(THETA)K$(shell date_calc -f "%Y.%m.%d" $(T0b))-$(shell date_calc -f "%Y.%m.%d" $(TFb))pc$(NEV)A$(NCV)S$(INT_T)l$(LEAD)$(HEMI1)
+  BASE=$(ID)
+  #BASE=$(THETA)K$(shell date_calc -f "%Y.%m.%d" $(T0b))-$(shell date_calc -f "%Y.%m.%d" $(TFb))pc$(NEV)A$(NCV)S$(INT_T)l$(LEAD)w$(WINDOW)$(HEMI1)
   #proxy field:
   PROXYFILE=$(CVMAT)
 else
@@ -114,7 +119,7 @@ else
 endif
 
 #file names:
-VBASE=$(THETA)K$(shell date_calc -f "%Y.%m.%d" $(T0))-$(shell date_calc -f "%Y.%m.%d" $(TF))
+VBASE=$(THETA)K$(VFIELD_TGRID)$(shell date_calc -f "%Y.%m.%d" $(T0))-$(shell date_calc -f "%Y.%m.%d" $(TF))
 VFIELD_N=$(VFIELD_PATH)/vfield_ncep_$(VBASE)_N.ds
 VFIELD_S=$(VFIELD_PATH)/vfield_ncep_$(VBASE)_S.ds
 
@@ -129,10 +134,10 @@ PDATES2=$(WORK)/pdates2_$(BASE).txt
 
 #tracer mapping:
 ifeq ($(strip $(DCOEF)),-1)
-  MAPBASE=$(THETA)K$(shell date_calc -f "%Y.%m.%d" $(T0a))-$(shell date_calc -f "%Y.%m.%d" $(TFa))n$(NGRID)dt$(TSTEP)h$(NFINE)
+  MAPBASE=$(THETA)K$(VFIELD_TGRID)$(shell date_calc -f "%Y.%m.%d" $(T0a))-$(shell date_calc -f "%Y.%m.%d" $(TFa))n$(NGRID)dt$(TSTEP)h$(NFINE)
   TRACER_OPT=-n $(NGRID) -h $(TSTEP) -k $(NFINE)
 else
-  MAPBASE=$(THETA)K$(shell date_calc -f "%Y.%m.%d" $(T0a))-$(shell date_calc -f "%Y.%m.%d" $(TFa))n$(NGRID)dt$(TSTEP)h$(NFINE)d$(DCOEF)
+  MAPBASE=$(THETA)K$(VFIELD_TGRID)$(shell date_calc -f "%Y.%m.%d" $(T0a))-$(shell date_calc -f "%Y.%m.%d" $(TFa))n$(NGRID)dt$(TSTEP)h$(NFINE)d$(DCOEF)
   TRACER_OPT=-n $(NGRID) -h $(TSTEP) -k $(NFINE) -V 3 -C $(DCOEF)
 endif
 CVMAT=$(WORK)/matO3_$(MAPBASE).dat
@@ -163,26 +168,31 @@ TFb_1!=date_calc $(TFb)
 
 #create the "key":
 #(note: first four fields shouldn't matter but we are bug-hunting...)
-KEY = $(strip "vfield=$(T0_1):$(TF_1);tracer=$(T0a_1):$(TFa_1);interpolates=$(T0b_1):$(TFb_1);ngrid=$(NGRID);tstep=$(TSTEP);nfine=$(NFINE);dcoef=$(DCOEF);integration=$(INT_T);lead=$(LEAD);eigenvalues=$(NEV);Arnoldi-vectors=$(NCV);window=$(WINDOW);ngrid=$(NGRID);theta=$(THETA);$(HEMI1);data-path=$(DATA_PATH)")
+#KEY = $(strip "vfield=$(T0_1):$(TF_1);tracer=$(T0a_1):$(TFa_1);interpolates=$(T0b_1):$(TFb_1);ngrid=$(NGRID);tstep=$(TSTEP);nfine=$(NFINE);dcoef=$(DCOEF);integration=$(INT_T);lead=$(LEAD);eigenvalues=$(NEV);Arnoldi-vectors=$(NCV);window=$(WINDOW);ngrid=$(NGRID);theta=$(THETA);$(HEMI1);data-path=$(DATA_PATH)")
+KEY = $(strip "theta=$(THETA);data-path=$(DATA_PATH);interpolates=$(T0b_1):$(TFb_1);ngrid=$(NGRID);tstep=$(TSTEP);nfine=$(NFINE);dcoef=$(DCOEF);integration=$(INT_T);lead=$(LEAD);eigenvalues=$(NEV);Arnoldi-vectors=$(NCV);window=$(WINDOW);ngrid=$(NGRID);$(HEMI1)")
 
-RESULTS=results.txt
-CHECK!=grep -n $(KEY) $(RESULTS)
-
-all: $(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
-	tracer_interpolate -t 24 -P \
-		$(TTHRESH) $(LATBAND) $(HEMI2) -i $(T0b) -f $(TFb) \
-		$(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
+RESULTS=results$(ID).txt
+INDEX=index.txt
+CHECK!=grep -n $(KEY) $(INDEX)
 
 ifndef CHECK
-version: $(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
-	echo $(KEY) >> $(RESULTS)
+ID!=date +%Y.%m.%d.%H.%M.%S
+else
+LINENO=$(word 1, $(subst :, ,$(CHECK)))
+ID!=head -n $$(( $(LINENO) - 1 )) $(INDEX) | tail -n 1
+endif
+
+ifndef CHECK
+all: $(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
+	echo $(ID) >> $(INDEX)
+	echo $(KEY) >> $(INDEX)
 	tracer_interpolate -t 24 -P \
 		$(TTHRESH) $(LATBAND) $(HEMI2) -i $(T0b) -f $(TFb) \
-		$(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA) >> $(RESULTS)
+		$(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA) > $(RESULTS)
+	more $(RESULTS)
 else
-version:
-	@echo "Case has already been tried. Check file, $(RESULTS):"
-	@echo "$(CHECK)"
+all:
+	more $(RESULTS)
 endif
 
 cross_validate: $(PROXY1) $(PROXY2) $(PDATES1) $(PDATES2) file1.txt file2.txt
