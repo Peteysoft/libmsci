@@ -1,3 +1,4 @@
+#include <math.h>
 #include <getopt.h>
 #include <stdlib.h>
 
@@ -27,19 +28,21 @@ int main(int argc, char **argv) {
   int hemi=0;
   char c;
   long ncon;
+  int32_t gflag=0;
 
   //latitude range:
   float min=-90;
   float max=90;
 
-  void *optarg[10];
-  int flag[10];
+  void *optarg[20];
+  int flag[20];
   int sflag;
 
   optarg[2]=&twid;
   optarg[7]=&min;
   optarg[8]=&max;
-  argc=parse_command_opts(argc, argv, "ift+-S?IF", "%s%s%d%%%%%g%g", 
+  optarg[9]=&gflag;
+  argc=parse_command_opts(argc, argv, "ift+-S?IFg", "%s%s%d%%%%%g%g%d", 
 		  optarg, flag, OPT_WHITESPACE);
   if (argc<0) {
     fprintf(stderr, "select_meas: command option parse error\n");
@@ -60,7 +63,7 @@ int main(int argc, char **argv) {
       docfs=stderr;
       err=INSUFFICIENT_COMMAND_ARGS;
     }
-    fprintf(docfs, "Usage: select_meas [-i t0] [-f tf] [-+|--] [-t dwid] [-S] infile\n");
+    fprintf(docfs, "Usage: select_meas [-i t0] [-f tf] [-+|--] [-t dwid] [-S] [infile]\n");
     fprintf(docfs, "options:\n");
     fprintf(docfs, "  -I   select measurements at this latitude or above\n");
     fprintf(docfs, "  -F   select measurements at this latitude or below\n"); 
@@ -97,6 +100,18 @@ int main(int argc, char **argv) {
     sel2=select_lat_range(selected, n2, min, max, &n2);
     delete [] selected;
     selected=sel2;
+  }
+
+  if (gflag>0) {
+    for (int i=0; i<n2; i++) {
+      selected[i].qerr=selected[i].qerr/selected[i].q;
+      selected[i].q=log(selected[i].q);
+    }
+  } else if (gflag < 0) {
+    for (int i=0; i<n2; i++) {
+      selected[i].q=exp(selected[i].q);
+      selected[i].qerr=selected[i].qerr*selected[i].q;
+    }
   }
 
   write_meas(selected, n2, stdout);
