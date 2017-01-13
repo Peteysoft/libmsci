@@ -23,19 +23,19 @@ namespace ctraj {
 
   //interpolate a tracer
   //assumes standard side-length of 20000 km
-  void tracer_interp(float **qall, 		//tracer fields
+  void tracer_interp(float **qall, 		//proxy
 		time_class *t, 			//time grids
 		int32_t nt, 			//number of time grids
 		int32_t np, 			//number of horizontal grids
-		meas_data *data, 		//list of locations/interpolates
-		long nsamp);			//number of interpolates
+		meas_data *data, 		//samples
+		long nsamp);			//number of samples
 
   //performs the pc-proxy interpolation:
-  float ** pc_proxy(sparse_matrix *matall, 	//tracer mapping
+  float ** pc_proxy(sparse_matrix *matall, 	//discrete transport map
 		time_class *t, 			//time grids
 		int32_t N, 			//"lead" time
 		int32_t nall, 			//total number of grids
-		meas_data *samp, 		//list of samples
+		meas_data *samp, 		//samples
 		long nsamp, 			//number of samples
 		int32_t nev, 			//number of eigenvalues
 		int32_t ncv, 			//number of Arnoldi vectors
@@ -43,21 +43,24 @@ namespace ctraj {
 		int index=-1);			//index of field to output
 
   //returns the coefficients:
-  //(doesn't work--one of these days I should fix it)
-  float * proxy_tracer(float **tall, 
-		int32_t np, 
-		time_class *t, 
-		int32_t nall, 
-		meas_data *samp, 
-		long nsamp, 
-		int32_t order);
+  float * proxy_tracer(float **tall, 		//proxy
+		int32_t np, 			//total no. of horizontal grid
+						//points
+		time_class *t, 			//time grid
+		int32_t nall, 			//number of time grids
+		meas_data *samp, 		//samples
+		long nsamp, 			//number of samples
+		int32_t order);			//order of method
 
-  //new paradigm:
+  //new paradigm: (hasn't been tested...)
   template <class real>
-  void tracer_map(ctraj_tfield_base<real> * tracer, 
-		ctraj_vfield_base<real> *vfield,
-		sparse<int32_t, real> *map,
-		real t, real dt, int32_t nt);
+  void tracer_map(
+	ctraj_tfield_base<real> * tracer, 	//calculate interpolation coefs
+	ctraj_vfield_base<real> *vfield,	//velocity field
+	sparse<int32_t, real> *map,		//returned transport map
+	real t, 				//current time grid
+	real dt, 				//size of time step
+	int32_t nt);				//number of time steps
 
   //calculate approximate area of each grid point:
   template <typename real>

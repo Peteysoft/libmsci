@@ -28,19 +28,13 @@ using namespace libsparse;
 using namespace ctraj;
 
 int main(int argc, char *argv[]) {
-  char *initfile=NULL;
-  FILE *initfs;
-
   //main data file names:
   char *outfile;
 
-  char c;
-  size_t ncon;
-
   //basic data structures/engine:
-  ctraj_vfield_base<float> *vfield;
-  ctraj_tfield_base<float> *tracer;
-  sparse<int32_t, float> map;
+  ctraj_vfield_base<float> *vfield;		//velocity field
+  ctraj_tfield_base<float> *tracer;		//tracer grid
+  sparse<int32_t, float> map;			//transport map
 
   //composite dataset containing velocity field:
   //time step info:
@@ -53,40 +47,38 @@ int main(int argc, char *argv[]) {
   char date_str[TSTRING_LEN];		//a date as a string
 
   //time indices:
-  double tind1, tind2;
+  double tind1;				//initial time index
   double *tind;				//vector of time indices
   int32_t lt;				//time index as integer
 
-  //dimensions:
-  int32_t ndim=2;
-  int32_t nwt, nwtmax;
-  int32_t nmap;
+  int32_t ndim=2;			//number of dimensions
+  int32_t nwt;				//current number of weights
+  int32_t nwtmax;			//maximum number of weights
+  int32_t nmap;				//number of points in tracer field
 
   //stuff for integration:
-  //float **x0;				//initial conditions
-  //int32_t *d0;				//initial domain 
   float **result;			//integrated values
 
-  void *param[2];
+  void *param[2];		//pass to velocity field to R-K integrator
 
-  az_eq_t<float> *metric;
+  az_eq_t<float> *metric;		//properties of metric space
 
   //interpolation indices:
-  int32_t *ind;
-  double *wt;
-  int32_t domain;
+  int32_t *ind;				//indices of interpolation points
+  double *wt;				//weights for each point
+  int32_t domain;			//domain of metric space
 
   FILE *outfun;				//output file unit
 
-  int32_t vtype=0;
-  int qflag=0;		//just print out the dates...
-  int argc0;
+  int32_t vtype=0;			//type of velocity field/tracer
+  int qflag=0;				//just print out the dates...
+  int argc0;				//number of non-optional arguments
 
-  int flag[20];
-  void *optarg[20];
+  int flag[20];				//argument present or not?
+  void *optarg[20];			//returned optional arguments
 
+  //parse the command line arguments:
   tind1=0;
-
   optarg[0]=&tstep;
   optarg[1]=&nfine;
   optarg[2]=&tind1;
@@ -123,6 +115,7 @@ int main(int argc, char *argv[]) {
     default:
       vfield=new ctraj_vfield_standard<float>();
       tracer=new ctraj_tfield_standard<float>();
+      vtype=0;
       break;
   }
 
@@ -162,23 +155,20 @@ int main(int argc, char *argv[]) {
     return err;
   }
 
-  //for (int i=0; i<argc0; i++) printf("%s ", argv[i]);
-  //printf("\n");
   tracer->setup(argc, argv);
-  //for (int i=0; i<argc0; i++) printf("%s ", argv[i]);
-  //printf("\n");
   nwtmax=tracer->nwt();
 
   vfield->setup(argc, argv);
-  //for (int i=0; i<argc0; i++) printf("%s ", argv[i]);
-  //printf("\n");
 
-  if (typeid(*vfield)==typeid(ctraj_vfield_standard<float>) &&
-  		typeid(*tracer)==typeid(ctraj_tfield_standard<float>)) {
+  if (vtype==0 || vtype==3) {
+    //somehow it's important to run this with different-sized Earth's:
+    //(maybe this might someday be precise enough to worry about the non-
+    //sphericity of the Earth!)
     metric=((ctraj_vfield_standard<float> *) vfield)->get_metric();
     ((ctraj_tfield_standard<float> *) tracer)->set_metric(metric);
   }
 
+  //set integration time:
   if (flag[5]) tind1=vfield->get_tind((char *) optarg[5]);
   if (flag[6]) {
     double tindf=vfield->get_tind((char *) optarg[6]);
@@ -208,22 +198,6 @@ int main(int argc, char *argv[]) {
   //initialize the sparse matrix:
   //map.extend(nmap*nwtmax);
 
-  /*
-  //initialize variables for initial conditions:
-  x0=new float * [nmap];
-  x0[0]=new float[nmap*ndim];
-  for (int32_t i=1; i<nmap; i++) x0[i]=x0[0]+i*ndim;
-  d0=new int32_t[nmap];			//initial domain
-
-  //get the initial conditions:
-  for (int32_t i=0; i<nmap; i++) {
-    d0[i]=tracer->get_loc(i, x0[i]);
-    //printf("%3d ", d0[i]);
-    //for (int32_t j=0; j<ndim; j++) printf("%12.4g ", x0[i][j]);
-    //printf("\n");
-  }
-  */
-
   //initialize interpolation variables:
   wt=new double[nwtmax];
   ind=new int32_t[nwtmax];
@@ -233,6 +207,7 @@ int main(int argc, char *argv[]) {
   result[0]=new float[ndim*(nfine+1)];
   for (int32_t i=1; i<=nfine; i++) result[i]=result[0]+i*ndim;
 
+  //pass velocity field to R-K integrator:
   param[0]=vfield;
 
   //open the output file and write the headers:
@@ -259,16 +234,20 @@ int main(int argc, char *argv[]) {
 
       //set initial conditions:
       d0i=tracer->get_loc(i, x0i);
+      //pass "domain" to R-K integrator:
       param[1]=&d0i;
 
       //do a Runge-Kutta integration:
       rk_dumb(tind[it], x0i, ndim, tstep_fine, nfine, result, (void *) param, &ctraj_deriv);
 
+      //get interpolation coefficients:
       nwt=tracer->interpolate(d0i, result[nfine], ind, wt);
 
+      //don't think I've ever used this feature (maybe it should be expunged?)
       tw=0;
       if (nwt < 0) {
-        //exclude mssing indices and weights less than 0:
+        nwt=-nwt;
+        //exclude missing indices and weights less than 0:
         for (int32_t j=0; j<nwt; j++) {
           if (ind<0 || wt[j]<0) {
             wt[j]=0;
@@ -280,11 +259,14 @@ int main(int argc, char *argv[]) {
         for (int32_t j=0; j<nwt; j++) wt[j]=wt[j]/tw;
       }
 
+      //add interpolation coefficients to matrix:
       tw=0;
       for (int32_t j=0; j<nwt; j++) {
         map.add_el(wt[j], i, ind[j]);
         tw+=wt[j];
       }
+
+      //why was this happening? (maybe it should be expunged too...)
       if (tw > 1.000001) {
         fprintf(stderr, "ctraj_tracer: warning: total of weights at row %d exceeds unity:\n", i);
         fprintf(stderr, "              %g", wt[0]);

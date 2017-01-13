@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
   optarg[1]=&order;
   optarg[2]=&i0;
   optarg[3]=&N;
-  argc=parse_command_opts(argc, argv, "do0Nif?-+", "%d%d%d%d%s%s%%%", optarg, flag, OPT_WHITESPACE);
+  argc=parse_command_opts(argc, argv, "to0Nif?-+", "%d%d%d%d%s%s%%%", optarg, flag, OPT_WHITESPACE);
   hemi=flag[8]-flag[7];
 
   if (argc<5 || flag[6]) {

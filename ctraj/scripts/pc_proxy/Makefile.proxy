@@ -2,41 +2,50 @@ CC = g++
 
 COPTS = $(OPT_VER)
 
-YEAR=1999
 TFLAG=-T	#use theta levels
 #vertical level:
 THETA=500
 NGRID = 50	#horizontal resolution
-NFINE=6		#number of Runge-Kutta steps between each interpolation
+NFINE=20	#number of Runge-Kutta steps between each interpolation
 DT=1		#Eulerian time-step
 
-T0=$(YEAR)/1/1
-TF=$(YEAR)/6/1
+#integration time between these two dates:
+T0=1997/1/1
+TF=1998/1/1
+
+#use velocity fields from other experiment:
+T0v=1997/1/1
+TFv=1999/12/31
 
 #VFIELD_PATH=/cygdrive/e/tmpdata/vfield
 VFIELD_PATH=.
+VFIELD_TGRID=oneday
 #VFIELD_PATH=/mnt/sdc1/home2/pete/tmpdata/vfield
-DATA_PATH= /cygdrive/e/data/ncep/sixhour
+DATA_PATH= /cygdrive/e/data/ncep/$(VFIELD_TGRID)
 #DATA_PATH= /home/Peter/data/ncep/oneday
 #DATA_PATH= /media/Lexar/ncep_data
 
-VFIELD_N = $(VFIELD_PATH)/vfield_ncep$(YEAR)_$(THETA)K_N.ds
-VFIELD_S = $(VFIELD_PATH)/vfield_ncep$(YEAR)_$(THETA)K_S.ds
+#converted velocity fields:
+VBASE=$(THETA)K$(VFIELD_TGRID)$(shell date_calc -f "%Y.%m.%d" $(T0v))-$(shell date_calc -f "%Y.%m.%d" $(TFv))
+VFIELD_N=$(VFIELD_PATH)/vfield_ncep_$(VBASE)_N.ds
+VFIELD_S=$(VFIELD_PATH)/vfield_ncep_$(VBASE)_S.ds
 
 SKIP=4		#plot only every fourth frame
 
-MATFILE = mat.dat
+#MATFILE = mat.dat
+MATFILE = work/matO3_500Koneday1997.01.01-1999.01.01n50dt1h20.dat
+DATEFILE = work/datesO3_500Koneday1997.01.01-1999.01.01n50dt1h20.txt
 
 TRACER=ctraj_tracer
-TRACER_MULTIPLY=tracer_step2_w_renorm
-#TRACER_MULTIPLY=sparse_vect_prod$(OPT_VER)
+#TRACER_MULTIPLY=tracer_step2_w_renorm
+TRACER_MULTIPLY=sparse_vect_prod$(OPT_VER)
 
 PLOT_OPTS=-z 50 -I 0 -F 1 -O $(SKIP)
 
 NTEST = 10
 
-T0_MEAS = $(YEAR)/3/1
-TF_MEAS = $(YEAR)/3/2
+T0_MEAS = 1997/3/1
+TF_MEAS = 1997/3/2
 
 all: proxycorr.txt lyap_spec.txt pccorr.txt tcorr.txt
 
@@ -59,18 +68,18 @@ pc1.gif: lyap_spec.txt
 proxycorr.txt: proxy.vec tracer1.vec
 	correlate_fields tracer1.vec proxy.vec > proxycorr.txt
 
-proxy.vec: meas_sim.txt dates.txt $(MATFILE)
+proxy.vec: meas_sim.txt $(DATEFILE) $(MATFILE)
 	pc_proxy -i $(T0) -f $(TF_MEAS) -W $(MATFILE) \
-			dates.txt meas_sim.txt proxy.vec
+			$(DATEFILE) meas_sim.txt proxy.vec
 	#pc_proxy -N $(LEAD) $(MATFILE) dates.txt meas_sim.txt proxy2.vec
 	#$(TRACER_MULTIPLY) $(MATFILE) proxy2.vec
 
-dates.txt: 
-	$(TRACER) -Q -h $(DT) -i $(T0) -f $(TF) $(VFIELD_N) $(VFIELD_S) \
-			> dates.txt
+#dates.txt: 
+#	$(TRACER) -Q -h $(DT) -i $(T0) -f $(TF) $(VFIELD_N) $(VFIELD_S) \
+#			> dates.txt
 
-meas_sim.txt: meas_loc.txt tracer1.vec dates.txt
-	tracer_interpolate tracer1.vec dates.txt meas_loc.txt > meas_sim.txt
+meas_sim.txt: meas_loc.txt tracer1.vec $(DATEFILE)
+	tracer_interpolate tracer1.vec $(DATEFILE) meas_loc.txt > meas_sim.txt
 
 meas_loc.txt:
 	random_global -i $(T0_MEAS) -f $(TF_MEAS) $(NTEST) > meas_loc.txt 
@@ -107,11 +116,12 @@ tracer2.vec: $(MATFILE)
 	zonally_symmetric_tracer -E | lla2aeb -n $(NGRID) tracer2.vec
 	$(TRACER_MULTIPLY) $(MATFILE) tracer2.vec
 
-$(MATFILE): $(VFIELD_N) $(VFIELD_S)
-	$(TRACER) -n $(NGRID) -h $(DT) -k $(NFINE) -i $(T0) -f $(TF) \
-		$(VFIELD_S) $(VFIELD_N) $(MATFILE)
+#just piggy-back off the other experiment for all this stuff...
+#$(MATFILE): $(VFIELD_N) $(VFIELD_S)
+#	$(TRACER) -n $(NGRID) -h $(DT) -k $(NFINE) -i $(T0) -f $(TF) \
+#		$(VFIELD_S) $(VFIELD_N) $(MATFILE)
 
-$(VFIELD_N) $(VFIELD_S):
-	make -C ../test vfield YEAR=$(YEAR) LEV=$(THETA) \
-		DATAPATH=$(DATA_PATH) VFIELD_PATH=$(VFIELD_PATH)
+#$(VFIELD_N) $(VFIELD_S):
+#	make -C ../test vfield YEAR=$(YEAR) LEV=$(THETA) \
+#		DATAPATH=$(DATA_PATH) VFIELD_PATH=$(VFIELD_PATH)
 

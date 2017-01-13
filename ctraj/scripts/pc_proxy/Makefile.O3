@@ -24,17 +24,16 @@ TF=1999/12/31
 #extent of tracer mapping:
 #T0a= 1998/12/1
 #TFa= 1999/4/1
-
-#T0a = 1997/1/1
-T0a = 1998/6/1
+#take three years of data for some "spin up" for traditional proxy:
+T0a = 1997/1/1
+#T0a = 1998/6/1
 TFa= 1999/1/1
 
 #interpolate POAM data between these two dates:
-T0b= 1998/9/12
-TFb= 1998/11/17
-
 #T0b= 1998/11/1
 #TFb= 1998/12/30
+T0b= 1998/9/12
+TFb= 1998/11/17
 
 #T0b= 1999/2/1
 #TFb= 1999/3/25
@@ -44,7 +43,7 @@ TFb= 1998/11/17
 THETA = 500
 
 #grid points per side
-NGRID = 100
+NGRID = 50
 #"coarse" (Eulerian) time step
 TSTEP = 1
 #"fine" (Lagrangian) Runge-Kutta time step
@@ -83,7 +82,7 @@ NCV = 25
 #limit interpolates to  this hemisphere
 HEMI1 =
 #limit validation to this hemisphere
-HEMI2 =
+HEMI2 = $(HEMI1)
 #remove zero values from radiosonded data:
 TTHRESH="-G 0"
 #exclude measurement stations above this (absolute) latitude:
@@ -92,6 +91,16 @@ LATMIN=$(LATTHRESH)
 LATMAX=-$(LATTHRESH)
 #LATBAND = -I $(LATMIN) -F $(LATMAX)
 LATBAND = 
+
+#experiment: log everything to a single file and use the parameters as
+#a "key":
+#make sure parameters are in a common format:
+T0_1!=date_calc $(T0)
+TF_1!=date_calc $(TF)
+T0a_1!=date_calc $(T0a)
+TFa_1!=date_calc $(TFa)
+T0b_1!=date_calc $(T0b)
+TFb_1!=date_calc $(TFb)
 
 #different arguments depending on whether we're using traditional proxy tracer
 #or PC proxy:
@@ -103,34 +112,34 @@ ifdef PC
   #options to PROXY_COMMAND:
   PROXY_OPTIONS=$(KFLAG) -v $(NEV) -A $(NCV) -l $(LEAD) $(HEMI1)
   #base name of output files:
-  BASE=$(ID)
   #BASE=$(THETA)K$(shell date_calc -f "%Y.%m.%d" $(T0b))-$(shell date_calc -f "%Y.%m.%d" $(TFb))pc$(NEV)A$(NCV)S$(INT_T)l$(LEAD)w$(WINDOW)$(HEMI1)
   #proxy field:
   PROXYFILE=$(CVMAT)
+  #create the "key":
+  KEY = $(strip "theta=$(THETA);data-path=$(DATA_PATH);interpolates=$(T0b_1):$(TFb_1);ngrid=$(NGRID);tstep=$(TSTEP);nfine=$(NFINE);dcoef=$(DCOEF);integration=$(INT_T);lead=$(LEAD);eigenvalues=$(NEV);Arnoldi-vectors=$(NCV);window=$(WINDOW);$(HEMI1)")
 else
   #command to calculate interpolates:
   PROXY_COMMAND=proxy_tracer
   #options to PROXY_COMMAND:
   PROXY_OPTIONS=$(HEMI1) -o $(ORDER)
   #base name of output files:
-  BASE=o$(ORDER)_$(HEMI1)$(THETA)K
+  #BASE=o$(ORDER)_$(HEMI1)$(THETA)K
   #proxy field:
   PROXYFILE=$(PROXY_FIELD)
+  #create the "key":
+  KEY = $(strip "theta=$(THETA);data-path=$(DATA_PATH);interpolates=$(T0b_1):$(TFb_1);ngrid=$(NGRID);tstep=$(TSTEP);nfine=$(NFINE);dcoef=$(DCOEF);order=$(ORDER);$(HEMI1)")
 endif
 
 #file names:
+
+#data files:
+SONDE_DATA = $(MASTER)/o3soundings$(THETA)K.txt
+POAM_DATA = $(MASTER)/POAMIII_$(THETA)K.txt
+
+#converted velocity fields:
 VBASE=$(THETA)K$(VFIELD_TGRID)$(shell date_calc -f "%Y.%m.%d" $(T0))-$(shell date_calc -f "%Y.%m.%d" $(TF))
 VFIELD_N=$(VFIELD_PATH)/vfield_ncep_$(VBASE)_N.ds
 VFIELD_S=$(VFIELD_PATH)/vfield_ncep_$(VBASE)_S.ds
-
-#cross-validated proxy tracers:
-PROXY1=$(WORK)/proxy1_$(BASE).vec
-PROXY2=$(WORK)/proxy2_$(BASE).vec
-PROXY_O3 = $(WORK)/proxyO3_$(BASE).vec
-PROXY_DATES = $(WORK)/proxy_dates_$(BASE).txt
-#corresponding dates:
-PDATES1=$(WORK)/pdates1_$(BASE).txt
-PDATES2=$(WORK)/pdates2_$(BASE).txt
 
 #tracer mapping:
 ifeq ($(strip $(DCOEF)),-1)
@@ -144,37 +153,15 @@ CVMAT=$(WORK)/matO3_$(MAPBASE).dat
 #corresponsing dates:
 DATES=$(WORK)/datesO3_$(MAPBASE).txt
 
-#cross-validation results:
-CVAL1=$(WORK)/v1_$(BASE).txt
-CVAL2=$(WORK)/v2_$(BASE).txt
-
 #for "classic" proxy tracer:
 #passive proxy tracer field:
-PROXY_FIELD = $(WORK)/proxy_$(THETA)K.vec
+PROXY_FIELD = $(WORK)/proxy_$(MAPBASE).vec
 
-#data files:
-SONDE_DATA = $(MASTER)/o3soundings$(THETA)K.txt
-POAM_DATA = $(MASTER)/POAMIII_$(THETA)K.txt
-
-#experiment: log everything to a single file and use the parameters as
-#a "key":
-#make sure parameters are in a common format:
-T0_1!=date_calc $(T0)
-TF_1!=date_calc $(TF)
-T0a_1!=date_calc $(T0a)
-TFa_1!=date_calc $(TFa)
-T0b_1!=date_calc $(T0b)
-TFb_1!=date_calc $(TFb)
-
-#create the "key":
-#(note: first four fields shouldn't matter but we are bug-hunting...)
-#KEY = $(strip "vfield=$(T0_1):$(TF_1);tracer=$(T0a_1):$(TFa_1);interpolates=$(T0b_1):$(TFb_1);ngrid=$(NGRID);tstep=$(TSTEP);nfine=$(NFINE);dcoef=$(DCOEF);integration=$(INT_T);lead=$(LEAD);eigenvalues=$(NEV);Arnoldi-vectors=$(NCV);window=$(WINDOW);ngrid=$(NGRID);theta=$(THETA);$(HEMI1);data-path=$(DATA_PATH)")
-KEY = $(strip "theta=$(THETA);data-path=$(DATA_PATH);interpolates=$(T0b_1):$(TFb_1);ngrid=$(NGRID);tstep=$(TSTEP);nfine=$(NFINE);dcoef=$(DCOEF);integration=$(INT_T);lead=$(LEAD);eigenvalues=$(NEV);Arnoldi-vectors=$(NCV);window=$(WINDOW);ngrid=$(NGRID);$(HEMI1)")
-
-RESULTS=results$(ID).txt
+#name of final output files:
 INDEX=index.txt
-CHECK!=grep -n $(KEY) $(INDEX)
-
+INDEX_OLD=index.old
+INDEX_NEW=index.new
+CHECK!=grep -n $(KEY)$$ $(INDEX)
 ifndef CHECK
 ID!=date +%Y.%m.%d.%H.%M.%S
 else
@@ -182,26 +169,75 @@ LINENO=$(word 1, $(subst :, ,$(CHECK)))
 ID!=head -n $$(( $(LINENO) - 1 )) $(INDEX) | tail -n 1
 endif
 
+#base name of final output files:
+BASE=$(ID)
+PROXY_O3 = $(WORK)/proxyO3_$(BASE).vec
+PROXY_DATES = $(WORK)/proxyO3_$(BASE).txt
+RESULTS=results$(BASE).txt
+
+#cross-validated proxy tracers:
+PROXY1=$(WORK)/proxy1.vec
+PROXY2=$(WORK)/proxy2.vec
+#corresponding dates:
+PDATES1=$(WORK)/pdates1.txt
+PDATES2=$(WORK)/pdates2.txt
+
+#cross-validation results:
+CVAL1=$(WORK)/v1.txt
+CVAL2=$(WORK)/v2.txt
+XVRESULTS=xvresults.txt
+
+
+all: $(RESULTS)
+	more $(RESULTS)
+
 ifndef CHECK
-all: $(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
+$(RESULTS): $(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
 	echo $(ID) >> $(INDEX)
 	echo $(KEY) >> $(INDEX)
 	tracer_interpolate -t 24 -P \
 		$(TTHRESH) $(LATBAND) $(HEMI2) -i $(T0b) -f $(TFb) \
 		$(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA) > $(RESULTS)
-	more $(RESULTS)
 else
-all:
-	more $(RESULTS)
+$(RESULTS): $(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
+	tracer_interpolate -t 24 -P \
+		$(TTHRESH) $(LATBAND) $(HEMI2) -i $(T0b) -f $(TFb) \
+		$(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA) > $(RESULTS)
 endif
 
-cross_validate: $(PROXY1) $(PROXY2) $(PDATES1) $(PDATES2) file1.txt file2.txt
+ifdef CHECK
+delete: $(RESULTS)
+	rm -f $(PROXY_O3)
+	rm -f $(PROXY_DATES)
+	sed "$$(( $(LINENO) - 1 )),$(LINENO)d" $(INDEX) > $(INDEX_NEW)
+	#in case something goes wrong:
+	mv $(INDEX) $(INDEX_OLD)
+	#because otherwise we get a big, fat nothing:
+	mv $(INDEX_NEW) $(INDEX)
+endif
+
+T0i=$(T0b)
+TFi=$(TFb)
+
+restrict: $(RESULTS)
+	tracer_interpolate -t 24 -P \
+		$(TTHRESH) $(LATBAND) $(HEMI2) -i $(T0i) -f $(TFi) \
+		$(PROXY_O3) $(PROXY_DATES) $(SONDE_DATA)
+
+cross_validate: $(XVRESULTS)
+	more $(XVRESULTS)
+
+#either build the cross-validation results together or don't subject it
+#to versioning:
+#ifndef CHECK
+$(XVRESULTS): $(PROXY1) $(PROXY2) $(PDATES1) $(PDATES2) file1.txt file2.txt
 	tracer_interpolate -t 20 -P \
 		$(TTHRESH) $(HEMI2) $(LATBAND) -i $(T0b) -f $(TFb) \
-		$(PROXY2) $(PDATES2) file1.txt > $(CVAL1)
+		$(PROXY2) $(PDATES2) file1.txt > $(CVAL1) > $(XVRESULTS)
 	tracer_interpolate -t 20 -P \
 		$(TTHRESH) $(HEMI2) $(LATBAND) -i $(T0b) -f $(TFb) \
-		$(PROXY1) $(PDATES1) file2.txt > $(CVAL2)
+		$(PROXY1) $(PDATES1) file2.txt > $(CVAL2) >> $(XVRESULTS)
+#endif
 
 clean:
 	rm -f *$(BASE)*

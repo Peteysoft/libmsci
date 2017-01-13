@@ -45,7 +45,7 @@ I0=$SKIP
 
 for ((INDEX=$I0; INDEX<=$N; INDEX+=$SKIP)); do
   OUTFILE=$BASE$INDEX.dat
-  echo "svd_sparse_array $OPTS -N $INDEX $MATFILE $OUTFILE"
+  #echo "svd_sparse_array $OPTS -N $INDEX $MATFILE $OUTFILE"
   svd_sparse_array $OPTS -N $INDEX $MATFILE $OUTFILE
 
   #doesn't work smoothly since I made the forward slash a special character...

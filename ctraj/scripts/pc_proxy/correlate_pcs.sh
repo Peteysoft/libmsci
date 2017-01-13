@@ -43,7 +43,7 @@ INDEX1=$[NV-1]
 for ((INDEX=$I0; INDEX<$N; INDEX+=$SKIP)); do
   OUTFILE=$BASE$INDEX.dat
   if [[ -a $OUTFILE ]]; then
-    echo "correlate_fields -1 $INDEX1 -2 $INDEX $OUTFILE $TRACER_FILE"
+    #echo "correlate_fields -1 $INDEX1 -2 $INDEX $OUTFILE $TRACER_FILE"
     correlate_fields -1 $INDEX1 -2 $INDEX $OUTFILE $TRACER_FILE
   else
     break

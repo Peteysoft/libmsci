@@ -327,29 +327,18 @@ float * proxy_tracer(float **tall, int32_t np, time_class *t, int32_t nall, meas
   gsl_matrix *cov;		//covariance matrix
   gsl_multifit_linear_workspace *work;
 
-  //gsl_vector *s;		//array of singular values
-  //gsl_matrix *vt;		//singular value decomposition
-  //gsl_vector *work;
   double chisq;
   
   q1=gsl_matrix_alloc(nsamp, order+1);
   q2=gsl_vector_alloc(nsamp);
 
   //copy measured values to a gsl vector:
-  //printf("ordinates:\n");
   for (long i=0; i<nsamp; i++) {
-    //printf("%g\n", samp[i].q);
     gsl_vector_set(q2, i, samp[i].q);
   }
 
   //interpolate tracer to measurement locations:
   tracer_interp(tall, t, nall, np, samp, nsamp);
-/*
-  printf("interpolates:\n");
-  for (long i=0; i<nsamp; i++) {
-    printf("%g\n", samp[i].q);
-  }
-*/
 
   //fill the matrix with interpolated tracer values transformed by basis functions:
   for (long i=0; i<nsamp; i++) {
@@ -358,15 +347,6 @@ float * proxy_tracer(float **tall, int32_t np, time_class *t, int32_t nall, meas
       gsl_matrix_set(q1, i, j, gsl_matrix_get(q1, i, j-1)*samp[i].q);
     }
   }
-/*
-  printf("matrix | result:\n");
-  for (long i=0; i<nsamp; i++) {
-    for (int32_t j=0; j<=order; j++) {
-      printf("%g ", gsl_matrix_get(q1, i, j));
-    }
-    printf("| %g\n", gsl_vector_get(q2, i));
-  }
-*/  
 
   //perform the regression analysis:
   k=gsl_vector_alloc(order+1);
@@ -374,19 +354,7 @@ float * proxy_tracer(float **tall, int32_t np, time_class *t, int32_t nall, meas
   cov=gsl_matrix_alloc(order+1, order+1);
   
   gsl_multifit_linear(q1, q2, k, cov, &chisq, work);
-/*
-  printf("cov. matrix:\n");
-  for (long i=0; i<=order; i++) {
-    for (int32_t j=0; j<=order; j++) {
-      printf("%g ", gsl_matrix_get(cov, i, j));
-    }
-    printf("\n");
-  }
-*/
-  //s=gsl_vector_alloc(order+1);
-  //gsl_linalg_SV_decomp(q1, vt, s, work);
-  //gsl_linalg_SV_solve(q1, vt, s, k);
-  
+
   //copy the result into a regular C++ vector:
   k2=new float[order];
   for (int i=0; i<=order; i++) k2[i]=gsl_vector_get(k, i);
@@ -396,8 +364,6 @@ float * proxy_tracer(float **tall, int32_t np, time_class *t, int32_t nall, meas
   gsl_vector_free(k);
   gsl_matrix_free(cov);
   gsl_multifit_linear_free(work);
-
-  //gsl_vector_free(s);
 
   return k2;
 
