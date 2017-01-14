@@ -30,8 +30,6 @@ int main(int argc, char **argv) {
   char *datefile;
   char *measurement_file;
   char *outfile;
-  char c;
-  sparse_matrix dummy;
   size_t ncon;
 
   sparse_matrix *matall;
@@ -43,7 +41,7 @@ int main(int argc, char **argv) {
 
   int32_t nvar;			//for compatibility with libagf
 
-  time_class *t;
+  time_class *t;		//time grids
 
   char tstring[TSTRING_LEN];
   char *line;
@@ -52,14 +50,13 @@ int main(int argc, char **argv) {
   long nsamp;
   meas_data *samp;
 
-  float *q0;
+  //interpolated fields:
   float **qvec;
 
   //for calculating lead times:
-  float int_t;		//length in days of tracer map 
-  			//(should really be called, "integration time"...)
-  float lead;		//days between start of tracer map and measurement window
-  float window;
+  float int_t;		//length in days of transport map 
+  float lead;		//days between start of transport map and measurement window
+  float window;			//measurement window in days (+/-)
   time_class tf;		//date at end of lead time
   time_class tf2;		//date at end of lead time
   time_class t1, t2;		//measurement time window
@@ -70,6 +67,8 @@ int main(int argc, char **argv) {
   //measurement data within window:
   meas_data *samp_w;
   long nsamp_w;
+
+  //width of date field in measurement data:
   int32_t dwid=TFIELD_WIDTH;
 
   //date range:
@@ -84,8 +83,8 @@ int main(int argc, char **argv) {
 
   int err=0;
 
-  int cflag=0;
-  int kflag=0;
+  int cflag=0;	//-Q (query) option: just count measurments in each window
+  int kflag=0;		//-K option: constant term included in fit
 
   //for getting sample statistics:
   float nsamp_ave=0;
@@ -115,7 +114,6 @@ int main(int argc, char **argv) {
   kflag=flag[10];
 
   if ((argc<6 || (cflag==0 && argc < 7)) || flag[12]) {
-    int err;
     if (flag[12]) {
       docfs=stdout;
       err=0;
@@ -128,12 +126,12 @@ int main(int argc, char **argv) {
     fprintf(docfs, "                  matfile dates measurements int_t window outfile\n");
     fprintf(docfs, "\n");
     fprintf(docfs, "where:\n");
-    fprintf(docfs, "  matfile      = binary file containing array of matrices representing tracer mapping\n");
-    fprintf(docfs, "  dates        = ASCII file containing dates corresponding to each sparse matrix\n");
+    fprintf(docfs, "  matfile      = binary array of sparse matrices representing transport map\n");
+    fprintf(docfs, "  dates        = ASCII file of time grids corresponding to above\n");
     fprintf(docfs, "  measurements = ASCII file containing measurements and locations\n");
     fprintf(docfs, "  int_t        = tracer integration time in days\n");
-    fprintf(docfs, "  window       = measurement window in days\n");
-    fprintf(docfs, "  outfile      = binary file containing interpolated tracer field\n");
+    fprintf(docfs, "  window       = measurement window in days (+/-)\n");
+    fprintf(docfs, "  outfile      = binary file of interpolated tracer fields\n");
     fprintf(docfs, "\n");
     ctraj_optargs(docfs, "t0NifAvl-+K?");
     fprintf(docfs, "  -Q   count the number of measurements per interpolate\n");
@@ -209,7 +207,6 @@ int main(int argc, char **argv) {
     //scan ahead to the data that we need:
     for (int i=0; i<start; i++) {
       int32_t nel;
-      int ncon, err;
       ncon=fread(&m, sizeof(m), 1, fs);
       ncon+=fread(&n, sizeof(n), 1, fs);
       ncon+=fread(&nel, sizeof(nel), 1, fs);

@@ -1,3 +1,5 @@
+SHELL=/bin/bash
+
 CC = g++
 
 COPTS = $(OPT_VER)
@@ -25,6 +27,13 @@ DATA_PATH= /cygdrive/e/data/ncep/$(VFIELD_TGRID)
 #DATA_PATH= /home/Peter/data/ncep/oneday
 #DATA_PATH= /media/Lexar/ncep_data
 
+ifeq ($(VFIELD_TGRID),oneday)
+	TGRID=0/0/1
+endif
+ifeq ($(VFIELD_TGRID),sixhour)
+	TGRID=6:0
+endif
+
 #converted velocity fields:
 VBASE=$(THETA)K$(VFIELD_TGRID)$(shell date_calc -f "%Y.%m.%d" $(T0v))-$(shell date_calc -f "%Y.%m.%d" $(TFv))
 VFIELD_N=$(VFIELD_PATH)/vfield_ncep_$(VBASE)_N.ds
@@ -47,9 +56,19 @@ NTEST = 10
 T0_MEAS = 1997/3/1
 TF_MEAS = 1997/3/2
 
+# for plotting pcs:
+NEV = 10
+NCV = 40
+LEAD!=date_calc "($(TF_MEAS)_$(T0))|$(TGRID)"
+
 all: proxycorr.txt lyap_spec.txt pccorr.txt tcorr.txt
 
 animations: proxy.gif tracer1.gif tracer2.gif pc1.gif
+
+plot_pcs: $(MATFILE)
+	svd_sparse_array -v $(NEV) -A $(NCV) -N $(LEAD) $(MATFILE) pcr.vec
+	svd_sparse_array -v $(NEV) -A $(NCV) -l -N $(LEAD) $(MATFILE) pcl.vec
+	for ((I=0; I<$(NEV); I++)); do plot_frame.sh -q pcr.vec $$I pcr$$I.ps; plot_frame.sh -q pcl.vec $$I pcl$$I.ps; done
 
 # animations:
 proxy.gif: proxy.vec

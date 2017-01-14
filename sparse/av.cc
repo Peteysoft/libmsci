@@ -57,9 +57,9 @@ float **                         //returned eigenvectors
 {
   float ev[nev];
   float **v;
-  v=new float*[nev];
+  v=new float*[ncv];
   v[0]=new float[ncv*n];
-  for (int32_t i=1; i<nev; i++) v[i]=v[0]+i*n;
+  for (int32_t i=1; i<ncv; i++) v[i]=v[0]+i*n;
   FORTRAN_FUNC(sarsvd)(&n, &nev, &ncv, v[0], ev, &maxitr, &tol, which, 
 		(void *) parm);
   for (int32_t i=0; i<nev; i++) eval[i]=ev[i];

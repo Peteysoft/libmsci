@@ -94,7 +94,7 @@ void ctraj_optargs(FILE *fs, const char *optargs, int flag) {
         fprintf(fs, "  -K   fit constant term in PC proxy\n");
         break;
       case ('l'):
-        fprintf(fs, "  -l   lead time for the measurement window [default is the same as for the tracer]\n");
+        fprintf(fs, "  -l   lead time [default is the same as the integration time]\n");
         break;
       case ('L'):
         fprintf(fs, "  -L   use long form\n");

@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
   char *outfile;
 
   FILE *fs;
-  int32_t ndim=0;
+  int32_t ndim=2;
   int32_t vtype=0;
 
   size_t ncon;
@@ -51,6 +51,9 @@ int main(int argc, char **argv) {
   void *optargs[20];
   int flags[20];
 
+  int hflag;		//help flag
+  int Vflag;		//field type has been changed
+
   float *qout;
   //the tracer vector (what we are after after all this work...)
   //long k:
@@ -69,6 +72,8 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Error parsing command line\n");
     exit(21);
   }
+  hflag=flags[3];
+  Vflag=flags[1];
   //printf("%d %g %d %d %s\n", ngrid, rmax, nlon, nlat, mapfile);
 
   switch (vtype) {
@@ -83,10 +88,11 @@ int main(int argc, char **argv) {
       break;
     default:
       tracer=new ctraj_tfield_standard<float>();
+      vtype=0;
       break;
   }
 
-  if (typeid(*tracer)==typeid(ctraj_tfield_standard<float>)) {
+  if (vtype==0) {
     optargs[0]=&nlon;
     optargs[1]=&nlat;
     optargs[2]=&sl2;
@@ -115,10 +121,10 @@ int main(int argc, char **argv) {
     parm[0]=missing;
   }
 
-  if (argc < 2 || flags[3]) {
+  if (argc < 2 || hflag) {
     FILE *docfs;
     int err;
-    if (flags[6]) {
+    if (hflag) {
       docfs=stdout;
       err=0;
     } else {
@@ -139,7 +145,8 @@ int main(int argc, char **argv) {
     fprintf(docfs, "              - gridding is specified by -x and -y options.)\n\n");
     fprintf(docfs, "options:\n");
     ctraj_optargs(docfs, "anrxydV?", 1);
-    if (flags[0]) {
+    if (Vflag) {
+      fprintf(docfs, "\n");
       tracer->help(docfs);
     }
     fprintf(docfs, "\n");
@@ -162,7 +169,7 @@ int main(int argc, char **argv) {
     exit(0);
   }
 
-  if (typeid(*tracer)==typeid(ctraj_tfield_standard<float>)) {
+  if (vtype==0) {
     //initialize the tracer object directly:
     ((ctraj_tfield_standard<float> *) tracer)->init2(nvar, sl2);
   }
