@@ -142,9 +142,6 @@ then
   pscoast -R${RANGE} -J${PROJ} -G220 -Dl -K -O >> ${OUTFILE}
 fi
 
-echo "psbasemap -R${RANGE} -J${PROJ} -K -O -Bg30 >> ${OUTFILE}"
-psbasemap -R${RANGE} -J${PROJ} -K -O -Bg30 >> ${OUTFILE}
-
 if test $QFLAG; then
   #plot field:
   DLON=$(date_calc "($XLEN|$NLON)")
@@ -171,6 +168,10 @@ else
   echo "psxy -R${RANGE} -J${PROJ} -W$THICK,black -O -K >> ${OUTFILE};"
   psxy -R${RANGE} -J${PROJ} -W$THICK,black -O -K >> ${OUTFILE};
 fi
+
+# reinforce grid lines:
+echo "psbasemap -R${RANGE} -J${PROJ} -K -O -Bg30 >> ${OUTFILE}"
+psbasemap -R${RANGE} -J${PROJ} -K -O -Bg30 >> ${OUTFILE}
 
 #add coastlines:
 if [[ $VTYPE -eq 0 && $LFLAG -eq 1 ]]

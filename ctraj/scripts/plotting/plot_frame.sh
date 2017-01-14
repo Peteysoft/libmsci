@@ -46,6 +46,7 @@ while getopts 'c:F:g:I:J:n:r:R:T:V:x:X:y:Y:z:HLq' ARG; do
        VTYPE=$OPTARG
       ;;
     x) NLON=$OPTARG
+       PFOPTS="$PFOPTS -x $OPTARG"
       ;;
     X) EXT_OPT="$EXT_OPT -X $OPTARG"
        XLEN=$OPTARG
