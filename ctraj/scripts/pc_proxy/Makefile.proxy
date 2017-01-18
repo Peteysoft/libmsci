@@ -46,8 +46,8 @@ MATFILE = work/matO3_500Koneday1997.01.01-1999.01.01n50dt1h20.dat
 DATEFILE = work/datesO3_500Koneday1997.01.01-1999.01.01n50dt1h20.txt
 
 TRACER=ctraj_tracer
-#TRACER_MULTIPLY=tracer_step2_w_renorm
-TRACER_MULTIPLY=sparse_vect_prod$(OPT_VER)
+TRACER_MULTIPLY=tracer_step2_w_renorm
+#TRACER_MULTIPLY=sparse_vect_prod$(OPT_VER)
 
 PLOT_OPTS=-z 50 -I 0 -F 1 -O $(SKIP)
 
@@ -108,7 +108,7 @@ pccorr.txt: lyap_spec.txt tracer1.vec
 	./correlate_pcs.sh -N 1500 animation_frames/pc tracer1.vec > pccorr.txt
 
 lyap_spec.txt: $(MATFILE)
-	./pcs_all.sh -l -N 500 $(MATFILE) animation_frames/pc > lyap_spec.txt
+	./pcs_all.sh -l -N 730 $(MATFILE) animation_frames/pc > lyap_spec.txt
 
 clean:
 #	rm -f $(VFIELD_N)

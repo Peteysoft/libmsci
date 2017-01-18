@@ -33,7 +33,7 @@ CONTOUR=grdimage
 LFLAG=1
 CUSTOMR=0
 
-while getopts 'c:F:g:I:J:R:T:V:x:X:y:Y:z:HLq' ARG; do
+while getopts 'c:F:g:I:J:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
   case $ARG in
     c) PALETTE=$OPTARG
        DDSWTC=1;		
@@ -58,9 +58,11 @@ while getopts 'c:F:g:I:J:R:T:V:x:X:y:Y:z:HLq' ARG; do
     R) RANGE=$OPTARG
        CUSTOMR=1
       ;;
-    T) THICK=$OPTARG
+    T) TITLE=:.\"$OPTARG\":
       ;;
     V) VTYPE=$OPTARG
+      ;;
+    W) THICK=$OPTARG
       ;;
     x) NLON=$OPTARG
       ;;
@@ -126,7 +128,7 @@ ZGRIDFILE=$BASE.zgrid;
 if test -z $OUTFILE; then OUTFILE="$BASE.$INDEX.tmp.ps"; fi
 
 echo $QFLAG
-echo "psbasemap -R${RANGE} -J${PROJ} -Bg30 -K > ${OUTFILE}"
+echo "psbasemap -R${RANGE} -J${PROJ} -Bg30$TITLE -K > ${OUTFILE}"
 psbasemap -R${RANGE} -J${PROJ} -Bg30 -K > ${OUTFILE}
 
 echo $QFLAG

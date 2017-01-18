@@ -12,7 +12,7 @@ VTYPE=0
 
 CONTOUR=grdimage
 
-while getopts 'c:F:g:I:J:n:r:R:T:V:x:X:y:Y:z:HLq' ARG; do
+while getopts 'c:F:g:I:J:n:r:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
   case $ARG in
     c) PALETTE=$OPTARG
        DDSWTC=1;		
@@ -27,6 +27,7 @@ while getopts 'c:F:g:I:J:n:r:R:T:V:x:X:y:Y:z:HLq' ARG; do
     I) ZOPTS="$ZOPTS -I $OPTARG"
        WCFLAG=1
       ;;
+    # options to pass to "quick_plot":
     J) PFOPTS="$PFOPTS -J $OPTARG"
       ;;
     L) CONTOUR=grdcontour
@@ -40,10 +41,12 @@ while getopts 'c:F:g:I:J:n:r:R:T:V:x:X:y:Y:z:HLq' ARG; do
       ;;
     R) PFOPTS="$PFOPTS -J $OPTARG"
       ;;
-    T) PFOPTS="$PFOPTS -T $OPTARG"
+    T) PFOPTS="$PFOPTS -T \"$OPTARG\""
       ;;
     V) EXT_OPT="$EXT_OPT -V $OPTARG"
        VTYPE=$OPTARG
+      ;;
+    W) PFOPTS="$PFOPTS -W $OPTARG"
       ;;
     x) NLON=$OPTARG
        PFOPTS="$PFOPTS -x $OPTARG"
@@ -152,8 +155,8 @@ if test $QFLAG; then
   extract_field -x $NLON -y $NLAT $EXT_OPT $INFILE $INDEX | quick_plot.sh -q -c $PALETTE $PFOPTS $OUTFILE
 else
   #plot single contour:
-  echo "bev2xy ${INFILE} ${INDEX} | quick_plot.sh -c $PALETTE $PFOPTS $OUTFILE"
-  bev2xy ${INFILE} ${INDEX} | quick_plot.sh -c $PALETTE $PFOPTS $OUTFILE
+  echo "bev2xy ${INFILE} ${INDEX} | quick_plot.sh $PFOPTS $OUTFILE"
+  bev2xy ${INFILE} ${INDEX} | quick_plot.sh $PFOPTS $OUTFILE
 fi
 
 #clean up:

@@ -238,6 +238,9 @@ int main(int argc, char **argv) {
     ave1=0;
     ave2=0;
     int nbad=0;
+    //and bias:
+    float bias=0;
+    float rms=0;
     for (long i=0; i<nsamp2; i++) {
       //if (tflag && (samp2[i].q <= thresh || samp3[i].q <= thresh)) {
       if (tflag && samp3[i].q <= thresh) {
@@ -245,27 +248,33 @@ int main(int argc, char **argv) {
       } else {
         ave1+=samp2[i].q;
         ave2+=samp3[i].q;
+	bias+=samp2[i].q-samp3[i].q;
       }
     }
     ave1/=nsamp2-nbad;
     ave2/=nsamp2-nbad;
+    bias/=nsamp2-nbad;
     //calculate covariance and standard deviations:
     cov=0;
     var1=0;
     var2=0;
+    //and rms
     for (long i=0; i<nsamp2; i++) {
       //if (tflag==0 || (samp2[i].q > thresh && samp3[i].q > thresh)) {
       //zero values for ozone sonde data are bad for sure:
       if (tflag==0 || (samp3[i].q > thresh)) {
+        float diff=samp2[i].q-samp3[i].q-bias;
         diff1=samp2[i].q-ave1;
         diff2=samp3[i].q-ave2;
         cov+=diff1*diff2;
         var1+=diff1*diff1;
         var2+=diff2*diff2;
+	rms+=diff*diff;
       }
     }
-    printf("r=%g\n", cov/sqrt(var1/(nsamp2-nbad-1))/sqrt(var2/(nsamp2-nbad-1))/(nsamp2-nbad-1));
-
+    printf("r    = %g\n", cov/sqrt(var1/(nsamp2-nbad-1))/sqrt(var2/(nsamp2-nbad-1))/(nsamp2-nbad-1));
+    printf("bias = %g\n", bias);
+    printf("rms  = %g\n", sqrt(rms/(nsamp2-nbad-1)));
   } else if (Hflag==0) {
     write_meas(samp2, nsamp2, stdout);
   }
