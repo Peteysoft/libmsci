@@ -39,7 +39,7 @@ while getopts 'c:F:g:I:J:n:r:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
       ;;
     r) EXT_OPT="$EXT_OPT -r $OPTARG"
       ;;
-    R) PFOPTS="$PFOPTS -J $OPTARG"
+    R) PFOPTS="$PFOPTS -R $OPTARG"
       ;;
     T) PFOPTS="$PFOPTS -T \"$OPTARG\""
       ;;
@@ -53,12 +53,14 @@ while getopts 'c:F:g:I:J:n:r:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
       ;;
     X) EXT_OPT="$EXT_OPT -X $OPTARG"
        XLEN=$OPTARG
+       PFOPTS="$PFOPTS -X $OPTARG"
       ;;
     y) NLAT=$OPTARG
        PFOPTS="$PFOPTS -y $OPTARG"
       ;;
     Y) EXT_OPT="$EXT_OPT -Y $OPTARG"
        YLEN=$OPTARG
+       PFOPTS="$PFOPTS -X $OPTARG"
       ;;
     z) ZOPTS="$ZOPTS -z $OPTARG"
        WCFLAG=1
@@ -76,7 +78,7 @@ while getopts 'c:F:g:I:J:n:r:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
   esac
 done
 
-PFOPTS="$PFOPTS -x $NLON -y $NLAT -X $XLEN -Y $YLEN -V $VTYPE"
+PFOPTS="$PFOPTS -x $NLON -y $NLAT -V $VTYPE"
 
 shift $(($OPTIND - 1))
 

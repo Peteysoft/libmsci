@@ -436,25 +436,56 @@ from around the world \citep{Hare_etal2000}. A list of all contributors is avail
 The data is archived by Environment Canada.
 
 
-\section{Preliminary numerics}
+\section{Numerical preliminaries}
+
+\begin{figure}
+  \begin{tabular}{cccc}
+    a. Right SV 1 & c. Right SV 2 & e. Right SV 3 & g. Right SV 4 \\
+    \includegraphics[width=0.25\textwidth]{svr4} &
+    \includegraphics[width=0.25\textwidth]{svr3} &
+    \includegraphics[width=0.25\textwidth]{svr2} &
+    \includegraphics[width=0.25\textwidth]{svr1} \\
+    b. Left SV 1 & d. Left SV 2 & f. Left SV 3 & h. Left SV 4 \\
+    \includegraphics[width=0.25\textwidth]{svl4} &
+    \includegraphics[width=0.25\textwidth]{svl3} &
+    \includegraphics[width=0.25\textwidth]{svl2} &
+    \includegraphics[width=0.25\textwidth]{svl1}
+  \end{tabular}
+  \label{sample_SV}
+  \caption{An example of the singular vectors derived from a discrete transport map.
+  Sixty day integration started on August 1 1998.}
+\end{figure}
+
+For reference, examples of singular vectors derived from the transport map,
+$R(t, \Delta t)$, where $t$ is August 1, 1998 and $\Delta t$ is sixty days,
+are shown in Figure \ref{sample_SV}.
+If $R(t, \Delta t)=U S V^T$,
+Figure \ref{sample_SV}a. shows the first right singular vector, $\vec u_1$,
+while Figure \ref{sample_SV}b. shows the corresponding left singular vector,
+$\vec v_1$;
+Figure \ref{sample_SV}c. shows the first second singular vector, $\vec u_2$,
+while Figure \ref{sample_SV}b. shows the corresponding left singular vector,
+$\vec v_2$
+and so on.
 
 \begin{figure}
 \begin{center}
-\includegraphics[angle=90,width=0.9\textwidth]{../pc_proxy/tcorr.eps}
+\includegraphics[width=0.9\textwidth]{tracer_correlation.eps}
 \caption{The correlation over time of two differently-initialized tracers
 (broken line)--zonally symmetric and meridionally symmetric--and of
 the zonally-symmetric-initialized tracer with the first principal component.
 The simulation was driven with NCEP reanalysis 1 data on the 500 K isentropic
-level with an Eulerian time-step of six (6) hours and a Lagrangian time-step
-of one (1) hour.}\label{tcorr}
+level with an Eulerian time-step of 20 hours and a Lagrangian time-step
+of one 1.2 hours.}\label{tcorr}
 \end{center}
 \end{figure}
 
 \begin{figure}
-\includegraphics[width=0.45\textwidth]{../pc_proxy/tsample.eps}
-\includegraphics[width=0.45\textwidth]{../pc_proxy/pc1.eps}
+\includegraphics[width=0.45\textwidth]{passive1997.12.01.ps}
+\includegraphics[width=0.45\textwidth]{firstpc1997.12.01.ps}
 \caption{Comparison of a simulated tracer (a.) and the first principal
-component (b.) for the same time integration.}\label{pc1}
+component (b.) for the same time integration.
+Integration started on January 1, 1997 and continuted until December 1, 1997, a period of 334 days.}\label{pc1}
 \end{figure}
 
 \subsection{Tracer correlation}
@@ -482,7 +513,7 @@ A sample PC as compared with the tracer is shown in Figure \ref{pc1}.
 
 \begin{figure}
 \begin{center}
-\includegraphics[angle=90,width=0.9\textwidth]{../pc_proxy/lyap_spec.eps}
+\includegraphics[width=0.9\textwidth]{lyap_spec.eps}
 \caption{Plot of the top five (5) singular-values of a semi-Lagrangian
 tracer simulation over time.  Straight-line fits return the Lyapunov-spectrum.
 The simulation was done on the 500 K isentropic level.}
@@ -839,15 +870,6 @@ In the language of set theory and first-order logic:
 \begin{equation}
 	\forall \vect q \in \Re^n ~ (\vect q R^T R \vect q \le |\vect q |^2) \iff \forall s \in \Re | ~R^T R \vect v = s^2 \vect v ~ (s \le 1)
 \end{equation}
-
-\section{Sonde measurements use in the analysis}
-
-\begin{table}
-  \input{sonde_table.tex}
-  \label{sonde_table}
-\end{table}
-
-See table \ref{sonde_table}.
 
 
 \end{document}
