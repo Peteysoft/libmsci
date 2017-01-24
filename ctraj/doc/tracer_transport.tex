@@ -654,16 +654,24 @@ can only approximate them and by necessity always include some diffusion.
 
 A more important property of tracer advection is that the total substance
 remains constant, thus:
-\begin{eqnarray}
-\sum_i q_i & = & const. \\
-\frac{\mathrm d}{\mathrm d t}\sum_i q_i & = & 0
-\end{eqnarray}
-This will be true even if $q$ is measured as a mixing ratio, provided that
-the flow is non-divergent.  
+\begin{equation}
+\sum_i q_i & = & const.
+\label{mass_conservation}
+\end{equation}
+This will be true only if $q$ is a volume-mixing-ratio
+and
+the flow is non-divergent or
+$q$ is a density and the total volume of the atmosphere neither expands
+nor contracts, otherwise the formula will be more complicated.  
 It also assumes, of course, an equal-volume grid.
 Most flows in real fluids are approximately 
 non-divergent, especially when considered over long time scales.
-Continuing the derivation:
+
+If the total substance is constant, its rate of change will be zero:
+\begin{equation}
+\frac{\mathrm d}{\mathrm d t}\sum_i q_i & = & 0
+\end{equation}
+Continuing,
 \begin{eqnarray}
 \sum_i \sum_j r_{ij} q_j & = & \sum_j q_j \\
 \sum_j q_j \left ( \sum_i r_{ij} - 1 \right ) & = & 0
@@ -706,7 +714,8 @@ As pointed out already, a discrete tracer mapping will always require some
 amount of diffusion.  This means that the tracer configuration will 
 tend towards a uniform distribution over time, 
 that is, it will ``flatten out.''  We can
-show that, given the above constraint, a tracer field with all the same values
+show that, given the the constraint in (\ref{mass_conservation}), 
+a tracer field with all the same values
  has the smallest magnitude.  Suppose there are only two elements in the 
 tracer vector, $\vec q=\lbrace q,~q \rbrace$.  The magnitude of the vector is:
 \begin{equation}

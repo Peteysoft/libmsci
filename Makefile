@@ -18,8 +18,8 @@ OPT=-g
 # C++ compiler:
 CPP = g++
 
-BASE_PATH = /home/lenovo
-#BASE_PATH = /home/Peter
+#BASE_PATH = /home/lenovo
+BASE_PATH = /home/Peter
 #BASE_PATH = /mnt/sdc1/home2/pete
 #BASE_PATH = /home/pmills
 
@@ -73,7 +73,7 @@ FORTRAN_RUNTIME=gfortran
 # ARPACK library (for libsparse):
 ARPATH = /usr/local/lib
 #ARPATH = $(LIB_PATH)
-LIBARPACK=arpack_x86
+LIBARPACK=arpack_x86_64
 
 FFLAGS = -I$(INCLUDE_PATH) $(OPT) #-fno-underscoring
 

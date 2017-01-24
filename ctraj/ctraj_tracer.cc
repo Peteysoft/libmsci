@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
     fprintf(docfs, "\n");
     fprintf(docfs, "syntax:\n");
     fprintf(docfs, "ctraj_tracer [-Q] [-h dt] [-k nfine] [tracer arguments]\n");
-    fprintf(docfs, "               [v-field arguments] outfile}\n");
+    fprintf(docfs, "               [v-field arguments] outfile\n");
     fprintf(docfs, "\n");
     fprintf(docfs, " where:\n");
     fprintf(docfs, "   outfile   is the binary output file\n");
