@@ -3,6 +3,7 @@
 \usepackage{natbib}
 \usepackage[dvips]{graphicx}
 \usepackage{url}
+\usepackage{subcaption}
 
 \bibliographystyle{apa}
 
@@ -23,6 +24,41 @@
 \newcommand{\vect}[1]{\ensuremath{\vec #1}}
 
 \tableofcontents
+
+\section{Introduction}
+
+Satellite remote sensing instruments have become invaluable for monitoring
+trace atmospheric constituents such as ozone.
+One area they frequently fall short is in density of coverage.
+Short of comprehensive prognostic assimilation models, there are methods of
+interpolating sparse measurements that nonetheless take into account the
+atmospheric dynamics.
+One such method was first introduced in \citet{Butchart_Remsberg1986}
+and used in \citet{Randall_etal2002} to derive Northern hemisphere maps
+of ozone from Polar Ozone and Aerosol Measurement (POAM) III data.
+{\it Proxy tracer analysis} works by correlating
+measurements with an atmospheric variable, the proxy, that 
+is conserved by the flow.
+The two most common proxies are potential vorticity \citep{Hoskins_etal1985} 
+or a passive tracer simulated over a long time scale \citep{Allen_Nakamura2003}.
+In either case, it's standard practice to transform the proxy to an
+area-conserving {\it Lagrangian coordinate} called equivalent latitude
+before performing the reconstruction.
+Naturally, this method is mainly useful for long-lived tracers such as ozone.
+
+Here we introduce a new method that works better for shorter-lived tracers
+because it works on shorter time scales.
+The method is summarized as follows: sparse tracer measurements are 
+correlated with the top principal components of a matrix representation
+of the tracer dynamics.
+The matrix representation of the passive tracer dynamics we term the
+{\it transport map}.
+Because the transport map is integrated over only a short time scale and 
+because it represents all possible tracer configurations, it is better
+able to 
+compensate for non-advective changes in concentration, i.e., sources
+and sinks.
+
 
 \section{Theory}
 
@@ -71,6 +107,9 @@ we first substitute a matrix, $R$, for $\vect q$:
 \begin{equation}
 	\frac{\mathrm d R(t, \Delta t)}{\mathrm d \Delta t} = A(t) R(t, \Delta t)
 \end{equation}
+We will call the matrix $R$ the {\it discrete transport map} or simply
+the {\it transport map}.
+
 Unlike in most analyses, there are two parameters for the time:
 the integration start time, $t$, and the integration time, $\Delta t$.
 In this way, $R$ may be decomposed in terms of itself:
@@ -102,7 +141,7 @@ where $\exp$ is the matrix generalization of the exponential function.
 
 \subsection{Principal component proxy}
 
-Suppose we decompose a specific $R$ using singular value decomposition:
+Suppose we decompose a specific transport map using singular value decomposition:
 \begin{equation}
 	R(t_0, ~ t_n - t_0) = U S V^T
 	\label{SVD}
@@ -114,7 +153,7 @@ and both $U$ and $V$ are orthogonal matrices:
 	U^T U = V^T V = I~,
 \end{equation}
 $U$ is the matrix of {\it left singular vectors} and 
-$V$ is the matrix of {\it right singular vectors}.
+$V$ is the matrix of {\it right singular vectors} \citep{Press_etal1992}.
 This method of matrix decomposition is also known as {\it principal component}
 analysis or PCA, hence the name of the interpolation technique.
 Singular vectors are increasingly being used in meteorology both to quantify the
@@ -139,7 +178,7 @@ The singular values are normally arranged from largest to smallest:
 The matrix can normally be reconstructed to a high degree of accuracy
 using only a few of the largest singular values and vectors.
 This also makes the problem tractable since a typical size for
-the matrix might be $[20000\times20000]$. More on both points later.
+the transport map might be $[20000\times20000]$. More on both points later.
 
 To correlate a set of sparse measurements, $\lbrace m_i \rbrace$,
 with the top $k$ principal components, we first find interpolates at each
@@ -179,8 +218,8 @@ tracer (the proxy): either a passive tracer that has been advected
 continuously with periodic re-normalization \citep{Allen_Nakamura2003} 
 or some other quantity that is conserved by the flow 
 such as potential vorticity \citep{Randall_etal2002,Hoskins_etal1985}.
-The regression is typically done to second-order, meanwhile the proxy value
-is often converted to an area-based ``Lagrangian'' coordinate such as
+The regression is typically done to second-order, while the proxy value
+is converted to an area-based ``Lagrangian'' coordinate such as
 equivalent latitude \citep{Butchart_Remsberg1986}.
 
 If $\Phi$ is the proxy value, then we have the following minimization
@@ -225,8 +264,7 @@ while the tangent vector is given as:
 \begin{equation}
 	\nabla_{\vect q} \vect f = A
 \end{equation}
-Thus the solution matrix, $R$, for our Eulerian tracer simulation, above,
-is equivalent to the tangent model, $H$.
+Thus the transport matrix, $R$, is equivalent to the tangent model, $H$.
 
 The Lyapunov exponents are defined as the logarithms of the time averages
 of the singular values in the limit as time goes to infinity:
@@ -251,9 +289,8 @@ conserved:
 \begin{equation}
 \sum_i q_i = const.
 \end{equation}
-The equation is not exact if the following conditions don't hold:
-the fluid is incompressible or $q$ measures
-density rather than vmr and the simulation uses an equal area grid. 
+The equation is exact if the simulation uses an equal area grid
+and the fluid is incompressible ($\nabla \cdot \vec v=0$).
 We can show that:
 \begin{eqnarray}
 \sum_i r_{ij} & = & 1 
@@ -385,8 +422,8 @@ possible.
 
 \subsection{Tracer simulation}
 
-To run the tracer advection, the \textit{ctraj} software package is used
-(http://ctraj.sf.net).  The codes are written in C++ and contain programs
+To generate the transport maps, the \textit{ctraj} software package is used (http://ctraj.sf.net).  
+The software is written in C++ and contain programs
 for gridded, semi-Lagrangian tracer advection on an 
 azimuthally-equidistant-projected coordinate system.
 Two fields are advected simultaneously: one for the Northern hemisphere
@@ -440,20 +477,20 @@ The data is archived by Environment Canada.
 
 \begin{figure}
   \begin{tabular}{cccc}
+    \includegraphics[angle=-90,width=0.23\textwidth]{svr4} &
+    \includegraphics[angle=-90,width=0.23\textwidth]{svr3} &
+    \includegraphics[angle=-90,width=0.23\textwidth]{svr2} &
+    \includegraphics[angle=-90,width=0.23\textwidth]{svr1} \\
     a. Right SV 1 & c. Right SV 2 & e. Right SV 3 & g. Right SV 4 \\
-    \includegraphics[width=0.25\textwidth]{svr4} &
-    \includegraphics[width=0.25\textwidth]{svr3} &
-    \includegraphics[width=0.25\textwidth]{svr2} &
-    \includegraphics[width=0.25\textwidth]{svr1} \\
-    b. Left SV 1 & d. Left SV 2 & f. Left SV 3 & h. Left SV 4 \\
-    \includegraphics[width=0.25\textwidth]{svl4} &
-    \includegraphics[width=0.25\textwidth]{svl3} &
-    \includegraphics[width=0.25\textwidth]{svl2} &
-    \includegraphics[width=0.25\textwidth]{svl1}
+    \includegraphics[angle=-90,width=0.23\textwidth]{svl4} &
+    \includegraphics[angle=-90,width=0.23\textwidth]{svl3} &
+    \includegraphics[angle=-90,width=0.23\textwidth]{svl2} &
+    \includegraphics[angle=-90,width=0.23\textwidth]{svl1} \\
+    b. Left SV 1 & d. Left SV 2 & f. Left SV 3 & h. Left SV 4
   \end{tabular}
-  \label{sample_SV}
   \caption{An example of the singular vectors derived from a discrete transport map.
   Sixty day integration started on August 1 1998.}
+  \label{sample_SV}
 \end{figure}
 
 For reference, examples of singular vectors derived from the transport map,
@@ -467,6 +504,10 @@ Figure \ref{sample_SV}c. shows the first second singular vector, $\vec u_2$,
 while Figure \ref{sample_SV}b. shows the corresponding left singular vector,
 $\vec v_2$
 and so on.
+While the globally projected fields representing the right singular vectors 
+appear to be quite similar and are indeed
+quite strongly correlated, the abstract vectors from which they are derived
+have negligible dot products.
 
 \begin{figure}
 \begin{center}
@@ -481,8 +522,8 @@ of one 1.2 hours.}\label{tcorr}
 \end{figure}
 
 \begin{figure}
-\includegraphics[width=0.45\textwidth]{passive1997.12.01.ps}
-\includegraphics[width=0.45\textwidth]{firstpc1997.12.01.ps}
+\includegraphics[angle=-90,width=0.45\textwidth]{passive1997.12.01.ps}
+\includegraphics[angle=-90,width=0.45\textwidth]{firstpc1997.12.01.ps}
 \caption{Comparison of a simulated tracer (a.) and the first principal
 component (b.) for the same time integration.
 Integration started on January 1, 1997 and continuted until December 1, 1997, a period of 334 days.}\label{pc1}
@@ -505,6 +546,7 @@ We also plot the correlation of the first tracer with the largest singular
 vector.  We see that, because of Equation (\ref{lambda1}), they too become
 correlated over time.
 This at least partially explains the efficacy of the proxy tracer method.
+The periodic dips in correlation are not yet understood.
 A sample PC as compared with the tracer is shown in Figure \ref{pc1}.  
 
 \subsection{Calculating Lyapunov exponents}
@@ -531,6 +573,15 @@ only on the cusp: the largest singular value remains approximately constant.
 It also shows how quickly the other singular vectors decay,
 so that the largest will eventually dominate in accordance with
 Equation \ref{lambda1}.
+
+As implied by the theorem in (\ref{theorem}), all the Lyapunov exponents
+are less than zero, with the largest roughly zero, even though the
+relation in (\ref{constant_mass}) is only approximate.
+In this case it is close enough: the smallest boxes on the
+azimuthal equidistant grid will deviate from the largest by
+a factor of $2/\pi+1/2\approx0.7$
+while most real fluids are approximately non-divergent, especially
+when considered over long time scales.
 
 \subsection{Test of PC proxy}
 
@@ -586,6 +637,18 @@ is 0.875, while the correlation at the lead time
 
 \section{Ozone reconstruction}
 
+\begin{figure}
+  \begin{subfigure}{0.9\textwidth}
+    \includegraphics[angle=-90,width=0.9\linewidth]{classic_O3.1998.10.01.ps}
+    \caption{a. Classic proxy tracer}
+  \end{subfigure}
+  \begin{subfigure}{0.9\textwidth}
+    \includegraphics[angle=-90,width=0.9\linewidth]{pc_O3.1998.10.01.ps}
+    \caption{b. PC proxy\newline}
+  \end{subfigure}
+  \caption{Sample globally reconstructed ozone fields on the 500 K isentrop for October 1, 1998.}
+\end{figure}
+
 In this section we use PC proxy to reconstruct ozone fields from POAM III
 satellite data.
 Two dimensional fields were reconstructed daily on the 500 K isentrop
@@ -600,6 +663,8 @@ and five principal components were used.
 A measurement window of two days was used.
 
 \subsection{Cross-validation}
+
+\label{cross_validation}
 
 \begin{figure}
   \centering
@@ -754,6 +819,24 @@ restricted to the N. hemisphere in \ref{Nhemi_restrict}.
 
 On the other hand, when the reconstruction is done over the whole globe,
 PC proxy is clearly superior.
+It is also superior in the Southern hemisphere.
+We surmise that the chief advantage lies in having more degrees of freedom.
+Moreover, because it is using information from shorter time scales, it
+is better able to fit more active tracers that are changing more rapidly,
+as ozone would be in the Southern hemisphere during winter time.
+
+Unfortunately, because of these extra degrees of freedom, the method can also
+be more unstable.
+This is observed in negative values that showed up first in the cross-validation
+exercise in Section \ref{cross_validation}, but also in ringing and regions
+of negative concentration towards the equator in some of the reconstructed
+fields.
+This is to be expected: the POAM III data covers only a very small latitude 
+band so that values derived for the equator could be considered an
+extrapolation or a form of ``over-fitting''.
+The best remedy would be either to have more measurements sampling more of
+the globe or to simply not use interpolates far outside the range of the
+measurements.
 
 \addcontentsline{toc}{section}{References}
 
@@ -772,6 +855,7 @@ Suppose that:
 	\sum_i q_i = const.
 	\label{constant_mass}
 \end{equation}
+This will be true for non-divergent flows on equal area grids.
 Then:
 \begin{eqnarray}
 	\sum_i \sum_j r_{ij} q_j & = & \sum_j q_j \\
@@ -869,6 +953,7 @@ if-and-only-if (\ref{SV_inequality}) is true for every $s$.
 In the language of set theory and first-order logic:
 \begin{equation}
 	\forall \vect q \in \Re^n ~ (\vect q R^T R \vect q \le |\vect q |^2) \iff \forall s \in \Re | ~R^T R \vect v = s^2 \vect v ~ (s \le 1)
+	\label{theorem}
 \end{equation}
 
 
