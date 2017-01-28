@@ -1,6 +1,28 @@
 TARGET = proxy2
 
-$(TARGET).pdf: $(TARGET).tex
+DEPENDENTS = proxy2_abstract.txt proxy2.bib
+
+FIGURES = global_classic_sonde_error.eps \
+	     global_classic_sonde_Nhemi.eps \
+	     global_classic_sonde_scatter.eps \
+	     global_classic_xval_error.eps \
+	     global_classic_xval_scatter.eps \
+	     global_PC_sonde_error.eps \
+	     global_PC_sonde_Nhemi.eps \
+	     global_PC_sonde_scatter.eps \
+	     global_PC_xval_error.eps \
+	     global_PC_xval_scatter.eps \
+	     lyap_spec.eps \
+	     Nhemi_PC_sonde.eps \
+	     tracer_correlation.eps \
+	     classic_O3.1998.10.01.ps \
+	     firstpc1997.12.01.ps \
+	     passive1997.12.01.ps \
+	     pc_O3.1998.10.01.ps \
+	     svl1.ps svl2.ps svl3.ps svl4.ps \
+	     svr1.ps svr2.ps svr3.ps svr4.ps
+
+$(TARGET).pdf: $(TARGET).tex $(DEPENDENTS) $(FIGURES)
 	latex $(TARGET)
 	bibtex $(TARGET)
 	latex $(TARGET)

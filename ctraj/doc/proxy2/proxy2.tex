@@ -18,10 +18,15 @@
 \pagestyle{myheadings}
 \markright{Mills: PC Proxy}
 
+\section*{Abstract}
+
+\input{proxy2_abstract.txt}
+
 \subsection*{Keywords}
 \textbf{tracer interpolation, proxy tracer analysis, satellite remote sensing, advection, transport modelling}
 
 \newcommand{\vect}[1]{\ensuremath{\vec #1}}
+\newcommand{\italics}[1]{{\it #1}}
 
 \tableofcontents
 
@@ -36,29 +41,30 @@ atmospheric dynamics.
 One such method was first introduced in \citet{Butchart_Remsberg1986}
 and used in \citet{Randall_etal2002} to derive Northern hemisphere maps
 of ozone from Polar Ozone and Aerosol Measurement (POAM) III data.
-{\it Proxy tracer analysis} works by correlating
-measurements with an atmospheric variable, the proxy, that 
+\italics{Proxy tracer analysis} works by correlating
+measurements with another atmospheric variable, the proxy, that 
 is conserved by the flow.
 The two most common proxies are potential vorticity \citep{Hoskins_etal1985} 
 or a passive tracer simulated over a long time scale \citep{Allen_Nakamura2003}.
 In either case, it's standard practice to transform the proxy to an
-area-conserving {\it Lagrangian coordinate} called equivalent latitude
+area-conserving \italics{Lagrangian coordinate} called equivalent latitude
 before performing the reconstruction.
 Naturally, this method is mainly useful for long-lived tracers such as ozone.
 
-Here we introduce a new method that works better for shorter-lived tracers
+Here we introduce a new method more appropriate for shorter-lived tracers
 because it works on shorter time scales.
-The method is summarized as follows: sparse tracer measurements are 
-correlated with the top principal components of a matrix representation
-of the tracer dynamics.
-The matrix representation of the passive tracer dynamics we term the
-{\it transport map}.
+The method is summarized as follows: 
+the tracer dynamics are represented as a matrix, which we term the 
+\italics{transport map} because it linearly maps the intial tracer configuration to
+the final tracer configuration.
+The transport map is decomposed using singular value decomposition (SVD),
+also called principal component analysis (PCA), hence the name of the method,
+and the largest principal components are then fitted to the measurements.
 Because the transport map is integrated over only a short time scale and 
-because it represents all possible tracer configurations, it is better
+because it represents all possible tracer configurations, it should be better
 able to 
-compensate for non-advective changes in concentration, i.e., sources
+compensate for non-advective changes in concentration, that is, sources
 and sinks.
-
 
 \section{Theory}
 
@@ -73,7 +79,7 @@ where $q$ is the tracer concentration, $\vect x$ is spatial position,
 $t$ is time, $\vect v$ is the fluid velocity, and $D$ is the diffusivity tensor.
 It is assumed that there is no mass-conservation term, $q \nabla \cdot \vect v$,
 either because $q$ is a volume-mixing ratio (vmr) or 
-the fluid is incompressible ($\nabla \cdot \vec v = 0$).
+the fluid is incompressible ($\nabla \cdot \vect v = 0$).
 
 In an Eulerian tracer simulation, the approximate value of $q$
 is only known at discrete locations so can be represented as a vector,
@@ -107,8 +113,8 @@ we first substitute a matrix, $R$, for $\vect q$:
 \begin{equation}
 	\frac{\mathrm d R(t, \Delta t)}{\mathrm d \Delta t} = A(t) R(t, \Delta t)
 \end{equation}
-We will call the matrix $R$ the {\it discrete transport map} or simply
-the {\it transport map}.
+We will call the matrix $R$ the \italics{discrete transport map} or simply
+the \italics{transport map}.
 
 Unlike in most analyses, there are two parameters for the time:
 the integration start time, $t$, and the integration time, $\Delta t$.
@@ -146,32 +152,32 @@ Suppose we decompose a specific transport map using singular value decomposition
 	R(t_0, ~ t_n - t_0) = U S V^T
 	\label{SVD}
 \end{equation}
-where $S$ is a diagonal matrix of {\it singular values},
-$t_n - t_0$ is the {\it integration time},
+where $S$ is a diagonal matrix of \italics{singular values},
+$t_n - t_0$ is the \italics{integration time},
 and both $U$ and $V$ are orthogonal matrices:
 \begin{equation}
 	U^T U = V^T V = I~,
 \end{equation}
-$U$ is the matrix of {\it left singular vectors} and 
-$V$ is the matrix of {\it right singular vectors} \citep{Press_etal1992}.
-This method of matrix decomposition is also known as {\it principal component}
+$U$ is the matrix of \italics{left singular vectors} and 
+$V$ is the matrix of \italics{right singular vectors} \citep{Press_etal1992}.
+This method of matrix decomposition is also known as \italics{principal component}
 analysis or PCA, hence the name of the interpolation technique.
 Singular vectors are increasingly being used in meteorology both to quantify the
 predictability of a forecast and to generate perturbations for ensemble
 forecasts \citep{Tang_etal2006}.
 
 A good way to think of it is as a set of orthogonal initial conditions,
-$\lbrace \vec v^{(i)} \rbrace$, which, when the tracer dynamics are applied,
-transform into a set of orthogonal final conditions, 
-$\lbrace \vec u^{(i)} \rbrace$,
+$\lbrace \vect v^{(i)} \rbrace$, which, when the tracer dynamics are applied,
+map onto a set of orthogonal final conditions, 
+$\lbrace \vect u^{(i)} \rbrace$,
 that have grown by respective factors $\lbrace s_i \rbrace$:
 \begin{equation}
-	R \vec v^{(i)} = s_i \vec u^{(i)}
+	R \vect v^{(i)} = s_i \vect u^{(i)}
 \end{equation}
 The superscript denotes the column number: 
 this notation will be used throughout.
 
-The singular values are normally arranged from largest to smallest:
+The singular values are all positive and are normally arranged from largest to smallest:
 \begin{equation}
 	s_i \ge s_{i-1}
 \end{equation}
@@ -189,24 +195,25 @@ In any real problem, the measurements are unlikely to occur at the same time,
 so rather than using the left singular vectors, we use $R$ to advance the
 right singular values to the same time as the measurement.
 The time period during which measurements are admitted we shall refer to as
-the {\it measurement window}.
+the \italics{measurement window}.
 Meanwhile, the difference between the integration start time, $t_0$,
 and the center of the measurement window shall be referred to as the
-{\it lead time}.
+\italics{lead time}.
 
 We have the following minimization problem:
 \begin{equation}
 	\min_{\vect c} \sum_i \left \lbrace \sum_{j=1}^k c_j \vect w_i R(t_0, ~ t_n-t^{(i)}) \vect v^{(j)} - m_i \right \rbrace^2
+	\label{PC_proxy_def}
 \end{equation}
 where $t^{(i)}$ is the time stamp of the $i$th measurement, $m_i$, 
 and $\vect w_i$ is a vector of interpolation coefficients.
 
 Once the coefficients have been fitted we can reconstruct the tracer:
 \begin{equation}
-	\vec q(t_n) \approx \sum_{i=1}^k c_i \vec u^{(i)}
+	\vect q(t_n) \approx \sum_{i=1}^k c_i \vect u^{(i)}
 \end{equation}
 
-\subsection{Classic tracer proxy}
+\subsection{Classic proxy tracer}
 
 \label{classic}
 
@@ -218,16 +225,16 @@ tracer (the proxy): either a passive tracer that has been advected
 continuously with periodic re-normalization \citep{Allen_Nakamura2003} 
 or some other quantity that is conserved by the flow 
 such as potential vorticity \citep{Randall_etal2002,Hoskins_etal1985}.
-The regression is typically done to second-order, while the proxy value
-is converted to an area-based ``Lagrangian'' coordinate such as
+The regression is typically done to second-order and the proxy variable
+converted to an area-based ``Lagrangian'' coordinate called
 equivalent latitude \citep{Butchart_Remsberg1986}.
 
 If $\Phi$ is the proxy value, then we have the following minimization
 problem:
 \begin{equation}
-	\min_{\vec c} \sum_i \left [ \sum_{j=0}^N c_j (\vec w_i \cdot \vec \Phi)^j - m_i \right ]^2
+	\min_{\vect c} \sum_i \left [ \sum_{j=0}^N c_j (\vect w_i \cdot \vect \Phi)^j - m_i \right ]^2
 \end{equation}
-where $\vec c$ are the regression coefficients and $N$ is the order of the
+where $\vect c$ are the regression coefficients and $N$ is the order of the
 method. The tracer is reconstructed as follows:
 \begin{equation}
 	q_i \approx \sum_{j=0}^N c_i \Phi_i^j
@@ -241,15 +248,15 @@ Suppose we have a system of ordinary differential equations (ODEs):
 	\label{ODE}
 \end{equation}
 where $\vect r$ is a vector of dependent variables.
-We linearize this about $\vect r$ using the {\it tangent vector},
+We linearize this about $\vect r$ using the \italics{tangent vector},
 $\nabla_{\vect r} f$:
 \begin{eqnarray}
 \frac{\mathrm d}{\mathrm d t} (\vect r + \delta \vect r) & \approx & \vect f + 
 	\nabla_{\vect r} \vect f \delta \vect x \\
 	\frac{\mathrm d}{\mathrm d t} \delta \vect r & \approx & \nabla_{\vect r} \vect f \vect r
 \end{eqnarray}
-where $\delta \vect r$ is a vector of {\it infinitessimal error vectors}.
-Define the {\it tangent model}, $H$, such that:
+where $\delta \vect r$ is a vector of \italics{infinitessimal error vectors}.
+Define the \italics{tangent model}, $H$, such that:
 \begin{equation} 
 	\frac{\mathrm d}{\mathrm d t} H = \nabla_{\vect r} \vect f H \\
 \end{equation}
@@ -259,7 +266,7 @@ the dynamics, that is,
 if we take Equation (\ref{linear_ODE}), a system of linear ODEs,
 as our system of ODEs in
 (\ref{ODE}), then setting $\vect r=\vect q$, 
-we have $\vect f(\vec q, ~t)=A(t) \vect q$,
+we have $\vect f(\vect q, ~t)=A(t) \vect q$,
 while the tangent vector is given as:
 \begin{equation}
 	\nabla_{\vect q} \vect f = A
@@ -288,9 +295,10 @@ An important property of flow tracers is that the amount of substance is
 conserved:
 \begin{equation}
 \sum_i q_i = const.
+\label{mass_conservation}
 \end{equation}
 The equation is exact if the simulation uses an equal area grid
-and the fluid is incompressible ($\nabla \cdot \vec v=0$).
+and the fluid is incompressible ($\nabla \cdot \vect v=0$).
 We can show that:
 \begin{eqnarray}
 \sum_i r_{ij} & = & 1 
@@ -303,7 +311,12 @@ See Appendix \ref{mass_conservation_derivation} for the derivation.
 All gridded Eulerian tracer simulations are by necessity diffusive. 
 Given the constraints above in (\ref{columns_sum_to_one}) and
 (\ref{columns_sum_to_zero}) in addition, 
-we can also show that all the singular values are less-than-or-equal-to one.
+we can also show that all the singular values are less-than-or-equal-to one:
+\begin{equation}
+	0 \le s_i \le 1
+	\label{sv_lt_one}
+\end{equation}
+thus the Lyapunov exponents in turn will be less-than-or-equal to zero.
 Section \ref{Lyapunov_exponents} provides a numerical demonstration while 
 Appendix \ref{Lyapunov_exponents_less_than_zero} gives the derivation.
 
@@ -315,38 +328,38 @@ Real flow tracers will have sources and sinks, thus we introduce a source
 term, $\sigma$, to Equations (\ref{matrix_soln_decomposition})
 and (\ref{tracer_integration}):
 \begin{eqnarray}
-	  \vec q(t_n) 
+	  \vect q(t_n) 
   & \approx & \Delta t_{n} \sigma_{n} + \nonumber \\
-  & & R(t_{n-1}, ~ \Delta t_{n-1}) [\vec \sigma_{n-1} + \nonumber \\
-  & & R(t_{n-2}, ~ \Delta t_{n-2}) [\vec \sigma_{n-2} + \nonumber \\
+  & & R(t_{n-1}, ~ \Delta t_{n-1}) [\vect \sigma_{n-1} + \nonumber \\
+  & & R(t_{n-2}, ~ \Delta t_{n-2}) [\vect \sigma_{n-2} + \nonumber \\
   & & \vdots \nonumber \\
-  & & + R(t_1, ~ \Delta t_1) [\vec \sigma_1 + \nonumber \\
-  & & R(t_0, ~ \Delta t_0) \vec q_0 ]...]]
+  & & + R(t_1, ~ \Delta t_1) [\vect \sigma_1 + \nonumber \\
+  & & R(t_0, ~ \Delta t_0) \vect q_0 ]...]]
 \end{eqnarray}
-where $\vec \sigma_i$ is the integrated source term for the $i$th time step.
+where $\vect \sigma_i$ is the integrated source term for the $i$th time step.
 Expanding:
 \begin{equation}
-\vec q(t_n) 
-   = R(t_0,~t_n-t_0) \vec q_0 + \sum_{i=1}^{n} R(t_i,~t_n-t_i) \vec \sigma_i
+\vect q(t_n) 
+   = R(t_0,~t_n-t_0) \vect q_0 + \sum_{i=1}^{n} R(t_i,~t_n-t_i) \vect \sigma_i
   \label{sources_sinks}
 \end{equation}
 
 To get a handle on the error, we consider first a fully passive tracer 
-(no sources or sinks) started with initial conditions $\vec q_0=\vec q(t_0)$.
+(no sources or sinks) started with initial conditions $\vect q_0=\vect q(t_0)$.
 Expanding this in terms of the right singular vectors with a set
-of coefficients, $\vec c_0$:
+of coefficients, $\vect c_0$:
 \begin{equation}
-	\vec q_0 = V \vec c_0
+	\vect q_0 = V \vect c_0
 	\label{c0}
 \end{equation}
 means that the final tracer takes the following form:
 \begin{equation}
-	\vec q(t_n) = U S \vec c_0
+	\vect q(t_n) = U S \vect c_0
 \end{equation}
 however we are only calculating the top $k$ singular vectors, so the
 interpolation looks like this:
 \begin{equation}
-	\vec q(t_n) \approx \sum_{i=0}^k c_{0i} s_i \vec u^{(i)}
+	\vect q(t_n) \approx \sum_{i=0}^k c_{0i} s_i \vect u^{(i)}
 \end{equation}
 
 The error is simply the terms left out of the equation,
@@ -359,28 +372,28 @@ they tell us how fast the singular values shrink.
 
 A tracer interpolated with all the singular vectors will take the form:
 \begin{equation}
-	\vec q(t_n) = U \vec c
+	\vect q(t_n) = U \vect c
 	\label{full_interpolation}
 \end{equation}
 Substitution of (\ref{c0}) into (\ref{sources_sinks}) and comparison with
 (\ref{full_interpolation}) produces
 the following:
 \begin{equation}
-	\vec c = S \vec c_0 + U^T \sum_{i=1}^n R(t_i, t_n-t_i) \vec \sigma_i
+	\vect c = S \vect c_0 + U^T \sum_{i=1}^n R(t_i, t_n-t_i) \vect \sigma_i
 \end{equation}
 In other words, we need to project the integrated source terms onto the
 singular vectors.
 %Noting that $R(t_i, t_n-t_i)=R(t_0, t_n-t_0)R^{-1}(t_0, t_i-t_0)$, we have:
 %\begin{equation}
-%	\vec c = S \left [ \vec c_0 + V \sum_{i=1}^n R^{-1}(t_0, t_i-t_0) \vec \sigma_i \right ]
+%	\vect c = S \left [ \vect c_0 + V \sum_{i=1}^n R^{-1}(t_0, t_i-t_0) \vect \sigma_i \right ]
 %\end{equation}
 As before, the error is given by terms not included in the analysis:
 \begin{equation}
-	\vec \epsilon = \sum_{i=k+1}^{n_p} \vec u^{(i)} \left [s_i c_{0i}
-	+ \vec u^{(i)} \cdot \sum_{j=1}^n R(t_j, t_n-t_j) \vec \sigma_j \right ]
+	\vect \epsilon = \sum_{i=k+1}^{n_p} \vect u^{(i)} \left [s_i c_{0i}
+	+ \vect u^{(i)} \cdot \sum_{j=1}^n R(t_j, t_n-t_j) \vect \sigma_j \right ]
 	\label{error1}
 \end{equation}
-Note that the first occurance of the singular vector, $\vec u^(i)$, does not
+Note that the first occurance of the singular vector, $\vect u^(i)$, does not
 cancel out the second occurance because the factor in square brackets is a scalar, i.e., order of operations matters.
 
 The first term in Equation (\ref{error1}) sums the components of the initial tracer configuration that project onto the smaller singular vectors not included in the analysis. 
@@ -402,8 +415,8 @@ of the integration, i.e. the lead time is the same as the integration time.
 
 To understand this last point, rewrite Equation (\ref{error1}) as follows:
 \begin{equation}
-	\vec \epsilon = \sum_{i=k+1}^{n_p} s_i \vec u^{(i)} \left [c_{0i}
-	+ \vec v^{(i)} \cdot \sum_{j=1}^n R^{-1}(t_0, t_j-t_0) \vec \sigma_j \right ]
+	\vect \epsilon = \sum_{i=k+1}^{n_p} s_i \vect u^{(i)} \left [c_{0i}
+	+ \vect v^{(i)} \cdot \sum_{j=1}^n R^{-1}(t_0, t_j-t_0) \vect \sigma_j \right ]
 \end{equation}
 Note that because of diffusion, 
 a backwards integration is not equivalent to the inverse of the
@@ -497,12 +510,12 @@ For reference, examples of singular vectors derived from the transport map,
 $R(t, \Delta t)$, where $t$ is August 1, 1998 and $\Delta t$ is sixty days,
 are shown in Figure \ref{sample_SV}.
 If $R(t, \Delta t)=U S V^T$,
-Figure \ref{sample_SV}a. shows the first right singular vector, $\vec u_1$,
+Figure \ref{sample_SV}a. shows the first right singular vector, $\vect u_1$,
 while Figure \ref{sample_SV}b. shows the corresponding left singular vector,
-$\vec v_1$;
-Figure \ref{sample_SV}c. shows the first second singular vector, $\vec u_2$,
+$\vect v_1$;
+Figure \ref{sample_SV}c. shows the first second singular vector, $\vect u_2$,
 while Figure \ref{sample_SV}b. shows the corresponding left singular vector,
-$\vec v_2$
+$\vect v_2$
 and so on.
 While the globally projected fields representing the right singular vectors 
 appear to be quite similar and are indeed
@@ -574,37 +587,19 @@ It also shows how quickly the other singular vectors decay,
 so that the largest will eventually dominate in accordance with
 Equation \ref{lambda1}.
 
-As implied by the theorem in (\ref{theorem}), all the Lyapunov exponents
-are less than zero, with the largest roughly zero, even though the
-relation in (\ref{constant_mass}) is only approximate.
+All the Lyapunov exponents are less than zero, with the largest roughly zero, 
+in agreement with the inequality in (\ref{sv_lt_one}),
+even though the Equation (\ref{mass_conservation}) is only true approximately.
 In this case it is close enough: the smallest boxes on the
 azimuthal equidistant grid will deviate from the largest by
-a factor of $2/\pi+1/2\approx0.7$
+a factor of only $2/\pi+1/2\approx0.7$
 while most real fluids are approximately non-divergent, especially
 when considered over long time scales.
 
-\subsection{Test of PC proxy}
+\section{Ozone reconstruction}
 
-\begin{figure}
-\begin{center}
-\includegraphics[width=1\textwidth]{../pc_proxy/proxyfields.eps}
-\caption{Comparison of simulated tracer fields with the reconstructed version.
-a. and b. compare the initial field of the simulated versus the reconstructed,
-respectively, while c. and d. compare the fields at the lead time,
-60 days later.}
-\label{proxyfields}
-\end{center}
-\end{figure}
-
-\begin{figure}
-\begin{center}
-\includegraphics[angle=90, width=0.9\textwidth]{../pc_proxy/proxycorr.eps}
-\caption{Correlation over time of a zonally-symmetric-initialized, passive tracer
-with one reconstructed using PC proxy using a lead time of 60 days,
-marked by the vertical, dashed line.}\label{PCproxytest}
-\end{center}
-\end{figure}
-
+In this section we use PC proxy to reconstruct ozone fields from POAM III
+satellite data.
 To perform the analysis, we need to choose an integration time, 
 $t_n-t_0$ in Equation (\ref{SVD}), as well as a measurement window.
 The integration time determines how long the tracer is advected before performing
@@ -612,30 +607,10 @@ the SVD.
 Measurements are selected from within the measurement window.
 We also need to choose a lead time which determines how far from the
 beginning of the integration, $t_0$, the measurement window is centered.
-For this experiment, it is centered at the end of the integration time.
-
-\begin{figure}
-\begin{center}
-\includegraphics[angle=90,width=0.8\textwidth]{../pc_proxy/meas_loc.eps}
-\caption{Locations of the ten (10) simulated sparse measurements used for the
-test retrieval.}\label{sparse}
-\end{center}
-\end{figure}
-
-Figure \ref{proxyfields} and \ref{PCproxytest} 
-shows the results of a test retrieval for a 
-zonally-symmetric-initialized tracer using a lead time of 60 days
-and five singular vectors.
+For this experiment, it was centered at the end of the integration time.
 The Lyapunov spectrum can help us select the number of singular vectors
 as it shows how many remain significant at
 a given lead time--see Figure \ref{lyap_spec}.
-Ten sparse measurements were randomly selected in space and time
-within a measurement window of one day--these are plotted in Figure \ref{sparse}.
-The Pearson correlation for the initial field (Figures \ref{proxyfields}a. and b.)
-is 0.875, while the correlation at the lead time 
-(Figures \ref{proxyfields}c. and d.) is 0.99
-
-\section{Ozone reconstruction}
 
 \begin{figure}
   \begin{subfigure}{0.9\textwidth}
@@ -647,10 +622,9 @@ is 0.875, while the correlation at the lead time
     \caption{b. PC proxy\newline}
   \end{subfigure}
   \caption{Sample globally reconstructed ozone fields on the 500 K isentrop for October 1, 1998.}
+  \label{sample_O3_field}
 \end{figure}
 
-In this section we use PC proxy to reconstruct ozone fields from POAM III
-satellite data.
 Two dimensional fields were reconstructed daily on the 500 K isentrop
 between September 26 and November 17, 1998,
 which is one of only a few periods in which POAM III was operating in both 
@@ -658,9 +632,21 @@ hemispheres simultaneously.
 The tracer simulation was run at a 50 by 50 resolution or 400 by 400 km at
 the poles with a 1.2 hour Runge-Kutta time step for the back-trajectories
 and a 1 day Eulerian time step.
-Unless otherwise noted, the integration time was 60 days with the same lead time
-and five principal components were used.
-A measurement window of two days was used.
+The integration time was 60 days with the same lead time
+and five principal components were used unless otherwise noted.
+The measurement window was two days.
+
+An example of a reconstructed ozone field are shown in Figure \ref{sample_O3_field}
+with Figure \ref{sample_O3_field}a. using the classic proxy tracer method
+while Figure \ref{sample_O3_field}b. uses the PC proxy method.
+Because POAM III data is confined to two rather narrow latitude bands near
+the poles, values near the equator may not be that accurate.
+Nonetheless, the author thought it important to test the method with global
+reconstructions to see how well the PC proxy method can extrapolate
+to areas where measurements are sparse or non-existant.
+As we will see, PC proxy is not only more accurate than the classic method,
+it can also be better at taking into account non-local information
+when it does not become unstable due to over-fitting.
 
 \subsection{Cross-validation}
 
@@ -718,14 +704,16 @@ for classic proxy tracer while Figure \ref{PC_cross_validation} shows
 those for principal component proxy.
 The correlation for the classic method was 0.956, as shown in 
 the scatter plot in Figure \ref{classic_cross_validation}a.
-The bias was -0.063 while the root-mean-square (RMS) error was 1.6 as shown by
-the histogram error plot in Figure \ref{classic_cross_validation}b.
-Errors have been normalized by the original error estimates for the
+The bias was -0.020 ppmv while the root-mean-square (RMS) error was 0.30 ppmv.
+In the histogram error plot in Figure \ref{classic_cross_validation}b.
+the errors have been normalized by the original error estimates for the
 POAM III retrievals.
+When this is done, the bias becomes -0.063 while the RMS error is 1.6.
+
 The correlation for the PC proxy method was 0.987, as shown in 
 the scatter plot in Figure \ref{classic_cross_validation}a.
-The bias was 0.021 while the RMS error was 0.86 as shown by
-the histogram error plot in Figure \ref{classic_cross_validation}b.
+The bias was 0.0039 ppmv while the RMS error was 0.16 ppmv.
+The normalized values are 0.021 for the bias and 0.86 for RMS error.
 In other words, observed errors for the reconstructed ozone are better,
 on average, than the error bars from the original retrievals!
 On the other hand, the PC proxy method, while more accurate, appears to be
@@ -834,9 +822,31 @@ fields.
 This is to be expected: the POAM III data covers only a very small latitude 
 band so that values derived for the equator could be considered an
 extrapolation or a form of ``over-fitting''.
-The best remedy would be either to have more measurements sampling more of
+These instabilities can be reduced by using fewer principal components which
+reduces the number of degrees of freedom.
+Unfortunately, this also tends to reduce the accuracy in the areas where the
+method does not fail.
+A better remedy would be either to have more measurements sampling more of
 the globe or to simply not use interpolates far outside the range of the
 measurements.
+It would be instructive to test the method using an instrument that samples
+more broadly using more principal components.
+
+Principal component proxy tracer reconstruction is shown to be a powerful
+technique that 
+has many of the advantages of prognostic assimilation models but with
+less of the associated complexity.
+It has the advantage over the classic proxy tracer method because it takes
+into account all possible configurations of a passive tracer, operates over
+shorter time scales and has more parameters to tune for optimal accuracy
+and stability.
+It would be straightforward to adapt to three dimensional reconstruction 
+as well as reconstruction that relies on column measurements or even un-inverted
+level 1 satellite measurements rather than point measurements.
+Consider the vector, $\vect w_i$, in Equation (\ref{PC_proxy_def})
+to be a set of weights for integrating a column of air or performing
+a radiative transfer simulation rather than a set of interpolation
+coefficients.
 
 \addcontentsline{toc}{section}{References}
 
@@ -889,7 +899,7 @@ As pointed out already, a discrete tracer mapping will always require some
 amount of diffusion.  This means that the tracer configuration will 
 tend towards a uniform distribution over time, 
 that is, it will ``flatten out.''  We can
-show that, given the constraint shown above, 
+show that, given the constraint in (\ref{constant_mass}), 
 a tracer field with all the same values has the smallest magnitude.  
 Suppose there are only two elements in the 
 tracer vector, $\vect q=\lbrace q,~q \rbrace$.  The magnitude of the vector is:
@@ -952,7 +962,7 @@ Therefore (\ref{tracer_map_inequality}) is true for every $\vect q$
 if-and-only-if (\ref{SV_inequality}) is true for every $s$.
 In the language of set theory and first-order logic:
 \begin{equation}
-	\forall \vect q \in \Re^n ~ (\vect q R^T R \vect q \le |\vect q |^2) \iff \forall s \in \Re | ~R^T R \vect v = s^2 \vect v ~ (s \le 1)
+	\forall \vect q \in \Re^n ~ (| R \vect q |^2 \le |\vect q |^2) \iff \forall s \in \Re | ~R^T R \vect v = s^2 \vect v ~ (s \le 1)
 	\label{theorem}
 \end{equation}
 
