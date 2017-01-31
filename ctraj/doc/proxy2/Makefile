@@ -1,6 +1,6 @@
 TARGET = proxy2
 
-DEPENDENTS = proxy2_abstract.txt proxy2.bib
+DEPENDENTS = proxy2_abstract.txt proxy2.bib proxy2_body.tex
 
 FIGURES = global_classic_sonde_error.eps \
 	     global_classic_sonde_Nhemi.eps \

@@ -1,0 +1,6 @@
+Thanks to the National Center for Environmental Prediction and the National Center for Atmospheric Research for the reanalysis data used in the simulations.
+Thanks also to World Ozone and Ultraviolet Data Center and Environment Canada for ozone sonde data.
+And thanks especially to my former colleagues at the Naval Research Laboratory for POAM III ozone data.
+
+Contour maps were created with Generic Mapping Tools (GMT) while scatter plots
+and historgrams were done in Open Office.
