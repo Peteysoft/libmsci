@@ -415,7 +415,7 @@ namespace libagf {
 
     if (n>8*sizeof(long)-1) {
       fprintf(stderr, "Size must be %d or less\n", 8*sizeof(long)-1);
-      exit(PARAMETER_OUT_OF_RANGE);
+      throw(PARAMETER_OUT_OF_RANGE);
     }
 
     trial=randomize(nperm);
@@ -459,6 +459,10 @@ namespace libagf {
 
     if (nfilled<n) coding_matrix[nfilled]=NULL;
 
+    delete [] trial;
+    return coding_matrix;
+
+    //debugging output:
     for (int i=0; i<nfilled; i++) {
       for (int j=0; j<n; j++) printf("%2d ", coding_matrix[i][j]);
       printf("\n");
@@ -474,9 +478,6 @@ namespace libagf {
       printf("\n");
     }
     printf("\n");
-
-    delete [] trial;
-    return coding_matrix;
   }
 
   void print_control_hier(FILE *fs, int ncls, int c0, int depth) {

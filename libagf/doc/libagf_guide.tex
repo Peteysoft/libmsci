@@ -214,7 +214,7 @@ Most of the commands have the following syntax:
 command [options] model [test_data] output
 \end{verbatim}
 
-where model is the base name of the files containing either a set of training data or a pre-trained model, \verb/test_data/ is the file containing test data and output is the base name of the files in which to store the final estimates.
+where \verb\model\ is the base name of the files containing either a set of training data or a pre-trained model, \verb/test_data/ is the file containing test data and output is the base name of the files in which to store the final estimates.
 
 To get a summary of the syntax and parameters, simply type the command name with no arguments, e.g.:
 
@@ -429,7 +429,7 @@ Multi-class classification using a series of class-borders:
 
 The LVQPAK file format is probably the easiest to work with.  There is one header with the number of dimensions, followed by a listing of the vectors, one vector per line, each column is a dimension except for the last one which is the class.  The \verb/sample_class/ program prints its results to standard out in an LVQPAK-compatible format--see Section \ref{EXAMPLES}, EXAMPLES.
 
-Commands used by other commands:
+\subsection{Commands used by other commands}
 
   Note that some commands call other commands, therefore these latter commands must be in your path.
 
@@ -439,7 +439,7 @@ Commands used by other commands:
   \verb/pdf_agf/, \verb/pdf_knn/ & still used by \verb/validate_pdf.sh/
 \end{tabular}
 
-Deprecated:
+\subsection{Deprecated}
 
   \verb/classify_a/, \verb/classify_knn/, \verb/int_agf/, \verb/int_knn/, \verb/test_classify/, \verb/test_classify_b/, \verb/test_classify_knn/
 
@@ -551,19 +551,43 @@ In the Landsat directory there are a number of scripts for performing surface cl
 \label{MULTI_BORDERS_CLASSIFICATION}
 
   Multi-borders is an algorithm that generalizes the AGF-borders binary classification algorithm to multiple classes.  It is a means of specifying the configuration of the class borders using a recursive control language.  The \verb/multi_borders/ command is used for training a multi-borders model and has the following syntax:
-
-  \verb/multi_borders/ [$<$options$>$] $<$control-in$>$ $<$train$>$ $<$model$>$ $<$control-out$>$
-
+\begin{verbatim}
+    multi_borders [options] control-in train model control-out
+\end{verbatim}
 where:
 \begin{itemize}
-\item $<$control-in$>$ is the input or training control file; 
-\item $<$train$>$ is the base-name of the binary files containing the training data
-\item $<$model$>$ is the base-name for the files that will contain each of the binary classification models and 
-\item $<$control-out$>$ is the output or classification control file which is passed to the classification program, \verb/classify_m/.
+\item \verb$control-in$ is the input or training control file; 
+\item \verb$train$ is the base-name of the binary files containing the training data
+\item \verb$model$ is the base-name for the files that will contain each of the binary classification models and 
+\item \verb$control-out$ is the output or classification control file which is passed to the classification program, \verb/classify_m/.
 \end{itemize}
 
-Consider the following control file:
+\subsection{Multi-borders classification the easy way}
 
+To train a four-class one-versus-one multi-class class borders classification model,
+use the \verb/print_control/ command to generate one of several
+standard multi-class models and pass it directly to the \verb/multi_borders/
+command:
+
+\begin{verbatim}
+$>print_control -Q 6 4 | multi_borders foo bar foobar.txt
+\end{verbatim}
+
+The training data is contained in \verb/foo/;
+the trained binary classification models are output in a series of files (six in this case)
+starting with \verb/bar/. The output control file, \verb/foobar.txt/, tells the prediction program,
+\verb/classify_m/ how the binary classifiers are configured:
+\begin{verbatim}
+$>classify_m foobar.txt test.vec results
+\end{verbatim}
+Where \verb\test.vec\ contains the test points
+while the results are stored in \verb"result.cls" and \verb"result.con".
+The \verb/-Q/ options determines the multi-class model used:
+type \verb/print_control/ with no arguments to get a list of supported models.
+
+\subsection{Multi-borders classification the hard way}
+
+Consider the following control file (\verb/test_multi5.txt/):
 \begin{verbatim}
 "-s 100" {
   "."      {0 1}
@@ -575,15 +599,11 @@ Consider the following control file:
   } 
 }
 \end{verbatim}
-
 When passed to \verb/multi_borders/ as follows:
-
 \begin{verbatim}
 $>multi_borders -n -s 125 test_multi5.txt foo bar foobar.txt
 \end{verbatim}
-
 runs the following set of statements:
-
 \begin{verbatim}
 agf_precondition -a bar.std -n foo.vec bar.139397543805655.vec
 cp foo.cls bar.139397543805655.cls
@@ -603,7 +623,6 @@ It is still possible to print out the commands only using the \verb"-K"
 switch.
 
 The contents of \verb"foobar.txt" are as follows:
-
 \begin{verbatim}
 bar {
   bar.00 {
@@ -629,15 +648,13 @@ Note that each of the names in this file correspond to pairs of files generated 
 $>classify_m -n foobar.txt test.vec result
 \end{verbatim}
 
-The results will be stored in \verb"result.cls" and \verb"result.con".
+There are two types of multi-borders classification: {\it hierarchical} and {\it non-hierarchical}.  In non-hieararchical multi-borders classification, all the classes are partitioned in multiple ways using a binary classifier and the equations relating the conditional probabilities of each class to those of the binary classifiers are solved returning all of the conditional probabilities.  In the hierarchical method (also called a decision tree), the classes are partitioned using either a binary classifier or a non-hierarchical multi-classifier, then each of those partions are partitioned again and so on until there is only one class left in each of the partions.  Hierarchical classification returns only the conditional probability of the winning class.  The \verb/classify_m/ method automatical detects whether a control file uses the hierarchical method or only the non-hierarchical method(that is it has only one level) and prints out conditional probabilities as appropriate.  
 
-  There are two types of multi-borders classification: {\it hierarchical} and {\it non-hierarchical}.  In non-hieararchical multi-borders classification, all the classes are partitioned in multiple ways using a binary classifier and the equations relating the conditional probabilities of each class to those of the binary classifiers are solved returning all of the conditional probabilities.  In the hierarchical method (also called a decision tree), the classes are partitioned using either a binary classifier or a non-hierarchical multi-classifier, then each of those partions are partitioned again and so on until there is only one class left in each of the partions.  Hierarchical classification returns only the conditional probability of the winning class.  The \verb/classify_m/ method automatical detects whether a control file uses the hierarchical method or only the non-hierarchical method(that is it has only one level) and prints out conditional probabilities as appropriate.  
+  The parameters for training each binary classifier are contained in double quotes in the training control file.  To take parameters from the command line, use the null string (\verb/""/) while a period (\verb/"."/) tells the program to use the last set of parameters at the same level or below.  A series of statements for training each of the binary classifiers are generated and executed using the ``system'' command.  Once the commands are run, these binary classifiers will be stored in a pair of uniquely named files, the base-names of which replace, in the final control file, the quoted parameter lists from the training control file.
 
-  The parameters for training each binary classifier are contained in double quotes in the training control file.  To take parameters from the command line, use the null string (\verb/""/) while a period (\verb/"."/) tells the program to use the last set of parameters at the same level or below.  A series of statements for training each of the binary classifiers are generated and sent to standard output.  Once the commands are run, these binary classifiers will be stored in a pair of uniquely named files, the base-names of which replace, in the final control file, the quoted parameter lists from the training control file.
+  In the control language, going up a level in the hierarchical scheme is denoted by a left curly brace (\verb'{') while going down is denoted by a right curly brace (\verb$}$).  In a non-hierarchical model, we specify the parameters (file name) of each of the binary partitions followed by the partitions themselves: two lists of classes separated by a forward slash (\verb'/').  Class labels for non-hierarchical partitions are relative, that is they go from 0 to the number of classes in the non-hierarchical model less one.  Class labels in the top level partitions are absolute, therefore must be unique.  These should also go from 0 to one less than the total number of classes in the over-all model, but need not.
 
-  In the control language, going up a level in the hierarchical scheme is denoted by a left curly brace (\verb'{') while going down is denoted by a right curly brace (\verb$}$).  In a non-hierarchical model, we specify the parameters (file name) of each of the binary partition followed by the partitions themselves: two lists of classes separated by a forward slash (\verb'/').  Class labels for non-hierarchical partitions are relative, that is they go from 0 to the number of classes in the non-hierarchical model less one.  Class labels in the top level partitions are absolute, therefore must be unique.  These should also go from 0 to one less than the total number of classes in the over-all model, but need not.
-
-  In this example, there are six classes.  They are first partioned into a group of two and a group of four.  The group of four is partitioned into a group of three, the first of which is partitioned into two classes and the second and third of which are single classes. The \verb/print_control/ command can be used to generate common control files.
+  In this example, there are six classes.  They are first partioned into a group of two and a group of four.  The group of four is partitioned into three parts, the first of which is partitioned into two classes and the second and third of which are single classes. The \verb/print_control/ command can be used to generate common control files.
 
 A good way to understand the ``multi-borders'' paradigm is to look at the example cases in the \verb"examples/humidity" data directory.  There is also a draft paper contained in the \verb"docs/" sub-directory.
 
@@ -660,14 +677,11 @@ The multi-borders routines can now interface with external binary classification
 \end{verbatim}
 
 We pass the LIBSVM command, \verb"svm-train", to \verb"multi_borders", as follows:
-
 \begin{verbatim}
 $>multi_borders -M -- "svm-train -b 1" -+ "-h 0 -c 25" \
 		test_multi.txt foo.svm bar foobar.txt
 \end{verbatim}
-
 which will execute the following statements:
-
 \begin{verbatim}
 agf_preprocess -A -M foo.svm bar.00.2367545368.tmp 0 / 1
 svm-train -b 1 -h 0 -c 25  bar.00.2367545368.tmp bar.00
@@ -688,26 +702,25 @@ rm -f bar.2367545368.tmp
 
 Several things should be noted:
 \begin{itemize}
-\item the \verb/-b/ switch in svm-train tells it to generate probability estimates
+\item the \verb/-b/ switch is required and tells \verb/svm-train/ to generate probability estimates
 \item the \verb/-+/ option passes any other switches to use as ``defaults''
 \item when used in this way, training data must be in ASCII format: \verb/-M/ switch for the same format as LIBSVM, otherwise it uses the same format as LVQPAC (see File Conversion, above)
 \item the output control file is the same as before
 \end{itemize}
 
 The training command, passed through \verb/--/, should have the following syntax:
-
-\verb/  /$<$train$>$ [$<$options$>$] $<$data$>$ $<$model$>$
-
+\begin{verbatim}
+    train [options] data model/
+\end{verbatim}
 where:
 \begin{itemize}
-\item $<$train$>$ is the training command
-\item $<$options$>$ are a set of options passed through the control file, through the \verb/-+/ option, or directly from the end of the command line or through the command name
-\item $<$data$>$ is the training data in LVQ or SVM ASCII format
-\item $<$model$>$ is the output model reconizable to the prediction command, see below.
+\item \verb/train/ is the training command
+\item \verb/options/ are a set of options passed through the control file, through the \verb/-+/ option, or directly from the end of the command line or through the command name
+\item \verb/data/ is the training data in LVQ or SVM ASCII format
+\item \verb/model/ is the output model reconizable to the prediction command, see below.
 \end{itemize}
 
 Once the training has completed, classifications are performed by passing the prediction command, \verb"svm-predict", from LIBSVM to \verb"classify_m" using the \verb/-O/ option:
-
 \begin{verbatim}
 $>classify_m -M -O "svm-predict -b 1" foobar.txt test.svm output.svmout
 \end{verbatim}
@@ -715,15 +728,15 @@ $>classify_m -M -O "svm-predict -b 1" foobar.txt test.svm output.svmout
 Once again, when paired with an external command, \verb/classify_m/ operates on ASCII files as opposed to the native AGF binary format. Output file format is the same as LIBSVM: a header consisting of the word, ``labels'', followed by a list of labels, then one class label per line, followed by the conditional probabilities in the same order as the class labels in the header. Since ``hierarchical'' classification generates only one probability per estimate, in this case only one is written per line.  While this is not LIBSVM conformant, the file conversion utility, svmout2agf, nonetheless recognizes it.  
 
 The prediction command, passed by \verb"-O", should have the following syntax:
-
-\verb/  /$<$predict$>$ $<$test$>$ $<$model$>$ $<$output$>$
-
+\begin{verbatim}
+    predict test model output
+\end{verbatim}
 where:
 \begin{itemize}
-\item $<$predict$>$ is the command name--if there are options they must be passed directly as part of this name;
-\item $<$test$>$ is the test data in LVQ or SVM ASCII format;
-\item $<$model$>$ is the binary classification model;
-\item $<$output$>$ are the predicted classes plus both conditional probabilities in the format described above.
+\item \verb$predict$ is the command name--if there are options they must be passed directly as part of this name;
+\item \verb$test$ is the test data in LVQ or SVM ASCII format;
+\item \verb$model$ is the binary classification model;
+\item \verb$output$ are the predicted classes plus both conditional probabilities in the format described above.
 \end{itemize}
 Note that the order of the first two arguments are reversed as compared to the libAGF convention in \verb/classify_b/ and \verb/classify_m/.
 
@@ -742,13 +755,10 @@ numerically, so is not very accurate.
 A better solution is the \verb/-Z/ switch which tells \verb/multi_borders/ 
 to use the ``in-house'' SVM codes.
 To accelerate the previous model, pass the output classification control file from the previous pass:
-
 \begin{verbatim}
 $>multi_borders -Z foobar.txt foo bar2 foobar2.txt
 \end{verbatim}
-
 which executes the following statements:
-
 \begin{verbatim}
 class_borders -Z bar.00 foo bar2.00
 class_borders -Z bar.01.00 foo bar2.01.00
@@ -762,7 +772,6 @@ To facilitate this, an extra parameter is included in the \verb/class_borders/ c
 while the second parameter is a file containing training data which is used to sample the space while searching for roots.  
 
 Output is in the normal, AGF binary format and \verb/classify_m/ can be used as normal for classification:
-
 \begin{verbatim}
 $>classify_m foobar2.txt test.vec output
 \end{verbatim}
@@ -770,22 +779,18 @@ $>classify_m foobar2.txt test.vec output
 Another way of accelerating LIBSVM models, which only works with ``native''
 LIBSVM models, is with the \verb/svm_accelerate/ command.
 Suppose we've trained a LIBSVM model, \verb/model.svmmod/, as follows:
-
 \begin{verbatim}
 $>svm-train foo.svm model.svmmod
 \end{verbatim}
-
 We can convert it to a multi-borders model as follows:
-
 \begin{verbatim}
+$>svm2agf foo.svm foo
 $>svm_accelerate model.svmmod foo model.mod
 \end{verbatim}
-
-where \verb/foo.svm/ is the training data in LIBSVM format and \verb/foo/
+where \verb/foo.svm/ contains the training data in LIBSVM format and \verb/foo/
 is the training data in libAGF format. Note that the multi-borders model
 in this case is stored in ASCII format all in one file but is still 
 accepted by \verb/classify_m/:
-
 \begin{verbatim}
 $>classify_m model.mod test.vec output
 \end{verbatim}

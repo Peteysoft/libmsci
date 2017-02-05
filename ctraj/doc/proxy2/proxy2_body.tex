@@ -48,12 +48,12 @@ The advection-diffusion equation is given as follows:
 \end{equation}
 where $q$ is the tracer concentration, $\vect x$ is spatial position, 
 $t$ is time, $\vect v$ is the fluid velocity, and $D$ is the diffusivity tensor.
-It is assumed that there is no mass-conservation term, $q \nabla \cdot \vect v$,
+There is no mass-conservation term, $q \nabla \cdot \vect v$,
 either because $q$ is a volume-mixing ratio (vmr) or 
 the fluid is incompressible ($\nabla \cdot \vect v = 0$).
 
 In an Eulerian tracer simulation, the approximate value of $q$
-is only known at discrete locations so can be represented as a vector,
+is known only at discrete locations so can be represented as a vector,
 $\vect q=\lbrace q_i \rbrace$.
 The linear operator contained in the braces in Equation 
 (\ref{advection_diffusion}) is approximated as a matrix, $A$, which is 
@@ -102,8 +102,8 @@ t_n=t_0+\sum_{i=0}^{n} \Delta t_i
 \end{equation}
 It follows that $R(t, 0)=I$ where $I$ is the identity matrix.
 
-Once we've found $R$, 
-we can use it to calculate $\vect q$ given $\vect q$ at any other time:
+Given $R$, 
+we can calculate $\vect q$ given $\vect q$ at any other time:
 \begin{equation}
 	\vect q(t) = R(t_0, t-t_0) \vect q_0
 	\label{tracer_integration}
@@ -119,7 +119,7 @@ where $\exp$ is the matrix generalization of the exponential function.
 
 \subsection{Principal component proxy}
 
-Suppose we decompose a specific transport map using singular value decomposition:
+Suppose we decompose a given transport map using singular value decomposition:
 \begin{equation}
 	R(t_0, ~ t_n - t_0) = U S V^T
 	\label{SVD}
@@ -146,6 +146,7 @@ map onto a set of orthogonal final conditions--the left singular vectors, $\lbra
 \end{equation}
 The superscript denotes the column number: 
 this notation will be used throughout.
+Also, the term PC or principal component will be used as a synonym for left singular vector.
 
 The singular values are all positive and by convention are arranged from largest to smallest:
 \begin{equation}
@@ -163,7 +164,7 @@ of coefficients, $\vect c$, that minimizes the mean-square error of the
 interpolates versus the measurements.
 In any real problem, the measurements are unlikely to occur at the same time,
 so rather than using the left singular vectors, we use $R$ to advance the
-right singular values to the same time as the measurement.
+right singular vectors to the same time as the measurement.
 The time period during which measurements are admitted is the \italics{measurement window}.
 while the difference between the integration start time, $t_0$,
 and the center of the measurement window is the \italics{lead time}.
@@ -176,7 +177,7 @@ We have the following minimization problem:
 where $t^{(i)}$ is the time stamp of the $i$th measurement, $m_i$, 
 and $\vect w_i$ is a vector of interpolation coefficients.
 
-Once the coefficients have been fitted we can reconstruct the tracer:
+Once the coefficients have been fitted, the tracer is reconstructed as follows:
 \begin{equation}
 	\vect q(t_n) \approx \sum_{i=1}^k c_i \vect u^{(i)}
 \end{equation}
@@ -203,7 +204,7 @@ problem:
   \min_{\vect c} \sum_i \left \lbrace \sum_{j=0}^N c_j \left [\vect w_i \cdot \vect \Phi(t_i) \right ]^j - m_i \right \rbrace^2
 \end{equation}
 where $\vect c$ are the regression coefficients and $N$ is the order of the
-method. The tracer is reconstructed as follows:
+method. The tracer is reconstructed:
 \begin{equation}
 	q_k(t) \approx \sum_{j=0}^N c_i \Phi_k^j(t)
 \end{equation}
@@ -216,7 +217,7 @@ Suppose we have a system of ordinary differential equations (ODEs):
 	\label{ODE}
 \end{equation}
 where $\vect r$ is a vector of dependent variables.
-We linearize this about $\vect r$ using the \italics{tangent vector},
+Linearize this about $\vect r$ using the \italics{tangent vector},
 $\nabla_{\vect r} f$:
 \begin{eqnarray}
 \frac{\mathrm d}{\mathrm d t} (\vect r + \delta \vect r) & \approx & \vect f + 
@@ -224,13 +225,13 @@ $\nabla_{\vect r} f$:
 	\frac{\mathrm d}{\mathrm d t} \delta \vect r & \approx & \nabla_{\vect r} \vect f \cdot \vect r
 \end{eqnarray}
 where $\delta \vect r$ is a vector of \italics{infinitessimal error vectors}.
-Define the \italics{tangent model}, $H$, such that:
+Now define the \italics{tangent model}, $H$, such that:
 \begin{equation} 
 	\frac{\mathrm d}{\mathrm d t} H = \nabla_{\vect r} \vect f H \\
 \end{equation}
 
 A passive Eulerian tracer simulation is linear: the tangent vector is simply
-the dynamics, that is,
+the dynamics.
 if we take Equation (\ref{linear_ODE}), a system of linear ODEs,
 as our system of ODEs in
 (\ref{ODE}), then setting $\vect r=\vect q$, 
@@ -312,7 +313,7 @@ Expanding:
 \end{equation}
 
 To get a handle on the error, we consider first a fully passive tracer 
-(no sources or sinks) started with initial conditions $\vect q_0=\vect q(t_0)$.
+(no sources or sinks) started with initial conditions $\vect q_0$.
 Expanding this in terms of the right singular vectors with a set
 of coefficients, $\vect c_0$:
 \begin{equation}
@@ -452,9 +453,10 @@ Gridding on both hemispheres is 50 by 50, or 400km-,
 The Polar Ozone and Aerosol Measurement (POAM) III instrument was a solar-
 occultation instrument mounted on the SPOT-4 sun-synchronous, low-earth-orbit
 satellite \citep{Lucke_etal1999}.
-It had nine channels operating in the visual and near infrared range.
+Operating between March 1998 and December 2005,
+it had nine channels in the visual and near infrared range.
 Using optimal estimation \citep{Rodgers2000}, ozone profiles have been retrieved 
-within a narrow latitude band in both the Arctic and Antarctic \citep{Lumpe_etal2002}.  
+within a pair of narrow latitude bands in both the Arctic and Antarctic \citep{Lumpe_etal2002}.  
 The instrument is capable of returning 28 or 29 measurements per day,
 alternating between Northern and Southern hemisphere, however because of
 a malfunction
@@ -470,13 +472,25 @@ gridded (2.5 by 2.5 degrees longitude/latitude, 4 time daily), reanalyzed
 climate data starting in 1948 \citep{Kalnay_etal1996}.
 Daily averaged wind and temperature data was used to drive the advection model.
 
+\begin{figure}
+  \begin{flushright}
+    \includegraphics[angle=90,width=0.9\textwidth]{ozone_sonde_stations.ps}
+    \caption{Locations of ozone sonde launch stations}
+    \label{ozone_sonde_stations}
+  \end{flushright}
+\end{figure}
+
 \subsection{Ozone sonde data}
 
 The World Ozone and Ultraviolet Data Centre (WOUDC) collects ozone sonde data
 from around the world \citep{Hare_etal2000}. A list of all contributors is available on the website:
 \url{http://woudc.org}.
 The data is archived by Environment Canada.
-
+The location of all the launch stations used in the validation exercices is
+shown in Figure \ref{ozone_sonde_stations}.
+Sonde locations are a good match for the POAM III measurement locations
+since they are primarily at high latitudes with few stations
+towards the equator.
 
 \section{Numerical preliminaries}
 
@@ -527,8 +541,11 @@ of one 1.2 hours.}\label{tcorr}
 \end{figure}
 
 \begin{figure}
-\includegraphics[angle=-90,width=0.45\textwidth]{passive1997.12.01.ps}
+\begin{tabular}{ll}
+a. Tracer & b. First PC\\
+\includegraphics[angle=-90,width=0.45\textwidth]{passive1997.12.01.ps} &
 \includegraphics[angle=-90,width=0.45\textwidth]{firstpc1997.12.01.ps}
+\end{tabular}
 \caption{Comparison of a simulated tracer (a.) and the first principal
 component (b.) for the same time integration.
 Integration started on January 1, 1997 and continuted until December 1, 1997, a period of 334 days.}\label{pc1}
@@ -817,6 +834,9 @@ fields.
 This is to be expected: the POAM III data covers only a very small latitude 
 band so that values derived for the equator could be considered an
 extrapolation and are vulnerable to ``over-fitting''.
+It doesn't affect the validation results so much because most of the 
+radiosonde launch stations are in the higher latitudes, as seen in
+Figure \ref{ozone_sonde_stations}.
 These instabilities can be reduced by using fewer principal components which
 reduces the number of degrees of freedom.
 Unfortunately, this also tends to reduce the accuracy in the areas where the

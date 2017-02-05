@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
   }
 
   if (opt_args.Qtype > 0 && opt_args.Qtype!=7) {
-    if (opt_args.Qtype==5 || opt_args.Qtype==8) {
+    if (opt_args.Qtype==5 || (opt_args.Qtype==8 && opt_args.Yflag)) {
       print_control_nonhier(stdout, coding_matrix+1, nrow-1, n);
     } else {
       print_control_nonhier(stdout, coding_matrix, nrow, n);
