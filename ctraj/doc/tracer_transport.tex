@@ -493,7 +493,7 @@ R=U\cdot S\cdot V^T
 \end{equation}
 where $R$ is an $[m \times n]$ matrix, $U$ is an $[m \times n]$ ortho-normal
 matrix, $S$ is an $[n \times n]$ diagonal matrix of {\it singular values}
-($s_{ii}=s_i\ge_{i+1}$) and $V$ is an $[n \times n]$ ortho-normal matrix.
+($s_{ii}=s_i\ge s_{i+1}$) and $V$ is an $[n \times n]$ ortho-normal matrix.
 
 $U$ and $V^T$ are also termed the left and right {\it singular vectors}, 
 respectively and are normally calculated through eigenvalue analysis:
@@ -1010,6 +1010,7 @@ without fundamentally changing it or its linearity.
 Consider the diffusion equation in one dimension:
 \begin{equation}
   \frac{\partial q}{\partial t}=d \frac{\partial^2 q}{\partial x^2}
+  \label{heat_equation}
 \end{equation}
 where $d$ is the diffusion coefficient.
 Solving by separation of variables:
@@ -1047,6 +1048,13 @@ making results easy to generalize from one to multiple dimensions:
 	& = & \prod_{i=1}^N \frac{e^{x_i^2/2}}{\sqrt{2 \pi}}
 \end{eqnarray}
 where $N$ is the number of dimensions.
+The solution to Equation (\ref{heat_equation}) in multiple dimensions is likewise
+separable:
+\begin{equation}
+	q=q_0 \prod_{j=1}^N e^{-d \omega_j^2 t} e^{i \omega_j x_i} = q_0 e^{-d|\vec \omega|^2 t} e^{i \vec \omega \cdot \vec x}
+\end{equation}
+where $\vec \omega=\lbrace \omega_j \rbrace$ is the vector angular frequency
+of the stationary wave.
 
 There are a number of different approaches to adding diffusion.
 If the transport matrix, $R$, is integrated from an ``evolution matrix'',

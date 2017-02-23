@@ -18,6 +18,7 @@ NCLS_shuttle=7
 NCLS_covtype=7
 NCLS_segment=7
 NCLS_sat=6
+NCLS_vehicle=4
 NCLS_poker=10
 NCLS_mnist=10
 
@@ -30,6 +31,7 @@ PRE_covtype=-n
 PRE_segment=-n
 PRE_sat=-nS 9
 PRE_poker=-n
+PRE_vehicle=-n
 #PRE_mnist=-nS 20
 
 PRE=$(PRE_$(VER))
@@ -42,6 +44,7 @@ AGFOPT_segment=-W 5
 AGFOPT_sat=-W 10
 AGFOPT_poker=-k 200 -W 2
 AGFOPT_mnist=-k 400 -W 25
+AGFOPT_vehicle=-W 10
 
 AGFOPT=$(AGFOPT_$(VER))
 
@@ -61,6 +64,8 @@ K=$(K_$(VER))
 
 #number of border samples (or other options) for "accelerated" SVM model:
 NSAMP_segment=-s 20
+NSAMP_vehicle=-s 20
+NSAMP_sat=-s 50
 
 NSAMP=$(NSAMP_$(VER))
 
@@ -78,7 +83,7 @@ BASE=$(WORKDIR)/$(VER)
 TRAIN=$(BASE).trn
 TEST=$(BASE).tst
 
-MULTICONTROL=onevsone.mbc
+MULTICONTROL=$(WORKDIR)/onevsone.mbc
 
 SVMMODEL=$(BASE).svmmod
 AGFMODEL=$(BASE).agf
@@ -92,6 +97,10 @@ NSUPPORT=$(WORKDIR)/nsupport.txt
 ifneq ($(strip $(PRE)),)
   NORMCLAUSE=-a $(TRAIN).std
 endif
+
+#phony targets:
+.PHONY: all
+.PHONY: clean
 
 #output results:
 all: $(TEST).knn.cls $(TEST).agf.cls $(TEST).svm.cls $(TEST).acc.cls $(NBORDER_SVM)
@@ -130,7 +139,7 @@ $(TEST).knn.cls $(TEST).knn.cor: $(TRAIN).vec $(TRAIN).cls $(TEST).vec
 
 $(TEST).svm.cls $(TEST).svm.cor: $(SVMMODEL) $(TEST).svm
 	time -o $(WORKDIR)/svm_time.txt svm-predict -b 1 $(TEST).svm $(SVMMODEL) $(TEST).svm.txt
-	svmout2agf $(TEST).svm.txt > $(TEST).svm
+	svmout2agf $(TEST).svm.txt $(TEST).svm
 
 $(TEST).agf.cls $(TEST).agf.cor: $(AGFMODEL).mbc $(TEST).vec
 	time -o $(WORKDIR)/agf_time.txt classify_m $(AGFMODEL).mbc $(TEST).vec $(TEST).agf > $(TEST).agf.txt
@@ -165,6 +174,10 @@ $(SVMMODEL): $(TRAIN).svm
 #agf borders model:
 $(AGFMODEL).mbc: $(TRAIN).svm
 	time -o $(WORKDIR)/agf_ttime.txt print_control -Q 6 $(NCLS) | multi_borders $(AGFOPT) $(TRAIN) $(AGFMODEL) $(AGFMODEL).mbc
+
+#only used for one script:
+$(MULTICONTROL):
+	print_control -Q 6 $(NCLS) > $(MULTICONTROL)
 
 #convert to LIBSVM format:
 $(TRAIN).svm: $(TRAIN).cls $(TRAIN).vec
@@ -203,16 +216,15 @@ $(WORKDIR)/sat.trn.cls $(WORKDIR)/shuttle.trn.cls: $(WORKDIR)/%.cls: $(DATADIR)/
 	agf_preprocess -U $(PRE) $(TRAIN) $(TRAIN)
 	agf_preprocess $(NORMCLAUSE) -U $(TEST) $(TEST)
 
-VEHICLE_FILES=xaa.dat xab.dat xac.dat xad.dat xae.dat xaf.dat xag.dat xah.dat xai.dat
-VEHICLE_TEST=xaa.dat
-VEHICLE_TRAIN=$(VEHICLE_FILES, $(VEHICLE_TEST)=)
+VEHICLE_SUFFIX=.dat.txt
+VEHICLE_FILES=xaa xab xac xad xae xaf xag xah xai
+VEHICLE_TEST=xaa
+VEHICLE_TRAIN=$(addsuffix $(VEHICLE_SUFFIX), $(filter-out $(VEHICLE_TEST), $(VEHICLE_FILES))
 
 $(WORKDIR)/vehicle.trn.cls: $(addprefix, $(DATADIR)/, $(VEHICLE_FILES))
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
-	cat $(addprefix, $(DATADIR)/, $(VEHICLE_TRAIN)) > $(WORKDIR)/vehicle/vehicle.trn.txt
-	cp $(addprefix, $(DATADIR)/, VEHICLE_TEST) $(WORKDIR)/vehicle/vehicle.tst.txt
-	sed 's/opel/0; s/saab/1; s/bus/2; s/van/3' $(WORKDIR)/$(VER).trn.txt
-	sed 's/opel/0; s/saab/1; s/bus/2; s/van/3' $(WORKDIR)//$(VER).tst.txt
+	cat $(addprefix $(DATADIR)/, $(VEHICLE_TRAIN)) | sed 's/opel/0/;s/saab/1/;s/bus/2/;s/van/3/' > $(WORKDIR)/vehicle.trn.txt
+	cat $(DATADIR)/$(VEHICLE_TEST)$(VEHICLE_SUFFIX) | sed 's/opel/0/;s/saab/1/;s/bus/2/;s/van/3/' > $(WORKDIR)/$(VER).tst.txt
 	lvq2agf -H $< $(WORKDIR)/$(VER).trn.txt $(TRAIN)
 	lvq2agf -H $< $(WORKDIR)/$(VER).tst.txt $(TEST)
 	agf_preprocess -U $(PRE) $(TRAIN) $(TRAIN)

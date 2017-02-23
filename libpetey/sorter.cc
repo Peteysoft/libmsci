@@ -50,6 +50,7 @@ int main(int argc, char **argv) {
     printf("-r     randomize the list instead of sorting it\n");
     printf("-i     output indices\n");
     printf("-C     check if input is sorted\n");
+    printf("-?     print this help screen\n");
     exit(0);
   }
 

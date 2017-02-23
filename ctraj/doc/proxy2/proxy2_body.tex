@@ -83,13 +83,13 @@ a_{i,i+1} & = & \left (\frac{v_i}{2 \Delta x} + \frac{d}{\Delta x^2} \right )
 To produce a general solution to Equation (\ref{linear_ODE}), 
 we first substitute a matrix, $R$, for $\vect q$:
 \begin{equation}
-	\frac{\mathrm d R(t, \Delta t)}{\mathrm d \Delta t} = A(t) R(t, \Delta t)
+	\frac{\mathrm d R(t_0, t)}{\mathrm d t} = A(t) R(t_0, t)
 \end{equation}
 We will call the matrix $R$ the \italics{discrete transport map} or simply
 the \italics{transport map}.
 
 Unlike in most analyses, there are two parameters for the time:
-the integration start time, $t$, and the integration time, $\Delta t$.
+the integration start time, $t_0$, and the integration time, $t$.
 In this way, $R$ may be decomposed in terms of itself:
 \begin{equation}
 	R(t_0,~t_n-t_0) = R(t_n, \, \Delta t_n) R(t_{n-1},\,\Delta t_{n-1}) R(t_{n-2},\,\Delta t_{n-2}) \, ...~~ 
@@ -100,7 +100,7 @@ where,
 \begin{equation}
 t_n=t_0+\sum_{i=0}^{n} \Delta t_i
 \end{equation}
-It follows that $R(t, 0)=I$ where $I$ is the identity matrix.
+It follows that $R(t_0, 0)=I$ where $I$ is the identity matrix.
 
 Given $R$, 
 we can calculate $\vect q$ given $\vect q$ at any other time:

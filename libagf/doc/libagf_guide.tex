@@ -397,6 +397,24 @@ Multi-class classification using a series of class-borders:
 
   The first clustering algorithm works by calculating the density of each training samples.  If the density is larger than a certain threshold, a class number is assigned and the program recursively calculates the densities of all the samples in the vicinity, based on its k neighbours, and assigns the same class number to each if they also exceed the threshold.  Samples lower than the threshold are assigned the class label of 0, while clusters are assigned consecutive values starting at 1.  This is far simpler than a dendrogram, but somewhat less general although the final result should be similar.  But, we've added a dendrogram anyway.
 
+\subsection{Experimental}
+
+\paragraph{Continuum extension}:
+Programs that extend the classification algorithms to work with continuous data:
+
+\begin{tabular}{ll}
+  \verb/c_borders.sh/ & Trains a continuum classification model.\\
+  \verb/classify_c/ & Returns coninuum extension estimates.\\
+\end{tabular}
+
+\paragraph{Discrete Bayesian modelling}: programs that model the probability distributions through binning.
+
+\begin{tabular}{ll}
+  \verb/sort_discrete_vectors/ & Sorts a set of discrete vectors.\\
+  \verb/search_discrete_vectors/ & Searches within a set of discrete vectors and\\
+		& estimates the probability density.
+\end{tabular}
+
 \subsection{Pre-/post-processing}
 
 \begin{tabular}{ll}
@@ -424,7 +442,10 @@ Multi-class classification using a series of class-borders:
 	& \verb\  \$R = (2 c - 1) C$\\
 & where c is the class and C is the confidence rating.\\
 \verb/mbh2mbm/: & Collates a multi-file multi-borders model into a single \\
-	 	& ASCII file. 
+	 	& ASCII file.\\
+\verb/float_to_class/: & Converts floating point data into class data by\\
+	 	& binning it into discrete ranges.\\ 
+\verb/class_to_float/: & Converts class data into floating point. \\
 \end{tabular}
 
 The LVQPAK file format is probably the easiest to work with.  There is one header with the number of dimensions, followed by a listing of the vectors, one vector per line, each column is a dimension except for the last one which is the class.  The \verb/sample_class/ program prints its results to standard out in an LVQPAK-compatible format--see Section \ref{EXAMPLES}, EXAMPLES.
@@ -616,11 +637,11 @@ rm bar.139397543805655.vec
 rm bar.139397543805655.cls
 \end{verbatim}
 
-In the past these were only printed to standard out with running them the
+Initial versions printed these commands to standard out with running them the
 job of the user. Now they are executed directly with the option of 
 running them in the background using the \verb"-x" switch.
 It is still possible to print out the commands only using the \verb"-K"
-switch.
+switch which is meant for debugging purposes as it also leaves any temporary files.
 
 The contents of \verb"foobar.txt" are as follows:
 \begin{verbatim}
@@ -648,7 +669,7 @@ Note that each of the names in this file correspond to pairs of files generated 
 $>classify_m -n foobar.txt test.vec result
 \end{verbatim}
 
-There are two types of multi-borders classification: {\it hierarchical} and {\it non-hierarchical}.  In non-hieararchical multi-borders classification, all the classes are partitioned in multiple ways using a binary classifier and the equations relating the conditional probabilities of each class to those of the binary classifiers are solved returning all of the conditional probabilities.  In the hierarchical method (also called a decision tree), the classes are partitioned using either a binary classifier or a non-hierarchical multi-classifier, then each of those partions are partitioned again and so on until there is only one class left in each of the partions.  Hierarchical classification returns only the conditional probability of the winning class.  The \verb/classify_m/ method automatical detects whether a control file uses the hierarchical method or only the non-hierarchical method(that is it has only one level) and prints out conditional probabilities as appropriate.  
+There are two types of multi-borders classification: {\it hierarchical} and {\it non-hierarchical}.  In non-hieararchical multi-borders classification, all the classes are partitioned in multiple ways using a binary classifier and the equations relating the conditional probabilities of each class to those of the binary classifiers are solved returning all of the conditional probabilities.  In the hierarchical method (also called a {\it decision tree}), the classes are partitioned using either a binary classifier or a non-hierarchical multi-classifier, then each of those partions are partitioned again and so on until there is only one class left in each of the partions.  Hierarchical classification returns only the conditional probability of the winning class.  The \verb/classify_m/ method automatical detects whether a control file uses the hierarchical method or only the non-hierarchical method(that is it has only one level) and prints out conditional probabilities as appropriate.  
 
   The parameters for training each binary classifier are contained in double quotes in the training control file.  To take parameters from the command line, use the null string (\verb/""/) while a period (\verb/"."/) tells the program to use the last set of parameters at the same level or below.  A series of statements for training each of the binary classifiers are generated and executed using the ``system'' command.  Once the commands are run, these binary classifiers will be stored in a pair of uniquely named files, the base-names of which replace, in the final control file, the quoted parameter lists from the training control file.
 

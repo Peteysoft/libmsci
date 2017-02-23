@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
     printf("var   = variance (Gaussian)/span (uniform)\n");
     printf("mean  = mean (Guassian)/minimum (uniform)\n");
     printf("-g    = Gaussian deviates\n");
+    printf("-?    = print this help screen\n");
     return 0;
   }
 
