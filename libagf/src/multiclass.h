@@ -108,6 +108,7 @@ namespace libagf {
       int init(char **fname, 		//name of each of the binary models
 		cls_t **part, 		//partitions
 		int npart, 		//number of partitions
+      		char *prefix=NULL,	//path to data files
  		int tflag=0,		//for training purposes
 		char *com=NULL,		//external binary classification command
 		int Mflag=0,		//external command uses LIBSVM format

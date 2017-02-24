@@ -37,6 +37,7 @@ int main(int argc, char **argv) {
   real_a *pdf=NULL;	//cond. prob.
   real_a pcor;		//correction for pdf calcs for norm. coord
   size_t ressize;	//size of one data element in results array
+  real_a vbracket[2];	//variance brackets
 
   int action;	//0=classify, 1=interpolation, 2=pdf estimation
 
@@ -149,11 +150,11 @@ int main(int argc, char **argv) {
     vart=0;
     for (dim_ta i=0; i<nvar; i++) vart+=std[i]*std[i];
     if (opt_args.var[0] <= 0) {
-      opt_args.var[0]=vart/pow(ntrain, 2./nvar);
+      vbracket[0]=vart/pow(ntrain, 2./nvar);
       fprintf(logfs, "Using %10.3g for lower filter variance bracket\n\n", opt_args.var[0]);
     }
     if (opt_args.var[1] <= 0) {
-      opt_args.var[1]=vart;
+      vbracket[1]=vart;
       fprintf(logfs, "Using %10.3g for upper filter variance bracket\n\n", opt_args.var[1]);
     }
   }
@@ -308,11 +309,14 @@ int main(int argc, char **argv) {
   //don't read on...  this is going to be a fucking disaster...
   for (nel_ta i=0; i<ntest; i++) {
     real_a p_x;				//P(x)
+    //if variance brackets have been set, then changes are not "sticky" between runs:
+    if (opt_args.var[0]>0) vbracket[0]=opt_args.var[0];
+    if (opt_args.var[1]>0) vbracket[1]=opt_args.var[1];
     if (opt_args.k<0) {
       switch (action) {
         case 0:
           ((cls_ta *) result)[i]=agf_classify(train, nvar, (cls_ta *) ord, ntrain, nclass, 
-			test[i], opt_args.var, opt_args.W2, pdf, &diag_param, opt_args.jointflag);
+			test[i], vbracket, opt_args.W2, pdf, &diag_param, opt_args.jointflag);
           if (opt_args.jointflag) {
             p_x=0;
             for (cls_ta j=0; j<nclass; j++) p_x+=pdf[j];
@@ -328,18 +332,18 @@ int main(int argc, char **argv) {
           break;
         case 1:
           ((real_a *) result)[i]=adgaf_err(train, nvar, (real_a *) ord, ntrain, test[i],
-			opt_args.var, opt_args.W2, con[i], &diag_param);
+			vbracket, opt_args.W2, con[i], &diag_param);
           break;
         case 2:
           ((real_a *) result)[i]=agf_calc_pdf(train, nvar, ntrain, test[i], 
-			opt_args.var, opt_args.W2, &diag_param)/pcor;
+			vbracket, opt_args.W2, &diag_param)/pcor;
           break;
       }
     } else {
       switch (action) {
         case 0: 
           ((cls_ta *) result)[i]=agf_classify(train, nvar, (cls_ta *) ord, ntrain, nclass, 
-			test[i], opt_args.var, opt_args.k, opt_args.W2, 
+			test[i], vbracket, opt_args.k, opt_args.W2, 
 			pdf, &diag_param, opt_args.jointflag);
           if (opt_args.jointflag) {
             p_x=0;
@@ -356,11 +360,11 @@ int main(int argc, char **argv) {
           break;
         case 1:
           ((real_a *) result)[i]=adgaf_err(train, nvar, (real_a *) ord, ntrain, test[i],
-			opt_args.var, opt_args.k, opt_args.W2, con[i], &diag_param);
+			vbracket, opt_args.k, opt_args.W2, con[i], &diag_param);
           break;
         case 2:
           ((real_a *) result)[i]=agf_calc_pdf(train, nvar, ntrain, test[i], 
-			opt_args.var, opt_args.k, opt_args.W2, &diag_param)/pcor;
+			vbracket, opt_args.k, opt_args.W2, &diag_param)/pcor;
           break;
       }
       if (diag_param.f < min_f) min_f=diag_param.f;

@@ -24,6 +24,7 @@ namespace libagf {
     char *normfile;	//-a file containing normalization values
     char *ofile;	//-o output file
     char *multicommand;	//-O command to use for multi-class class.
+    char *path;		//-y path
     real_a missing;	//-E value for missing data
     real_a ftest;	//-f fraction of data to use for testing
     real_a hrel;	//-h relative difference for numerical derivatives

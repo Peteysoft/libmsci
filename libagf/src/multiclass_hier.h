@@ -27,6 +27,7 @@ namespace libagf {
       multiclass_hier(const char *file, 	//control file
 		int type=0,		//type of result in non-hier classification
 					//(just passed to above object-class)
+		char *prefix=NULL,	//path to data files
 		const char *com=NULL,	//command for external binary classifier
 		int Mflag=0,		//use LIBSVM format for external classifier
 		int Kflag=0,		//keep temporary files
@@ -39,8 +40,8 @@ namespace libagf {
 		int maxstacksize=MAXNOPTSTACK);	//size of option stack
 
       //control files passed as streams:
-      multiclass_hier(FILE *fs, int type=0, const char *com=NULL,
-		int Mflag=0, int Kflag=0, int sigcode=0);
+      multiclass_hier(FILE *fs, int type=0, char *prefix=NULL, 
+		const char *com=NULL, int Mflag=0, int Kflag=0, int sigcode=0);
       multiclass_hier(FILE *fs, int argc, char **argv, 
 		int maxstacksize=MAXNOPTSTACK);
 
@@ -48,7 +49,7 @@ namespace libagf {
 
       //move initialization to special methods:
       //high level initialization:
-      int init(FILE *fs, int type, const char *com,
+      int init(FILE *fs, int type, char *prefix, const char *com,
 		int Mflag, int Kflag=0, int sigcode=0);
       int init(FILE *fs, int argc, char **argv,	int maxstacksize=MAXNOPTSTACK);
 

@@ -96,7 +96,7 @@ int main (int argc, char **argv) {
     opt_args.uflag=0;
   } else {
     argc1=argc;
-    err=agf_parse_command_opts(argc1, argv, "h:i:I:k:l:N:q:r:s:t:v:V:W:", &opt_args);
+    err=agf_parse_command_opts(argc1, argv, "h:i:I:k:l:N:q:r:s:t:v:V:W:y:", &opt_args);
     //argc1=parse_command_opts(argc, argv, "hiIklrstvVWu", "%d%d%d%d%g%g%d%g%g%g%g%", opt+6, flag+6, 1);
     if (err==FATAL_COMMAND_OPTION_PARSE_ERROR) {
       fprintf(stderr, "multi_borders: error parsing command line\n");
@@ -144,7 +144,7 @@ int main (int argc, char **argv) {
     fprintf(helpfs, "                   if -- specified they are defaults, not extras\n");
     fprintf(helpfs, "  -^ fcom        command to convert data to appropriate format for command\n");
     fprintf(helpfs, "\n");
-    //fprintf(helpfs, "  -0             trial run only: print out commands but do not execute them\n");
+    fprintf(helpfs, "  -0             trial run only: print out commands but do not execute them\n");
     fprintf(helpfs, "  -O pcom        \"accelerator\" mode: convert existing models to border samples\n");
     fprintf(helpfs, "                   pcom is an external command that returns probability estimates\n");
     fprintf(helpfs, "  -Z             accelerate LIBSVM model using in-house codes\n");
@@ -152,6 +152,7 @@ int main (int argc, char **argv) {
     fprintf(helpfs, "  -K             keep temporary files; commands to train the model are written\n");
     fprintf(helpfs, "                   to stdout\n");
     fprintf(helpfs, "  -x             run in the background\n");
+    fprintf(helpfs, "  -y             path to data files\n");
     fprintf(helpfs, "\n");
     fprintf(helpfs, "The syntax of the control file is as follows:\n\n");
     fprintf(helpfs, "  <branch>         ::= <model> \"{\" <branch_list> \"}\" | <CLASS>\n");
@@ -388,7 +389,7 @@ int main (int argc, char **argv) {
 	}
       }
     }
-    shell=new multiclass_hier<real_a, cls_ta>(infs, 0, precom, 
+    shell=new multiclass_hier<real_a, cls_ta>(infs, 0, opt_args.path, precom,
 		    flag[7], opt_args.Kflag);
   } else {
     //parse the control file and build the data structure:
@@ -416,7 +417,7 @@ int main (int argc, char **argv) {
   //now actually do all the work:
   if (opt_args.Kflag!=1) {
     char *c;
-    int err;
+    int err=0;
     fprintf(commandfs, "%c", END_INDICATOR);
     fclose(commandfs);
     do {
@@ -427,11 +428,11 @@ int main (int argc, char **argv) {
         char *com=new char[strlen(commandbuf)+2];
         sprintf(com, "%s&", commandbuf);
         printf("%s\n", com);
-        err=system(com);
+        if (flag[1]==0) err=system(com);
         delete [] com;
       } else {
         printf("%s\n", commandbuf);
-        err=system(commandbuf);
+        if (flag[1]==0) err=system(commandbuf);
       }
       if (err!=0) exit(err);
       commandbuf=c+1;

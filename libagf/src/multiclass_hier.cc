@@ -29,7 +29,7 @@ namespace libagf {
 
   //high level initialization for classification:
   template <class real, class cls_t>
-  multiclass_hier<real, cls_t>::multiclass_hier(const char *file, int type, const char *com, int mf, int kf, int sigcode) {
+  multiclass_hier<real, cls_t>::multiclass_hier(const char *file, int type, char *prefix, const char *com, int mf, int kf, int sigcode) {
     FILE *fs;
     int err;
 
@@ -38,13 +38,13 @@ namespace libagf {
       fprintf(stderr, "multiclass_hier: Unable to open control file, %s\n", file);
       exit(UNABLE_TO_OPEN_FILE_FOR_READING);
     }
-    err=init(fs, type, com, mf, kf, sigcode);
+    err=init(fs, type, prefix, com, mf, kf, sigcode);
     if (err!=0) exit(err);
   }
 
   template <class real, class cls_t>
-  multiclass_hier<real, cls_t>::multiclass_hier(FILE *fs, int type, const char *com, int mf, int kf, int sigcode) {
-    int err=init(fs, type, com, mf, kf, sigcode);
+  multiclass_hier<real, cls_t>::multiclass_hier(FILE *fs, int type, char *prefix, const char *com, int mf, int kf, int sigcode) {
+    int err=init(fs, type, prefix, com, mf, kf, sigcode);
     if (err!=0) exit(err);
   }
 
@@ -70,7 +70,7 @@ namespace libagf {
   }
     
   template <class real, class cls_t>
-  int multiclass_hier<real, cls_t>::init(FILE *fs, int type, const char *com, int mf, int kf, int sigcode) {
+  int multiclass_hier<real, cls_t>::init(FILE *fs, int type, char *prefix, const char *com, int mf, int kf, int sigcode) {
     multi_parse_param param;
     int err;
 
@@ -86,6 +86,8 @@ namespace libagf {
     param.cw=1;
     param.type=type;
     param.sigcode=sigcode;
+    //need to set this with parameter later:
+    param.prefix=prefix;
 
     param.infs=fs;
     param.lineno=0;
@@ -105,6 +107,7 @@ namespace libagf {
 
     //transfer method arguments to parameter structure:
     param.trainflag=1;
+    param.prefix=NULL;
 
     param.infs=fs;
     param.lineno=0;
@@ -141,6 +144,7 @@ namespace libagf {
   template <class real, class cls_t>
   int multiclass_hier<real, cls_t>::init(multi_parse_param &param) {
     int err=0;
+    char *fname0;			//name of file containing model
     char *fname;			//name of file containing model
     int flag;
     int c1;
@@ -150,7 +154,15 @@ namespace libagf {
     cls_t topcls;			//possible class label at top of hierarchy
     char *options=NULL;		//options for direct classification
 
-    fname=parse_multi_start(&param, flag, options);
+    fname0=parse_multi_start(&param, flag, options);
+    if (param.prefix!=NULL) {
+      //should really start using some better string libraries...
+      fname=new char[strlen(param.prefix)+strlen(fname0)+1];
+      sprintf(fname, "%s%s", param.prefix, fname0);
+      delete fname0;
+    } else {
+      fname=fname0;
+    }
 
     //three possibilities:
     assert(flag!=2);

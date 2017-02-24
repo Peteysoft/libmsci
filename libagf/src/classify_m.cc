@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 
   opt_args.Qtype=-1;
   opt_args.algtype=0;
-  errcode=agf_parse_command_opts(argc, argv, "O:a:Q:w:c:nuMCHE:K", &opt_args);
+  errcode=agf_parse_command_opts(argc, argv, "O:a:Q:w:c:nuMCHE:Ky:", &opt_args);
   if (opt_args.nt==NT_DEFAULT) opt_args.nt=2;
   if (errcode==FATAL_COMMAND_OPTION_PARSE_ERROR) return errcode;
 
@@ -83,6 +83,7 @@ int main(int argc, char *argv[]) {
     fprintf(helpfs, "                      (may be extremely inefficient (NP) for some cases)\n");
     fprintf(helpfs, "                8 = voting from pdf, corrected and normalized\n");
     fprintf(helpfs, "                      (designed for orthogonal coding matrices)\n");
+    fprintf(helpfs, "  -y path     path to data files\n");
     fprintf(helpfs, "  -O command  external command for estimating classes and probabilities\n");
     fprintf(helpfs, "  -M          use LIBSVM format\n");
     fprintf(helpfs, "  -E missing  (in combination with -M) value for missing data\n");
@@ -129,8 +130,8 @@ int main(int argc, char *argv[]) {
   if (classifier->load(fs, opt_args.Qtype)==PARAMETER_OUT_OF_RANGE) {
     fclose(fs);
     delete classifier;
-    classifier=new multiclass_hier<real_a, cls_ta>(argv[0], 
-		opt_args.Qtype,	opt_args.multicommand, 
+    classifier=new multiclass_hier<real_a, cls_ta>(argv[0],  
+		opt_args.Qtype,	opt_args.path, opt_args.multicommand, 
 		opt_args.Mflag, opt_args.Kflag, opt_args.algtype);
   }
 

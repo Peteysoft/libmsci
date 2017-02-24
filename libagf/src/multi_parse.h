@@ -36,6 +36,8 @@ namespace libagf {
     int lineno;				//line number
     int trainflag;			//1=training, 0=classification
 
+    char *prefix;		//add this prefix to the file names/options
+
     //these parameters used for training only:
     //char *train;			//base name for training data
     char *commandname;			//command name

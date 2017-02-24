@@ -104,7 +104,8 @@ namespace libagf {
     type=param.type;
     constraint_weight=param.cw;
 
-    init(name, part, nmodel, param.trainflag, param.commandname, 
+    //pass to another initialization routine (duh...):
+    init(name, part, nmodel, param.prefix, param.trainflag, param.commandname, 
 		    param.Mflag, param.Kflag, param.sigcode);
 
     //clean up:
@@ -121,9 +122,11 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  int multiclass<real, cls_t>::init(char **fname, cls_t **part, int npart, 
+  int multiclass<real, cls_t>::init(char **fname, cls_t **part, int npart, char *prefix, 
 		int tflag, char *com, int Mflag, int Kflag, int sigcode) {
     nmodel=npart;
+
+    //figure out how many classes:
     this->ncls=0;
     for (int i=0; i<nmodel; i++) {
       for (int j=0; part[i*2][j]>=0; j++) {
@@ -134,6 +137,18 @@ namespace libagf {
       }
     }
 
+    //add file name prefix if applicable:
+    if (prefix!=NULL) {
+      char *fname1;
+      for (int i=0; i<nmodel; i++) {
+        fname1=new char[strlen(prefix)+strlen(fname[i])+1];
+	sprintf(fname1, "%s%s", prefix, fname[i]);
+	delete fname[i];
+	fname[i]=fname1;
+      }
+    }
+
+    //initialize binary classifiers:
     twoclass=new binaryclassifier<real, cls_t> *[nmodel];
     for (cls_t i=0; i<nmodel; i++) {
       if (tflag) {

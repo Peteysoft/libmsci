@@ -5,7 +5,7 @@ MAXSAMPLE=200
 NTEST=20
 NTRIAL=5
 #fraction of data used for testing:
-FRAC=0.3
+FRAC=0.5
 
 #which dataset to use:
 #VER=heart
@@ -38,13 +38,13 @@ PRE=$(PRE_$(VER))
 
 #options for AGF-borders:
 AGFOPT_heart=-W 5 -k 100
-AGFOPT_shuttle=-W 2
+AGFOPT_shuttle=-W 2 -k 100
 AGFOPT_covtype=
 AGFOPT_segment=-W 5
 AGFOPT_sat=-W 10
 AGFOPT_poker=-k 200 -W 2
 AGFOPT_mnist=-k 400 -W 25
-AGFOPT_vehicle=-W 10
+AGFOPT_vehicle=-W 10 -s 50
 
 AGFOPT=$(AGFOPT_$(VER))
 
@@ -59,6 +59,7 @@ K_shuttle=-k 1
 K_covtype=-k 11
 K_segment=-k 3
 K_sat=-k 15
+K_vehicle=-k 9
 
 K=$(K_$(VER))
 
@@ -103,7 +104,7 @@ endif
 .PHONY: clean
 
 #output results:
-all: $(TEST).knn.cls $(TEST).agf.cls $(TEST).svm.cls $(TEST).acc.cls $(NBORDER_SVM)
+all: $(TEST).knn.cls $(TEST).agf.cls $(TEST).svm.cls $(TEST).acc.cls
 	@echo "KNN:"
 	@echo
 	@cat $(WORKDIR)/knn_time.txt
@@ -130,8 +131,59 @@ all: $(TEST).knn.cls $(TEST).agf.cls $(TEST).svm.cls $(TEST).acc.cls $(NBORDER_S
 	@echo
 	@cls_comp_stats $(TEST).cls $(TEST).acc
 
+nborders: $(NBORDER_SVM)
+
 clean:
 	rm -r $(WORKDIR)/*
+
+$(VEHICLE_TEST):
+	make VER=vehicle VEHICLE_TEST=$(VEHICLE_TEST)
+	mv work/vehicle/vehicle.tst.knn.cls work/vehicle/vehicle.$(VEHICLE_TEST).tst.knn.cls
+	mv work/vehicle/vehicle.tst.knn.con work/vehicle/vehicle.$(VEHICLE_TEST).tst.knn.con
+	mv work/vehicle/knn_time.txt work/vehicle/knn_time.$(VEHICLE_TEST).txt
+	mv work/vehicle/vehicle.tst.agf.cls work/vehicle/vehicle.$(VEHICLE_TEST).tst.agf.cls
+	mv work/vehicle/vehicle.tst.agf.con work/vehicle/vehicle.$(VEHICLE_TEST).tst.agf.con
+	mv work/vehicle/agf_ttime.txt work/vehicle/agf_ttime.$(VEHICLE_TEST).txt
+	mv work/vehicle/agf_time.txt work/vehicle/agf_time.$(VEHICLE_TEST).txt
+	mv work/vehicle/vehicle.tst.svm.cls work/vehicle/vehicle.$(VEHICLE_TEST).tst.svm.cls
+	mv work/vehicle/vehicle.tst.svm.con work/vehicle/vehicle.$(VEHICLE_TEST).tst.svm.con
+	mv work/vehicle/svm_ttime.txt work/vehicle/svm_ttime.$(VEHICLE_TEST).txt
+	mv work/vehicle/svm_time.txt work/vehicle/svm_time.$(VEHICLE_TEST).txt
+	mv work/vehicle/vehicle.tst.acc.cls work/vehicle/vehicle.$(VEHICLE_TEST).tst.acc.cls
+	mv work/vehicle/vehicle.tst.acc.con work/vehicle/vehicle.$(VEHICLE_TEST).tst.acc.con
+	mv work/vehicle/accel_ttime.txt work/vehicle/accel_ttime.$(VEHICLE_TEST).txt
+	mv work/vehicle/acc_time.txt work/vehicle/acc_time.$(VEHICLE_TEST).txt
+	rm $(TEST).cls $(TEST).vec
+	rm $(TRAIN).cls $(TRAIN).vec
+
+#n-fold cross validation for vehicle dataset:
+#(at some point we hope to make this more elegant and to work with all the other
+#datasets that don't have separate training sets)
+vehicle:
+	make xaa VEHICLE_TEST=xaa VER=vehicle
+	make xab VEHICLE_TEST=xab VER=vehicle
+	make xac VEHICLE_TEST=xac VER=vehicle
+	make xad VEHICLE_TEST=xad VER=vehicle
+	make xae VEHICLE_TEST=xae VER=vehicle
+	make xaf VEHICLE_TEST=xaf VER=vehicle
+	make xag VEHICLE_TEST=xag VER=vehicle
+	make xah VEHICLE_TEST=xah VER=vehicle
+	make xai VEHICLE_TEST=xai VER=vehicle
+	cat work/vehicle/vehicle.xa?.tst.knn.cls > work/vehicle/vehicle.all.tst.knn.cls
+	cat work/vehicle/vehicle.xa?.tst.knn.con > work/vehicle/vehicle.all.tst.knn.con
+	cat work/vehicle/vehicle.xa?.tst.agf.cls > work/vehicle/vehicle.all.tst.agf.cls
+	cat work/vehicle/vehicle.xa?.tst.agf.con > work/vehicle/vehicle.all.tst.agf.con
+	cat work/vehicle/vehicle.xa?.tst.svm.cls > work/vehicle/vehicle.all.tst.svm.cls
+	cat work/vehicle/vehicle.xa?.tst.svm.con > work/vehicle/vehicle.all.tst.svm.con
+	cat work/vehicle/vehicle.xa?.tst.acc.cls > work/vehicle/vehicle.all.tst.acc.cls
+	cat work/vehicle/vehicle.xa?.tst.acc.con > work/vehicle/vehicle.all.tst.acc.con
+	cat $(addsuffix $(VEHICLE_SUFFIX),$(addprefix data/vehicle/, $(VEHICLE_FILES))) | sed 's/opel/0/;s/saab/1/;s/bus/2/;s/van/3/' | lvq2agf -H work/vehicle/vehicle.all.tst
+
+$(TEST).$(VEHICLE_TEST).%.cls: $(TEST).%.cls
+	cp $< $@
+
+$(TEST).$(VEHICLE_TEST).%.vec: $(TEST).%.vec
+	cp $< $@
 
 #testing:
 $(TEST).knn.cls $(TEST).knn.cor: $(TRAIN).vec $(TRAIN).cls $(TEST).vec
@@ -173,7 +225,7 @@ $(SVMMODEL): $(TRAIN).svm
 
 #agf borders model:
 $(AGFMODEL).mbc: $(TRAIN).svm
-	time -o $(WORKDIR)/agf_ttime.txt print_control -Q 6 $(NCLS) | multi_borders $(AGFOPT) $(TRAIN) $(AGFMODEL) $(AGFMODEL).mbc
+	print_control -Q 6 $(NCLS) | time -o $(WORKDIR)/agf_ttime.txt multi_borders $(AGFOPT) $(TRAIN) $(AGFMODEL) $(AGFMODEL).mbc
 
 #only used for one script:
 $(MULTICONTROL):
@@ -219,7 +271,9 @@ $(WORKDIR)/sat.trn.cls $(WORKDIR)/shuttle.trn.cls: $(WORKDIR)/%.cls: $(DATADIR)/
 VEHICLE_SUFFIX=.dat.txt
 VEHICLE_FILES=xaa xab xac xad xae xaf xag xah xai
 VEHICLE_TEST=xaa
-VEHICLE_TRAIN=$(addsuffix $(VEHICLE_SUFFIX), $(filter-out $(VEHICLE_TEST), $(VEHICLE_FILES))
+VEHICLE_TRAIN=$(addsuffix $(VEHICLE_SUFFIX), $(filter-out $(VEHICLE_TEST), $(VEHICLE_FILES)))
+
+#$(WORKDIR)/vehicle.$(VEHICLE_TEST).trn.cls: $(WORKDIR)/vehicle.trn.cls \
 
 $(WORKDIR)/vehicle.trn.cls: $(addprefix, $(DATADIR)/, $(VEHICLE_FILES))
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi

@@ -228,7 +228,7 @@ namespace libagf {
     real t0, t2;		//line parameters: at the root, at the second vector
     supernewton_stat err;	//error code returned from root-finding routine
     int nbis;			//total number of bisection steps
-    bf_params<real> params;	//structure of parameters to pass function to minimize
+    bf_params<real> bfparam;	//structure of parameters to pass function to minimize
 
     void (* funcd) (real, void *, real *, real *);
 
@@ -241,22 +241,23 @@ namespace libagf {
     //when you strip it down to its essentials, there really isn't much to this algorithm:
 
     //allocate space:
-    params.vec1=new real[D];
-    params.v=new real[D];
+    bfparam.vec1=new real[D];
+    bfparam.v=new real[D];
 
-    params.vec=new real[D];
-    params.grd=new real[D];
+    bfparam.vec=new real[D];
+    bfparam.grd=new real[D];
 
     //parameters we need in the function to be zeroed:
-    params.dumflag=1;
-    params.D=D;
-    params.rthresh=rthresh;
-    params.rfunc=rfunc;
+    bfparam.dumflag=1;
+    bfparam.D=D;
+    bfparam.rthresh=rthresh;
+    bfparam.rfunc=rfunc;
 
     /*FLAG*/
     //I think this is pretty clear:
-    //three levels of voided "params" structures....   AWESOME
-    params.param=param;
+    //three levels of voided "param" structures....   AWESOME
+    //(really need to fix this or at least clean up the naming...)
+    bfparam.param=param;
 
     //zero more diagnostics:
     min_iter=BORDERS_MAXITER+2;		//maximum possible + 2
@@ -285,19 +286,19 @@ namespace libagf {
       fflush(stdout);
 
       do {
-        if ((*sample) (param, params.vec1, params.vec)<0) {
+        if ((*sample) (param, bfparam.vec1, bfparam.vec)<0) {
           nfound=i;
           fprintf(stderr, "sample_class_borders: ran out of samples (%d found), returning\n", nfound);
           goto finish;
         }
-        d1=(*rfunc) (params.vec1, param, grad1)-rthresh;
-        d2=(*rfunc) (params.vec, param, grad2)-rthresh;
+        d1=(*rfunc) (bfparam.vec1, param, grad1)-rthresh;
+        d2=(*rfunc) (bfparam.vec, param, grad2)-rthresh;
         //printf("d1=%g; d2=%g\n", d1, d2);
       } while (d1*d2>=0);
 
       //find the parametric representation of the line between the two vectors:
       for (dim_ta j=0; j<D; j++) {
-        params.v[j]=params.vec[j]-params.vec1[j];
+        bfparam.v[j]=bfparam.vec[j]-bfparam.vec1[j];
       }
       t2=1;
 
@@ -306,14 +307,14 @@ namespace libagf {
       dddt1=0;
       dddt2=0;
       for (dim_ta j=0; j<D; j++) {
-        dddt1+=params.v[j]*grad1[j];
-        dddt2+=params.v[j]*grad2[j];
+        dddt1+=bfparam.v[j]*grad1[j];
+        dddt2+=bfparam.v[j]*grad2[j];
       }
 
       //find the root of the difference between the 
       //conditional probabilities along
       //the line between the two vectors in order to find the class border:
-      t0=supernewton(funcd, (void *)&params, (real) 0., t2, tol, (real) 0., 
+      t0=supernewton(funcd, (void *)&bfparam, (real) 0., t2, tol, (real) 0., 
 		maxit, &err, d1, dddt1, d2, dddt2);
       if (err.code != 0) {
         i--; 
@@ -327,10 +328,10 @@ namespace libagf {
       nbis+=err.nbis;
 
       //the class border and the gradient vector
-      //should be sitting in the "params" structure:
+      //should be sitting in the "bfparam" structure:
       for (dim_ta j=0; j<D; j++) {
-        border[i][j]=params.vec[j];
-        gradient[i][j]=params.grd[j];
+        border[i][j]=bfparam.vec[j];
+        gradient[i][j]=bfparam.grd[j];
       }
       //printf("d1=%f\n", d1);
       //for (long k=0; k<D; k++) printf("%f ", gradient[i][k]);
@@ -361,10 +362,10 @@ namespace libagf {
       printf("\n");
 
       //delete integer and floating point arrays:
-      delete[] params.vec1;
-      delete[] params.v;
-      delete [] params.vec;
-      delete [] params.grd;
+      delete[] bfparam.vec1;
+      delete[] bfparam.v;
+      delete [] bfparam.vec;
+      delete [] bfparam.grd;
       delete [] grad1;
       delete [] grad2;
 

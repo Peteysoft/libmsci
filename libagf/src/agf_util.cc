@@ -59,6 +59,8 @@ int agf_parse_command_opts(int &argc, char **&argv, const char *optlist, agf_com
 
   opt_args->multicommand=NULL;	//-O
 
+  opt_args->path=NULL;		//-y
+
   //flags:
   opt_args->stdinflag=0;	//-0
   opt_args->stdoutflag=0;	//-1
@@ -446,6 +448,10 @@ int agf_parse_command_opts(int &argc, char **&argv, const char *optlist, agf_com
 	     } else {
 	       opt_args->pratio=pratio;
              }
+	     break;
+      case ('y'):
+             opt_args->path=new char[strlen(optarg)+2];
+             sprintf(opt_args->path, "%s/", optarg);
 	     break;
       case ('Y'):
              opt_args->Yflag=1;
