@@ -1026,8 +1026,6 @@ namespace libagf {
     for (int j=0; j<this->ncls; j++) gsl_matrix_set(map, nmodel, j, 1);
     constraint_weight=1;
 
-    print_gsl_matrix(stdout, map);
-    
     return err;
   }
 

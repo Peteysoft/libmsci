@@ -381,7 +381,7 @@ conditional probability and $\lmult$ is a Lagrange multiplier.
 They also show that it can be solved iteratively so that the constraints 
 not included in the problem, that the probabilities are all positive, are satisfied.
 
-\section{Software and data}
+\section{Software}
 
 \subsection{LIBSVM}
 
@@ -410,6 +410,26 @@ with the libAGF library. To convert a LIBSVM model to a borders model,
 the single command, \verb/svm_accelerate/, can be used.
 Classifications are then performed with \verb/classify_m/.
 
+\section{Data}
+
+We test the algorithm on six different datasets. Five of the six are from
+the ``Statlog'' project \citep{King_etal1995} whose collection of datasets 
+cover a fairly broad range: size, types of problems, number of classes and attributes.
+This should give us a good idea of when to apply the borders method and when not
+to. 
+The five datasets are nicknamed ``heart'', ``shuttle'', ``sat'', ``segment''
+and ``vehicle''.
+The sixth dataset is nicknamed ``humidity'' and comes from \citet{Mills2009}. i
+This dataset is included 
+because the border method was actually designed for this very problem.
+Because the problem in \citet{Mills2009} required statistical classification results from
+millions satellite measurements, a method was sought to make the data processing
+more efficient.
+
+Some of the datasets have both test and training data in which case they were used
+as defined. If all instances have been lumped together, then the data was split
+randomly into both test and training and test classifications repeated over 20 trials.
+
 \subsection{Heart disease dataset}
 
 The heart disease dataset comes from the Statlog project \citep{King_etal1995}.
@@ -422,14 +442,40 @@ The shuttle dataset is interesting because it is not well suited to the types
 of algorithms discussed in this paper. Since the features are categorical,
 it is better suited to rule-based and symbolic classifiers.
 Moreover the classes have a very uneven distribution meaning that multi-class
-classifiers, such as one-vs.-one with, a symmetric break-down of the classes 
+classifiers, such as one-vs.-one with a symmetric break-down of the classes, 
 tend to also perform poorly.
 
 The shuttle dataset is also part of the Statlog project, comes originally
 from NASA and was taken from an actual space shuttle flight.
 The classes describe actions to be taken at different flight configurations.
+There are nine attributes, seven classes, 43500 instances of training data and 14500 instances of test data.
 
+\subsection{Satellite dataset}
 
+The satellite dataset is a satellite remote-sensing land classification problem.
+The attributes represent 3-by-3 segments of pixels in a Landsat 
+image with the class corresponding to the type of land cover in the central pixel.
+There are 36 attributes total, 6 types of land cover, 4435 instances of training
+data and 2000 instances of test data.
+
+\subsection{Image segmentation dataset}
+
+The segmentation dataset is an image classification dataset consisting of 3-by-3
+pixel sets from outdoor images. There are 19 attributes, 7 classes and 2310 instances.
+
+\subsection{Vehicle dataset}
+
+The vehicle dataset classifies vehicle silhouettes by type. There are four different
+types of vehicles classified by 18 attributes and 845 instances separated into 9 groups for cross-validation purposes.
+
+\subsection{Humidity dataset}
+
+The humidity dataset comprises simulated satellite radiometer radiances across 7 different frequencies in the microwave range.
+Corresponding to each instance is a value for relative humidity at a single
+vertical level.
+These humidity values have been discretized into 8 ranges to convert it into a statistical classification problem.
+A full description of the genesis of this dataset as well as a rationale for
+treatment using statistical classification is contained in \citet{Mills2009}.
 
 \section{A simple example}
 
@@ -555,8 +601,8 @@ To make this more concrete, Figure \ref{svm_time}
 plots the classification time versus the number of support vectors
 for a SVM
 while Figure \ref{border_time} plots the classification time
-as versus the number of border samples for a border classifier.
-Classification time are for a single test point.
+versus the number of border samples for a border classifier.
+Classification times are for a single test point.
 Fitted straight lines are overlaid for each and the slope and intercept 
 printed in the subtitle.
 
@@ -572,22 +618,36 @@ time is the same for each method.
 This graph was simply derived from the fitted coefficents of the previous
 two graphs.
 It is misleadingly optimistic
-since LIBSVM has a much larger overhead than the border classifiers.
+since LIBSVM has a larger overhead than the border classifiers.
 This overhead would be less significant for larger problems 
 with the ``rule of thumb'' suggested by the slope 
 that the number of border vectors should be less than three times the support
 for a reasonable gain in efficiency.
 
-The graph is fairly general since both algorithms will scale in a similar
-fashion for problems with more features.
-The number of classes should also have little effect so long as we compare the total
-number of support vectors with the total number of border samples
-irrespective of the binary classifier to which they belong.
-The situations is complicated somewhat for multi-class SVM, however, since some support vectors are 
-shared by multiple classifiers with some, but not all, calculations
-shared between them.
+Unfortunately the graph is not general: while the borders method scales linearly with
+the number of classes, in LIBSVM there is some shared calculation for multi-class problems.
+That is, some of the support vectors are shared between classes moreover the number will be different for each problem.
+Model size comparisons between the two methods should ideally be between the total 
+number of support vectors versus the total number of border vectors, not border (or support) vectors per class.
+Both methods will tend to scale linearly with the number of attributes, with a small
+component independent but a different amount for each method.
+Once we take into account the number of classes and number of attributes, the
+model for time complexity becomes quite complex so no attempt will be made here
+to fit it since the comparison is only being tried on six different datasets.
 
 \section{Case studies}
+
+Four classification models were tested on each of the six datasets described in
+Section \ref{datasets}: k-nearest-neighbours (KNN), a borders model derived from
+adaptive Gaussian filters (AGF), a support vector machine (SVM) and a borders
+model derived from the previous SVM model.
+KNN is useful to get a baseline accuracy from a stable, reliable method although
+not always an efficient or high-performing one.
+AGF-borders is compared with SVM-borders to see how much deriving the class borders
+from a SVM improves accuracy over using a direct pointwise kernel density estimator.
+The speed should be the same for the same number of border vectors.
+Ideally, for large problems, the borders technique should produce significant time
+savings over a SVM with little effect on accuracy.
 
 \bibliography{../agf_bib}
 

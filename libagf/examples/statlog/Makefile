@@ -5,7 +5,7 @@ MAXSAMPLE=200
 NTEST=20
 NTRIAL=5
 #fraction of data used for testing:
-FRAC=0.5
+FRAC=0.4
 
 #which dataset to use:
 #VER=heart
@@ -37,19 +37,22 @@ PRE_vehicle=-n
 PRE=$(PRE_$(VER))
 
 #options for AGF-borders:
-AGFOPT_heart=-W 5 -k 100
+AGFOPT_heart=-W 5
 AGFOPT_shuttle=-W 2 -k 100
 AGFOPT_covtype=
-AGFOPT_segment=-W 5
-AGFOPT_sat=-W 10
+AGFOPT_segment=-W 2 -s 200
+AGFOPT_sat=-W 5 -s 200 -k 100
 AGFOPT_poker=-k 200 -W 2
 AGFOPT_mnist=-k 400 -W 25
-AGFOPT_vehicle=-W 10 -s 50
+AGFOPT_vehicle=-W 5 -s 100 -k 100
 
 AGFOPT=$(AGFOPT_$(VER))
 
 #options for svm-train:
-SVMOPT_sat=-c 25
+SVMOPT_heart=-c 0.5 -g 0.01
+SVMOPT_sat=-c 50 -g 0.1
+SVMOPT_segment=-c 100 -g 0.1
+SVMOPT_vehicle=-c 100 -g 0.01
 
 SVMOPT=$(SVMOPT_$(VER))
 
@@ -65,8 +68,8 @@ K=$(K_$(VER))
 
 #number of border samples (or other options) for "accelerated" SVM model:
 NSAMP_segment=-s 20
-NSAMP_vehicle=-s 20
-NSAMP_sat=-s 50
+NSAMP_vehicle=-s 50
+NSAMP_sat=-s 150
 
 NSAMP=$(NSAMP_$(VER))
 

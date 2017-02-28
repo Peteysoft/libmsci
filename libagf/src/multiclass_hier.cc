@@ -676,7 +676,6 @@ namespace libagf {
     int nsub;
     char *type;
     type=fget_line(fs, 1);	//first line describes type
-    printf("%s\n", type);
     if (strcmp(type, "1v1")!=0 && strcmp(type, "1vR")!=0 && strcmp(type, "ADJ")!=0) {
       delete [] type;
       return PARAMETER_OUT_OF_RANGE;
@@ -686,12 +685,10 @@ namespace libagf {
     delete [] line;
     //third line contains class labels:
     line=fget_line(fs, 1);
-    printf("%s\n", line);
     sub=split_string_destructive(line, nsub);
     if (nsub!=this->ncls) throw DIMENSION_MISMATCH;
     children=new classifier_obj<real, cls_t> *[this->ncls];
     for (int i=0; i<this->ncls; i++) {
-      printf("%s\n", sub[i]);
       children[i]=new oneclass<real, cls_t>(atoi(sub[i]));
     }
     delete [] line;

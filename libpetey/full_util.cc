@@ -214,6 +214,32 @@ real ** scan_matrix(FILE *fptr, integer &m, integer &n, int headflag) {
     int64_t m1, n1;
     char *line;
 
+    //"more sophisticated" method is slow on cygwin because memory allocation is slow
+    //use a dirt simple read method instead:
+    //(want to speed up statistical classification routines that use ASCII files...)
+    ncon=fscanf(fptr, "%ld %ld", &m1, &n1);
+    if (ncon!=2) {
+      fprintf(stderr, "scan_matrix: error reading header\n");
+      return NULL;
+    }
+    m=m1;
+    n=n1;
+    mat=allocate_matrix<real, integer>(m, n);
+    for (integer i=0; i<m; i++) {
+      for (integer j=0; j<n; j++) {
+        ncon=fscanf(fptr, format1, mat[i]+j);
+	if (ncon!=1) {
+          fprintf(stderr, "scan_matrix: file ended before finished scanning; row=%d\n", (int32_t) i);
+          m=i-1;				//truncate matrix to where failure occured
+          err=FILE_READ_ERROR;
+          break;
+	}
+      }
+      if (err!=0) break;
+    }
+    return mat;
+
+    //unreachable code:
     if ((line=fget_line(fptr))==NULL) {
       fprintf(stderr, "scan_matrix: no data found\n");
       return NULL;
