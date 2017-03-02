@@ -82,8 +82,7 @@ elif [ $# -eq 1 ]; then
   OUTFILE=$1
   if [ -z $SVMFLAG ]; then
     if [ -z $ZFLAG ]; then
-      TRAIN_COMMAND="class_borders $AGFOPT"
-      CLASSIFY_COMMAND=classify_b
+      CLASSIFY_COMMAND=classify_m
     fi
   fi
 else
@@ -120,6 +119,7 @@ rm -f ${OUTFILE}
 rm -f train.log
 rm -f test.log
 
+#generate test and training data:
 for ((I=0; I<NTRIAL; I++)); do
   if [ -z ${TRAINING_DATA} ]; then
     ${SAMPLE_DIR}/sample_class -R $NSCTEST $((2*NSCTEST)) $BASE.$I.tst > $BASE.$I.tst.txt
@@ -127,6 +127,12 @@ for ((I=0; I<NTRIAL; I++)); do
     agf_preprocess -zf $FRAC ${TRAINING_DATA} $BASE.$I.trn $BASE.$I.tst
   fi
 done
+
+#we need a control file for the sample clases because we want to measure overhead
+#in "multi-borders" classification:
+if [ -z ${TRAINING_DATA} ]; then
+  echo "$BASE 0 / 1; {0 1}" > $MODEL
+fi
 
 for ((I=0; I<NTEST; I++)); do
   if [ $LOGFLAG ]; then
@@ -140,8 +146,8 @@ for ((I=0; I<NTEST; I++)); do
     TIMING="$BASE.$J.tm"
     TRAIN="$CONTROL $BASE.$J.trn"
     if [ -z ${TRAINING_DATA} ]; then
-      echo "${SAMPLE_DIR}/sc_borders -s $n $MODEL"
-      ${SAMPLE_DIR}/sc_borders -s $n $MODEL
+      echo "${SAMPLE_DIR}/sc_borders -s $n $BASE"
+      ${SAMPLE_DIR}/sc_borders -s $n $BASE
     else
       echo $TRAIN
       echo ${TRAIN_COMMAND}

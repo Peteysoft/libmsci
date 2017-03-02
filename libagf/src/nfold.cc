@@ -438,15 +438,16 @@ int main(int argc, char *argv[]) {
         }
         break;
       case (5):
-        sprintf(command, "time %smulti_borders%s %s %s -r %g -I %ld -l %g -i %ld -v %g -V %g -k %d -W %f -s %d -t %g %s %s %s %s.txt > %s.sh", 
+        sprintf(command, "time %smulti_borders%s %s %s -r %g -I %ld -l %g -i %ld -v %g -V %g -k %d -W %f -s %d -t %g %s %s %s %s.txt", 
 		AGF_COMMAND_PREFIX, AGF_OPT_VER, flagstr, normfile, 
 		opt_args.rthresh,
 		agf_global_weights_maxiter, agf_global_weights_tol,
 		agf_global_borders_maxiter,
 		opt_args.var[0], opt_args.var[1], opt_args.k, opt_args.W2, opt_args.n, opt_args.tol, 
-		controlfile, trainbase, brdfile, tempbase, tempbase);
+		controlfile, trainbase, brdfile, tempbase);
         fprintf(diagfs, "%s\n", command);
         err_code=system(command);
+	/*
         if (err_code!=0) {
           fprintf(stderr, "Command: \"%s\"\n exited with code, %d\n", command, err_code);
           goto fail;
@@ -456,6 +457,7 @@ int main(int argc, char *argv[]) {
         sprintf(command, "bash -e %s.sh", tempbase);
         fprintf(diagfs, "%s\n", command);
         err_code=system(command);
+	*/
         if (err_code!=0) {
           fprintf(stderr, "Command: \"%s\"\n exited with code, %d\n", command, err_code);
           if (opt_args.Kflag==0) {

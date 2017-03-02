@@ -48,8 +48,8 @@ namespace libagf {
     int err=0;
     real **train2;
 
-    if (d1!=this->D) {
-      fprintf(stderr, "direct_classifier: first dimension (%d) of trans. mat. does not agree with that of borders data (%d)\n", d1, this->D);
+    if (d1!=this->D1) {
+      fprintf(stderr, "direct_classifier: first dimension (%d) of trans. mat. does not agree with that of borders data (%d)\n", d1, this->D1);
       return DIMENSION_MISMATCH;
     }
     fprintf(stderr, "direct_classifier: Normalising the border samples...\n");
@@ -173,7 +173,7 @@ namespace libagf {
     this->options=new char[strlen(options)+1];
     strcpy(this->options, options);
 
-    err=agf_read_train(fbase, this->train, this->cls, this->ntrain, this->D);
+    err=agf_read_train(fbase, this->train, this->cls, this->ntrain, this->D1);
     //fprintf(stderr, "agf_classifier: %d sample found in model %s\n", this->ntrain, fbase);
     if (err!=0) exit(err);
 
@@ -226,18 +226,18 @@ namespace libagf {
     //check parameter ranges:
     if (var[0] <= 0 || var[1] <= 0) {
       //calculate the averages and standard deviations:
-      real_a std[this->D];
-      real_a ave[this->D];
+      real_a std[this->D1];
+      real_a ave[this->D1];
       real_a vart;
 
-      calc_norm(this->train, this->D, this->ntrain, ave, std);
+      calc_norm(this->train, this->D1, this->ntrain, ave, std);
 
       //if the initial filter variance is not set, set it to the total
       //variance of the data:
       vart=0;
-      for (dim_ta i=0; i<this->D; i++) vart+=std[i]*std[i];
+      for (dim_ta i=0; i<this->D1; i++) vart+=std[i]*std[i];
       if (var[0] <= 0) {
-        var[0]=vart/pow(this->ntrain, 2./this->D);
+        var[0]=vart/pow(this->ntrain, 2./this->D1);
         fprintf(logfs, "Using %10.3g for lower filter variance bracket\n\n", var[0]);
       }
       if (var[1] <= 0) {
@@ -326,7 +326,7 @@ namespace libagf {
     this->options=new char[strlen(options)+1];
     strcpy(this->options, options);
 
-    err=agf_read_train(fbase, this->train, this->cls, this->ntrain, this->D);
+    err=agf_read_train(fbase, this->train, this->cls, this->ntrain, this->D1);
     if (err!=0) exit(err);
 
     //count number of classes

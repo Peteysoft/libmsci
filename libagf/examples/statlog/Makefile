@@ -7,6 +7,9 @@ NTRIAL=5
 #fraction of data used for testing:
 FRAC=0.4
 
+#number of trials for collecting stats:
+NRUN=10
+
 #which dataset to use:
 #VER=heart
 #VER=shuttle
@@ -38,9 +41,9 @@ PRE=$(PRE_$(VER))
 
 #options for AGF-borders:
 AGFOPT_heart=-W 5
-AGFOPT_shuttle=-W 2 -k 100
+AGFOPT_shuttle=-W 1.5 -k 200 -s 250
 AGFOPT_covtype=
-AGFOPT_segment=-W 2 -s 200
+AGFOPT_segment=-W 3 -s 100 -k 100
 AGFOPT_sat=-W 5 -s 200 -k 100
 AGFOPT_poker=-k 200 -W 2
 AGFOPT_mnist=-k 400 -W 25
@@ -51,7 +54,7 @@ AGFOPT=$(AGFOPT_$(VER))
 #options for svm-train:
 SVMOPT_heart=-c 0.5 -g 0.01
 SVMOPT_sat=-c 50 -g 0.1
-SVMOPT_segment=-c 100 -g 0.1
+SVMOPT_segment=-c 100 -g 0.1 
 SVMOPT_vehicle=-c 100 -g 0.01
 
 SVMOPT=$(SVMOPT_$(VER))
@@ -67,7 +70,7 @@ K_vehicle=-k 9
 K=$(K_$(VER))
 
 #number of border samples (or other options) for "accelerated" SVM model:
-NSAMP_segment=-s 20
+NSAMP_segment=-s 50
 NSAMP_vehicle=-s 50
 NSAMP_sat=-s 150
 
@@ -87,6 +90,8 @@ BASE=$(WORKDIR)/$(VER)
 TRAIN=$(BASE).trn
 TEST=$(BASE).tst
 
+RESULTS=results.txt
+
 MULTICONTROL=$(WORKDIR)/onevsone.mbc
 
 SVMMODEL=$(BASE).svmmod
@@ -105,9 +110,10 @@ endif
 #phony targets:
 .PHONY: all
 .PHONY: clean
+.PHONY: nborders
 
 #output results:
-all: $(TEST).knn.cls $(TEST).agf.cls $(TEST).svm.cls $(TEST).acc.cls
+all: $(RESULTS)
 	@echo "KNN:"
 	@echo
 	@cat $(WORKDIR)/knn_time.txt
@@ -134,10 +140,55 @@ all: $(TEST).knn.cls $(TEST).agf.cls $(TEST).svm.cls $(TEST).acc.cls
 	@echo
 	@cls_comp_stats $(TEST).cls $(TEST).acc
 
+stats: calc_stats
+	rm -f $(VER).txt
+	for I in {1..$(NRUN)}; do \
+		make clean; \
+		make RESULTS=$(VER).txt; \
+	done
+	./calc_stats $(VER).txt
+
+$(RESULTS): $(TEST).knn.cls $(TEST).agf.cls $(TEST).svm.cls $(TEST).acc.cls
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/knn_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/knn_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/agf_ttime.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/agf_ttime.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/agf_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/agf_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/svm_ttime.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/svm_ttime.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/svm_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/svm_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/accel_ttime.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/accel_ttime.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/acc_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/acc_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	@cls_comp_stats -Hb $(TEST).cls $(TEST).knn | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	@cls_comp_stats -Hb $(TEST).cls $(TEST).agf | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	@cls_comp_stats -Hb $(TEST).cls $(TEST).svm | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	@cls_comp_stats -Hb $(TEST).cls $(TEST).acc >> $(RESULTS)
+
 nborders: $(NBORDER_SVM)
 
 clean:
-	rm -r $(WORKDIR)/*
+	rm -f $(WORKDIR)/*
 
 $(VEHICLE_TEST):
 	make VER=vehicle VEHICLE_TEST=$(VEHICLE_TEST)
@@ -255,14 +306,14 @@ $(TRAIN).vec $(TEST).cls $(TEST).vec: $(TRAIN).cls
 $(WORKDIR)/heart.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%.dat.txt
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
 	lvq2agf -H $< $(WORKDIR)/$(VER)
-	agf_preprocess $(PRE) -Uf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
+	agf_preprocess $(PRE) -Uzf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
 
 #3rd feature must be removed before normalization 
 #since it only takes on one value:
 $(WORKDIR)/segment.trn.cls: $(DATADIR)/segment.dat.txt
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
 	lvq2agf -H $< $(WORKDIR)/$(VER)
-	agf_preprocess $(PRE) -FUf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST) 0 1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
+	agf_preprocess $(PRE) -FzUf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST) 0 1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
 
 $(WORKDIR)/sat.trn.cls $(WORKDIR)/shuttle.trn.cls: $(WORKDIR)/%.cls: $(DATADIR)/%.txt
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
