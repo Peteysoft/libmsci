@@ -159,7 +159,7 @@ into the decision function in (\ref{decision_function0}) produces the following:
 \end{equation}
 Meanwhile, the final, dual, quadratic optimization problem looks like this:
 \begin{eqnarray}
-	\max_{\lbrace \svmcoeff_i \rbrace} & \sum \svmcoeff_i 
+	\max_{\lbrace \svmcoeff_i \rbrace} & \sum_i \svmcoeff_i 
 	- \frac{1}{2} \sum_{i, j} \svmcoeff_i \svmcoeff_j \classlabel_i \classlabel_j \vectorkernel(\sample_i, \sample_j) \\ \nonumber
 	& \svmcoeff_i \ge 0 \\ \nonumber
 	& \sum_i \svmcoeff \classlabel_i = 0 \label{dual_problem}
@@ -167,7 +167,15 @@ Meanwhile, the final, dual, quadratic optimization problem looks like this:
 There are a number of refinements that can be applied to the optimization
 problem in (\ref{dual_problem}), chiefly to reduce over-fitting and to add
 some ``margin'' to the decision border to allow for the possibility of
-classification errors, but mainly we are concerned with the decision
+classification errors:
+\begin{eqnarray}
+	\max_{\lbrace \svmcoeff_i \rbrace} & \sum_i \svmcoeff_i 
+	- \frac{1}{2} \sum_{i, j} \svmcoeff_i \svmcoeff_j \classlabel_i \classlabel_j \vectorkernel(\sample_i, \sample_j) \\ \nonumber
+	& 0 \le \svmcoeff_i \le C \\ \nonumber
+	& \sum_i \svmcoeff_i \classlabel_i = 0 \label{dual_problem}
+\end{eqnarray}
+where $C$ is the cost \citep{kernel_intro}.
+Mainly we are concerned here with the decision
 function in (\ref{svm_decision}) since the initial fitting will be done with
 an external software package, namely LIBSVM \citep{Chang_Lin2011}.
 
@@ -414,6 +422,11 @@ Classifications are then performed with \verb/classify_m/.
 
 \label{datasets}
 
+\begin{table}
+	\input{summary.tex}
+	\caption{Summary of datasets used in the numerical trials.}
+\end{table}
+
 We test the algorithm on six different datasets. Five of the six are from
 the ``Statlog'' project \citep{King_etal1995} whose collection of datasets 
 cover a fairly broad range: size, types of problems, number of classes and attributes.
@@ -639,17 +652,45 @@ to fit it since the comparison is only being tried on six different datasets.
 
 \section{Case studies}
 
+\begin{table}
+	\input{param.tex}
+	\caption{Summary of the parameters used in the numerical trials for each of the four methods: KNN ($k$-nearest-neighbours), AGF (adaptive Gaussian filtering), SVM (support vector machine) and ACC (``accelerated'' SVM).}
+\end{table}
+
+\begin{table}
+	\input{results.tex}
+	\caption{Collation of results for numerical trials of the four different statistical classification methods over six different datasets.}
+\end{table}
+
 Four classification models were tested on each of the six datasets described in
 Section \ref{datasets}: k-nearest-neighbours (KNN), a borders model derived from
 adaptive Gaussian filters (AGF), a support vector machine (SVM) and a borders
-model derived from the previous SVM model.
+model derived from the previous SVM model (ACC for ``accelerated'' SVM).
 KNN is useful to get a baseline accuracy from a stable, reliable method although
 not always an efficient or high-performing one.
 AGF-borders is compared with SVM-borders to see how much deriving the class borders
 from a SVM improves accuracy over using a direct pointwise kernel density estimator.
 The speed should be the same for the same number of border vectors.
 Ideally, for large problems, the borders technique should produce significant time
-savings over a SVM with little effect on accuracy.
+savings over a SVM while having little effect on accuracy.
+
+The parameters used for each method are summarized in Table \ref{param}.
+Parameters for the AGF method were chosen strictly to maximize accuracy while
+the single parameter, number of border samples, in the SVM-borders technique
+was chosen for the best compromise between reduced accuracy and a speed
+improvement over SVM. The parameter, $k$, for AGF is the number of nearest
+neighbours used when computing the probabilities: 
+while the order of the method, $O(n)$, remains the same, nonetheless it can produce a significant speed improvement for large problems.
+The parameter, $n_{samp}$, is the number of class borders used in both 
+AGF and SVM-borders.
+
+For SVM, a Gaussian kernel is used:
+\begin{equation}
+	K(\vec x, \vec y) = \exp \left ( -\gamma | \vec x - \vec y |^2 \right )
+\end{equation}
+where $\gamma$ is a tunable parameter. 
+$C$ is a cost parameter added to reduce over-fitting.
+For more information, see \citet{Chang_Lin2011} and \citet{kernel_intro}.
 
 \bibliography{../agf_bib}
 

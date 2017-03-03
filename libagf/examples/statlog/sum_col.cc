@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <vector>
 
@@ -13,10 +14,30 @@ int main(int argc, char **argv) {
   int n, nline;
   int k=0;
   int j;
+  int **ind;
+  int nsum[argc];	//number of cols to sum
+  int nout;		//number of output cols
   vector<float> row;
   double *mean;
   double *std;
   int err=0;
+
+  ind=new int *[argc];
+  ind[0]=new int[argc];
+
+  nout=0;
+  nsum[0]=0;
+  for (int i=1; i<argc; i++) {
+    if (argv[i][0]=='/') {
+      ind[nout+1]=ind[nout]+nsum[nout];
+      nout++;
+      nsum[nout]=0;
+      continue;
+    }
+    ind[nout][nsum[nout]]=atoi(argv[i]);
+    nsum[nout]++;
+  }
+  nout++;
 
   fs=stdin;
   fgets(line, NCHAR, fs);
@@ -26,16 +47,16 @@ int main(int argc, char **argv) {
     //printf("%g ", val);
   }
   //printf("\n");
-
   n=row.size();
-  mean=new double[n];
-  std=new double[n];
 
-  for (int i=0; i<n; i++) {
-    mean[i]=row[i];
-    std[i]=row[i]*row[i];
+  for (int i=0; i<nout; i++) {
+    val=0;
+    for (int j=0; j<nsum[i]; j++) {
+      val+=row[ind[i][j]];
+    }
+    printf("%g ", val);
   }
-  nline=1;
+  printf("\n");
 
   while (fgets(line, NCHAR, fs)!=NULL) {
     k=0;
@@ -50,24 +71,15 @@ int main(int argc, char **argv) {
     }
     //printf("\n");
     if (err) break;
-    nline++;
-    for (int i=0; i<n; i++) {
-      mean[i]+=row[i];
-      std[i]+=row[i]*row[i];
+    for (int i=0; i<nout; i++) {
+      val=0;
+      for (int j=0; j<nsum[i]; j++) {
+        val+=row[ind[i][j]];
+      }
+      printf("%g ", val);
     }
+    printf("\n");
   }
-
-  for (int i=0; i<n; i++) {
-    mean[i]/=nline;
-    printf("%10.4lg ", mean[i]);
-  }
-  printf("\n");
-
-  for (int i=0; i<n; i++) {
-    std[i]=sqrt((std[i]-nline*mean[i]*mean[i])/(nline-1));
-    printf("%10.4lg ", std[i]);
-  }
-  printf("\n");
 
 }
 

@@ -40,10 +40,10 @@ PRE_vehicle=-n
 PRE=$(PRE_$(VER))
 
 #options for AGF-borders:
-AGFOPT_heart=-W 5
+AGFOPT_heart=-W 10
 AGFOPT_shuttle=-W 1.5 -k 200 -s 250
 AGFOPT_covtype=
-AGFOPT_segment=-W 3 -s 100 -k 100
+AGFOPT_segment=-W 3 -s 100 -k 150
 AGFOPT_sat=-W 5 -s 200 -k 100
 AGFOPT_poker=-k 200 -W 2
 AGFOPT_mnist=-k 400 -W 25
@@ -146,7 +146,7 @@ stats: calc_stats
 		make clean; \
 		make RESULTS=$(VER).txt; \
 	done
-	./calc_stats $(VER).txt
+	./calc_stats < $(VER).txt
 
 $(RESULTS): $(TEST).knn.cls $(TEST).agf.cls $(TEST).svm.cls $(TEST).acc.cls
 	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/knn_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)

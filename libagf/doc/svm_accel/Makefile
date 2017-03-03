@@ -2,7 +2,16 @@ BIBFILE = ../agf_bib.bib
 
 TARGET = svm_accel
 
-SOURCE = border_vectors.eps skill_v_nb.eps skill_v_nt.eps support_vectors.eps nsv.eps
+FIG = border_vectors.eps \
+      support_vectors.eps \
+      skill_v_nb.eps \
+      skill_v_nt.eps \
+      nsv.eps \
+	svm_time.eps \
+	border_time.eps \
+	break_even.eps
+
+SOURCE = summary.tex param.tex results.tex
 
 all: $(TARGET).pdf
 
@@ -18,7 +27,7 @@ clean_target:
 $(TARGET).pdf: $(TARGET).dvi
 	dvipdf $(TARGET)
 
-$(TARGET).dvi: $(TARGET).tex $(SOURCE) $(BIBFILE)
+$(TARGET).dvi: $(TARGET).tex $(SOURCE) $(BIBFILE) $(FIG)
 	latex $(TARGET)
 	bibtex $(TARGET)
 	latex $(TARGET)
