@@ -48,7 +48,7 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  multiclass<real, cls_t>::multiclass(const char *file, int clstyp, const char *com, int mf, int kf, int sigcode) {
+  multiclass<real, cls_t>::multiclass(const char *file, int clstyp, const char *com, int mf, int kf, int sigcode, int Zflag) {
     int err;
     multi_parse_param param;
 
@@ -73,6 +73,7 @@ namespace libagf {
     }
     param.Mflag=mf;
     param.Kflag=kf;
+    param.Zflag=Zflag;
     param.sigcode=sigcode;  
     err=init(param);
     if (err!=0) exit(err);
@@ -106,7 +107,7 @@ namespace libagf {
 
     //pass to another initialization routine (duh...):
     init(name, part, nmodel, param.prefix, param.trainflag, param.commandname, 
-		    param.Mflag, param.Kflag, param.sigcode);
+		    param.Mflag, param.Kflag, param.sigcode, param.Zflag);
 
     //clean up:
     for (int i=0; i<nmodel; i++) {
@@ -123,7 +124,7 @@ namespace libagf {
 
   template <class real, class cls_t>
   int multiclass<real, cls_t>::init(char **fname, cls_t **part, int npart, char *prefix, 
-		int tflag, char *com, int Mflag, int Kflag, int sigcode) {
+		int tflag, char *com, int Mflag, int Kflag, int sigcode, int Zflag) {
     nmodel=npart;
 
     //figure out how many classes:
@@ -154,7 +155,9 @@ namespace libagf {
       if (tflag) {
         twoclass[i]=new binaryclassifier<real, cls_t>(fname[i]);
       } else {
-        if (com==NULL) {
+        if (Zflag) {
+          twoclass[i]=new svm2class<real, cls_t>(fname[i]);
+	} else if (com==NULL) {
           twoclass[i]=new agf2class<real, cls_t>(fname[i], sigcode);
         } else {
           twoclass[i]=new general2class<real, cls_t>(fname[i], 

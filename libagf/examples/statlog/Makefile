@@ -1,3 +1,7 @@
+SHELL=/bin/bash
+
+TIME=/bin/time
+
 #minimum number of border samples:
 MINSAMPLE=5
 #maximum number of border samples:
@@ -24,6 +28,7 @@ NCLS_sat=6
 NCLS_vehicle=4
 NCLS_poker=10
 NCLS_mnist=10
+NCLS_letter=26
 
 NCLS=$(NCLS_$(VER))
 
@@ -35,6 +40,7 @@ PRE_segment=-n
 PRE_sat=-nS 9
 PRE_poker=-n
 PRE_vehicle=-n
+PRE_letter=-n
 #PRE_mnist=-nS 20
 
 PRE=$(PRE_$(VER))
@@ -48,6 +54,7 @@ AGFOPT_sat=-W 5 -s 200 -k 100
 AGFOPT_poker=-k 200 -W 2
 AGFOPT_mnist=-k 400 -W 25
 AGFOPT_vehicle=-W 5 -s 100 -k 100
+AGFOPT_letter=-W 5 -k 150
 
 AGFOPT=$(AGFOPT_$(VER))
 
@@ -73,6 +80,7 @@ K=$(K_$(VER))
 NSAMP_segment=-s 50
 NSAMP_vehicle=-s 50
 NSAMP_sat=-s 150
+NSAMP_letter=-s 50
 
 NSAMP=$(NSAMP_$(VER))
 
@@ -90,10 +98,13 @@ BASE=$(WORKDIR)/$(VER)
 TRAIN=$(BASE).trn
 TEST=$(BASE).tst
 
-RESULTS=results.txt
+#append all results in here:
+RESULTS=$(WORKDIR)/results.txt
 
+#one-vs-one control file:
 MULTICONTROL=$(WORKDIR)/onevsone.mbc
 
+#model files: SVM, AGF, SVM-borders
 SVMMODEL=$(BASE).svmmod
 AGFMODEL=$(BASE).agf
 ACCELERATOR=$(BASE).accel
@@ -111,6 +122,7 @@ endif
 .PHONY: all
 .PHONY: clean
 .PHONY: nborders
+.PHONY: stats
 
 #output results:
 all: $(RESULTS)
@@ -140,9 +152,12 @@ all: $(RESULTS)
 	@echo
 	@cls_comp_stats $(TEST).cls $(TEST).acc
 
+#how many lines does results file contain so far?
+#(hopefully nobody creates a ".txt" file...)
+NLINE!=cat $(VER).txt | wc -l
 stats: calc_stats
-	rm -f $(VER).txt
-	for I in {1..$(NRUN)}; do \
+	#for I in {$(NLINE)..$(NRUN)}; do 
+	for ((I=$(NLINE); I<$(NRUN); I++)); do \
 		make clean; \
 		make RESULTS=$(VER).txt; \
 	done
@@ -177,13 +192,16 @@ $(RESULTS): $(TEST).knn.cls $(TEST).agf.cls $(TEST).svm.cls $(TEST).acc.cls
 	echo -n " " >> $(RESULTS)
 	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/acc_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
 	echo -n " " >> $(RESULTS)
-	@cls_comp_stats -Hb $(TEST).cls $(TEST).knn | tr -d '\n' >> $(RESULTS)
+	cls_comp_stats -Hb $(TEST).cls $(TEST).knn | tr -d '\n' >> $(RESULTS)
 	echo -n " " >> $(RESULTS)
-	@cls_comp_stats -Hb $(TEST).cls $(TEST).agf | tr -d '\n' >> $(RESULTS)
+	cls_comp_stats -Hb $(TEST).cls $(TEST).agf | tr -d '\n' >> $(RESULTS)
 	echo -n " " >> $(RESULTS)
-	@cls_comp_stats -Hb $(TEST).cls $(TEST).svm | tr -d '\n' >> $(RESULTS)
+	cls_comp_stats -Hb $(TEST).cls $(TEST).svm | tr -d '\n' >> $(RESULTS)
 	echo -n " " >> $(RESULTS)
-	@cls_comp_stats -Hb $(TEST).cls $(TEST).acc >> $(RESULTS)
+	cls_comp_stats -Hb $(TEST).cls $(TEST).acc | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep total_sv $(SVMMODEL) | awk '{print $$2}' >> $(RESULTS)
+
 
 nborders: $(NBORDER_SVM)
 
@@ -241,17 +259,17 @@ $(TEST).$(VEHICLE_TEST).%.vec: $(TEST).%.vec
 
 #testing:
 $(TEST).knn.cls $(TEST).knn.cor: $(TRAIN).vec $(TRAIN).cls $(TEST).vec
-	time -o $(WORKDIR)/knn_time.txt knn $K classify $(TRAIN) $(TEST).vec $(TEST).knn
+	$(TIME) -o $(WORKDIR)/knn_time.txt knn $K classify $(TRAIN) $(TEST).vec $(TEST).knn
 
 $(TEST).svm.cls $(TEST).svm.cor: $(SVMMODEL) $(TEST).svm
-	time -o $(WORKDIR)/svm_time.txt svm-predict -b 1 $(TEST).svm $(SVMMODEL) $(TEST).svm.txt
+	$(TIME) -o $(WORKDIR)/svm_time.txt svm-predict -b 1 $(TEST).svm $(SVMMODEL) $(TEST).svm.txt
 	svmout2agf $(TEST).svm.txt $(TEST).svm
 
 $(TEST).agf.cls $(TEST).agf.cor: $(AGFMODEL).mbc $(TEST).vec
-	time -o $(WORKDIR)/agf_time.txt classify_m $(AGFMODEL).mbc $(TEST).vec $(TEST).agf > $(TEST).agf.txt
+	$(TIME) -o $(WORKDIR)/agf_time.txt classify_m $(AGFMODEL).mbc $(TEST).vec $(TEST).agf > $(TEST).agf.txt
 
 $(TEST).acc.cls $(TEST).acc.cor: $(ACCELERATOR) $(TEST).vec
-	time -o $(WORKDIR)/acc_time.txt classify_s $(ACCELERATOR) $(TEST).vec $(TEST).acc > $(TEST).acc.txt
+	$(TIME) -o $(WORKDIR)/acc_time.txt classify_s $(ACCELERATOR) $(TEST).vec $(TEST).acc > $(TEST).acc.txt
 
 #find number of border samples SVM-borders:
 $(NBORDER_SVM): $(SVMMODEL) $(TRAIN).vec $(TRAIN).cls
@@ -271,11 +289,11 @@ $(NSUPPORT): $(TRAIN).svm
 
 #svm-borders "accelerated" svm model
 $(ACCELERATOR): $(SVMMODEL) $(TRAIN).vec $(TRAIN).cls
-	time -o $(WORKDIR)/accel_ttime.txt svm_accelerate $(NSAMP) $(SVMMODEL) $(TRAIN) $(ACCELERATOR)
+	$(TIME) -o $(WORKDIR)/accel_ttime.txt svm_accelerate $(NSAMP) $(SVMMODEL) $(TRAIN) $(ACCELERATOR)
 
 #svm model:
 $(SVMMODEL): $(TRAIN).svm
-	time -o $(WORKDIR)/svm_ttime.txt svm-train -b 1 $(SVMOPT) $(TRAIN).svm $(SVMMODEL)
+	$(TIME) -o $(WORKDIR)/svm_ttime.txt svm-train -b 1 $(SVMOPT) $(TRAIN).svm $(SVMMODEL)
 
 #agf borders model:
 $(AGFMODEL).mbc: $(TRAIN).svm
@@ -341,7 +359,7 @@ $(WORKDIR)/vehicle.trn.cls: $(addprefix, $(DATADIR)/, $(VEHICLE_FILES))
 $(WORKDIR)/covtype.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
 	svm2agf -E 0 $(DATADIR)/$(VER) $(WORKDIR)/$(VER)
-	agf_preprocess $(PRE) -Uf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
+	agf_preprocess $(PRE) -Uzf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
 
 $(WORKDIR)/mnist.trn.cls $(WORKDIR)/poker.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
@@ -349,4 +367,10 @@ $(WORKDIR)/mnist.trn.cls $(WORKDIR)/poker.trn.cls: $(WORKDIR)/%.trn.cls: $(DATAD
 	svm2agf -E 0 $(DATADIR)/$(VER).t $(TEST)
 	agf_preprocess $(PRE) -U $(TRAIN) $(TRAIN)
 	agf_preprocess $(NORMCLAUSE) $(TEST) $(TEST)
+
+$(WORKDIR)/letter.trn.cls: $(DATADIR)/letter-recognition.data.txt
+	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
+	sed 's/A/0/;s/B/1/;s/C/2/;s/D/3/;s/E/4/;s/F/5/;s/G/6/;s/H/7/;s/I/8/;s/J/9/;s/K/10/;s/L/11/;s/M/12/;s/N/13/;s/O/14/;s/P/15/;s/Q/16/;s/Q/16/;s/R/17/;s/S/18/;s/T/19/;s/U/20/;s/V/21/;s/W/22/;s/X/23/;s/Y/24/;s/Z/25/;' < $< | awk -F ',' '{print $$2, $$3, $$4, $$5, $$6, $$7, $$8, $$9, $$10, $$11, $$12, $$13, $$14, $$15, $$16, $$1}' > $(WORKDIR)/letter.txt
+	lvq2agf -H $(WORKDIR)/letter.txt $(WORKDIR)/letter
+	agf_preprocess -zf $(FRAC) $(PRE) $(WORKDIR)/letter $(TRAIN) $(TEST)
 

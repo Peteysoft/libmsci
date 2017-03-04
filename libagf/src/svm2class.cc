@@ -38,6 +38,9 @@ namespace libagf {
     }
     label1=clist[ind2];
     label2=clist[ind1];
+    //a lot of book-keeping, dammit:
+    this->D=classifier->n_feat_t();
+    this->D1=classifier->n_feat();
     delete [] clist;
   }
 

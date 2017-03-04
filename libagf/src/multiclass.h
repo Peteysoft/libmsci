@@ -94,8 +94,9 @@ namespace libagf {
 		const char *com=NULL,	//command for binary classifier
 		int Mflag=0,		//LIBSVM format for external classifiers
 		int Kflag=0,		//keep temporary files
-		int sigcode=0);		//code for sigmoid func. to transform
+		int sigcode=0,		//code for sigmoid func. to transform
      					//decision values
+		int Zflag=0);		//use in house SVM codes
 		
       virtual ~multiclass();
 
@@ -113,7 +114,8 @@ namespace libagf {
 		char *com=NULL,		//external binary classification command
 		int Mflag=0,		//external command uses LIBSVM format
  		int Kflag=0,		//keep temporary files
-		int sigcode=0);		//code for sigmoid trans. func.
+		int sigcode=0,		//code for sigmoid trans. func.
+		int Zflag=0);		//use in house SVM codes
 
       //transformation matrix is not copied, only the pointer is stored
       //--do not delete original before classifier class instance:

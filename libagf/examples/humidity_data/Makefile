@@ -38,7 +38,7 @@ RAWTIME = $(RAWBASE).tm
 BASE = agf_mb$(VER)
 
 #really need default for this...
-OPTIONS1 = -s 100 -W 40 -k 450
+OPTIONS1 = -s 100 -W 15 -k 450 
 OPTIONS2a = -s 100 -W 25 -k 400
 OPTIONS2b = -s 100 -W 25 -k 400
 OPTIONS3 = -s 100 -W 40 -k 400
@@ -222,12 +222,12 @@ $(SVMRAWMODEL) $(RAWSVMTRAINTIME): $(SVMTRAIN).svm
 #because svm is effing slow we use only a fraction of the data:
 $(SVMTRAIN).svm $(SVMTEST).svm $(SVMTRAIN).vec $(SVMTRAIN).cls $(SVMTEST).vec $(SVMTEST).cls: \
 		$(TRAIN).vec $(TRAIN).cls
-	#agf_preprocess -z -f $(SVMFRAC) $(TRAIN) therest svmall
-	#agf_preprocess -R -f $(FRAC) svmall $(SVMTRAIN) $(SVMTEST)
-	cp $(TRAIN).vec $(SVMTRAIN).vec
-	cp $(TRAIN).cls $(SVMTRAIN).cls
-	cp $(TEST).vec $(SVMTEST).vec
-	cp $(TEST).cls $(SVMTEST).cls
+	agf_preprocess -z -f $(SVMFRAC) $(TRAIN) therest svmall
+	agf_preprocess -R -f $(FRAC) svmall $(SVMTRAIN) $(SVMTEST)
+	#cp $(TRAIN).vec $(SVMTRAIN).vec
+	#cp $(TRAIN).cls $(SVMTRAIN).cls
+	#cp $(TEST).vec $(SVMTEST).vec
+	#cp $(TEST).cls $(SVMTEST).cls
 	agf2ascii -M $(SVMTRAIN) > $(SVMTRAIN).svm
 	agf2ascii -M $(SVMTEST) > $(SVMTEST).svm
 

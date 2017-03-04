@@ -54,6 +54,7 @@ namespace libagf {
     real_a cw;			//constraint weight
     int Mflag;			//LIBSVM format
     int Kflag;			//keep temporary files
+    int Zflag;			//use "in house" SVM codes
     int sigcode;	//code for sigmoid func. to transform decision values
   };
 

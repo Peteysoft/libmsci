@@ -29,23 +29,23 @@ namespace libagf {
 
   //high level initialization for classification:
   template <class real, class cls_t>
-  multiclass_hier<real, cls_t>::multiclass_hier(const char *file, int type, char *prefix, const char *com, int mf, int kf, int sigcode) {
+  multiclass_hier<real, cls_t>::multiclass_hier(const char *file, int type, char *prefix, const char *com, int mf, int kf, int sigcode, int Zflag) {
     FILE *fs;
     int err;
 
     fs=fopen(file, "r");
     if (fs==NULL) {
       fprintf(stderr, "multiclass_hier: Unable to open control file, %s\n", file);
-      exit(UNABLE_TO_OPEN_FILE_FOR_READING);
+      throw UNABLE_TO_OPEN_FILE_FOR_READING;
     }
-    err=init(fs, type, prefix, com, mf, kf, sigcode);
-    if (err!=0) exit(err);
+    err=init(fs, type, prefix, com, mf, kf, sigcode, Zflag);
+    if (err!=0) throw err;
   }
 
   template <class real, class cls_t>
-  multiclass_hier<real, cls_t>::multiclass_hier(FILE *fs, int type, char *prefix, const char *com, int mf, int kf, int sigcode) {
-    int err=init(fs, type, prefix, com, mf, kf, sigcode);
-    if (err!=0) exit(err);
+  multiclass_hier<real, cls_t>::multiclass_hier(FILE *fs, int type, char *prefix, const char *com, int mf, int kf, int sigcode, int Zflag) {
+    int err=init(fs, type, prefix, com, mf, kf, sigcode, Zflag);
+    if (err!=0) throw err;
   }
 
   //high level initializion for training purposes:
@@ -56,21 +56,21 @@ namespace libagf {
     fs=fopen(file, "r");
     if (fs==NULL) {
       fprintf(stderr, "multiclass_hier: Unable to open control file, %s\n", file);
-      exit(UNABLE_TO_OPEN_FILE_FOR_READING);
+      throw UNABLE_TO_OPEN_FILE_FOR_READING;
     }
     err=init(fs, argc, argv, maxstacksize);
-    if (err!=0) exit(err);
+    if (err!=0) throw err;
   }
     
   template <class real, class cls_t>
   multiclass_hier<real, cls_t>::multiclass_hier(FILE *fs, int argc, char **argv, int maxstacksize) {
     int err;
     err=init(fs, argc, argv, maxstacksize);
-    if (err!=0) exit(err);
+    if (err!=0) throw err;
   }
     
   template <class real, class cls_t>
-  int multiclass_hier<real, cls_t>::init(FILE *fs, int type, char *prefix, const char *com, int mf, int kf, int sigcode) {
+  int multiclass_hier<real, cls_t>::init(FILE *fs, int type, char *prefix, const char *com, int mf, int kf, int sigcode, int Zflag) {
     multi_parse_param param;
     int err;
 
@@ -80,17 +80,18 @@ namespace libagf {
       param.commandname=new char [strlen(com)+1];
       strcpy(param.commandname, com);
     }
-    param.trainflag=0;
-    param.Mflag=mf;
-    param.Kflag=kf;
-    param.cw=1;
-    param.type=type;
-    param.sigcode=sigcode;
+    param.trainflag=0;		//we are not training a model here
+    param.Mflag=mf;		//LIBSVM file format
+    param.Kflag=kf;		//keep temporary files
+    param.cw=1;			//?
+    param.type=type;		//how to solve for the conditional prob.
+    param.sigcode=sigcode;	//sigmoid function
     //need to set this with parameter later:
-    param.prefix=prefix;
+    param.prefix=prefix;	//path to data files
+    param.Zflag=Zflag;		//use in house SVM codes
 
-    param.infs=fs;
-    param.lineno=0;
+    param.infs=fs;		//input stream for control file
+    param.lineno=0;		//keep track of line number
 
     err=init(param);
     delete [] param.commandname;
@@ -176,7 +177,7 @@ namespace libagf {
         c1=fgetc(param.infs);
         if (c1==EOF) {
           fprintf(stderr, "multiclass_hier: %d, unexpected end of file(1).\n", param.lineno);
-          exit(FILE_READ_ERROR);
+          throw FILE_READ_ERROR;
         }
         c2=(char) c1;
         //printf("6.(%c)\n", c2);
@@ -186,7 +187,7 @@ namespace libagf {
         }
         if (isspace(c2)==0) {
           fprintf(stderr, "multiclass_hier: %d, syntax error in control file(2) at \"%c\".\n", param.lineno, c2);
-          exit(FILE_READ_ERROR);
+          throw FILE_READ_ERROR;
         }
         if (c2=='\n') param.lineno++;
       } while (1);
@@ -222,24 +223,29 @@ namespace libagf {
           param.stackptr++;
         } else {
           fprintf(stderr, "multiclass_hier: option stack exausted (%d levels)\n", param.stackptr);
-          exit(PARAMETER_OUT_OF_RANGE);
+          throw PARAMETER_OUT_OF_RANGE;
         }
 	if (flag=='A' || flag=='K' || flag=='G') {
-          //classifier=new direct_classifier<real, cls_t>(fname, flag, param.Mflag);
 	  //defer initializing until we know how many classes it has:
           classifier=NULL;
 	} else {
           classifier=new binaryclassifier<real, cls_t>(fname);
 	}
       } else {
+        //performing classifications not training a model:
+	//"direct" classifiers:
         if (flag=='A') {
+          //AGF:
           //printf("multiclass_hier: attempting to initialize agf direct classifier, %s, with options, %s\n", fname, options);
           classifier=new agf_classifier<real, cls_t>(fname, options);
 	} else if (flag=='K') {
+          //KNN:
           classifier=new knn_classifier<real, cls_t>(fname, options);
 	} else if (flag=='G') {
-          classifier=new general2class<real, cls_t>(fname, options,
-			param.Mflag, param.Kflag);
+          //external classifier (need to count number of classes first):
+          classifier=NULL;
+	} else if (param.Zflag) {
+          classifier=new svm2class<real, cls_t>(fname);
 	} else if (param.commandname==NULL) {
           classifier=new agf2class<real, cls_t>(fname, param.sigcode);
         } else {
@@ -258,7 +264,7 @@ namespace libagf {
       c1=scan_nowhitespace(param.infs, param.lineno);
       if (c1==EOF) {
         fprintf(stderr, "multiclass_hier: %d, unexpected end of file(2). (missing closing brace?)\n", param.lineno);
-        exit(FILE_READ_ERROR);
+        throw FILE_READ_ERROR;
       }
       c2=(char) c1;
       if (c2=='}') break;
@@ -286,11 +292,17 @@ namespace libagf {
 
     //printf("multiclass_hier: found %d children\n", npart);
 
+    //now that we've counted the number of children:
     if (classifier==NULL) {
-      classifier=new direct_classifier<real, cls_t>(npart, fname, flag, param.Mflag);
+      if (param.trainflag) {
+        classifier=new direct_classifier<real, cls_t>(npart, fname, flag, param.Mflag);
+      } else {
+        classifier=new general_classifier<real, cls_t>(fname, options, npart,
+			param.Mflag, param.Kflag);
+      }
     } else if (npart!=classifier->n_class()) {
       fprintf(stderr, "multiclass_hier: expected %d children, found %d\n", classifier->n_class(), npart);
-      exit(SAMPLE_COUNT_MISMATCH);
+      throw SAMPLE_COUNT_MISMATCH;
     }
 
     delete [] fname;
@@ -308,7 +320,7 @@ namespace libagf {
       //printf("multiclass_hier class list: %d\n", cls[i]);
       if (cls[i-1]==cls[i]) {
         fprintf(stderr, "multiclass_hier: error, duplicate classes\n");
-        exit(OTHER_ERROR);
+        throw OTHER_ERROR;
       }
     }
 
@@ -418,7 +430,7 @@ namespace libagf {
         if (D2!=this->D1) {
           fprintf(stderr, "multiclass_hier: number of features in classifier does not mathc that in child %d", i);
           fprintf(stderr, "                 %d vs. %d\n", this->D1, D2);
-          exit(DIMENSION_MISMATCH);
+          throw DIMENSION_MISMATCH;
         }
       }
     }

@@ -282,7 +282,8 @@ int main (int argc, char **argv) {
   }
 
   //fucking disaster...
-  if (flag[4]) {
+  //only works if control file has not been omitted:
+  if (flag[4] && argc1!=3) {
     //we can pass options by tagging them to the end:
     argc=argc1-4;
     argv+=4;

@@ -237,7 +237,7 @@ namespace libagf {
 
       if (isdigit(model[npart][0])) {
         fprintf(stderr, "parse_multi_partitions: syntax error, line %d at %s\n", param->lineno, model[npart]);
-        exit(FILE_READ_ERROR);
+        throw FILE_READ_ERROR;
       }
 
       if (param->trainflag) {
@@ -274,7 +274,7 @@ namespace libagf {
         nread++;
         if (c1==EOF) {
           fprintf(stderr, "parse_multi_partitions: %d, unexpected end of file(1).\n", param->lineno);
-          exit(FILE_READ_ERROR);
+          throw FILE_READ_ERROR;
         }
         c2=(char) c1;
         //printf("3.(%c)\n", c2);
@@ -287,7 +287,7 @@ namespace libagf {
           param->lineno++;
         } else if (c2!=' ' && c2!='\t') {
           fprintf(stderr, "parse_multi_partitions: %d, syntax error in control file(2).\n", param->lineno);
-          exit(FILE_READ_ERROR);
+          throw FILE_READ_ERROR;
         }
         cold=c2;
       } while (1);
@@ -310,7 +310,7 @@ namespace libagf {
         nread++;
         if (c1==EOF) {
           fprintf(stderr, "parse_multi_partitions: %d, unexpected end of file(2).\n", param->lineno);
-          exit(FILE_READ_ERROR);
+          throw FILE_READ_ERROR;
         }
         c2=(char) c1;
         //printf("4.(%c)\n", c2);
@@ -324,7 +324,7 @@ namespace libagf {
           param->lineno++;
         } else if (c2!=' ' && c2!='\t') {
           fprintf(stderr, "parse_multi_partitions: %d, syntax error in control file(3).\n", param->lineno);
-          exit(FILE_READ_ERROR);
+          throw FILE_READ_ERROR;
         }
         cold=c2;
       } while (1);
@@ -345,7 +345,7 @@ namespace libagf {
       } else {
         fprintf(stderr, "parse_multi_partitions: Maximum of %d partitions allowed.\n", MAXNPART);
         fprintf(stderr, "  Re-run after increasing MAXNPART macro.  Sorry.\n");
-        exit(PARAMETER_OUT_OF_RANGE);
+        throw PARAMETER_OUT_OF_RANGE;
       }
     }
 
@@ -357,7 +357,7 @@ namespace libagf {
         param->stackptr++;
       } else {
         fprintf(stderr, "parse_multi_partitions: option stack exausted (%d levels)\n", param->stackptr);
-        exit(PARAMETER_OUT_OF_RANGE);
+        throw PARAMETER_OUT_OF_RANGE;
       }
     }
 
@@ -468,7 +468,7 @@ namespace libagf {
           fprintf(stderr, "parse_multi_start: %d, syntax error in control file(3) at \"%c\"\n", param->lineno, c2);
         }
       }
-      exit(FILE_READ_ERROR);
+      throw FILE_READ_ERROR;
     }
 
     //if we just have a number, return with it in a string:
@@ -481,7 +481,7 @@ namespace libagf {
     c1=scan_nowhitespace(param->infs, param->lineno);
     if (c1==EOF) {
       fprintf(stderr, "parse_multi_start: %d, unexpected end of file(3).\n", param->lineno);
-      exit(FILE_READ_ERROR);
+      throw FILE_READ_ERROR;
     }
     c2=(char) c1;
     if (isdigit(c2)) {
@@ -503,7 +503,7 @@ namespace libagf {
       }
       if (c2!='{') {
         fprintf(stderr, "parse_multi_start: %d, syntax error in control file(4) at \"%c\".\n", param->lineno, c2);
-        exit(FILE_READ_ERROR);
+        throw FILE_READ_ERROR;
       }
     }
 

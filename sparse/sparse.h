@@ -124,7 +124,7 @@ namespace libpetey {
         virtual void left_mult(data_t *cor, data_t *result);
 
         //take the transpose (why do we need all these??):
-        void transpose();
+        virtual void transpose();
         void transpose(sparse<index_t, data_t> &trans);	//returns sparse
         void transpose(data_t **non);			//returns non-sparse
 
