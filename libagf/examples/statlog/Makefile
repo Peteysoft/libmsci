@@ -29,6 +29,12 @@ NCLS_vehicle=4
 NCLS_poker=10
 NCLS_mnist=10
 NCLS_letter=26
+NCLS_codrna=2
+NCLS_protein=3
+NCLS_pendigits=10
+NCLS_dna=3
+NCLS_usps=10
+NCLS_seismic=3
 
 NCLS=$(NCLS_$(VER))
 
@@ -37,10 +43,16 @@ PRE_heart=-n
 PRE_shuttle=-n
 PRE_covtype=-n
 PRE_segment=-n
-PRE_sat=-nS 9
+PRE_sat=-n
 PRE_poker=-n
 PRE_vehicle=-n
 PRE_letter=-n
+PRE_codrna=-n
+PRE_protein=-n
+PRE_pendigits=-n
+PRE_dna=-n
+PRE_usps=-n
+PRE_seismic=-n
 #PRE_mnist=-nS 20
 
 PRE=$(PRE_$(VER))
@@ -54,7 +66,13 @@ AGFOPT_sat=-W 5 -s 200 -k 100
 AGFOPT_poker=-k 200 -W 2
 AGFOPT_mnist=-k 400 -W 25
 AGFOPT_vehicle=-W 5 -s 100 -k 100
-AGFOPT_letter=-W 5 -k 150
+AGFOPT_letter=-W 3 -k 200 -s 1000
+AGFOPT_codrna=-k 200 -W 10 -s 500
+AGFOPT_protein=-k 200 -W 10
+AGFOPT_pendigits=-k 200 -W 2 -s 200
+AGFOPT_dna=-s 500 -W 20
+AGFOPT_usps=-k 100 -W 2 -s 250
+AGFOPT_seismic=-W 40 -k 500 -s 200
 
 AGFOPT=$(AGFOPT_$(VER))
 
@@ -63,6 +81,9 @@ SVMOPT_heart=-c 0.5 -g 0.01
 SVMOPT_sat=-c 50 -g 0.1
 SVMOPT_segment=-c 100 -g 0.1 
 SVMOPT_vehicle=-c 100 -g 0.01
+SVMOPT_pendigits=-c 50 -g 0.01
+SVMOPT_letter=-c 50 -h 0
+SVMOPT_seismic=-c 50 -h 0
 
 SVMOPT=$(SVMOPT_$(VER))
 
@@ -71,16 +92,25 @@ K_heart=-k 11
 K_shuttle=-k 1
 K_covtype=-k 11
 K_segment=-k 3
-K_sat=-k 15
+K_sat=-k 5
 K_vehicle=-k 9
+K_pendigits=-k 1
+K_usps=-k 1
+K_letter=-k 1
+K_seismic=-k 31
 
 K=$(K_$(VER))
 
 #number of border samples (or other options) for "accelerated" SVM model:
 NSAMP_segment=-s 50
 NSAMP_vehicle=-s 50
-NSAMP_sat=-s 150
-NSAMP_letter=-s 50
+NSAMP_sat=-s 200
+NSAMP_letter=-s 75
+NSAMP_codrna=-s 500
+NSAMP_pendigits=-s 50
+NSAMP_dna=-s 1000
+NSAMP_usps=-s 50
+NSAMP_seismic=-s 200
 
 NSAMP=$(NSAMP_$(VER))
 
@@ -151,6 +181,13 @@ all: $(RESULTS)
 	@cat $(WORKDIR)/acc_time.txt
 	@echo
 	@cls_comp_stats $(TEST).cls $(TEST).acc
+	@echo
+	@echo "Comparison:"
+	@echo
+	@cls_comp_stats -q 0 $(TEST).svm.cls $(TEST).acc
+	@echo
+	@agf_correlate $(TEST).svm.con $(TEST).acc.con
+	@echo
 
 #how many lines does results file contain so far?
 #(hopefully nobody creates a ".txt" file...)
@@ -199,6 +236,10 @@ $(RESULTS): $(TEST).knn.cls $(TEST).agf.cls $(TEST).svm.cls $(TEST).acc.cls
 	cls_comp_stats -Hb $(TEST).cls $(TEST).svm | tr -d '\n' >> $(RESULTS)
 	echo -n " " >> $(RESULTS)
 	cls_comp_stats -Hb $(TEST).cls $(TEST).acc | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	cls_comp_stats -Hb $(TEST).svm.cls $(TEST).acc | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	agf_correlate $(TEST).svm.con $(TEST).acc.con | awk '{print $$3}' | tr -d '\n' >> $(RESULTS)
 	echo -n " " >> $(RESULTS)
 	grep total_sv $(SVMMODEL) | awk '{print $$2}' >> $(RESULTS)
 
@@ -361,12 +402,12 @@ $(WORKDIR)/covtype.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
 	svm2agf -E 0 $(DATADIR)/$(VER) $(WORKDIR)/$(VER)
 	agf_preprocess $(PRE) -Uzf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
 
-$(WORKDIR)/mnist.trn.cls $(WORKDIR)/poker.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
+$(WORKDIR)/seismic.trn.cls $(WORKDIR)/usps.trn.cls $(WORKDIR)/dna.trn.cls $(WORKDIR)/pendigits.trn.cls $(WORKDIR)/codrna.trn.cls $(WORKDIR)/mnist.trn.cls $(WORKDIR)/poker.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
 	svm2agf -E 0 $(DATADIR)/$(VER) $(TRAIN)
 	svm2agf -E 0 $(DATADIR)/$(VER).t $(TEST)
 	agf_preprocess $(PRE) -U $(TRAIN) $(TRAIN)
-	agf_preprocess $(NORMCLAUSE) $(TEST) $(TEST)
+	agf_preprocess $(NORMCLAUSE) -U $(TEST) $(TEST)
 
 $(WORKDIR)/letter.trn.cls: $(DATADIR)/letter-recognition.data.txt
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi

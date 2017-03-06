@@ -119,7 +119,7 @@ int main(int argc, char ** argv) {
 
     //check accuracy of confidence ratings:
     con=read_datfile<real_a>(confile, n2);
-    if (con!=NULL) {
+    if (con!=NULL && nhist > 0) {
       if (n1!=n2) {
         fprintf(stderr, "cls_comp_stats: number of confidence ratings (%d) does not match the number of classes (%d)\n", n2, n1);
         exit(SAMPLE_COUNT_MISMATCH);

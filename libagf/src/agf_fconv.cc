@@ -365,19 +365,7 @@ nel_ta read_svm(FILE *fs, real **&train, cls_t *&cls, dim_ta &nvar, real missing
   //delete [] ord;
 
   //convert class labels to go from 0..nc-1:
-  if (Uflag) {
-    int cls_lst[ncls];			//list of classes
-    for (cls_t i=0; i<ncls; i++) cls_lst[i]=0;
-    for (nel_ta i=0; i<result; i++) cls_lst[cls[i]]=1;
-    cls_t ncls2=0;
-    for (cls_t j=0; j<ncls; j++) {
-      if (cls_lst[j]!=0) {
-        cls_lst[j]=ncls2;
-        ncls2++;
-      }
-    }
-    for (nel_ta i=0; i<result; i++) cls[i]=cls_lst[cls[i]];
-  }
+  if (Uflag) compress_labels(cls, result);
 
   return result;
 }

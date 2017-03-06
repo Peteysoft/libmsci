@@ -8,7 +8,7 @@ TEST=$(BASE).tst
 TRAIN=$(BASE).trn
 
 #multi-class model:
-MODEL=0
+MODEL=1
 
 #number of classes:
 NCLS=26
@@ -20,7 +20,7 @@ FRAC=0.25
 PRE=-n
 
 #options for AGF:
-AGFOPT=-W 10 -k 150 -t 1e-5 -s 500
+AGFOPT=-W 2 -k 200 -t 1e-5 -s 2000 -r-0.9
 
 #options for SVM:
 SVMOPT=-h 0 -c 50

@@ -804,5 +804,45 @@ real ** remove_duplicates(real **mat, dim_ta m, nel_ta n, cls_t *cls, real *wt, 
 
 }
 
+template <typename cls_t>
+cls_t compress_labels(cls_t *cls, nel_ta n) {
+  cls_t min, max;
+  cls_t *map;
+  min=cls[0];
+  max=cls[0];
+  cls_t k;
+  //minimum and maximum values for class labels:
+  for (nel_ta i=1; i<n; i++) {
+    if (cls[i] > max) {
+      max=cls[i];
+    } else if (cls[i] < min) {
+      min=cls[i];
+    }
+  }
+  //mapping from old to new labels:
+  //(still easy to screw up algorithm by using really big values...)
+  map=new cls_t[max-min+1]-min;
+  for (cls_t j=min; j<=max; j++) map[j]=-1;
+  //find out which labels between min and max are used:
+  for (nel_ta i=0; i<n; i++) map[cls[i]]=1;
+  //create and apply mapping:
+  k=0;
+  for (cls_t j=min; j<=max; j++) {
+    if (map[j]==1) {
+      map[j]=k;
+      k++;
+    }
+  }
+  for (nel_ta i=0; i<n; i++) cls[i]=map[cls[i]];
+
+  map+=min;
+  delete map;
+
+  return max-min+1;
+}
+
+template nel_ta compress_labels<cls_ta>(cls_ta *, nel_ta);
+
+
 } //end namespace libagf
 

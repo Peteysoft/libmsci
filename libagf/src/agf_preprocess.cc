@@ -308,11 +308,14 @@ int main(int argc, char *argv[]) {
     cls_ta *cls=(cls_ta *) ord;
     cls_ta *clsmap;
     cls_ta ncls1;
+    int err;
+
     //count the number of classes:
     ncls=1;
     for (cls_ta i=0; i<ntrain; i++) if (cls[i]>=ncls) ncls=cls[i]+1;
 
-    int err;
+    //compress the class labels (before doing the mapping since it will choke on negative labels):
+    if (opt_args.Uflag) ncls=compress_labels(cls, ntrain);
 
     if (argc>0 && opt_args.selectflag==0) {
       nel_ta ntnew=0;
@@ -335,24 +338,6 @@ int main(int argc, char *argv[]) {
         }
       }
       nres=ntnew;
-      delete [] clsmap;
-    }
-
-    //compress the class labels:
-    if (opt_args.Uflag) {
-      clsmap=new cls_ta[ncls];
-      for (cls_ta i=0; i<ncls; i++) clsmap[i]=0;
-      //(could use the old clsmap if it exists...)
-      for (nel_ta i=0; i<ntrain; i++) clsmap[cls[i]]=1;
-      ncls1=0;
-      for (cls_ta i=0; i<ncls; i++) {
-        if (clsmap[i]!=0) {
-          clsmap[i]=ncls1;
-          ncls1++;
-        }
-      }
-      apply_partition(cls, ntrain, clsmap);
-      ncls=ncls1;
       delete [] clsmap;
     }
 

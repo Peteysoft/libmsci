@@ -182,7 +182,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Unable to open file for reading: %s\n", argv[2]);
     return UNABLE_TO_OPEN_FILE_FOR_READING;
   }
-  if (nvar1 != nvar) {
+  if (nvar1 != nvar && opt_args.normfile==NULL) {
     fprintf(stderr, "agf: Dimension of training data (%d) does not match dimension of test data (%d).\n", nvar, nvar1);
     exit(DIMENSION_MISMATCH);
   }

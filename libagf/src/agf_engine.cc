@@ -99,12 +99,12 @@ namespace libagf {
   }
 
   template <class real>
-  iter_ta agf_calc_w2(real *d2,     //distances squared
-              nel_ta k,           //number of distances
-              real Wc,         //objective total weight
-	      real var[2],	//initial filter width
-              real *weight,	//returned weights
-              real &var_f)         //returned final filter variance
+  iter_ta agf_calc_w2(real *d2,		//distances squared
+              nel_ta k,			//number of distances
+              real Wc, 			//objective total weight
+	      real var[2],		//initial filter width
+              real *weight,		//returned weights
+              real &var_f)		//returned final filter variance
   {
     supernewton_stat err;
     long nmov;		//number of times bracket has been moved
@@ -130,6 +130,7 @@ namespace libagf {
         var[0]=vtest;
       } else {
         fprintf(stderr, "agf_calc_w2: lower bracket underflow\n");
+	var_f=var[0];
         break;
       }
       fprintf(stderr, "agf_calc_w2: lower bracket decreased to %g\n", var[0]);
@@ -144,6 +145,7 @@ namespace libagf {
         var[1]=vtest;
       } else {
         fprintf(stderr, "agf_calc_w2: upper bracket overflow\n");
+	var_f=var[1];
         break;
       }
       fprintf(stderr, "agf_calc_w2: upper bracket increased to %g\n", var[1]);

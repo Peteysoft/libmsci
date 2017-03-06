@@ -151,6 +151,12 @@ namespace libagf {
 		real *wt, 		//returned weights
 		nel_ta &nnew);		//new number of samples
 
+  //make class labels go from 0-nc-1
+  //including negative labels
+  template <typename cls_t>
+  cls_t compress_labels(cls_t *cls, 	//classes -in -out
+		  nel_ta n);		//number of classes
+
 }
 
 #endif
