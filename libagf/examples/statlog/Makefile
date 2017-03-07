@@ -38,24 +38,27 @@ NCLS_seismic=3
 
 NCLS=$(NCLS_$(VER))
 
+ifeq ($(NCLS),2)
+  AGF_TRAIN=class_borders
+  BORDERS_TEST=classify_b
+  ACCELERATE_COMMAND=class_borders -Z
+else
+  AGF_TRAIN=multi_borders
+  AGF_PREFIX=print_control -Q 6 $(NCLS) |
+  BORDERS_TEST=classify_m
+  ACCELERATE_COMMAND=svm_accelerate
+  AGFBASE=$(AGFMODEL)
+  ACCTRAIN=$(TRAIN)
+endif
+
 #special pre-processing:
-PRE_heart=-n
-PRE_shuttle=-n
-PRE_covtype=-n
-PRE_segment=-n
-PRE_sat=-n
-PRE_poker=-n
-PRE_vehicle=-n
-PRE_letter=-n
-PRE_codrna=-n
-PRE_protein=-n
-PRE_pendigits=-n
-PRE_dna=-n
-PRE_usps=-n
-PRE_seismic=-n
 #PRE_mnist=-nS 20
 
-PRE=$(PRE_$(VER))
+ifdef PRE_$(VER)
+  PRE=$(PRE_$(VER))
+else
+  PRE=-n
+endif
 
 #options for AGF-borders:
 AGFOPT_heart=-W 10
@@ -70,7 +73,7 @@ AGFOPT_letter=-W 3 -k 200 -s 1000
 AGFOPT_codrna=-k 200 -W 10 -s 500
 AGFOPT_protein=-k 200 -W 10
 AGFOPT_pendigits=-k 200 -W 2 -s 200
-AGFOPT_dna=-s 500 -W 20
+AGFOPT_dna=-k 300 -s 500 -W 20
 AGFOPT_usps=-k 100 -W 2 -s 250
 AGFOPT_seismic=-W 40 -k 500 -s 200
 
@@ -113,6 +116,18 @@ NSAMP_usps=-s 50
 NSAMP_seismic=-s 200
 
 NSAMP=$(NSAMP_$(VER))
+
+#clean targets for collecting stats: 
+#(which parts of the makefile do we want to rerun?)
+CLEAN_letter=clean_but_borders
+CLEAN_seismic=clean_borders
+CLEAN_codrna=clean_borders
+ifdef CLEAN_$(VER)
+CLEAN_TARGET=$(CLEAN_$(VER))
+else
+  #since most datasets are already separated into "test" and "training":
+  CLEAN_TARGET=clean
+endif
 
 #where to find scripts (for testing acc. vs. border samples):
 SCRIPTDIR=../../scripts
@@ -195,7 +210,7 @@ NLINE!=cat $(VER).txt | wc -l
 stats: calc_stats
 	#for I in {$(NLINE)..$(NRUN)}; do 
 	for ((I=$(NLINE); I<$(NRUN); I++)); do \
-		make clean; \
+		make $(CLEAN_TARGET); \
 		make RESULTS=$(VER).txt; \
 	done
 	./calc_stats < $(VER).txt
@@ -248,6 +263,18 @@ nborders: $(NBORDER_SVM)
 
 clean:
 	rm -f $(WORKDIR)/*
+
+#clean only AGF and SVM-borders:
+clean_borders:
+	rm -f $(AGFMODEL)
+	rm -f $(ACCELERATOR)
+
+#clean everything but AGF-borders (get stats on timing at least...):
+clean_but_borders:
+	rm -f $(ACCELERATOR)
+	rm -f $(SVMMODEL)
+	rm -f $(TEST).knn.*
+
 
 $(VEHICLE_TEST):
 	make VER=vehicle VEHICLE_TEST=$(VEHICLE_TEST)
@@ -307,10 +334,10 @@ $(TEST).svm.cls $(TEST).svm.cor: $(SVMMODEL) $(TEST).svm
 	svmout2agf $(TEST).svm.txt $(TEST).svm
 
 $(TEST).agf.cls $(TEST).agf.cor: $(AGFMODEL).mbc $(TEST).vec
-	$(TIME) -o $(WORKDIR)/agf_time.txt classify_m $(AGFMODEL).mbc $(TEST).vec $(TEST).agf > $(TEST).agf.txt
+	$(TIME) -o $(WORKDIR)/agf_time.txt $(BORDERS_TEST) $(AGFMODEL).mbc $(TEST).vec $(TEST).agf > $(TEST).agf.txt
 
 $(TEST).acc.cls $(TEST).acc.cor: $(ACCELERATOR) $(TEST).vec
-	$(TIME) -o $(WORKDIR)/acc_time.txt classify_s $(ACCELERATOR) $(TEST).vec $(TEST).acc > $(TEST).acc.txt
+	$(TIME) -o $(WORKDIR)/acc_time.txt $(BORDERS_TEST) $(ACCELERATOR) $(TEST).vec $(TEST).acc > $(TEST).acc.txt
 
 #find number of border samples SVM-borders:
 $(NBORDER_SVM): $(SVMMODEL) $(TRAIN).vec $(TRAIN).cls
@@ -330,7 +357,7 @@ $(NSUPPORT): $(TRAIN).svm
 
 #svm-borders "accelerated" svm model
 $(ACCELERATOR): $(SVMMODEL) $(TRAIN).vec $(TRAIN).cls
-	$(TIME) -o $(WORKDIR)/accel_ttime.txt svm_accelerate $(NSAMP) $(SVMMODEL) $(TRAIN) $(ACCELERATOR)
+	$(TIME) -o $(WORKDIR)/accel_ttime.txt $(ACCELERATE_COMMAND) $(NSAMP) $(SVMMODEL) $(TRAIN) $(ACCELERATOR)
 
 #svm model:
 $(SVMMODEL): $(TRAIN).svm
@@ -338,7 +365,7 @@ $(SVMMODEL): $(TRAIN).svm
 
 #agf borders model:
 $(AGFMODEL).mbc: $(TRAIN).svm
-	print_control -Q 6 $(NCLS) | time -o $(WORKDIR)/agf_ttime.txt multi_borders $(AGFOPT) $(TRAIN) $(AGFMODEL) $(AGFMODEL).mbc
+	$(AGF_PREFIX) $(TIME) -o $(WORKDIR)/agf_ttime.txt $(AGF_TRAIN) $(AGFOPT) $(TRAIN) $(AGFBASE) $(AGFMODEL).mbc
 
 #only used for one script:
 $(MULTICONTROL):

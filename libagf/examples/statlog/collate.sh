@@ -1,4 +1,4 @@
-FILES="heart.txt shuttle.txt segment.txt sat.txt"
+DATASET="heart shuttle segment sat letter codrna pendigits dna seismic usps"
 
 # col  value
 # 1    KNN time user (s)
@@ -25,7 +25,8 @@ FILES="heart.txt shuttle.txt segment.txt sat.txt"
 # 22   ACC U.C.
 # 23   number of suport vectors
 
-for F in $FILES; do
-   ./sum_col.exe 0 1 / 2 3 / 4 5 / 6 7 / 8 9 / 10 11 / 12 13 / 14 / 15 / 16 / 17 / 18 / 19 / 20 / 21 < $F | ./calc_stats
+for D in $DATASET; do
+  printf "%10s" $D
+   ./sum_col.exe 0 1 / 2 3 / 4 5 / 6 7 / 8 9 / 10 11 / 12 13 / 14 / 15 / 16 / 17 / 18 / 19 / 20 / 21 / 22 / 23 / 24 < $D.txt | ./calc_stats
 done
 
