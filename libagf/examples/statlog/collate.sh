@@ -26,7 +26,8 @@ DATASET="heart shuttle segment sat letter codrna pendigits dna seismic usps"
 # 23   number of suport vectors
 
 for D in $DATASET; do
-  printf "%10s" $D
-   ./sum_col.exe 0 1 / 2 3 / 4 5 / 6 7 / 8 9 / 10 11 / 12 13 / 14 / 15 / 16 / 17 / 18 / 19 / 20 / 21 / 22 / 23 / 24 < $D.txt | ./calc_stats
+  #printf "%10s" $D
+   ./sum_col.exe 0 1 / 2 3 / 4 5 / 6 7 / 8 9 / 10 11 / 12 13 / 14 / 15 / 16 / 17 / 18 / 19 / 20 / 21 / 22 / 23 / 24 < $D.txt | ./calc_stats 10 | ./write_results $D
+   echo "\\hline"
 done
 

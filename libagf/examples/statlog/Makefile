@@ -434,6 +434,9 @@ $(WORKDIR)/seismic.trn.cls $(WORKDIR)/usps.trn.cls $(WORKDIR)/dna.trn.cls $(WORK
 	svm2agf -E 0 $(DATADIR)/$(VER) $(TRAIN)
 	svm2agf -E 0 $(DATADIR)/$(VER).t $(TEST)
 	agf_preprocess $(PRE) -U $(TRAIN) $(TRAIN)
+ifdef SUBSAMPLE
+	agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+endif
 	agf_preprocess $(NORMCLAUSE) -U $(TEST) $(TEST)
 
 $(WORKDIR)/letter.trn.cls: $(DATADIR)/letter-recognition.data.txt
