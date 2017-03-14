@@ -157,8 +157,6 @@ double class_eval_basic(cls_t *truth, cls_t *ret, nel_ta n, FILE *fs, flag_a Hfl
 template <class real, class cls_t>
 real ** con_acc_table(cls_t *truth, cls_t *cls, real *con, nel_ta n, int nhist) {
   nel_ta total[nhist];
-  nel_ta ntrue[nhist];
-  real conave[nhist];
   nel_ta ind;
   real acc;
   real **result;
@@ -190,6 +188,45 @@ real ** con_acc_table(cls_t *truth, cls_t *cls, real *con, nel_ta n, int nhist) 
 
 }
 
+//test the accuracy of the confidence ratings
+//for binary classifiers
+template <class real, class cls_t>
+real ** con_acc_table2(cls_t *truth, cls_t *cls, real *con, nel_ta n, int nhist) {
+  nel_ta total[nhist*2+1];
+  real r;
+  nel_ta ind;
+  real acc;
+  real **result;
+
+  result=new real*[2];
+  result[0]=new real[4*nhist+2];
+  result[1]=result[0]+2*nhist+1;
+
+  for (nel_ta i=0; i<=nhist*2; i++) {
+    total[i]=0;
+    result[0][i]=0;
+    result[1][i]=0;
+  }
+
+  for (nel_ta i=0; i<n; i++) {
+    r=(2*cls[i]-1)*con[i];
+    ind=(nel_ta) ((r+1)*nhist);
+    if (ind<0) ind=0; else if (ind >= 2*nhist+1) ind=2*nhist;
+    total[ind]++;
+    if (cls[i] == truth[i]) result[1][ind]++;
+    result[0][ind] += r;
+  }
+
+  for (nel_ta i=0; i<=2*nhist; i++) {
+    result[0][i]=result[0][i]/total[i];
+    result[1][i]=2*(real) result[1][i]/(real) total[i]-1;
+    if (i<nhist) result[1][i]=-result[1][i];
+  }
+
+  return result;
+
+}
+
 //print the table accuracy vs. confidence rating:
 template <class real>
 void print_con_acc(real **table, int ncls, int nhist, FILE *fs) {
@@ -209,8 +246,17 @@ void check_confidence(cls_t *truth, cls_t *cls, real *con, nel_ta n, int nhist, 
   //hell with it, just count 'em over:
   for (nel_ta i=0; i<n; i++) if (truth[i]>=ncls) ncls=truth[i]+1;
 
-  table=con_acc_table(truth, cls, con, n, nhist);
-  print_con_acc(table, ncls, nhist, fs);
+  if (ncls==2) {
+    table=con_acc_table2(truth, cls, con, n, nhist);
+    fprintf(fs, "\nAccuracy vs. probability difference:\n\n");
+    for (nel_ta i=0; i<=nhist*2; i++) {
+      fprintf(fs, "%10.3f %10.3f\n", table[0][i], table[1][i]);
+    }
+    fprintf(fs, "\n");
+  } else {
+    table=con_acc_table(truth, cls, con, n, nhist);
+    print_con_acc(table, ncls, nhist, fs);
+  }
 
   delete [] table[0];
   delete [] table;
@@ -221,6 +267,8 @@ template double class_eval<int32_t>(int32_t *, int32_t *, nel_ta, FILE *);
 template double class_eval_basic<int32_t>(int32_t *, int32_t *, nel_ta, FILE *, flag_a);
 template float ** con_acc_table<float, int32_t>(int32_t *, int32_t *, float *, nel_ta, int);
 template double ** con_acc_table<double, int32_t>(int32_t *, int32_t *, double *, nel_ta, int);
+template float ** con_acc_table2<float, int32_t>(int32_t *, int32_t *, float *, nel_ta, int);
+template double ** con_acc_table2<double, int32_t>(int32_t *, int32_t *, double *, nel_ta, int);
 template void print_con_acc<float>(float **, int, int, FILE *);
 template void print_con_acc<double>(double **, int, int, FILE *);
 template void check_confidence<float, int32_t>(int32_t *, int32_t *, float *,

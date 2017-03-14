@@ -35,6 +35,12 @@ NCLS_pendigits=10
 NCLS_dna=3
 NCLS_usps=10
 NCLS_seismic=3
+NCLS_ijcnn1=2
+NCLS_leu=2
+NCLS_mushrooms=2
+NCLS_madelon=2
+NCLS_phishing=2
+NCLS_splice=2
 
 NCLS=$(NCLS_$(VER))
 
@@ -42,6 +48,8 @@ ifeq ($(NCLS),2)
   AGF_TRAIN=class_borders
   BORDERS_TEST=classify_b
   ACCELERATE_COMMAND=class_borders -Z
+  ACCELERATOR2=$(ACCELERATOR).brd
+  AGFMODEL2=$(AGFMODEL).brd
 else
   AGF_TRAIN=multi_borders
   AGF_PREFIX=print_control -Q 6 $(NCLS) |
@@ -49,6 +57,8 @@ else
   ACCELERATE_COMMAND=svm_accelerate
   AGFBASE=$(AGFMODEL)
   ACCTRAIN=$(TRAIN)
+  ACCELERATOR2=$(ACCELERATOR)
+  AGFMODEL2=$(AGFMODEL)
 endif
 
 #special pre-processing:
@@ -60,6 +70,18 @@ else
   PRE=-n
 endif
 
+#list of datasets from LIBSVM website with test and training:
+SVMTTDATA=madelon \
+	ijcnn1 \
+	seismic \
+	usps \
+	dna \
+	pendigits \
+	codrna \
+	mnist \
+	poker \
+	splice
+
 #options for AGF-borders:
 AGFOPT_heart=-W 10
 AGFOPT_shuttle=-W 1.5 -k 200 -s 250
@@ -70,12 +92,16 @@ AGFOPT_poker=-k 200 -W 2
 AGFOPT_mnist=-k 400 -W 25
 AGFOPT_vehicle=-W 5 -s 100 -k 100
 AGFOPT_letter=-W 3 -k 200 -s 1000
-AGFOPT_codrna=-k 200 -W 10 -s 500
+AGFOPT_codrna=-k 200 -W 10 -s 500 -r-0.28
 AGFOPT_protein=-k 200 -W 10
 AGFOPT_pendigits=-k 200 -W 2 -s 200
 AGFOPT_dna=-k 300 -s 500 -W 20
 AGFOPT_usps=-k 100 -W 2 -s 250
 AGFOPT_seismic=-W 40 -k 500 -s 200
+AGFOPT_ijcnn1=-W 15 -k 400 -s 500
+AGFOPT_madelon=-W 10 -k 200
+AGFOPT_phishing=-W 7 -k 250 -s 500 -r 0.2
+AGFOPT_splice=-W 15 -s 1000 -r-0.23
 
 AGFOPT=$(AGFOPT_$(VER))
 
@@ -101,6 +127,8 @@ K_pendigits=-k 1
 K_usps=-k 1
 K_letter=-k 1
 K_seismic=-k 31
+K_phishing=-k 3
+K_splice=-k 1
 
 K=$(K_$(VER))
 
@@ -109,11 +137,14 @@ NSAMP_segment=-s 50
 NSAMP_vehicle=-s 50
 NSAMP_sat=-s 200
 NSAMP_letter=-s 75
-NSAMP_codrna=-s 500
+NSAMP_codrna=-s 500 -r-0.1
 NSAMP_pendigits=-s 50
 NSAMP_dna=-s 1000
 NSAMP_usps=-s 50
 NSAMP_seismic=-s 200
+NSAMP_ijcnn1=-s 500
+NSAMP_phishing=-s 500 -r 0.4
+NSAMP_splice=-s 1000 -r-0.99 
 
 NSAMP=$(NSAMP_$(VER))
 
@@ -333,10 +364,10 @@ $(TEST).svm.cls $(TEST).svm.cor: $(SVMMODEL) $(TEST).svm
 	$(TIME) -o $(WORKDIR)/svm_time.txt svm-predict -b 1 $(TEST).svm $(SVMMODEL) $(TEST).svm.txt
 	svmout2agf $(TEST).svm.txt $(TEST).svm
 
-$(TEST).agf.cls $(TEST).agf.cor: $(AGFMODEL).mbc $(TEST).vec
-	$(TIME) -o $(WORKDIR)/agf_time.txt $(BORDERS_TEST) $(AGFMODEL).mbc $(TEST).vec $(TEST).agf > $(TEST).agf.txt
+$(TEST).agf.cls $(TEST).agf.cor: $(AGFMODEL2) $(TEST).vec
+	$(TIME) -o $(WORKDIR)/agf_time.txt $(BORDERS_TEST) $(AGFMODEL) $(TEST).vec $(TEST).agf > $(TEST).agf.txt
 
-$(TEST).acc.cls $(TEST).acc.cor: $(ACCELERATOR) $(TEST).vec
+$(TEST).acc.cls $(TEST).acc.cor: $(ACCELERATOR2) $(TEST).vec
 	$(TIME) -o $(WORKDIR)/acc_time.txt $(BORDERS_TEST) $(ACCELERATOR) $(TEST).vec $(TEST).acc > $(TEST).acc.txt
 
 #find number of border samples SVM-borders:
@@ -356,7 +387,7 @@ $(NSUPPORT): $(TRAIN).svm
 	$(SCRIPTDIR)/svm_nsv.sh -G -q $(NTEST) $(SVMOPT) $(TRAIN) $(NSUPPORT)
 
 #svm-borders "accelerated" svm model
-$(ACCELERATOR): $(SVMMODEL) $(TRAIN).vec $(TRAIN).cls
+$(ACCELERATOR2): $(SVMMODEL) $(TRAIN).vec $(TRAIN).cls
 	$(TIME) -o $(WORKDIR)/accel_ttime.txt $(ACCELERATE_COMMAND) $(NSAMP) $(SVMMODEL) $(TRAIN) $(ACCELERATOR)
 
 #svm model:
@@ -364,8 +395,8 @@ $(SVMMODEL): $(TRAIN).svm
 	$(TIME) -o $(WORKDIR)/svm_ttime.txt svm-train -b 1 $(SVMOPT) $(TRAIN).svm $(SVMMODEL)
 
 #agf borders model:
-$(AGFMODEL).mbc: $(TRAIN).svm
-	$(AGF_PREFIX) $(TIME) -o $(WORKDIR)/agf_ttime.txt $(AGF_TRAIN) $(AGFOPT) $(TRAIN) $(AGFBASE) $(AGFMODEL).mbc
+$(AGFMODEL2): $(TRAIN).svm
+	$(AGF_PREFIX) $(TIME) -o $(WORKDIR)/agf_ttime.txt $(AGF_TRAIN) $(AGFOPT) $(TRAIN) $(AGFBASE) $(AGFMODEL)
 
 #only used for one script:
 $(MULTICONTROL):
@@ -424,12 +455,12 @@ $(WORKDIR)/vehicle.trn.cls: $(addprefix, $(DATADIR)/, $(VEHICLE_FILES))
 	agf_preprocess -U $(PRE) $(TRAIN) $(TRAIN)
 	agf_preprocess $(NORMCLAUSE) -U $(TEST) $(TEST)
 
-$(WORKDIR)/covtype.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
+$(WORKDIR)/phishing.trn.cls $(WORKDIR)/covtype.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
 	svm2agf -E 0 $(DATADIR)/$(VER) $(WORKDIR)/$(VER)
 	agf_preprocess $(PRE) -Uzf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
 
-$(WORKDIR)/seismic.trn.cls $(WORKDIR)/usps.trn.cls $(WORKDIR)/dna.trn.cls $(WORKDIR)/pendigits.trn.cls $(WORKDIR)/codrna.trn.cls $(WORKDIR)/mnist.trn.cls $(WORKDIR)/poker.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
+$(addsuffix .trn.cls, $(addprefix $(WORKDIR)/, $(SVMTTDATA))): $(WORKDIR)/%.trn.cls: $(DATADIR)/%
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
 	svm2agf -E 0 $(DATADIR)/$(VER) $(TRAIN)
 	svm2agf -E 0 $(DATADIR)/$(VER).t $(TEST)

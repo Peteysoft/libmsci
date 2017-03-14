@@ -7,10 +7,12 @@ SOURCE2 = landclasstree.eps
 all:
 	make TARGET=constrained SOURCE="$(SOURCE1)" constrained.pdf
 	make TARGET=multiclass_review SOURCE="$(SOURCE2)" multiclass_review.pdf
+	make TARGET=calibration SOURCE="$(SOURCE1)" calibration.pdf
 
 clean:
 	make TARGET=constrained clean_target
 	make TARGET=multiclass_review clean_target
+	make TARGET=calibration clean_target
 
 clean_target:
 	rm -f $(TARGET).dvi

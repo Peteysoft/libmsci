@@ -69,8 +69,8 @@ int main(int argc, char ** argv) {
 
   while ((c = getopt(argc, argv, "r:")) != -1) {
     switch (c) {
-      case ('r'):
-             fprintf(stderr, "optimal_r0: -r not implemented yet!\n");
+      case ('b'):
+             bflag=1;
 	     break;
       case ('?'):
              fprintf(stderr, "Unknown option: -%c -- ignored\n", optopt);
@@ -87,17 +87,15 @@ int main(int argc, char ** argv) {
   argv+=optind;
 
   if (argc < 2) {
-    printf("\nCompares two sets of classes.  Prints out a set of statistics\n");
-    printf("Optionally checks the accuracy of estimated conditionaly probabilities\n");
-    printf("by comparing with calculated accuracies\n\n");
-    printf("usage:  cls_comp_stats [-b] file1 file2\n\n");
+    printf("\nOptimizes the decision border.\n");
+    printf("\n\n");
+    printf("usage:  optimize_r0 [-b] file1 file2\n\n");
     printf("where:\n");
-    printf("  file1  = binary file containing first set of classes ('truth')\n");
-    printf("  file2  = binary file(s) containing second set of classes ('retrieved')\n");
+    printf("  file1  = binary file containing true class values\n");
+    printf("  file2  = pair of binary files containing corresponding decision functions:\n");
     printf("             .cls for classification results\n");
     printf("             .con for confidence ratings\n\n");
-    printf("  -b     = short output (uncertainty coefficient and accuracy)\n");
-    printf("  -q     = number of histogram bins for evaluating confidence ratings [%d]\n", NCONHIST);
+    printf("  -b     = optimize based on uncertainty coefficient\n");
     printf("\n");
     return INSUFFICIENT_COMMAND_ARGS;
   }

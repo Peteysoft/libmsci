@@ -55,6 +55,14 @@ namespace libagf {
 		int nhist);				//size of table
 							// (number of histogram bins)
 
+  //two class case:
+  template <class real, class cls_t>
+  real ** con_acc_table(cls_t *truth, 			//true classes
+		cls_t *cls, 				//retrived classes
+		real *con, 				//confidence ratings
+		nel_ta n, 				//number of values
+		int nhist);				//half size of table
+
   //print the table accuracy vs. confidence rating:
   template <class real>
   void print_con_acc(real **table, 			//table acc (1st row) vs. conf (2nd row)
