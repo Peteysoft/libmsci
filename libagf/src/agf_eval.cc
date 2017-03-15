@@ -47,8 +47,12 @@ nel_ta **build_contingency_table(cls_t *truth, cls_t *ret, nel_ta n, cls_t &nclt
 template <class cls_t>
 double uncertainty_coefficient(nel_ta **acc_mat, cls_t nclt, cls_t nclr, double &ucr, double &uct) {
   double hrt, hr, ht;		//entropy measures
+  //we've simplified the computation somewhat:
+  nel_ta nt=acc_mat[nclt][nclr];
+  double ntlognt=nt*log(nt);
   double uc;
   //calculate the uncertainty coefficient:
+  
   hrt=0;
   hr=0;
   ht=0;
@@ -56,24 +60,24 @@ double uncertainty_coefficient(nel_ta **acc_mat, cls_t nclt, cls_t nclr, double 
   for (cls_t i=0; i<nclt; i++) {
     for (cls_t j=0; j<nclr; j++) {
       if (acc_mat[i][j] != 0) {
-        hrt-=(double) acc_mat[i][j]*log((double) acc_mat[i][j]/(double) acc_mat[nclt][nclr]);
+        hrt-=acc_mat[i][j]*log(acc_mat[i][j]);
       }
     }
     if (acc_mat[i][nclr] != 0) {
-      ht-=(double) acc_mat[i][nclr]*log((double) acc_mat[i][nclr]/(double) acc_mat[nclt][nclr]);
+      ht-=acc_mat[i][nclr]*log(acc_mat[i][nclr]);
     }
   }
   for (cls_t i=0; i<nclr; i++) {
     if (acc_mat[nclt][i] != 0) {
-      hr-=(double) acc_mat[nclt][i]*log((double) acc_mat[nclt][i]/(double) acc_mat[nclt][nclr]);
+      hr-=acc_mat[nclt][i]*log(acc_mat[nclt][i]);
     }
   }
-  
-  uc=(ht-hrt+hr)/ht;
-  ucr=(hr-hrt+ht)/hr;
-  uct=2*(hr+ht-hrt)/(hr+ht);
 
-  return uc;
+  uc=ht-hrt+hr+ntlognt;
+  ucr=uc/(hr+ntlognt);
+  uct=2*uc/(hr+ht+2*ntlognt);
+
+  return uc/(ht+ntlognt);
 }
   
 template <class cls_t>
