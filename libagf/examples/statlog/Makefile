@@ -41,6 +41,7 @@ NCLS_mushrooms=2
 NCLS_madelon=2
 NCLS_phishing=2
 NCLS_splice=2
+NCLS_humidity=8
 
 NCLS=$(NCLS_$(VER))
 
@@ -96,12 +97,14 @@ AGFOPT_codrna=-k 200 -W 10 -s 500 -r-0.28
 AGFOPT_protein=-k 200 -W 10
 AGFOPT_pendigits=-k 200 -W 2 -s 200
 AGFOPT_dna=-k 300 -s 500 -W 20
-AGFOPT_usps=-k 100 -W 2 -s 250
+AGFOPT_usps=-k 100 -W 1 -s 250
 AGFOPT_seismic=-W 40 -k 500 -s 200
 AGFOPT_ijcnn1=-W 15 -k 400 -s 500
 AGFOPT_madelon=-W 10 -k 200
 AGFOPT_phishing=-W 7 -k 250 -s 500 -r 0.2
-AGFOPT_splice=-W 15 -s 1000 -r-0.23
+#AGFOPT_splice=-W 15 -s 1000 -r-0.23
+AGFOPT_splice=-W 15 -s 1000
+AGFOPT_humidity=-k 400 -W 10 -s 200
 
 AGFOPT=$(AGFOPT_$(VER))
 
@@ -113,6 +116,7 @@ SVMOPT_vehicle=-c 100 -g 0.01
 SVMOPT_pendigits=-c 50 -g 0.01
 SVMOPT_letter=-c 50 -h 0
 SVMOPT_seismic=-c 50 -h 0
+SVMOPT_humidity=-h 0 -c 50
 
 SVMOPT=$(SVMOPT_$(VER))
 
@@ -129,6 +133,7 @@ K_letter=-k 1
 K_seismic=-k 31
 K_phishing=-k 3
 K_splice=-k 1
+K_humidity=-k 51
 
 K=$(K_$(VER))
 
@@ -144,7 +149,9 @@ NSAMP_usps=-s 50
 NSAMP_seismic=-s 200
 NSAMP_ijcnn1=-s 500
 NSAMP_phishing=-s 500 -r 0.4
-NSAMP_splice=-s 1000 -r-0.99 
+NSAMP_splice=-s 1000 -r-0.99
+NSAMP_humidity=-s 200
+#NSAMP_splice=-s 1000
 
 NSAMP=$(NSAMP_$(VER))
 
@@ -153,6 +160,7 @@ NSAMP=$(NSAMP_$(VER))
 CLEAN_letter=clean_but_borders
 CLEAN_seismic=clean_borders
 CLEAN_codrna=clean_borders
+CLEAN_humidity=clean_borders
 ifdef CLEAN_$(VER)
 CLEAN_TARGET=$(CLEAN_$(VER))
 else
@@ -475,4 +483,13 @@ $(WORKDIR)/letter.trn.cls: $(DATADIR)/letter-recognition.data.txt
 	sed 's/A/0/;s/B/1/;s/C/2/;s/D/3/;s/E/4/;s/F/5/;s/G/6/;s/H/7/;s/I/8/;s/J/9/;s/K/10/;s/L/11/;s/M/12/;s/N/13/;s/O/14/;s/P/15/;s/Q/16/;s/Q/16/;s/R/17/;s/S/18/;s/T/19/;s/U/20/;s/V/21/;s/W/22/;s/X/23/;s/Y/24/;s/Z/25/;' < $< | awk -F ',' '{print $$2, $$3, $$4, $$5, $$6, $$7, $$8, $$9, $$10, $$11, $$12, $$13, $$14, $$15, $$16, $$1}' > $(WORKDIR)/letter.txt
 	lvq2agf -H $(WORKDIR)/letter.txt $(WORKDIR)/letter
 	agf_preprocess -zf $(FRAC) $(PRE) $(WORKDIR)/letter $(TRAIN) $(TEST)
+
+$(WORKDIR)/humidity.trn.cls: ../humidity_data/train_SQ36s.dat ../humidity_data/est_bt_cld_land_z0.00.vec
+	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
+	cp ../humidity_data/est_bt_cld_land_z0.00.vec $(WORKDIR)/humidity.vec
+	float_to_class -q $(NCLS_humidity) -g ../humidity_data/train_SQ36s.dat $(WORKDIR)/humidity.cls 0.00007 0.001
+	agf_preprocess -zf $(FRAC) $(PRE) $(WORKDIR)/humidity $(TRAIN) $(TEST)
+ifdef SUBSAMPLE
+	agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+endif
 

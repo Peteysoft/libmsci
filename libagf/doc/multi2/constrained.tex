@@ -541,7 +541,38 @@ planes:
 	\vec v_i \cdot \vec x - b_i > 0 ~ | ~ i=[1, ~n_c]
 \label{generalized_constraint}
 \end{equation}
-Here we have switched to $\vec x \in \Re^{n_p}$ as the solution variable.  These can be 
+Here we have switched to $\vec x \in \Re^{n_p}$ as the solution variable.
+If $A$ is square then:
+\begin{eqnarray}
+	\vec p & = & A^{-1} (\vec x + \vec r) \\
+	\hat e \cdot \vec p & > & 0 \\
+	\overrightarrow{(A^{-1})}_i \cdot \vec x + \overrightarrow{(A^{-1})}_i \cdot \vec r & > & 0 \\
+	\vec v_i & = & \overrightarrow{(A^{-1})}_i \\
+	b_i & = & \vec{(A^{-1})}_i \cdot \vec r
+\end{eqnarray}
+where $\overrightarrow{(A^{-1})}_i$ is the $i$th row of the inverse of $A$.
+If $A$ is not square then this transformation may not make a lot of sense 
+especially if there are fewer variables than before: now there are more constraints
+than variables. Harder problem to solve. 
+We can use a ``pseudo-inverse'' to transform the constraints:
+\begin{eqnarray}
+	\vec p & \approx & (A^T A)^{-1} A^T (\vec x + \vec r) \label{pseudoinverse}\\
+	\vec x (A^T A)^{-1} \vec a^{(i)} + \vec r (A^T A)^{-1} \vec a^{(i)} & > & 0 \\
+	\vec v_i & = & (A^T A)^{-1} \vec a^{(i)} \\
+	b_i & = & \vec r (A^T A)^{-1} \vec a^{(i)}
+\end{eqnarray}
+or:
+\begin{eqnarray}
+	(A^T A) \vec v_i & = & A^T \hat e_i\\
+	(A^T A) \vec b & = & A^T \vec r
+\end{eqnarray}
+where $\vec a^{(i)}$ is the $i$th column of $A$.
+There may be issues transforming the problem back to the original
+coordinates since the inversion in (\ref{pseudoinverse}) is not exact.
+It may be better to first transform both $A$ and $\vec r$ to produce a square problem
+e.g. with the normal equation which we've used for our pseudo-inverse in (\ref{pseudoinverse}).
+
+The generalized constraints in (\ref{generalized_constraint}) can be 
 converted to a series of $n_p$ vertices.  By ommitting one of the constraints
 and converting the remaining to a system of linear equations:
 \begin{equation}

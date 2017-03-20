@@ -166,8 +166,7 @@ a negative value.
 \subsection{Definitions}
 
 We summarize the result of a binary classification using a single variable, 
-$r \in [-1, ~1]$ where $r$ is normally an estimator for the difference in
-conditional probabilities:
+$r \in [-1, ~1]$, the difference in conditional probabilities:
 \begin{equation}
 	r(\vec x) \approx P(2|\vec x) - P(1|\vec x)
 \end{equation}
@@ -331,10 +330,28 @@ p_i^\prime=1 \iff p_i=1
 
 \subsection{ROC curve}
 
-Finally, the parameter, $r_0$, can also be used to construct 
+The parameter, $r_0$, can also be used to construct 
 the receiver operating characteristic (ROC) curve \citep{Jolliffe_Stephenson2003}.
+This is the hit rate:
+\begin{equation}
+	H = \frac{n_{TP}}{n_{FN} + n_{TP}}
+\end{equation}
+plotted against the false alarm rate:
+\begin{equation}
+	F = \frac{n_{FP}}{n_{FP} + n_{TN}}
+\end{equation}
 The ROC curve for the pair of sample classes is shown in figure
 \ref{sample_roc}.
+Integrating the area under the ROC curve will produce a calibration-independent
+skill score:
+\begin{equation}
+	A = \int_0^1 H(F) \mathrm d F
+\end{equation}
+[how would one do this for a parametric curve, $H(r_0)$, $F(r_0)$ ?]
+A perfect score would be 1: the curve goes straight up from the origin
+until it hits 1, then runs horizontal until it hits (1,1).
+The worst possible outcome would be the diagonal line for, $A=0.5$.
+Mis-labeled systems would fall below the diagonal.
 
 \section{Calibrating the probabilities}
 

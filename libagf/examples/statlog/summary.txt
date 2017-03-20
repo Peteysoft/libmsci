@@ -24,6 +24,7 @@ mushrooms	8124			112		2
 phishing	11055			68		2
 madelon		2000/600		500		2
 splice		1000/2175		60		2
+usps		7291/2007		256		10
 
 **news		15935			62061		20
 aloi		108000			128		1000
