@@ -97,6 +97,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  //ascii versus binary files:
   if (opt_args.asciiflag) {
     int readflag=opt_args.Hflag+2*opt_args.Cflag;
     if (opt_args.Mflag) {
@@ -122,6 +123,7 @@ int main(int argc, char *argv[]) {
 
   nvar2=nvar;
 
+  //feature selection:
   ind=new dim_ta[nvar];
   if (opt_args.selectflag) {
     real_a **result2;
@@ -204,7 +206,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-
+  //singular value decomposition:
   if (opt_args.svd>0) {
     gsl_matrix *u;
     gsl_vector *work;
@@ -286,6 +288,7 @@ int main(int argc, char *argv[]) {
     gsl_matrix_free(u);
     gsl_vector_free(work);
   } else {
+    //if there is no singular value decomposition, set v to the identity:
     v=gsl_matrix_alloc(nvar2, nvar2);
     gsl_matrix_set_identity(v);
     s=gsl_vector_alloc(nvar2);
