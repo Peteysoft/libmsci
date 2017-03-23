@@ -54,7 +54,61 @@ void uc_vs_r0(real_a r0, void *param, real_a *uc) {
   *uc=-uc1;
 
 }
+
+real_a uc_bin(real_a ntn,		//number of true negatives
+		real_a nfp,		// " false positives
+		real_a nfn,		// " false negatives
+		real_a ntp) {		// " true positives
+  double uc, ucr, ucs;
+  cls_ta **ctab=new cls_ta*[3];
+  ctab[0]=new cls_ta[9];
+  ctab[1]=ctab[0]+3;
+  ctab[2]=ctab[0]+6;
   
+  ctab[0][0]=ntn;
+  ctab[0][1]=nfp;
+  ctab[1][0]=nfn;
+  ctab[1][1]=ntp;
+  ctab[0][2]=ntn+nfp;
+  ctab[1][2]=nfn+ntp;
+  ctab[2][0]=ntn+nfn;
+  ctab[2][1]=nfp+ntp;
+  ctab[2][2]=ntn+nfp+nfn+ntp;
+  //print_contingency_table(ctab, 2, 2);
+  //printf("\n");
+  uc=uncertainty_coefficient(ctab, 2, 2, ucr, ucs);
+
+  delete [] ctab[0];
+  delete [] ctab;
+
+  return uc;
+
+}
+//skill as a function of the discrimination border:
+void skill_vs_r0(real_a r0, void *param, real_a *uc) {
+  nel_ta ntp, ntn, nfp, nfn;		//confusion matrix
+  double ind;				//location of r0
+  void **p2=(void **) param;
+  nel_ta n=*(nel_ta *) p2[0];		//number of classes
+  real_a *r=(real_a *) p2[1];		//sorted retrieved conditional prob. (not sorted)
+  cls_ta *none=(nel_ta *) p2[2];	//cumulative number of ones
+  real_a (*sfunc) (real_a, real_a, real_a, real_a)=(real_a (*) (real_a, real_a, real_a, real_a)) p2[3];
+
+  printf("interpolating r stuff\n");
+  ind=interpolate(r, (long) n, r0);
+  printf("index=%lg\n", ind);
+
+  nfn=none[(int) ind];
+  ntn=ind-nfn;
+  ntp=none[n-1]-nfn;
+  nfp=n-ind-ntp;
+  //correction based on comparison with more conventional method:
+  ntp--;
+  ntn++;
+
+  //*uc=-(*sfunc) (ntn, nfp, nfn, ntp);
+  *uc=-uc_bin(ntn, nfp, nfn, ntp);
+}
 
 //compares two sets of class and outputs statistics on them:
 int main(int argc, char ** argv) {
@@ -200,6 +254,7 @@ int main(int argc, char ** argv) {
   }
 
   //fill up parameters to pass to minimization routine:
+  /*
   param[0]=&n1;
   param[1]=class1;
   param[2]=con;
@@ -211,22 +266,39 @@ int main(int argc, char ** argv) {
   uc_max=-uc_max;
 
   printf("r0 = %g; uc = %g\n", r0, uc_max);
-
-  printf("n1=%d\n", n1);
+  */
 
   nel_ta ind=0;			//index of maximum skill
   long *sind=heapsort(con, n1);
+  real_a rsort[n1];
+  //real_a *rsort=map_vector(con, sind, n1);
   //ROC curve:
   real_a hitrate[n1];
   real_a farate[n1];
   nel_ta nonecum[n1];		//cumulative number of ones
   fs=stdout;
-  nonecum[0]=class1[0];
+  //nonecum[0]=class1[0];
+  nonecum[0]=class1[sind[0]];
   for (nel_ta i=1; i<n1; i++) nonecum[i]=nonecum[i-1]+class1[sind[i]];
   for (nel_ta i=0; i<n1; i++) {
     hitrate[i]=(real_a) (nonecum[n1-1]-nonecum[i])/(real_a) nonecum[n1-1];
-    farate[i]=(real_a) (n1-i+nonecum[i]-nonecum[n1-1])/(real_a) (n1-nonecum[n1-1]);
+    farate[i]=(real_a) (n1-i+nonecum[i]-nonecum[n1])/(real_a) (n1-nonecum[n1-1]);
   }
+  printf("sorting prob.\n");
+  for (nel_ta i=0; i<n1; i++) rsort[i]=con[sind[i]];
+
+  param[0]=&n1;
+  param[1]=rsort;
+  param[2]=nonecum;
+  param[3]=(void *) &uc_bin;
+
+  printf("maximizing skill\n");
+  r0=min_golden(&skill_vs_r0, (void *) param, (real_a) -1.0, (real_a) 0.0, 
+		(real_a) 1.0, (real_a) 1e-7, maxiter, niter, uc_max);
+
+  uc_max=-uc_max;
+
+  printf("r0 = %g; uc = %g\n", r0, uc_max);
 
   //integrate ROC curve:
   real_a thetaold=M_PI/2;
@@ -242,6 +314,55 @@ int main(int argc, char ** argv) {
 
   printf("area = %g\n", rocarea/2);
 
+  //maximize uncertainty coefficient just based on sorting confidence ratings:
+  real_a uc1;
+  double ucm2=0;
+  cls_ta **ctab=new cls_ta*[3];
+  ctab[0]=new cls_ta[9];
+  ctab[1]=ctab[0]+3;
+  ctab[2]=ctab[0]+6;
+  for (int i=0; i<n1; i++) {
+    double ucr, ucs, uc1;
+    cls_ta nclt, nclr;
+    //number of true positives, true negatives, false positives, false negatives:
+    nel_ta ntp, ntn, nfp, nfn;
+    real_a hi, hj, hij;
+    real_a uc2;
+
+    ctab=new cls_ta*[3];
+    ctab[0]=new cls_ta[9];
+    ctab[1]=ctab[0]+3;
+    ctab[2]=ctab[0]+6;
+    nclt=2;
+    nclr=2;
+
+    nfn=nonecum[i];
+    ntn=i-nfn;
+    ntp=nonecum[n1-1]-nfn;
+    nfp=n1-i-ntp;
+
+    ctab[0][0]=ntn;
+    ctab[0][1]=nfp;
+    ctab[1][0]=nfn;
+    ctab[1][1]=ntp;
+    ctab[0][2]=ntn+nfp;
+    ctab[1][2]=nfn+ntp;
+    ctab[2][0]=ntn+nfn;
+    ctab[2][1]=nfp+ntp;
+    ctab[2][2]=ntn+nfp+nfn+ntp;
+    //print_contingency_table(ctab, nclt, nclr);
+    //printf("\n");
+    uc1=uncertainty_coefficient(ctab, nclt, nclr, ucr, ucs);
+
+    if (uc1>ucm2) {
+      ucm2=uc1;
+      ind=i;
+    }
+  }
+
+  delete ctab[0];
+  delete ctab;
+
   if (type==1) {
     for (nel_ta i=0; i<n1; i++) {
       fprintf(fs, "%g %g\n", farate[i], hitrate[i]);
@@ -253,9 +374,6 @@ int main(int argc, char ** argv) {
     }
     //fclose(fs);
   } else if (type==3) {
-
-    double ucm2=0;
-
     fs=fopen("accvsr0.txt", "w");
     for (int i=0; i<n1; i++) {
       double ucr, ucs, uc1;
@@ -263,50 +381,54 @@ int main(int argc, char ** argv) {
       cls_ta nclt, nclr;
       //number of true positives, true negatives, false positives, false negatives:
       nel_ta ntp, ntn, nfp, nfn;
-      real_a hi, hj, hij;
       real_a uc2;
 
       r0=con[sind[i]];
-      for (int j=0; j<n1; j++) if (con[j]<r0) class2[j]=0; else class2[j]=1;
+      for (int j=0; j<n1; j++) if (con[j]<=r0) class2[j]=0; else class2[j]=1;
       //very wasteful since we can use the stuff before to eliminate much of
       //the computation:
+      /*
+      ctab=new cls_ta*[3];
+      ctab[0]=new cls_ta[9];
+      ctab[1]=ctab[0]+3;
+      ctab[2]=ctab[0]+6;
+      nclt=2;
+      nclr=2;
+      */
       ctab=build_contingency_table(class1, class2, n1, nclt, nclr);
       uc1=uncertainty_coefficient(ctab, nclt, nclr, ucr, ucs);
+      print_contingency_table(ctab, nclt, nclr);
 
       nfn=nonecum[i];
       ntn=i-nfn;
       ntp=nonecum[n1-1]-nfn;
       nfp=n1-i-ntp;
-/*
+
+      ctab[0][0]=ntn;
+      ctab[0][1]=nfp;
+      ctab[1][0]=nfn;
+      ctab[1][1]=ntp;
+      ctab[0][2]=ntn+nfp;
+      ctab[1][2]=nfn+ntp;
+      ctab[2][0]=ntn+nfn;
+      ctab[2][1]=nfp+ntp;
+      ctab[2][2]=ntn+nfp+nfn+ntp;
       print_contingency_table(ctab, nclt, nclr);
       printf("\n");
-      printf("%d %d\n", ntn, nfp);
-      printf("%d %d\n", nfn, ntp);
-      printf("\n");
-*/
-      hi=(ntp+nfn)*log(ntp+nfn)+(nfp+ntn)*log(nfp+ntn);
-      hij=ntp*log(ntp)+nfp*log(nfp)+ntn*log(ntn)+nfn*log(nfn);
-      hj=(ntp+nfp)*log(ntp+nfp)+(nfn+ntn)*log(nfn+ntn);
-
-      uc2=(hi-hij+hj-n1*log(n1))/(hi-n1*log(n1));
+      uc2=uncertainty_coefficient(ctab, nclt, nclr, ucr, ucs);
 
       //fprintf(fs, "%g", r0);
       //class_eval_basic(class1, class2, n1, fs);
-      fprintf(fs, "%g %g %lg\n", r0, real_a(ctab[0][0]+ctab[1][1])/n1, uc1);
+      //fprintf(fs, "%g %g %lg\n", r0, real_a(ctab[0][0]+ctab[1][1])/n1, uc1);
       fprintf(fs, "%g %g %lg\n", r0, real_a(ntp+ntn)/n1, uc2);
-
-      if (uc1>ucm2) {
-        ucm2=uc1;
-        ind=i;
-      }
 
       delete ctab[0];
       delete ctab;
     }
     fclose(fs);
+    printf("r0 = %g; uc = %lg\n", con[sind[ind]], ucm2);
   }
 
-  printf("r0 = %g; uc = %lg\n", con[sind[ind]], uc_max);
 
   real_a relent=0;		//total relative entropy
   real_a p1, p2;

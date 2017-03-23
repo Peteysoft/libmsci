@@ -28,26 +28,27 @@ int main(int argc, char *argv[]) {
   dim_ta nvar2;			//number of variables after feature selection
   dim_ta nvar3;			//number of variables after SVD
 
-  real_a **train;	//training data vectors
-  real_a **result;	//the result
-  real_a **mat;		//transformation "conditioning" matrix
+  real_a **train;		//training data vectors
+  real_a **result;		//the result
+  real_a **mat;			//transformation "conditioning" matrix
 
-  cls_ta *cls=NULL;
+  cls_ta *cls=NULL;		//class data: not used
 
-  int exit_value;
+  int exit_value;		//return value
 
   //components of the transformation matrix:
-  gsl_matrix *v;
-  gsl_vector *s;
-  real_a *std, *ave;
-  cls_ta *ind;
+  gsl_matrix *v;		//right singular vectors
+  gsl_vector *s;		//singular values
+  real_a *std, *ave;		//standard deviations and averages
+  cls_ta *ind;			//freature selection indices
 
   agf_command_opts opt_args;
 
+  //parse out command switches:
   exit_value=agf_parse_command_opts(argc, argv, "01a:AnS:FME:UCH", &opt_args);
   if (exit_value==FATAL_COMMAND_OPTION_PARSE_ERROR) return exit_value;
 
-  //parse the command line arguments:
+  //print help screen:
   if (argc < 1 && (opt_args.stdinflag==0 || opt_args.stdoutflag==0)) {
     printf("\n");
     printf("Syntax:	agf_precondition -a normfile [-n] [-S nsv] [-F] \\\n");
@@ -78,11 +79,13 @@ int main(int argc, char *argv[]) {
     return INSUFFICIENT_COMMAND_ARGS;
   }
 
+  //must specify a normalization file:
   if (opt_args.normfile==NULL) {
     fprintf(stderr, "agf_precondition: must specify normalization file with -a\n");
     exit(INSUFFICIENT_COMMAND_ARGS);
   }
 
+  //where to stick error messages:
   diagfs=stderr;
 
   //if there are no arguments or -0 flag set, we read from stdin
@@ -159,6 +162,7 @@ int main(int argc, char *argv[]) {
     delete_matrix(train);
     train=result2;
   } else {
+    //if there is no feature selection: pass along the identity matrix...
     nvar2=nvar;
     for (dim_ta i=0; i<nvar2; i++) ind[i]=i;
   }
@@ -298,6 +302,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (opt_args.selectflag==0 && opt_args.normflag==0 && opt_args.svd<=0) {
+    //features data is transformed strictly from data in an external file:
     if (opt_args.normfile!=NULL) {
       //read in the normalization data and use it transform the data
       //rather than printing it out:
@@ -313,6 +318,7 @@ int main(int argc, char *argv[]) {
       nvar3=nvar;
     }
   } else {
+    //here we multiply everything together: feature selection, SVD and normalization
     mat=zero_matrix<real_a, nel_ta>(nvar, nvar3+1);
     for (dim_ta i=0; i<nvar2; i++) {
       for (dim_ta j=0; j<nvar3; j++) {
@@ -322,6 +328,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  //if the second argument is missing, write to stdout:
   if (opt_args.stdoutflag || argc<2) {
     fs=stdout;
   } else {
@@ -342,6 +349,7 @@ int main(int argc, char *argv[]) {
   }
   if (opt_args.stdoutflag==0 && argc>=2) fclose(fs);
 
+  //write transformation matrix to specified file:
   if (opt_args.normfile!=NULL) {
     fs=fopen(opt_args.normfile, "w");
     if (fs==NULL) {

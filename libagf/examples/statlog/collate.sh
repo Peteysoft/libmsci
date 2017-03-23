@@ -1,4 +1,5 @@
-DATASET="heart shuttle segment sat letter codrna pendigits dna seismic usps"
+#DATASET="heart shuttle segment sat letter codrna pendigits dna seismic usps"
+DATASET="ijcnn1 leu mushrooms madelon phishing splice humidity mnist"
 
 # col  value
 # 1    KNN time user (s)
