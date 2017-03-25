@@ -6,7 +6,7 @@
 namespace libagf {
   //forward declaration to resolve large circular dependency:
   //template <class real, class cls_t>
-  //class agf2class;
+  //class borders_classifier;
 
   template <class real>
   int solve_cond_prob_1v1(real **r, int ncls, real *p);
@@ -75,7 +75,7 @@ namespace libagf {
   class borders1v1:public onevone<real, cls_t> {
     protected:
       //binary classifiers:
-      agf2class<real, cls_t> **classifier;
+      borders_classifier<real, cls_t> **classifier;
       int *pol;					//"polarities"
       virtual real ** classify_raw(real *x);
     public:

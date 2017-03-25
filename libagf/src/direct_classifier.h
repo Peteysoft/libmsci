@@ -4,9 +4,11 @@
 #include <stdio.h>
 #include <gsl/gsl_matrix.h>
 
-#include "classifier_obj.h"
-
 namespace libagf {
+  //forward declaration:
+  template <typename real, typename cls_t>
+  class agf2class;
+
   //"abstract" base class (now supplying default behaviour, so i guess it's
   //not so abstract after all):
   template <class real, class cls_t>
@@ -49,6 +51,7 @@ namespace libagf {
 
   template <class real, class cls_t>
   class agf_classifier:public direct_classifier<real, cls_t> {
+    friend agf2class<real, cls_t>;
     private:
       //diagnostics:
       real min_f;
@@ -63,9 +66,10 @@ namespace libagf {
       nel_ta ntrial;
       nel_ta ntrial_k;
     protected:
-      nel_ta k;
-      real W;
-      real var[2];
+      nel_ta k;			//number of nearest neighbours
+      real W;			//total of the weights
+      real var0[2];		//set filter variance brackets
+      real var[2];		//floating filter variance brackets
       FILE *logfs;
     public:
       agf_classifier(const char *fbase, const char *options);

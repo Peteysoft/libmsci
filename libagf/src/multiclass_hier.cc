@@ -247,7 +247,7 @@ namespace libagf {
 	} else if (param.Zflag) {
           classifier=new svm2class<real, cls_t>(fname);
 	} else if (param.commandname==NULL) {
-          classifier=new agf2class<real, cls_t>(fname, param.sigcode);
+          classifier=new borders_classifier<real, cls_t>(fname, param.sigcode);
         } else {
           classifier=new general2class<real, cls_t>(fname, 
 		param.commandname, param.Mflag, param.Kflag);

@@ -721,9 +721,9 @@ namespace libagf {
     delete [] line;
     delete [] sub;
     //read in individual binary classifiers:
-    classifier=new agf2class<real, cls_t>*[nmod];
+    classifier=new borders_classifier<real, cls_t>*[nmod];
     for (int i=0; i<nmod; i++) {
-      classifier[i]=new agf2class<real, cls_t>();
+      classifier[i]=new borders_classifier<real, cls_t>();
       err=classifier[i]->load(fs, this->voteflag);
       if (err!=0) throw err;
     }
@@ -796,7 +796,7 @@ namespace libagf {
     }
 
     nmod=this->ncls*(this->ncls-1)/2;
-    classifier=new agf2class<real, cls_t>*[nmod];
+    classifier=new borders_classifier<real, cls_t>*[nmod];
 
     for (int i=0; i<this->ncls; i++) {
       for (int j=i+1; j<this->ncls; j++) {
@@ -812,7 +812,7 @@ namespace libagf {
         }
 	fprintf(stderr, "Training %d vs. %d\n", this->label[i], this->label[j]);
         svmbin=new svm2class<real, cls_t>(svm, i, j);
-	classifier[m]=new agf2class<real, cls_t>(svmbin, xtran, csel, this->D1, 
+	classifier[m]=new borders_classifier<real, cls_t>(svmbin, xtran, csel, this->D1, 
 			ntrain,	ns, tol);
 	m++;
 	delete svmbin;

@@ -274,6 +274,16 @@ namespace libagf {
   template int agfparam_init<float>(agfparam<float> *, float *, nel_ta, float);
   template int agfparam_init<double>(agfparam<double> *, double *, nel_ta, double);
 
+  template int agfbordparam_init<float>(bordparam<float> *, 
+		  float **, dim_ta, nel_ta, nel_ta, 
+		  float[2], nel_ta, float, int);
+  template int agfbordparam_init<double>(bordparam<double> *, 
+		  double **, dim_ta, nel_ta, nel_ta, 
+		  double[2], nel_ta, double, int);
+
+  template void agfbordparam_clean<float>(bordparam<float> *);
+  template void agfbordparam_clean<double>(bordparam<double> *);
+
   template nel_ta find_class_borders<float>(float **x, 
 			dim_ta nvar, 
 			nel_ta ntrain,

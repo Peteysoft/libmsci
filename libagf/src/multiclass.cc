@@ -158,7 +158,7 @@ namespace libagf {
         if (Zflag) {
           twoclass[i]=new svm2class<real, cls_t>(fname[i]);
 	} else if (com==NULL) {
-          twoclass[i]=new agf2class<real, cls_t>(fname[i], sigcode);
+          twoclass[i]=new borders_classifier<real, cls_t>(fname[i], sigcode);
         } else {
           twoclass[i]=new general2class<real, cls_t>(fname[i], 
 			com, Mflag, Kflag);
@@ -1013,7 +1013,7 @@ namespace libagf {
     //read in binary classifiers:
     twoclass=new binaryclassifier<real, cls_t>*[nmodel];
     for (int i=0; i<nmodel; i++) {
-      twoclass[i]=new agf2class<real, cls_t>();
+      twoclass[i]=new borders_classifier<real, cls_t>();
       err=twoclass[i]->load(fs);
       if (err!=0) {
         fprintf(stderr, "multiclass::load: error loading border vectors\n");

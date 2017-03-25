@@ -22,6 +22,7 @@
 #include "multi_parse.h"
 #include "classifier_obj.h"
 #include "binaryclassifier.h"
+#include "agf2class.h"
 #include "direct_classifier.h"
 #include "svmkernel.h"
 #include "svm2class.h"

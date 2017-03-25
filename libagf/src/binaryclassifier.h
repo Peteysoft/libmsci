@@ -84,58 +84,6 @@ namespace libagf {
       					//done by calling an external executable
   };
 
-  template <class real>
-  real logistic_function(real x);
-
-  //the "engine" upon which all the others are built:
-  template <class real, class cls_t>
-  class agf2class:public binaryclassifier<real, cls_t> {
-    protected:
-      real **brd;		//border samples
-      real **grd;		//gradients at the samples
-      real *gd;			//lengths of all the gradient vectors
-      nel_ta n;			//number of samples
-      //function to transform decision value to approximate probabilities:
-      SIGFUN_TYPE (*sigmoid_func) (SIGFUN_TYPE);
-      void calc_grad_len();
-    public:
-      agf2class();
-      //initialized from a pair of files
-      //(<fbase>.brd contains border samples, <fbase>.bgd contains 
-      //corresponding gradients):
-      //
-      //this version allows you to pass code directly from command line:
-      agf2class(const char *fbase, 		//base name of model files
-		      int sigtype=0);		//0=tanh
-      						//1=erf
-						//2=2/(1-exp(..))
-						//3=atan
-      agf2class (const char *fbase, 		//base name of model files
-		SIGFUN_TYPE (*sigfun)(SIGFUN_TYPE));	//function to transform decision values
-      //convert from svm binary classifier:
-      agf2class(svm2class<real, cls_t> *other, 
-		      real **x,			//training samples
-		      cls_t *cls,		//class data
-		      dim_ta nvar,		//number of variables
-		      nel_ta ntrain,		//number of training samples
-		      nel_ta nsamp,		//number of border samples
-		      real tol,			//tolerance of border samples
-		      int tflag=0);		//copy transformation
-
-      virtual ~agf2class();
-      int init(const char *fbase, SIGFUN_TYPE (*sigfun)(SIGFUN_TYPE));
-      //transformation matrix is not copied, only the pointer is stored
-      //--do not delete original before classifier class instance:
-      virtual int ltran_model(real **mat1, real *b1, dim_ta d1, dim_ta d2);
-      virtual real R(real *x, real *praw=NULL);
-      virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
-
-      //load and save all in one as ASCII:
-      virtual int load(FILE *fs);
-      int load(FILE *fs, int vflag);
-      virtual int save(FILE *fs);
-  };
-
 }
 
 #endif

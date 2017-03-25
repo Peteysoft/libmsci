@@ -120,6 +120,7 @@ namespace libagf {
 		AGF_OPT_VER);
       }
     } else {
+      //the user has passed a special command for performing the partitioning:
       fprintf(param.commandfs, "%s", param.partcom);
     }
 
@@ -217,8 +218,8 @@ namespace libagf {
 
     k=opt_args.k;
     W=opt_args.W2;
-    var[0]=opt_args.var[0];
-    var[1]=opt_args.var[1];
+    var0[0]=opt_args.var[0];
+    var0[1]=opt_args.var[1];
 
     delete [] ocpy;
     delete [] argv;
@@ -226,21 +227,22 @@ namespace libagf {
     //check parameter ranges:
     if (var[0] <= 0 || var[1] <= 0) {
       //calculate the averages and standard deviations:
-      real_a std[this->D1];
-      real_a ave[this->D1];
-      real_a vart;
+      real std[this->D1];
+      real ave[this->D1];
+      real vart;
 
       calc_norm(this->train, this->D1, this->ntrain, ave, std);
 
       //if the initial filter variance is not set, set it to the total
       //variance of the data:
+      //variance brackets are then fully "sticky..."
       vart=0;
       for (dim_ta i=0; i<this->D1; i++) vart+=std[i]*std[i];
-      if (var[0] <= 0) {
+      if (var0[0] <= 0) {
         var[0]=vart/pow(this->ntrain, 2./this->D1);
         fprintf(logfs, "Using %10.3g for lower filter variance bracket\n\n", var[0]);
       }
-      if (var[1] <= 0) {
+      if (var0[1] <= 0) {
         var[1]=vart;
         fprintf(logfs, "Using %10.3g for upper filter variance bracket\n\n", var[1]);
       }
@@ -303,6 +305,10 @@ namespace libagf {
     else if (diag.W > max_W) max_W=diag.W;
     total_W+=diag.W;
     ntrial++;
+
+    //reset filter variance brackets if applicable:
+    if (var0[0]>0) var[0]=var0[0];
+    if (var0[1]>0) var[1]=var0[1];
 
     return c;
   }

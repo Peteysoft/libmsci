@@ -114,6 +114,7 @@ OBJECT_FILES = 	agf_metric2$(OPT_VER).o \
 		multi_control$(OPT_VER).o \
 		classifier_obj$(OPT_VER).o \
 		binaryclassifier$(OPT_VER).o \
+		agf2class$(OPT_VER).o \
 		direct_classifier$(OPT_VER).o \
 		svmkernel$(OPT_VER).o \
 		svm2class$(OPT_VER).o \
@@ -137,6 +138,7 @@ INCLUDE_FILES = agf_util.h \
 		adgaf.h \
 		classifier_obj.h \
 		binaryclassifier.h \
+		agf2class.h \
 		svmkernel.h \
 		svm2class.h \
 		svm_multi.h \
