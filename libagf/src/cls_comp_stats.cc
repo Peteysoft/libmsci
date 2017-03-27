@@ -3,10 +3,12 @@
 #include <string.h>
 #include <getopt.h>
 
+#include "randomize.h"
 #include "agf_lib.h"
 
 using namespace std;
 using namespace libagf;
+using namespace libpetey;
 
 //compares two sets of class and outputs statistics on them:
 int main(int argc, char ** argv) {
@@ -70,6 +72,8 @@ int main(int argc, char ** argv) {
     printf("\n");
     return INSUFFICIENT_COMMAND_ARGS;
   }
+
+  ran_init();
 
   tfile=argv[0];
   slen=strlen(argv[1]);
@@ -135,6 +139,8 @@ int main(int argc, char ** argv) {
 
   delete [] clsfile;
   delete [] confile;
+
+  ran_end();
 
   return exit_code;
 

@@ -772,6 +772,7 @@ namespace libagf {
     svm2class<real, cls_t> *svmbin;
     cls_t csel[ntrain];			//selected classes
     real **xtran;			//transformed training data
+    int err;				//error code
 
     this->ncls=svm->n_class();
     this->D1=svm->n_feat();
@@ -812,8 +813,8 @@ namespace libagf {
         }
 	fprintf(stderr, "Training %d vs. %d\n", this->label[i], this->label[j]);
         svmbin=new svm2class<real, cls_t>(svm, i, j);
-	classifier[m]=new borders_classifier<real, cls_t>(svmbin, xtran, csel, this->D1, 
-			ntrain,	ns, tol);
+	classifier[m]=new borders_classifier<real, cls_t>();
+	classifier[m]->train(svmbin, xtran, csel, this->D1, ntrain, ns, tol);
 	m++;
 	delete svmbin;
 	continue;

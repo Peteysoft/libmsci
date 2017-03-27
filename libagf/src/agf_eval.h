@@ -57,7 +57,14 @@ namespace libagf {
 
   //two class case:
   template <class real, class cls_t>
-  real ** con_acc_table(cls_t *truth, 			//true classes
+  real ** con_acc_table2(cls_t *truth, 			//true classes
+		cls_t *r, 				//difference in conditional prob.
+		nel_ta n, 				//number of values
+		int nhist);				//half size of table
+
+  //two class case:
+  template <class real, class cls_t>
+  real ** con_acc_table2(cls_t *truth, 			//true classes
 		cls_t *cls, 				//retrived classes
 		real *con, 				//confidence ratings
 		nel_ta n, 				//number of values

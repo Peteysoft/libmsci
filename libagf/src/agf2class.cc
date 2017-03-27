@@ -4,8 +4,10 @@
 #include <ctype.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 
 #include <gsl/gsl_linalg.h>
+#include <gsl/gsl_multifit.h>
 
 #include "full_util.h"
 //#include "peteys_tmpl_lib.h"
@@ -218,6 +220,7 @@ namespace libagf {
     this->ncls=2;
     this->D=0;
     this->D1=0;
+    sigmoid_func=NULL;
   }
 
   template <class real, class cls_t>
@@ -284,18 +287,26 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  borders_classifier<real, cls_t>::borders_classifier(agf2class<real, cls_t> *agf,
+  void borders_classifier<real, cls_t>::train(agf2class<real, cls_t> *agf,
 		  nel_ta ns, real tol) {
     bordparam<real> param;
     int (*sfunc) (void *, real *, real *);		//sampling function
     real **xtran;
 
+    if (grd!=NULL) delete [] grd;
+    if (brd!=NULL) delete [] brd;
+    if (gd!=NULL) delete [] gd;
+
     sigmoid_func=&tanh;
+    //transfer parameters from agf to this:
     this->ncls=agf->n_class();
     this->D1=agf->n_feat();
     this->copy_ltran(agf);
 
-    //initialize parameters:
+    //initialize parameters for borders training:
+    //(it's kind of weird because the "agf" object instantiation isn't used
+    //at all in the process... it just passes it's parameters to the somewhat
+    //archaic C-style procedural algorithms)
     agf->param_init(ns, sfunc, &param);
 
     //allocate the arrays for holding the results:
@@ -306,6 +317,8 @@ namespace libagf {
     n=sample_class_borders(&agfrfunc<real>, sfunc, &param, 
 		ns, this->D1, tol, agf_global_borders_maxiter, 
 		brd, grd);
+    //maybe convert to linux system errors:
+    if (n<=0) throw ENODATA;
 
     //clean up:
     agfbordparam_clean(&param);
@@ -313,8 +326,9 @@ namespace libagf {
     gd=NULL;
   }
 
+  //train borders classifier from a SVM model:
   template <class real, class cls_t>
-  borders_classifier<real, cls_t>::borders_classifier(svm2class<real, cls_t> *svm,
+  void borders_classifier<real, cls_t>::train(svm2class<real, cls_t> *svm,
 		  real **x, cls_t *cls, dim_ta nvar, nel_ta ntrain,
 		  nel_ta ns, real tol, int tflag) {
     bordparam<real> param;
@@ -325,12 +339,18 @@ namespace libagf {
     int (*sfunc) (void *, real *, real *);		//sampling function
     real **xtran;
 
+    if (grd!=NULL) delete [] grd;
+    if (brd!=NULL) delete [] brd;
+    if (gd!=NULL) delete [] gd;
+
     sigmoid_func=&tanh;
+    //copy parameters:
     this->ncls=svm->n_class();
     this->D1=svm->n_feat();
+    //copy linear coord. trans.:
     if (tflag && this->copy_ltran(svm)) {
       //is this necessary? shouldn't the training data be transformed already?
-      assert(this->D==nvar);
+      if (this->D!=nvar) throw DIMENSION_MISMATCH;
       xtran=allocate_matrix<real, int32_t>(ntrain, this->D1);
       for (nel_ta i=0; i<ntrain; i++) {
         for (dim_ta j=0; j<this->D1; j++) {
@@ -342,7 +362,7 @@ namespace libagf {
         }
       }
     } else {
-      assert(this->D1==nvar);
+      if (this->D!=nvar) throw DIMENSION_MISMATCH;
       this->D=this->D1;
       xtran=x;
     }
@@ -376,6 +396,7 @@ namespace libagf {
     n=sample_class_borders(&svmrfunc<real, cls_t>, sfunc, &param, 
 		ns, this->D1, tol, agf_global_borders_maxiter, 
 		brd, grd);
+    if (n<=0) throw ENODATA;
 
     delete [] clind;
     if (tflag && this->mat!=NULL) {
@@ -548,6 +569,103 @@ namespace libagf {
     print_matrix(fs, brd, n, this->D1);
     print_matrix(fs, grd, n, this->D1);
     return 0;
+  }
+
+  template <class real, class cls_t>
+  borders_calibrated<real, cls_t>::borders_calibrated() {
+    this->brd=NULL;
+    this->grd=NULL;
+    this->n=0;
+    this->gd=NULL;
+    //since we don't trust C++ to call the parent initializer:
+    this->ncls=2;
+    this->D=0;
+    this->D1=0;
+    this->sigfun=&tanh;
+  }
+
+  template <class real, class cls_t>
+  void borders_calibrated<real, cls_t>::calibrate(real **train, cls_t *cls, nel_ta ntrain, int O, int nhist) {
+    nel_ta **tab;		//table of accuracies versus probabilities
+    cls_t nct, ncr;		//number of classes (should be 2...)
+    real r[ntrain];		//difference in conditional probabilities
+    int nbad=0;			//remove bad values
+    gsl_matrix *A;		//A^T A x = A^T b		
+    gsl_vector *x;
+    gsl_vector *b;
+    //for the fitting:
+    gsl_matrix *cov;
+    gsl_multifit_linear_workspace *work;
+    double chisq;
+
+    order=O;
+
+    //classify each training sample using this classifier:
+    for (int i=0; i<ntrain; i++) r[i]=R(train[i]);
+
+    //build a histogram of probabilities:
+    tab=con_acc_table2(cls, r, ntrain, nhist);
+
+    //remove bad values and prepare for fitting:
+    for (int i=0; i<2*nhist; i++) {
+      if (isfinite(tab[1][i])!=1) {
+        nbad++;
+      } else {
+        tab[0][i-nbad]=atanh(tab[0][i]);
+	tab[1][i-nbad]=atanh(tab[1][i]);
+      }
+    }
+
+    //allocate vectors and matrices that define the fitting problem:
+    //best fit for A x = b
+    //where a_ij = p_i^j, b is actual accuracy and x are the fitting coefficients
+    A=gsl_matrix_alloc(nhist, order+1);
+    x=gsl_vector_alloc(order+1);
+    b=gsl_vector_alloc(nhist);
+
+    //fill vectors and matrices:
+    for (int i=0; i<nhist; i++) {
+      for (int j=0; j<=order; j++) {
+        //here we don't care so much about efficiency because we only do the
+	//fitting once and it's a small problem...
+        gsl_matrix_set(A, i, j, pow(tab[0][i], j));
+      }
+      gsl_vector_set(b, i, tab[1][i]);
+    }
+
+    //allocate extra stuff we need to perform the fitting:
+    work=gsl_multifit_linear_alloc(nhist, order+1);
+    cov=gsl_matrix_alloc(order+1, order+1);
+
+    //perform fitting:
+    gsl_multifit_linear(A, b, x, cov, &chisq, work);
+
+    //pull coefficients out from GSL vector type:
+    coef=new real[order+1];
+    for (int i=0; i<=order; i++) coef[i]=gsl_vector_get(x, i);
+
+  }
+
+  template <class real, class cls_t>
+  real borders_calibrated<real, cls_t>::R(real *x, real *praw) {
+    real r;
+    nel_ta k;		//intermediate values in the calculation
+    real tr=0;		//transformed decision value
+    real rpi=1;		//r to power i
+    real d;		//may be useful for continuum generalization
+
+    r=border_classify0(this->brd, this->grd, this->D1, this->n, x, k, d);
+    if (this->id>=0 && praw!=NULL) {
+      praw[this->id]=r;
+      //printf("r=%g\n" , praw[this->id]);
+    }
+
+    for (int i=0; i<=order; i++) {
+      tr+=coef[i]*rpi;
+      rpi*=r;
+    }
+      
+    return (*this->sigmoid_func) (tr);
   }
 
   template float logistic_function<float>(float);

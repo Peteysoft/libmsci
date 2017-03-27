@@ -85,12 +85,12 @@ namespace libagf {
 		SIGFUN_TYPE (*sigfun)(SIGFUN_TYPE));	//function to transform decision values
 
       //convert from AGF classifier:
-      borders_classifier(agf2class<real, cls_t> *other, 
+      void train(agf2class<real, cls_t> *other, 
 		      nel_ta nsamp,		//number of border samples
 		      real tol);		//tolerance of border samples
 
       //convert from svm binary classifier:
-      borders_classifier(svm2class<real, cls_t> *other, 
+      void train(svm2class<real, cls_t> *other, 
 		      real **x,			//training samples
 		      cls_t *cls,		//class data
 		      dim_ta nvar,		//number of variables
@@ -113,6 +113,26 @@ namespace libagf {
       virtual int save(FILE *fs);
   };
 
+  template <class real, class cls_t>
+  class borders_calibrated:public borders_classifier<real, cls_t> {
+    protected:
+      //calibration coefficients:
+      real *coef;
+      int order;
+    public:
+      borders_calibrated();
+      borders_calibrated(char *fbase);
+
+      //compare calculated probabilities to actual and derive 
+      //calibration coefficients:
+      void calibrate(real **train, 		//training data
+		      cls_t *cls, 
+		      nel_ta ntrain, 		//number of samples
+		      int O=3,			//order
+		      int nhist=10);		//number of divisions
+
+      virtual real R(real *x, real *praw);
+  };
 }
 
 #endif
