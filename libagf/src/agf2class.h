@@ -121,7 +121,8 @@ namespace libagf {
       int order;
     public:
       borders_calibrated();
-      borders_calibrated(char *fbase);
+      borders_calibrated(const char *fbase);
+      ~borders_calibrated();
 
       //compare calculated probabilities to actual and derive 
       //calibration coefficients:

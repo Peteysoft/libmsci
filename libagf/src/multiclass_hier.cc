@@ -83,7 +83,7 @@ namespace libagf {
     param.trainflag=0;		//we are not training a model here
     param.Mflag=mf;		//LIBSVM file format
     param.Kflag=kf;		//keep temporary files
-    param.cw=1;			//?
+    param.cw=1;			//constraint weight
     param.type=type;		//how to solve for the conditional prob.
     param.sigcode=sigcode;	//sigmoid function
     //need to set this with parameter later:

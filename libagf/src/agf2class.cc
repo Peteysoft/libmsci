@@ -585,6 +585,41 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  borders_calibrated<real, cls_t>::borders_calibrated(const char *fbase) {
+    FILE *fs;
+    real **mat;
+    int32_t m, n;
+    char *fname=new char[strlen(fbase)+5];
+    int err=this->init(fbase, &tanh);
+    if (err!=0) throw err;
+    coef=new real[2];
+    coef[0]=0;
+    coef[1]=1;
+    order=1;
+    sprintf(fname, "%s.clb", fbase);
+    fs=fopen(fname, "r");
+    if (fs==NULL) {
+      fprintf(stderr, "borders_calibrated: calibration file, %s, not found.\n", fname);
+      return;
+    }
+    mat=scan_matrix<real, cls_t>(fs, m, n);
+    if (m!=1 || mat==NULL) {
+      fprintf(stderr, "borders_calibrated: error reading calibration file, %s .\n", fname);
+      return;
+    }
+    order=n-1;
+    delete [] coef;
+    coef=mat[0];
+    delete [] mat;
+    fclose(fs);
+  }
+
+  template <class real, class cls_t>
+  borders_calibrated<real, cls_t>::~borders_calibrated() {
+    delete [] coef;
+  }
+
+  template <class real, class cls_t>
   void borders_calibrated<real, cls_t>::calibrate(real **train, cls_t *cls, nel_ta ntrain, int O, int nhist) {
     nel_ta **tab;		//table of accuracies versus probabilities
     cls_t nct, ncr;		//number of classes (should be 2...)
@@ -643,6 +678,16 @@ namespace libagf {
     //pull coefficients out from GSL vector type:
     coef=new real[order+1];
     for (int i=0; i<=order; i++) coef[i]=gsl_vector_get(x, i);
+
+    //clean up:
+    delete [] tab[0];
+    delete [] tab;
+
+    gsl_multifit_linear_free(work);
+    gsl_matrix_free(A);
+    gsl_matrix_free(cov);
+    gsl_vector_free(x);
+    gsl_vector_free(b);
 
   }
 
