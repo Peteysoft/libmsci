@@ -126,11 +126,11 @@ namespace libagf {
 
       //compare calculated probabilities to actual and derive 
       //calibration coefficients:
-      void calibrate(real **train, 		//training data
+      virtual void calibrate(real **train, 		//training data
 		      cls_t *cls, 
 		      nel_ta ntrain, 		//number of samples
-		      int O=3,			//order
-		      int nhist=10);		//number of divisions
+		      int O=CALIBRATION_ORDER,	//order
+		      int nhist=NCONHIST);	//number of divisions
 
       virtual real R(real *x, real *praw);
   };

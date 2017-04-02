@@ -1063,6 +1063,32 @@ namespace libagf {
     return err;
   }
 
+  template <typename real, typename cls_t>
+  void multiclass<real, cls_t>::calibrate(real **train, cls_t *cls, nel_ta ntrain, int O, int nhist) {
+    cls_t *map2;			//for partitioning the classes
+    cls_t cls2[ntrain];
+
+    cls_t k=0;
+    for (cls_t i=0; i<nmodel; i++) {
+      for (nel_ta j=0; j<ntrain; j++) {
+        real mapel;
+        if (cls[j]<0 || cls[j]>=nmodel) {
+          cls2[j]=-1;
+	} else {
+          mapel=gsl_matrix_get(map, i, cls[j]);
+	  if (mapel>0) {
+            cls2[j]=1;
+          } else if (mapel<0) {
+            cls2[j]=0;
+          } else {
+            cls2[j]=-1;
+	  }
+	}
+      }
+      twoclass[i]->calibrate(train, cls2, ntrain, O, nhist);
+    }
+  }
+
   template class multiclass<real_a, cls_ta>;
 
 }

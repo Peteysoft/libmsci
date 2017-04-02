@@ -58,6 +58,9 @@ namespace libagf {
   //partition symbol for multi-class module:
   const char PARTITION_SYMBOL='/';
 
+  //order for borders calibration:
+  const int CALIBRATION_ORDER=3;
+
   //returned diagnostics for AGF:
   struct agf_diag_param {
     iter_ta nd;           //number of iterations in weights calculation

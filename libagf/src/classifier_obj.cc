@@ -230,6 +230,12 @@ namespace libagf {
     throw INTERNAL_ERROR;
   }
 
+  //an ugly hack (followed by a whole bunch of nothing...):
+  template <typename real, typename cls_t>
+  void classifier_obj<real, cls_t>::calibrate(real **train, cls_t *cls, nel_ta ntrain, int O, int nhist) {
+    fprintf(stderr, "classifier_obj: calibrate method not defined for this sub-class!\n");
+  }
+
   //a whole bunch of nothing:
   template <class real, class cls_t>
   oneclass<real, cls_t>::oneclass(cls_t cl) {

@@ -731,6 +731,41 @@ namespace libagf {
     return 0;
   }
 
+  template <typename real, typename cls_t>
+  void multiclass_hier<real, cls_t>::calibrate(real **train, cls_t *cls, nel_ta ntrain, int O, int nhist) {
+    cls_t *map;				//for partitioning the classes
+    cls_t maxcls=0;			//largest value for class label
+    cls_t label[this->ncls];
+    cls_t nchild=classifier->n_class();		//number of children
+    cls_t cls2[ntrain];
+
+    //partition the classes (this part is quite general--should make a
+    //generalized routine that calls a different routine at the end...):
+    this->class_list(label);		//have to add this extra bullshit
+    for (cls_t i=0; i<this->ncls; i++) if (label[i]>=maxcls) maxcls=label[i]+1;
+    map=new cls_t[maxcls];
+    for (cls_t i=0; i<maxcls; i++) map[i]=-1;
+
+    cls_t k=0;
+    for (cls_t i=0; i<nchild; i++) {
+      cls_t nchildcls;
+      nchildcls=children[i]->class_list(label);
+      for (cls_t j=0; j<nchildcls; j++) map[j+k]=i;
+      k+=nchildcls;
+    }
+    for (nel_ta i=0; i<ntrain; i++) {
+      if (cls[i]<0 || cls[i]>maxcls) {
+        cls2[i]=-1;
+      } else {
+        cls2[i]=map[cls[i]];
+      }
+    }
+    classifier->calibrate(train, cls2, ntrain, O, nhist);
+    for (cls_t i=0; i<nchild; i++) {
+      children[i]->calibrate(train, cls, ntrain, O, nhist);
+    }
+    delete [] map;
+  }
 
   template class multiclass_hier<real_a, cls_ta>;
 

@@ -95,6 +95,13 @@ namespace libagf {
       int load(FILE *fs, int ct);
       virtual int load(FILE *fs);
       virtual int save(FILE *fs);
+
+      //one more ugly hack:
+      virtual void calibrate(real **train,
+		      cls_t *cls,
+		      nel_ta ntrain,
+		      int O=CALIBRATION_ORDER,
+		      int nhist=NCONHIST);
   };
 }
 

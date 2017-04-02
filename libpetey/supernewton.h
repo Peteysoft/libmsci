@@ -17,27 +17,27 @@ namespace libpetey {
   //order polynomial
   template <class real>
   real supernewton(void (*funcd) (real, void *, real *, real *),
-		void *params,	//function parameters
-                real x1,	//first bracket
-		real x2,	//second bracket
-		real xtol,	//desired (absolute) tolerance
+		void *params,		//function parameters
+                real x1,		//first bracket
+		real x2,		//second bracket
+		real xtol,		//desired (absolute) tolerance
 		real ytol,
-		long maxiter,	//maximum number of iterations
+		long maxiter,		//maximum number of iterations
 		supernewton_stat *err,	//returns error status
-				//returns 0 or less for failure
-		real &y1,	//to avoid redundant calculation
-		real &dydx1,	//returns final values in these two
+					//returns 0 or less for failure
+		real &y1,		//to avoid redundant calculation
+		real &dydx1,		//returns final values in these two
 		real y2,
 		real dydx2);
 
   template <class real>
   inline real supernewton(void (*funcd) (real, void *, real *, real *),
-		void *params,	//function parameters
-                real x1,	//first bracket
-		real x2,	//second bracket
-		real xtol,	//desired (absolute) tolerance
+		void *params,		//function parameters
+                real x1,		//first bracket
+		real x2,		//second bracket
+		real xtol,		//desired (absolute) tolerance
 		real ytol,
-		long maxiter,	//maximum number of iterations
+		long maxiter,		//maximum number of iterations
 		supernewton_stat *err)	//number of iterations/error code
   {
 

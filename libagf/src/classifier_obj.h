@@ -121,6 +121,14 @@ namespace libagf {
       //load and save files all in one as ASCII:
       virtual int load(FILE *fs);
       virtual int save(FILE *fs);
+
+      //not the most elegant, but should do the job;
+      //hope to convert to more general formulation eventually...
+      virtual void calibrate(real **train,
+		      cls_t *cls,
+		      nel_ta ntrain,
+		      int O=CALIBRATION_ORDER,
+		      int nhist=NCONHIST);
   };
 
   //lame, doesn't really do anything, but makes a lot of the methods in 

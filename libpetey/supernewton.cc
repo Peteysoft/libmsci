@@ -10,12 +10,14 @@
 
 namespace libpetey {
 
-//maximum number of re-brackets on the same side of the root:
-int glob_supnewt_maxnrebr=3;
-
 //note: for smooth ("well-behaved") functions with local non-zero third
 //moments, the algorithm has a tendency to land repeatedly on one side
-//of the root, slowing down convergence.  This issue needs to be addressed.
+//of the root, slowing down convergence.
+//This issue has been addressed by throwing in a bisection step if the 
+//approximated roots are getting repeatedly stuck on one side:
+
+//maximum number of re-brackets on the same side of the root:
+int glob_supnewt_maxnrebr=3;
 
 template <class real>
 real nearest_of_three(real value,
@@ -58,14 +60,6 @@ real supernewton(void (*funcd) (real, void *, real *, real *),
 		real y2,
 		real dydx2)
 {
-
-  //function evaluations at the brackets:
-  /*
-  real y1;
-  real dydx1;
-  real y2;
-  real dydx2;
-  */
 
   //polynomial coefficients:
   double a1, b1;	//might as well carry over from double to double
