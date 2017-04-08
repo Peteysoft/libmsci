@@ -31,6 +31,36 @@ namespace libagf {
   }
 
   template <typename real, typename cls_t>
+  agf2class<real, cls_t>::agf2class(real **x, cls_t *cls, nel_ta n, dim_ta nv, real v[2], real Wc, nel_ta k1) {
+    cls_t c1[n];
+    nel_ta *clind;
+
+    W=Wc;
+    var0[0]=v[0];
+    var0[1]=v[1];
+    k=k1;
+    ntrain=n;
+    this->D1=nv;
+    this->ncls=2;
+    unsort=NULL;
+    train=new real*[ntrain];
+    for (nel_ta i=0; i<ntrain; i++) {
+      train[i]=x[i];
+      c1[i]=cls[i];
+    }
+    clind=sort_classes(train, ntrain, c1, this->ncls);
+    cind=clind[1];
+
+    //set variance brackets:
+    set_var();
+
+    //zero diagnostics:
+    zero_diag();
+
+    delete [] clind;
+  }
+
+  template <typename real, typename cls_t>
   agf2class<real, cls_t>::agf2class(agf_classifier<real, cls_t> *other, cls_t *part, cls_t npart) {
     cls_t ncls=1;
     this->ncls=2;
@@ -46,6 +76,7 @@ namespace libagf {
 
     ntrain=other->ntrain;
     this->D1=other->n_feat();
+    this->ncls=2;
     this->copy_ltran(other);
 
     unsort=NULL;
@@ -71,8 +102,26 @@ namespace libagf {
 
     cind=clind[1];
 
+    //set variance brackets:
+    set_var();
+
+    //zero diagnostics:
+    zero_diag();
+
+    delete [] cls;
+    delete [] clind;
+  }
+
+  template <typename real, typename cls_t>
+  agf2class<real, cls_t>::~agf2class() {
+    delete [] trn0;
+    if (unsort!=NULL) delete [] unsort;
+  }
+
+  template <typename real, typename cls_t>
+  void agf2class<real, cls_t>::set_var() {
     //check parameter ranges:
-    if (var[0] <= 0 || var[1] <= 0) {
+    if (var0[0] <= 0 || var0[1] <= 0) {
       //calculate the averages and standard deviations:
       real std[this->D1];
       real ave[this->D1];
@@ -94,7 +143,10 @@ namespace libagf {
         fprintf(stderr, "Using %10.3g for upper filter variance bracket\n\n", var[1]);
       }
     }
+  }
 
+  template <typename real, typename cls_t>
+  void agf2class<real, cls_t>::zero_diag() {
     //zero diagnostics:
     min_f=-1;
     max_f=0;
@@ -107,15 +159,6 @@ namespace libagf {
     total_nd=0;
     ntrial=0;
     ntrial_k=0;
-
-    delete [] cls;
-    delete [] clind;
-  }
-
-  template <typename real, typename cls_t>
-  agf2class<real, cls_t>::~agf2class() {
-    delete [] trn0;
-    if (unsort!=NULL) delete [] unsort;
   }
 
   template <class real, class cls_t>
@@ -581,7 +624,11 @@ namespace libagf {
     this->ncls=2;
     this->D=0;
     this->D1=0;
-    this->sigfun=&tanh;
+    this->sigmoid_func=&tanh;
+    order=1;
+    coef=new real[2];
+    coef[0]=0;
+    coef[1]=1;
   }
 
   template <class real, class cls_t>
@@ -607,8 +654,8 @@ namespace libagf {
       fprintf(stderr, "borders_calibrated: error reading calibration file, %s .\n", fname);
       return;
     }
-    order=n-1;
     delete [] coef;
+    order=n-1;
     coef=mat[0];
     delete [] mat;
     fclose(fs);
@@ -620,8 +667,13 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  void borders_calibrated<real, cls_t>::train(real **train, cls_t *cls, nel_ta ntrain, int type, real *param) {
+    calibrate(train, cls, ntrain, param[0], param[1]);
+  }
+
+  template <class real, class cls_t>
   void borders_calibrated<real, cls_t>::calibrate(real **train, cls_t *cls, nel_ta ntrain, int O, int nhist) {
-    nel_ta **tab;		//table of accuracies versus probabilities
+    real **tab;			//table of accuracies versus probabilities
     cls_t nct, ncr;		//number of classes (should be 2...)
     real r[ntrain];		//difference in conditional probabilities
     int nbad=0;			//remove bad values
@@ -636,7 +688,7 @@ namespace libagf {
     order=O;
 
     //classify each training sample using this classifier:
-    for (int i=0; i<ntrain; i++) r[i]=R(train[i]);
+    for (int i=0; i<ntrain; i++) r[i]=this->R_t(train[i]);
 
     //build a histogram of probabilities:
     tab=con_acc_table2(cls, r, ntrain, nhist);
@@ -676,6 +728,7 @@ namespace libagf {
     gsl_multifit_linear(A, b, x, cov, &chisq, work);
 
     //pull coefficients out from GSL vector type:
+    delete [] coef;
     coef=new real[order+1];
     for (int i=0; i<=order; i++) coef[i]=gsl_vector_get(x, i);
 
@@ -688,6 +741,14 @@ namespace libagf {
     gsl_matrix_free(cov);
     gsl_vector_free(x);
     gsl_vector_free(b);
+
+    //this is kind of dum but I don't feel like writing a whole family of new methods:
+    //(this is **against the rules**)
+    char *fname=new char[strlen(this->name)+5];
+    sprintf(fname, "%s.clb", this->name);
+    FILE *fs=fopen(fname, "w");
+    print_matrix(fs, &coef, 1, order+1);
+    fclose(fs);
 
   }
 
@@ -724,6 +785,9 @@ namespace libagf {
 
   template class borders_classifier<float, cls_ta>;
   template class borders_classifier<double, cls_ta>;
+
+  template class borders_calibrated<float, cls_ta>;
+  template class borders_calibrated<double, cls_ta>;
 
 }
 

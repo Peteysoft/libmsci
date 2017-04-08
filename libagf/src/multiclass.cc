@@ -158,7 +158,8 @@ namespace libagf {
         if (Zflag) {
           twoclass[i]=new svm2class<real, cls_t>(fname[i]);
 	} else if (com==NULL) {
-          twoclass[i]=new borders_classifier<real, cls_t>(fname[i], sigcode);
+          //twoclass[i]=new borders_classifier<real, cls_t>(fname[i], sigcode);
+          twoclass[i]=new borders_calibrated<real, cls_t>(fname[i]);
         } else {
           twoclass[i]=new general2class<real, cls_t>(fname[i], 
 			com, Mflag, Kflag);
@@ -1013,7 +1014,7 @@ namespace libagf {
     //read in binary classifiers:
     twoclass=new binaryclassifier<real, cls_t>*[nmodel];
     for (int i=0; i<nmodel; i++) {
-      twoclass[i]=new borders_classifier<real, cls_t>();
+      twoclass[i]=new borders_calibrated<real, cls_t>();
       err=twoclass[i]->load(fs);
       if (err!=0) {
         fprintf(stderr, "multiclass::load: error loading border vectors\n");
@@ -1064,7 +1065,7 @@ namespace libagf {
   }
 
   template <typename real, typename cls_t>
-  void multiclass<real, cls_t>::calibrate(real **train, cls_t *cls, nel_ta ntrain, int O, int nhist) {
+  void multiclass<real, cls_t>::train(real **train, cls_t *cls, nel_ta ntrain, int type, real *param) {
     cls_t *map2;			//for partitioning the classes
     cls_t cls2[ntrain];
 
@@ -1085,7 +1086,7 @@ namespace libagf {
 	  }
 	}
       }
-      twoclass[i]->calibrate(train, cls2, ntrain, O, nhist);
+      twoclass[i]->train(train, cls2, ntrain, type, param);
     }
   }
 

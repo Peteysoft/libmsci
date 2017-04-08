@@ -39,6 +39,19 @@ namespace libagf {
     gsl_rng *rann;
   };
 
+  //diagnostics for the borders sampling routines:
+  template <class real>
+  struct bord_diag {
+    iter_ta nbis;		//number of bisection steps
+    iter_ta nfail;		//number of convergence failures
+    iter_ta min_iter;		//minimum number of iterations
+    iter_ta max_iter;		//maximum number    "
+    iter_ta total_iter;		//total          "
+    real min_tol;		//tolerance...
+    real max_tol;
+    real total_tol;
+  };
+
   //stick the training data into the parameter structure:
   template <class real>
   int bordparam_init(bordparam<real> *param,
@@ -64,6 +77,36 @@ namespace libagf {
   int oppositesample_small(void *param, 
 		real *x1, 
 		real *x2);
+
+  //zero the diagnostics:
+  template <typename real>
+  void zero_bord_diag(bord_diag<real> *diag);
+
+  //print the diagnostics:
+  template <typename real>
+  void print_bord_diag(FILE *fs, 		//output file stream
+		  bord_diag<real> *diag,	//diagnostic paramters
+		  nel_ta nfound);		//number of samples found
+
+  //given a function returning the difference in conditional probabilities
+  //and a function to sample opposite classes, find a single sample of the
+  //class borders
+  //returns an error code: 
+  //0           = success
+  //OUT_OF_DATA = ran out of samples
+  //anything else indicates a root-finding failure
+  template <class real>
+  int single_sample_cb(real (*rfunc) (real *, void *, real *), 	
+			//returns difference in conditional prob. plus derivs
+		int (*sample) (void *, real *, real *),	//returns a random sample from each class
+		void *param,			//these are just along for the ride
+		dim_ta D,			//number of dimensions
+		real tol,			//desired tolerance
+		iter_ta maxit,			//maximum number of iterations
+		real *border,			//returned border sample
+		real *gradient,			//returned border gradient
+		bord_diag<real> *diag,		//diagnostics
+		real rthresh=0);		//location of Bayesian border
 
   //given a function returning the difference in conditional probabilities
   //and a function to sample opposite classes, samples the borders between

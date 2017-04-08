@@ -19,7 +19,8 @@ namespace libagf {
   struct agfparam {
     //parameters for AGF classifiation:
     real W;			//total weight
-    real var[2];		//variance brackets
+    real var0[2];		//variance brackets (fixed)
+    real var[2];		//variance brackets (floating)
     nel_ta k;			//number of nearest neighbours
 
     //diagnostic parameters:
@@ -38,7 +39,8 @@ namespace libagf {
 
   //mainly to zero all those bloody diagnostic parameters:
   template <class real>
-  int agfparam_init(agfparam<real> *param, real var[2], nel_ta k, real W);
+  int agfparam_init(agfparam<real> *param, real var[2], nel_ta k, real W,
+		  int stickyflag=0);
 
   //stick the training data plus AGF parameters into the structure:
   template <class real>

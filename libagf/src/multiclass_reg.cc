@@ -45,7 +45,7 @@ namespace libagf {
 
     twoclass=new binaryclassifier<real, cls_t> *[nmodel];
     for (cls_t i=0; i<nmodel; i++) {
-      //twoclass[i]=new agf2class<real, cls_t>(fname[i]);
+      //twoclass[i]=new borders_calibrated<real, cls_t>(fname[i]);
       twoclass[i]=new twoclass_t(fname[i]);
     }
 

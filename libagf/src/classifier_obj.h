@@ -122,13 +122,12 @@ namespace libagf {
       virtual int load(FILE *fs);
       virtual int save(FILE *fs);
 
-      //not the most elegant, but should do the job;
-      //hope to convert to more general formulation eventually...
-      virtual void calibrate(real **train,
-		      cls_t *cls,
-		      nel_ta ntrain,
-		      int O=CALIBRATION_ORDER,
-		      int nhist=NCONHIST);
+      //sure, lets do it, a general "training" method:
+      virtual void train(real **train,		//features data
+		      cls_t *cls,		//class labels
+		      nel_ta ntrain,		//number of samples
+		      int type,			//what type of training?
+		      real *param);		//parameters
   };
 
   //lame, doesn't really do anything, but makes a lot of the methods in 

@@ -127,14 +127,19 @@ int main(int argc, char *argv[]) {
   ran_init();			//random numbers resolve ties
 
   fs=fopen(argv[0], "r");
+  if (fs==NULL) {
+    fprintf(stderr, "classify_m: unable to open file, %s, for reading\n", argv[0]);
+    exit(UNABLE_TO_OPEN_FILE_FOR_READING);
+  }
   classifier=new multiclass_hier<real_a, cls_ta>();
   if (classifier->load(fs, opt_args.Qtype)==PARAMETER_OUT_OF_RANGE) {
-    fclose(fs);
     delete classifier;
-    classifier=new multiclass_hier<real_a, cls_ta>(argv[0],  
+    rewind(fs);
+    classifier=new multiclass_hier<real_a, cls_ta>(fs,  
 		opt_args.Qtype,	opt_args.path, opt_args.multicommand, 
 		opt_args.Mflag, opt_args.Kflag, opt_args.algtype, opt_args.Zflag);
   }
+  fclose(fs);
 
   //classifier->print(stdout);
 
@@ -351,7 +356,6 @@ int main(int argc, char *argv[]) {
     delete_matrix(mat);
     delete [] ave;
   }
-
 
   ran_end();
 

@@ -73,8 +73,30 @@ namespace libagf {
   int agfparam_init(agfparam<real> *param,
 			real var[2], 		//variance range
 			nel_ta k, 		//number of nearest neighbours
-			real W) {		//total of weights
+			real W,			//total of weights
+			int stickyflag) {	//0 = both brackets fully floating
+	  					//1 = first bracket to be reset
+						//2 = second bracket to be reset
+						//3 = both brackets to be reset
     int err;
+
+    switch (stickyflag) {
+      case(1):
+        param->var0[0]=var[0];
+	param->var0[1]=-1;
+	break;
+      case(2):
+	param->var0[0]=-1;
+	param->var0[1]=var[1];
+	break;
+      case(3):
+        param->var0[0]=var[0];
+	param->var0[1]=var[1];
+	break;
+      default:
+	param->var0[0]=-1;
+	param->var0[1]=-1;
+    }
 
     param->var[0] = var[0];
     param->var[1] = var[1];
@@ -112,7 +134,38 @@ namespace libagf {
 			real W,			//total of weights
 			int smallflag) {	//for small datasets
     agfparam<real> *aparam;
+    real var1[2];
+    int stickyflag=0;
     int err;
+
+    //avoid side-effects:
+    var1[0]=var[0];
+    var1[0]=var[1];
+
+    if (var[0] <= 0 || var[1] <= 0) {
+      //calculate the averages and standard deviations:
+      real std[D];
+      real ave[D];
+      real vart;
+
+      calc_norm(train, D, n, ave, std);
+
+      //if the initial filter variance is not set, set it to the total
+      //variance of the data:
+      //variance brackets are then fully "sticky..."
+      vart=0;
+      for (dim_ta i=0; i<D; i++) vart+=std[i]*std[i];
+      if (var[0] <= 0) {
+        aparam->var[0]=vart/pow(n, 2./D);
+        fprintf(stderr, "Using %10.3g for lower filter variance bracket\n\n", var1[0]);
+	stickyflag|=1;
+      }
+      if (var[1] <= 0) {
+        aparam->var[1]=vart;
+        fprintf(stderr, "Using %10.3g for upper filter variance bracket\n\n", var1[1]);
+	stickyflag|=2;
+      }
+    }
 
     //transfer training data to function parameters:
     err=bordparam_init(param, train, D, n, clind, smallflag);
@@ -120,7 +173,7 @@ namespace libagf {
 
     //parameters for AGF algorithm:
     aparam=new agfparam<real>;
-    agfparam_init(aparam, var, k, W);
+    agfparam_init(aparam, var1, k, W, stickyflag);
     param->rparam=aparam;
 
     return 0;
@@ -271,8 +324,8 @@ namespace libagf {
     }
   }
 
-  template int agfparam_init<float>(agfparam<float> *, float *, nel_ta, float);
-  template int agfparam_init<double>(agfparam<double> *, double *, nel_ta, double);
+  template int agfparam_init<float>(agfparam<float> *, float *, nel_ta, float, int);
+  template int agfparam_init<double>(agfparam<double> *, double *, nel_ta, double, int);
 
   template int agfbordparam_init<float>(bordparam<float> *, 
 		  float **, dim_ta, nel_ta, nel_ta, 

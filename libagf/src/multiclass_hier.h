@@ -97,11 +97,11 @@ namespace libagf {
       virtual int save(FILE *fs);
 
       //one more ugly hack:
-      virtual void calibrate(real **train,
+      virtual void train(real **train,
 		      cls_t *cls,
 		      nel_ta ntrain,
-		      int O=CALIBRATION_ORDER,
-		      int nhist=NCONHIST);
+		      int type,
+		      real *param);
   };
 }
 

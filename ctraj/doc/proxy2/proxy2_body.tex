@@ -3,7 +3,7 @@
 
 Satellite remote sensing instruments have become invaluable for monitoring
 trace atmospheric constituents such as ozone.
-One area they frequently fall short is in density of coverage.
+One area in which they frequently fall short is density of coverage.
 Short of comprehensive prognostic assimilation models, there are methods of
 interpolating sparse measurements that nonetheless take into account the
 atmospheric dynamics.
@@ -18,23 +18,24 @@ or a passive tracer simulated over a long time scale \citep{Allen_Nakamura2003}.
 In either case, it's standard practice to transform the proxy to an
 area-conserving \italics{Lagrangian coordinate} called equivalent latitude
 before performing the reconstruction.
-Naturally, this method is mainly useful for long-lived tracers such as ozone.
+This method is mainly useful for long-lived tracers such as ozone.
 
 Here we introduce a new method of dynamical tracer reconstruction
 called \italics{principal component proxy analysis} 
 that is more appropriate for shorter-lived tracers
 because it works on shorter time scales.
 The method is summarized as follows: 
-the passive tracer dynamics are represented as a matrix, which we term the 
-\italics{transport map} because it linearly maps the initial tracer configuration
+the passive tracer dynamics are represented as a matrix
+which linearly maps the initial tracer configuration
 to the final tracer configuration.
-The transport map is decomposed using singular value decomposition (SVD),
-also called principal component analysis (PCA)--hence the name of the method--and the largest principal components (or left singular vectors) are then fitted to the measurements.
+We term this matrix the \italics{transport map}.
+The transport map is decomposed using
+principal component analysis (PCA)--hence the name of the method--and the largest principal components are then fitted to the measurements.
 Because the transport map is integrated over only a short time scale and 
-because it represents all possible tracer configurations, with the most
-likely singled out, 
+because it represents a large number of possible tracer configurations, with the most
+likely singled out through the decomposition, 
 PC proxy should be better able to 
-compensate for non-advective changes in concentration, that is, sources
+compensate for non-advective changes in concentration or sources
 and sinks.
 
 \section{Theory}
@@ -425,14 +426,14 @@ and one for the Southern hemisphere ($h=-1$), with equatorial crossings accounte
 The resulting space has the following metric coefficients:
 \begin{eqnarray}
 \left (\frac{ds}{d x} \right )^2 & = & \frac{1}{r^2} \left [
-	\frac{R^2}{r^2} \sin^2 \left (\frac{r}{R} \right ) 
+	\frac{R_E^2}{r^2} \sin^2 \left (\frac{r}{R_E} \right ) 
 	y^2 + x^2 \right ] \\ \nonumber
 \left (\frac{ds}{d y} \right )^2 & = & \frac{1}{r^2} \left [
-	\frac{R^2}{r^2} \sin^2 \left (\frac{r}{R} \right )
+	\frac{R_E^2}{r^2} \sin^2 \left (\frac{r}{R_E} \right )
 	x^2 + y^2 \right ]
 	\label{metric_coef}
 \end{eqnarray}
-where $R$ is the radius of the Earth.
+where $R_E$ is the radius of the Earth.
 
 Because it is a semi-Lagrangian simulation, the factors, $\lbrace R(t_i,\Delta t) \rbrace$,
 are output directly as sparse matrices by calculating the interpolation coefficients.
@@ -519,7 +520,7 @@ If $R(t, \Delta t)=U S V^T$,
 Figure \ref{sample_SV}a. shows the first right singular vector, $\vect v^{(1)}$,
 while Figure \ref{sample_SV}b. shows the corresponding left singular vector,
 $\vect u^{(1)}$;
-Figure \ref{sample_SV}c. shows the first second singular vector, $\vect v^{(2)}$,
+Figure \ref{sample_SV}c. shows the second right singular vector, $\vect v^{(2)}$,
 while Figure \ref{sample_SV}b. shows the corresponding left singular vector,
 $\vect u^{(2)}$
 and so on.
@@ -598,7 +599,7 @@ Equation \ref{lambda1}.
 
 All the Lyapunov exponents are less than zero, with the largest roughly zero, 
 in agreement with the inequality in (\ref{sv_lt_one}),
-even though the Equation (\ref{mass_conservation}) is only true approximately.
+even though Equation (\ref{mass_conservation}) is true only approximately.
 In this case it is close enough: the smallest boxes on the
 azimuthal equidistant grid will deviate from the largest by
 a factor of only $2/\pi+1/2\approx0.7$ (see Equation (\ref{metric_coef}))
@@ -616,7 +617,9 @@ the SVD.
 Measurements are selected from within the measurement window.
 We also need to choose a lead time which determines how far from the
 beginning of the integration, $t_0$, the measurement window is centered.
-For this experiment, it was centered at the end of the integration time.
+For this experiment, it was centered at the end of the integration period.
+Placing the measurement window in the middle of the integration period
+was found to work poorly.
 The Lyapunov spectrum can help us select the number of singular vectors
 as it shows how many remain significant at
 a given lead time--see Figure \ref{lyap_spec}.

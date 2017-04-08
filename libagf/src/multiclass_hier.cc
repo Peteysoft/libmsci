@@ -197,6 +197,8 @@ namespace libagf {
       if (param.trainflag) {
         //if we are training a model, check for default options or
         //"previous option" option:
+	//(*** options stack should be updated with modern containers 
+	//and C++ string classes... ***)
         if (param.optstack[param.stackptr]!=NULL &&
                         strcmp(fname, ".")==0) {
           delete [] fname;
@@ -236,7 +238,6 @@ namespace libagf {
 	//"direct" classifiers:
         if (flag=='A') {
           //AGF:
-          //printf("multiclass_hier: attempting to initialize agf direct classifier, %s, with options, %s\n", fname, options);
           classifier=new agf_classifier<real, cls_t>(fname, options);
 	} else if (flag=='K') {
           //KNN:
@@ -245,10 +246,14 @@ namespace libagf {
           //external classifier (need to count number of classes first):
           classifier=NULL;
 	} else if (param.Zflag) {
+          //"in-house" SVM codes:
           classifier=new svm2class<real, cls_t>(fname);
 	} else if (param.commandname==NULL) {
-          classifier=new borders_classifier<real, cls_t>(fname, param.sigcode);
+          //default borders classifier:
+          //classifier=new borders_classifier<real, cls_t>(fname, param.sigcode);
+          classifier=new borders_calibrated<real, cls_t>(fname);
         } else {
+          //external binary classifier:
           classifier=new general2class<real, cls_t>(fname, 
 		param.commandname, param.Mflag, param.Kflag);
         }
@@ -732,7 +737,7 @@ namespace libagf {
   }
 
   template <typename real, typename cls_t>
-  void multiclass_hier<real, cls_t>::calibrate(real **train, cls_t *cls, nel_ta ntrain, int O, int nhist) {
+  void multiclass_hier<real, cls_t>::train(real **train, cls_t *cls, nel_ta ntrain, int type, real *param) {
     cls_t *map;				//for partitioning the classes
     cls_t maxcls=0;			//largest value for class label
     cls_t label[this->ncls];
@@ -760,9 +765,9 @@ namespace libagf {
         cls2[i]=map[cls[i]];
       }
     }
-    classifier->calibrate(train, cls2, ntrain, O, nhist);
+    classifier->train(train, cls2, ntrain, type, param);
     for (cls_t i=0; i<nchild; i++) {
-      children[i]->calibrate(train, cls, ntrain, O, nhist);
+      children[i]->train(train, cls, ntrain, type, param);
     }
     delete [] map;
   }

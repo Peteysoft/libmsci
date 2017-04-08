@@ -143,8 +143,8 @@ namespace libagf {
       virtual int save(FILE *fs);
 
       //fracking hack:
-      virtual void calibrate(real **train, cls_t *cls, nel_ta ntrain,
-		      int O=CALIBRATION_ORDER, int nhist=NCONHIST);
+      virtual void train(real **train, cls_t *cls, nel_ta ntrain,
+		      int type, real *param);
   };
 
 }

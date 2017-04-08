@@ -82,7 +82,8 @@ int main(int argc, char *argv[]) {
     //"in-house" SVM predictor:
     classifier=new svm2class<real_a, cls_ta>(argv[0]);
   } else {
-    classifier=new borders_classifier<real_a, cls_ta>(argv[0], opt_args.algtype);
+    //classifier=new borders_classifier<real_a, cls_ta>(argv[0], opt_args.algtype);
+    classifier=new borders_calibrated<real_a, cls_ta>(argv[0]);
   }
   //printf("%d border vectors found: %s\n", ntrain, argv[0]);
 

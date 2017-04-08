@@ -723,7 +723,7 @@ namespace libagf {
     //read in individual binary classifiers:
     classifier=new borders_classifier<real, cls_t>*[nmod];
     for (int i=0; i<nmod; i++) {
-      classifier[i]=new borders_classifier<real, cls_t>();
+      classifier[i]=new borders_calibrated<real, cls_t>();
       err=classifier[i]->load(fs, this->voteflag);
       if (err!=0) throw err;
     }
@@ -813,7 +813,7 @@ namespace libagf {
         }
 	fprintf(stderr, "Training %d vs. %d\n", this->label[i], this->label[j]);
         svmbin=new svm2class<real, cls_t>(svm, i, j);
-	classifier[m]=new borders_classifier<real, cls_t>();
+	classifier[m]=new borders_calibrated<real, cls_t>();
 	classifier[m]->train(svmbin, xtran, csel, this->D1, ntrain, ns, tol);
 	m++;
 	delete svmbin;

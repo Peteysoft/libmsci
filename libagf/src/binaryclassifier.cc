@@ -180,7 +180,6 @@ namespace libagf {
       fprintf(param.commandfs, "\n");
     }
 
-
     return 2;
   }
 

@@ -40,7 +40,19 @@ namespace libagf {
       nel_ta k;			//k-nearest-neighbours to use in calculation
       real var0[2];		//variance brackets (unmodified)
       real var[2];		//variance brackets
+
+      //set the filter variance brackets:
+      void set_var();
+      //zero diagnostic paramters:
+      void zero_diag();
     public:
+      agf2class(real **x,	//features data
+		      cls_t *cls,
+		      nel_ta n,			//number of samples
+		      dim_ta nv,		//number of dimensions
+		      real v[2],		//variance brackets
+		      real Wc,			//W
+		      nel_ta k1);		//k-nearest-neighbours
       agf2class(agf_classifier<real, cls_t> *other,	//multi-class agf classifier
 		      cls_t *part, cls_t npart);	//class partition
       ~agf2class();
@@ -124,15 +136,22 @@ namespace libagf {
       borders_calibrated(const char *fbase);
       ~borders_calibrated();
 
+      //call calibrate:
+      virtual void train(real **train, 		//training data
+		      cls_t *cls, 
+		      nel_ta ntrain, 		//number of samples
+		      int type,			//type
+		      real *param);		//paramters
+
       //compare calculated probabilities to actual and derive 
       //calibration coefficients:
-      virtual void calibrate(real **train, 		//training data
+      void calibrate(real **train, 		//training data
 		      cls_t *cls, 
 		      nel_ta ntrain, 		//number of samples
 		      int O=CALIBRATION_ORDER,	//order
 		      int nhist=NCONHIST);	//number of divisions
 
-      virtual real R(real *x, real *praw);
+      virtual real R(real *x, real *praw=NULL);
   };
 }
 

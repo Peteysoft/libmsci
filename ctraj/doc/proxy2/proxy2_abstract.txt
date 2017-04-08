@@ -1,5 +1,5 @@
 We introduce a powerful method for dynamical reconstruction of long-lived
-tracers such as ozone called principal component proxy tracer analysis.  
+tracers such as ozone, called principal component proxy tracer analysis.  
 It works by correlating the largest principal components of a matrix
 representation of the transport dynamics with a set of sparse measurements. 
 The Lyapunov spectrum was measured and used to quantify the lifetime of each principal component. 

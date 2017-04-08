@@ -192,49 +192,65 @@ namespace libagf {
     gsl_rng_free(param->rann);
   }
 
+  template <class real>
+  void zero_bord_diag(bord_diag<real> *diag) {
+    //zero diagnostics:
+    diag->min_iter=-1;
+    diag->max_iter=0;
+    diag->total_iter=0;
+    diag->min_tol=1;			//maximum allowable
+    diag->max_tol=0;
+    diag->total_tol=0;
+    diag->nfail=0;
+    diag->nbis=0;
+  }
+
+  template <class real>
+  void print_bord_diag(FILE *fs, bord_diag<real> *diag, nel_ta nfound) {
+    //print out the diagnostics:
+    fprintf(fs, "\n\n");
+    fprintf(fs, "diagnostic parameter          %8s   %8s   %8s\n", 
+		  "min", "max", "average");
+    fprintf(fs, "\n");
+    fprintf(fs, "iterations in supernewton:**   %8d   %8d %10.3g\n",  
+		  diag->min_iter, diag->max_iter, (float) diag->total_iter/(float) nfound);
+    fprintf(fs, "tolerance of samples:          %10.3g %10.3g %10.3g\n",  
+		  diag->min_tol, diag->max_tol, diag->total_tol/nfound);
+    fprintf(fs, "\n");
+    fprintf(fs, "** total number of iterations:     %d\n", diag->total_iter);
+    fprintf(fs, "   number of bisection steps:      %d\n", diag->nbis);
+    fprintf(fs, "   number of convergence failures: %d\n", diag->nfail);
+    fprintf(fs, "\n");
+  }
 
   //train a binary classifier in which the Bayesian borders are discretely sampled:
   template <class real>
-  nel_ta sample_class_borders(
+  nel_ta single_sample_cb(
 		//returns difference in conditional prob. plus derivatives:
 		real (*rfunc) (real *, void *, real *),
                 //returns a pair of random samples (one for each class):
                 int (*sample) (void *, real *, real *),
                 void *param,		//these are just along for the ride
-                nel_ta n,		//number of time to sample
                 dim_ta D,		//number of dimensions
                 real tol,		//desired tolerance
 		iter_ta maxit,		//max no. of iterations in root-finder
-                real **border,		//returned border samples
-                real **gradient,	//return border gradients
+                real *border,		//returned border samples
+                real *gradient,		//return border gradients
+		bord_diag<real> *diag,	//diagnostics
                 real rthresh)		//location of Bayesian border
   {
-  
-    gsl_rng *rann;		//GSL random number generator
-
     real d1, d2;		//difference between conditional probabilities
   				//of two classes
     real *grad1, *grad2;	//gradients of initial brackets
     real dddt1, dddt2;		//derivatives at initial brackets
 
-    iter_ta nfail;		//number of convergence failures
-    iter_ta min_iter;	//minimum number of iterations
-    iter_ta max_iter;	//maximum number    "
-    iter_ta total_iter;	//total          "
-    real min_tol;
-    real max_tol;
-    real total_tol;
-
     real t0, t2;		//line parameters: at the root, at the second vector
     supernewton_stat err;	//error code returned from root-finding routine
-    int nbis;			//total number of bisection steps
     bf_params<real> bfparam;	//structure of parameters to pass function to minimize
 
     void (* funcd) (real, void *, real *, real *);
 
     gsl_error_handler_t * old_handler;
-
-    nel_ta nfound=n;		//number of samples actually found
 
     funcd=&bfind<real>;
 
@@ -259,16 +275,6 @@ namespace libagf {
     //(really need to fix this or at least clean up the naming...)
     bfparam.param=param;
 
-    //zero more diagnostics:
-    min_iter=BORDERS_MAXITER+2;		//maximum possible + 2
-    max_iter=0;
-    total_iter=0;
-    min_tol=1;			//maximum allowable
-    max_tol=0;
-    total_tol=0;
-    nfail=0;
-    nbis=0;
-
     //allocate more space:
     grad1=new real[D];
     grad2=new real[D];
@@ -277,90 +283,64 @@ namespace libagf {
     //in supernewton will not interrupt execution:
     old_handler=gsl_set_error_handler(&agf_gsl_handler);
 
-    printf("%7d of %7d vectors found: %5.1f%%", 0, n, 0.);
-    //start sampling the class borders:
-    for (nel_ta i=0; i<n; i++) {
-
-      for (int j=0; j<40; j++) printf("\b");
-      printf("%7d of %7d vectors found: %5.1f%%", i+1, n, (100.*(i+1))/n);
-      fflush(stdout);
-
-      do {
-        if ((*sample) (param, bfparam.vec1, bfparam.vec)<0) {
-          nfound=i;
-          fprintf(stderr, "sample_class_borders: ran out of samples (%d found), returning\n", nfound);
-          goto finish;
-        }
-        d1=(*rfunc) (bfparam.vec1, param, grad1)-rthresh;
-        d2=(*rfunc) (bfparam.vec, param, grad2)-rthresh;
-        //printf("d1=%g; d2=%g\n", d1, d2);
-      } while (d1*d2>=0);
-
-      //find the parametric representation of the line between the two vectors:
-      for (dim_ta j=0; j<D; j++) {
-        bfparam.v[j]=bfparam.vec[j]-bfparam.vec1[j];
+    //find a single sample of the class borders:
+    do {
+      if ((*sample) (param, bfparam.vec1, bfparam.vec)<0) {
+        err.code=OUT_OF_DATA;
+        goto finish;
       }
-      t2=1;
+      d1=(*rfunc) (bfparam.vec1, param, grad1)-rthresh;
+      d2=(*rfunc) (bfparam.vec, param, grad2)-rthresh;
+      //printf("d1=%g; d2=%g\n", d1, d2);
+    } while (d1*d2>=0);
 
-      //to avoid redundant function calls, we pass the conditional prob.
-      //and their derivatives to the root-finding routine:
-      dddt1=0;
-      dddt2=0;
-      for (dim_ta j=0; j<D; j++) {
-        dddt1+=bfparam.v[j]*grad1[j];
-        dddt2+=bfparam.v[j]*grad2[j];
-      }
+    //find the parametric representation of the line between the two vectors:
+    for (dim_ta j=0; j<D; j++) {
+      bfparam.v[j]=bfparam.vec[j]-bfparam.vec1[j];
+    }
+    t2=1;
 
-      //find the root of the difference between the 
-      //conditional probabilities along
-      //the line between the two vectors in order to find the class border:
-      t0=supernewton(funcd, (void *)&bfparam, (real) 0., t2, tol, (real) 0., 
-		maxit, &err, d1, dddt1, d2, dddt2);
-      if (err.code != 0) {
-        i--; 
-        nfail++;
-        continue;
-      }
-
-      if (err.niter < min_iter) min_iter=err.niter;
-      else if (err.niter > max_iter) max_iter=err.niter;
-      total_iter+=err.niter;
-      nbis+=err.nbis;
-
-      //the class border and the gradient vector
-      //should be sitting in the "bfparam" structure:
-      for (dim_ta j=0; j<D; j++) {
-        border[i][j]=bfparam.vec[j];
-        gradient[i][j]=bfparam.grd[j];
-      }
-      //printf("d1=%f\n", d1);
-      //for (long k=0; k<D; k++) printf("%f ", gradient[i][k]);
-      //printf("\n");
-    
-      //calculate more diagnostics:
-      d1=fabs(d1);
-      if (d1 < min_tol) min_tol=d1;
-      else if (d1 > max_tol) max_tol=d1;
-      total_tol+=d1;
+    //to avoid redundant function calls, we pass the conditional prob.
+    //and their derivatives to the root-finding routine:
+    dddt1=0;
+    dddt2=0;
+    for (dim_ta j=0; j<D; j++) {
+      dddt1+=bfparam.v[j]*grad1[j];
+      dddt2+=bfparam.v[j]*grad2[j];
     }
 
+    //find the root of the difference between the 
+    //conditional probabilities along
+    //the line between the two vectors in order to find the class border:
+    t0=supernewton(funcd, (void *)&bfparam, (real) 0., t2, tol, (real) 0., 
+		maxit, &err, d1, dddt1, d2, dddt2);
+    if (err.code != 0) {
+      diag->nfail++;
+      goto finish;
+    }
+
+    if (err.niter < diag->min_iter) diag->min_iter=err.niter;
+    else if (err.niter > diag->max_iter) diag->max_iter=err.niter;
+    diag->total_iter+=err.niter;
+    diag->nbis+=err.nbis;
+
+    //the class border and the gradient vector
+    //should be sitting in the "bfparam" structure:
+    for (dim_ta j=0; j<D; j++) {
+      border[j]=bfparam.vec[j];
+      gradient[j]=bfparam.grd[j];
+    }
+    //printf("d1=%f\n", d1);
+    //for (long k=0; k<D; k++) printf("%f ", gradient[i][k]);
+    //printf("\n");
+    
+    //calculate more diagnostics:
+    d1=fabs(d1);
+    if (d1 < diag->min_tol) diag->min_tol=d1;
+    else if (d1 > diag->max_tol) diag->max_tol=d1;
+    diag->total_tol+=d1;
+
     finish:
-
-      //print out the diagnostics:
-      printf("\n\n");
-      printf("diagnostic parameter          %8s   %8s   %8s\n", 
-		  "min", "max", "average");
-      printf("\n");
-      printf("iterations in supernewton:**   %8d   %8d %10.3g\n",  
-		  min_iter, max_iter, (float) total_iter/(float) nfound);
-      printf("tolerance of samples:          %10.3g %10.3g %10.3g\n",  
-		  min_tol, max_tol, total_tol/n);
-      printf("\n");
-      printf("** total number of iterations:     %d\n", total_iter);
-      printf("   number of bisection steps:      %d\n", nbis);
-      printf("   number of convergence failures: %d\n", nfail);
-      printf("\n");
-
       //delete integer and floating point arrays:
       delete[] bfparam.vec1;
       delete[] bfparam.v;
@@ -372,8 +352,48 @@ namespace libagf {
       //set error handler back to previous one:
       gsl_set_error_handler(old_handler);
 
-    return nfound;
+    return err.code;
 
+  }
+
+  //train a binary classifier in which the Bayesian borders are discretely sampled:
+  template <class real>
+  nel_ta sample_class_borders(
+		//returns difference in conditional prob. plus derivatives:
+		real (*rfunc) (real *, void *, real *),
+                //returns a pair of random samples (one for each class):
+                int (*sample) (void *, real *, real *),
+                void *param,		//these are just along for the ride
+                nel_ta n,		//number of time to sample
+                dim_ta D,		//number of dimensions
+                real tol,		//desired tolerance
+		iter_ta maxit,		//max no. of iterations in root-finder
+                real **border,		//returned border samples
+                real **gradient,	//return border gradients
+                real rthresh)		//location of Bayesian border
+  {
+    bord_diag<real> diag;
+    nel_ta nfound=0;
+    int err;
+
+    zero_bord_diag<real>(&diag);
+    printf("%7d of %7d vectors found: %5.1f%%", 0, n, 0.);
+    for (nel_ta i=0; i<n; i++) {
+      for (int j=0; j<40; j++) printf("\b");
+      printf("%7d of %7d vectors found: %5.1f%%", i+1, n, (100.*(i+1))/n);
+      fflush(stdout);
+      err=single_sample_cb(rfunc, sample, param, D, tol, maxit, border[i], gradient[i], &diag, rthresh);
+      if (err==0) {
+        nfound++;
+      } else if (err==OUT_OF_DATA) {
+        fprintf(stderr, "sample_class_borders: ran out of samples (%d found), returning\n", nfound);
+	break;
+      } else {
+        i--;
+      }
+    }
+    print_bord_diag<real>(stdout, &diag, nfound);
+    return nfound;
   }
 
   //function that uses borders and border gradients to perform a
@@ -592,8 +612,22 @@ namespace libagf {
   template int oppositesample_small<float>(void *, float *, float *);
   template int oppositesample_small<double>(void *, double *, double *);
 
+  template int single_sample_cb<float>
+		(float (*) (float *, void *, float *), 
+		int (*) (void *, float *, float *), 
+                void *, dim_ta, float, iter_ta,
+                float *, float *, 
+		bord_diag<float> *, float);
+
+  template int single_sample_cb<double> 
+		(double (*) (double *, void *, double *), 
+                int (*) (void *, double *, double *), 
+                void *,  dim_ta, double, iter_ta,
+                double *, double *, 
+		bord_diag<double> *, double);
+
   template nel_ta sample_class_borders<float>
-		(float (*r) (float *, void *, float *), 
+		(float (*) (float *, void *, float *), 
 		int (*) (void *, float *, float *), 
                 void *, nel_ta, dim_ta, float, iter_ta, 
                 float **, float **, float);

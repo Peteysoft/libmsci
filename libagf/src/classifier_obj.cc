@@ -232,7 +232,7 @@ namespace libagf {
 
   //an ugly hack (followed by a whole bunch of nothing...):
   template <typename real, typename cls_t>
-  void classifier_obj<real, cls_t>::calibrate(real **train, cls_t *cls, nel_ta ntrain, int O, int nhist) {
+  void classifier_obj<real, cls_t>::train(real **train, cls_t *cls, nel_ta ntrain, int type, real *param) {
     fprintf(stderr, "classifier_obj: calibrate method not defined for this sub-class!\n");
   }
 
