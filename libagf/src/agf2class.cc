@@ -652,6 +652,7 @@ namespace libagf {
     mat=scan_matrix<real, cls_t>(fs, m, n);
     if (m!=1 || mat==NULL) {
       fprintf(stderr, "borders_calibrated: error reading calibration file, %s .\n", fname);
+      delete [] fname;
       return;
     }
     delete [] coef;
@@ -659,6 +660,7 @@ namespace libagf {
     coef=mat[0];
     delete [] mat;
     fclose(fs);
+    delete [] fname;
   }
 
   template <class real, class cls_t>
@@ -674,6 +676,7 @@ namespace libagf {
   template <class real, class cls_t>
   void borders_calibrated<real, cls_t>::calibrate(real **train, cls_t *cls, nel_ta ntrain, int O, int nhist) {
     real **tab;			//table of accuracies versus probabilities
+    int nfit;
     cls_t nct, ncr;		//number of classes (should be 2...)
     real r[ntrain];		//difference in conditional probabilities
     int nbad=0;			//remove bad values
@@ -685,33 +688,47 @@ namespace libagf {
     gsl_multifit_linear_workspace *work;
     double chisq;
 
-    order=O;
-
     //classify each training sample using this classifier:
-    for (int i=0; i<ntrain; i++) r[i]=this->R_t(train[i]);
+    printf("border_calibrated: classifiying training data\n");
+    for (int i=0; i<ntrain; i++) {
+      r[i]=this->R_t(train[i]);
+      //r[i]=this->borders_classifier<real, cls_t>::R_t(train[i]);
+    }
 
     //build a histogram of probabilities:
+    printf("border_calibrated: building histogram of accuracies\n");
     tab=con_acc_table2(cls, r, ntrain, nhist);
 
+    for (int i=0; i<2*nhist; i++) {
+      printf("%g %g\n", tab[0][i], tab[1][i]);
+      tab[0][i]=atanh(tab[0][i]);
+      tab[1][i]=atanh(tab[1][i]);
+    }
+
     //remove bad values and prepare for fitting:
+    printf("border_calibrated: removing bad values\n");
     for (int i=0; i<2*nhist; i++) {
       if (isfinite(tab[1][i])!=1) {
         nbad++;
       } else {
-        tab[0][i-nbad]=atanh(tab[0][i]);
-	tab[1][i-nbad]=atanh(tab[1][i]);
+        tab[0][i-nbad]=tab[0][i];
+        tab[1][i-nbad]=tab[1][i];
       }
     }
+    nfit=2*nhist-nbad;
 
     //allocate vectors and matrices that define the fitting problem:
     //best fit for A x = b
     //where a_ij = p_i^j, b is actual accuracy and x are the fitting coefficients
-    A=gsl_matrix_alloc(nhist, order+1);
+    printf("border_calibrated: preparing for fitting\n");
+    order=O;
+    A=gsl_matrix_alloc(nfit, order+1);
     x=gsl_vector_alloc(order+1);
-    b=gsl_vector_alloc(nhist);
+    b=gsl_vector_alloc(nfit);
 
     //fill vectors and matrices:
-    for (int i=0; i<nhist; i++) {
+    for (int i=0; i<nfit; i++) {
+      printf("%g %g\n", tab[0][i], tab[1][i]);
       for (int j=0; j<=order; j++) {
         //here we don't care so much about efficiency because we only do the
 	//fitting once and it's a small problem...
@@ -721,18 +738,21 @@ namespace libagf {
     }
 
     //allocate extra stuff we need to perform the fitting:
-    work=gsl_multifit_linear_alloc(nhist, order+1);
+    work=gsl_multifit_linear_alloc(nfit, order+1);
     cov=gsl_matrix_alloc(order+1, order+1);
 
     //perform fitting:
+    printf("border_calibrated: performing fitting\n");
     gsl_multifit_linear(A, b, x, cov, &chisq, work);
 
     //pull coefficients out from GSL vector type:
+    printf("border_calibrated: storing coefficients\n");
     delete [] coef;
     coef=new real[order+1];
     for (int i=0; i<=order; i++) coef[i]=gsl_vector_get(x, i);
 
     //clean up:
+    printf("border_calibrated: cleaning up\n");
     delete [] tab[0];
     delete [] tab;
 
@@ -741,15 +761,11 @@ namespace libagf {
     gsl_matrix_free(cov);
     gsl_vector_free(x);
     gsl_vector_free(b);
+  }
 
-    //this is kind of dum but I don't feel like writing a whole family of new methods:
-    //(this is **against the rules**)
-    char *fname=new char[strlen(this->name)+5];
-    sprintf(fname, "%s.clb", this->name);
-    FILE *fs=fopen(fname, "w");
+  template <class real, class cls_t>
+  void borders_calibrated<real, cls_t>::print_calib(FILE *fs) {
     print_matrix(fs, &coef, 1, order+1);
-    fclose(fs);
-
   }
 
   template <class real, class cls_t>
@@ -763,7 +779,6 @@ namespace libagf {
     r=border_classify0(this->brd, this->grd, this->D1, this->n, x, k, d);
     if (this->id>=0 && praw!=NULL) {
       praw[this->id]=r;
-      //printf("r=%g\n" , praw[this->id]);
     }
 
     for (int i=0; i<=order; i++) {

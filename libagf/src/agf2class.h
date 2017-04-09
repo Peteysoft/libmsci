@@ -151,6 +151,8 @@ namespace libagf {
 		      int O=CALIBRATION_ORDER,	//order
 		      int nhist=NCONHIST);	//number of divisions
 
+      void print_calib(FILE *fs);
+
       virtual real R(real *x, real *praw=NULL);
   };
 }

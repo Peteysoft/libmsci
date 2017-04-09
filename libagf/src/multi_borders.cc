@@ -41,6 +41,7 @@ int main (int argc, char **argv) {
   char *partcom=NULL;		//command to partition classes
   char *concom=NULL;		//optional file conversion command
   char *precom=NULL;	//optional external binary classifier (predict command)
+  char *path=NULL;		//path to data files
 
   cls_ta ncls;
 
@@ -71,12 +72,11 @@ int main (int argc, char **argv) {
   //while keeping the ones to pass to class_borders
   //--the former include options for normalization or pre-processing:
   opt[3]=&nsv;
-  argc=parse_command_opts(argc, argv, "a0nS-+^MKOuZAx", "%s%%%d%s%s%s%%%s%%%%", opt, flag, 3);
+  argc=parse_command_opts(argc, argv, "a0nS-+^MKOuZAxy", "%s%%%d%s%s%s%%%s%%%%%s", opt, flag, 3);
   if (argc<0) {
     fprintf(stderr, "multi_borders: error parsing command line\n");
     exit(FATAL_COMMAND_OPTION_PARSE_ERROR);
   }
-
 
   if (flag[5]) {
     //extra training options:
@@ -85,6 +85,11 @@ int main (int argc, char **argv) {
     //use null string since it will be added to commandname:
     extra=new char[1];
     extra[0]='\0';
+  }
+
+  //path to data files:
+  if (flag[14]) {
+    path=(char *) opt[14];
   }
 
   //if we are using class_borders, check options for correctness:
@@ -96,7 +101,7 @@ int main (int argc, char **argv) {
     opt_args.uflag=0;
   } else {
     argc1=argc;
-    err=agf_parse_command_opts(argc1, argv, "h:i:I:k:l:N:q:r:s:t:v:V:W:y:", &opt_args);
+    err=agf_parse_command_opts(argc1, argv, "h:i:I:k:l:N:q:r:s:t:v:V:W:", &opt_args);
     //argc1=parse_command_opts(argc, argv, "hiIklrstvVWu", "%d%d%d%d%g%g%d%g%g%g%g%", opt+6, flag+6, 1);
     if (err==FATAL_COMMAND_OPTION_PARSE_ERROR) {
       fprintf(stderr, "multi_borders: error parsing command line\n");
@@ -378,6 +383,7 @@ int main (int argc, char **argv) {
     } else {
       precom=new char[1];
       precom[0]='\0';
+      //precom=NULL;
     }
     if (flag[4]==0) {
       //pass -Z option to class_borders:
@@ -390,7 +396,7 @@ int main (int argc, char **argv) {
 	}
       }
     }
-    shell=new multiclass_hier<real_a, cls_ta>(infs, 0, opt_args.path, precom,
+    shell=new multiclass_hier<real_a, cls_ta>(infs, 0, path, precom,
 		    flag[7], opt_args.Kflag);
   } else {
     //parse the control file and build the data structure:
@@ -435,6 +441,7 @@ int main (int argc, char **argv) {
         printf("%s\n", commandbuf);
         if (flag[1]==0) err=system(commandbuf);
       }
+      printf("multi_borders: exit code=%d\n", err);
       if (err!=0) exit(err);
       commandbuf=c+1;
     } while (*commandbuf!=END_INDICATOR);

@@ -92,8 +92,6 @@ int agf_parse_command_opts(int &argc, char **&argv, const char *optlist, agf_com
   //integer parameters:
   //opt_args->k=K_DEFAULT_KNN;	//-k
   //for (int j=0; optlist[j]!=NULL; j++) if (optlist[j]=='w') opt_args->k=K_DEFAULT_AGF;
-  //number of trials for AGF optimal
-  opt_args->nt=NT_DEFAULT;	//-q
 
   //floating point parameters:
   //for AGF:

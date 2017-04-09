@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
   opt_args.W2=-1;
   opt_args.var[0]=-1;
   opt_args.Qtype=-1;
+  opt_args.nt=NT_DEFAULT;
 
   exit_value=0;
   exit_value=agf_parse_command_opts(argc, argv, "w:W:q:v:V:Q:nzR", &opt_args);
