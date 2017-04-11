@@ -149,7 +149,14 @@ namespace libagf {
 		      cls_t *cls, 
 		      nel_ta ntrain, 		//number of samples
 		      int O=CALIBRATION_ORDER,	//order
-		      int nhist=NCONHIST);	//number of divisions
+		      int nhist=NCONHIST,	//number of divisions
+		      int optimize=0,	//optimize skill:
+		      			//0 free fit; no optimization
+					//1 fix r0
+					//2 optimize accuracy
+					//3 optimize uncertainty coefficient
+					//4 optimize correlation
+		      real r0=0);		//constant term
 
       void print_calib(FILE *fs);
 

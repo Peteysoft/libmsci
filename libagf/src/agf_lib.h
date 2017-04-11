@@ -9,6 +9,7 @@
 #include "agf_engine.h"
 #include "agf_util.h"
 #include "agf_eval.h"
+#include "agf_calibrate.h"
 #include "agf_io.h"
 #include "agf_fconv.h"
 #include "knn_lib.h"

@@ -104,6 +104,7 @@ OBJECT_FILES = 	agf_metric2$(OPT_VER).o \
 		agf_two_class$(OPT_VER).o \
 		agf_util$(OPT_VER).o \
 		agf_eval$(OPT_VER).o \
+		agf_calibrate$(OPT_VER).o \
 		agf_io$(OPT_VER).o \
 		agf_fconv$(OPT_VER).o \
 		knn_lib$(OPT_VER).o \
@@ -125,6 +126,7 @@ OBJECT_FILES = 	agf_metric2$(OPT_VER).o \
 
 INCLUDE_FILES = agf_util.h \
 		agf_eval.h \
+		agf_calibrate.h \
 		agf_metric2.h \
 		agf_engine.h \
 		knn_lib.h \

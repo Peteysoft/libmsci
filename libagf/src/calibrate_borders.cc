@@ -46,15 +46,19 @@ int main(int argc, char *argv[]) {
   real_a **mat=NULL;
   dim_ta nvar1, nvar2;	//check number of variables against other files
 
+  real_a r0;		//threshold probability
+
   int exit_code=0;
   int err_code;
 
+  //set defaults:
   opt_args.nt=NCONHIST;
   opt_args.Qtype=CALIBRATION_ORDER;
+  opt_args.algtype=0;
 
   //normalization options: -n -S -a
   //supernewton iteration: -h -i -I
-  exit_code=agf_parse_command_opts(argc, argv, "a:q:Q:nuAM", &opt_args);
+  exit_code=agf_parse_command_opts(argc, argv, "a:c:q:Q:r:nuAM", &opt_args);
   if (exit_code==FATAL_COMMAND_OPTION_PARSE_ERROR) return exit_code;
 
   if (argc < 3) {
@@ -80,11 +84,23 @@ int main(int argc, char *argv[]) {
     printf("options:\n");
     printf("  -a normfile file containing normalization data (input/output)\n");
     printf("  -A          input file in ASCII format\n");
+    printf("  -c          method: [0]\n");
+    printf("                0 = free fit\n");
+    printf("                1 = fix threshold (r0) based on -r\n");
+    printf("                2 = optimize accuracy\n");
+    printf("                3 = optimize uncertainty coefficient\n");
+    printf("                4 = optimize correlation coefficient\n");
     printf("  -M          input file in LIBSVM format\n");
     printf("  -q nhist    number of histogram partitions [%d]\n", NCONHIST);
     printf("  -Q order    order of fitted polynomial [%d]\n", CALIBRATION_ORDER);
     printf("  -n          option to normalise the data\n");
+    printf("  -r r0       threshold probability\n");
     printf("  -u          store borders data in un-normalized coordinates\n");
+    printf("\n");
+    printf("*** to calibrated multi-borders classifieres, use the multi_borders command\n");
+    printf("    to recursively calibrate each of the binary models, e.g.:\n");
+    printf("\n");
+    printf("$> multi_borders -Z -- \"calibrate_borders -c 3\" control train fbase output\n");
     printf("\n");
     return INSUFFICIENT_COMMAND_ARGS;
   }
@@ -192,7 +208,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  classifier->calibrate(train, cls, ntrain, opt_args.Qtype, opt_args.nt);
+  classifier->calibrate(train, cls, ntrain, opt_args.Qtype, opt_args.nt, opt_args.algtype, opt_args.rthresh);
 
   //create the new calibration file:
   outfile=new char[strlen(argv[2])+5];

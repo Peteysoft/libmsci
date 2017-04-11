@@ -44,11 +44,11 @@ nel_ta **build_contingency_table(cls_t *truth, cls_t *ret, nel_ta n, cls_t &nclt
   return acc_mat;
 }
 
-template <class cls_t>
-double uncertainty_coefficient(nel_ta **acc_mat, cls_t nclt, cls_t nclr, double &ucr, double &uct) {
+template <typename cls_t, typename count_t>
+double uncertainty_coefficient(count_t **acc_mat, cls_t nclt, cls_t nclr, double &ucr, double &uct) {
   double hrt, hr, ht;		//entropy measures
   //we've simplified the computation somewhat:
-  nel_ta nt=acc_mat[nclt][nclr];
+  count_t nt=acc_mat[nclt][nclr];
   double ntlognt=nt*log(nt);
   double uc;
   //calculate the uncertainty coefficient:
@@ -273,6 +273,9 @@ void check_confidence(cls_t *truth, cls_t *cls, real *con, nel_ta n, int nhist, 
   delete [] table;
 }
 
+template double uncertainty_coefficient<cls_ta, nel_ta>(nel_ta **acc_mat, cls_ta nclt, cls_ta nclr, double &ucr, double &uct);
+template double uncertainty_coefficient<cls_ta, float>(float **acc_mat, cls_ta nclt, cls_ta nclr, double &ucr, double &uct);
+template double uncertainty_coefficient<cls_ta, double>(double **acc_mat, cls_ta nclt, cls_ta nclr, double &ucr, double &uct);
 
 template double class_eval<int32_t>(int32_t *, int32_t *, nel_ta, FILE *);
 template double class_eval_basic<int32_t>(int32_t *, int32_t *, nel_ta, FILE *, flag_a);

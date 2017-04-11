@@ -674,7 +674,7 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  void borders_calibrated<real, cls_t>::calibrate(real **train, cls_t *cls, nel_ta ntrain, int O, int nhist) {
+  void borders_calibrated<real, cls_t>::calibrate(real **train, cls_t *cls, nel_ta ntrain, int O, int nhist, int optimize, real r0) {
     real **tab;			//table of accuracies versus probabilities
     int nfit;
     cls_t nct, ncr;		//number of classes (should be 2...)
@@ -687,6 +687,10 @@ namespace libagf {
     gsl_matrix *cov;
     gsl_multifit_linear_workspace *work;
     double chisq;
+    real *rsort;
+    nel_ta *nonecum;
+    real cterm=0;			//constant term
+    int cflag=0;		//constant term supplied?
 
     //classify each training sample using this classifier:
     printf("border_calibrated: classifiying training data\n");
@@ -717,29 +721,57 @@ namespace libagf {
     }
     nfit=2*nhist-nbad;
 
+    printf("border_calibrated: optimizing skill\n");
+    //the coup de grace:
+    if (optimize>1) {
+      cflag=1;
+      rsort=new real[ntrain];
+      nonecum=new nel_ta[ntrain];
+      sortr_cumulate_ones(cls, r, ntrain, nonecum, rsort);
+    }
+    switch (optimize) {
+      case(1):
+        cflag=1;
+	cterm=-atanh(r0);
+	break;
+      case(2):
+	cterm=-atanh(optimize_binary_skill_rig(nonecum, rsort, ntrain, &acc_bin));
+	break;
+      case(3):
+	cterm=-atanh(optimize_binary_skill_rig(nonecum, rsort, ntrain, &uc_bin));
+	break;
+      case(4):
+	cterm=-atanh(optimize_binary_skill_rig(nonecum, rsort, ntrain, &corr_bin));
+	break;
+    }
+    if (optimize>1) {
+      delete [] rsort;
+      delete [] nonecum;
+    }
+
     //allocate vectors and matrices that define the fitting problem:
     //best fit for A x = b
-    //where a_ij = p_i^j, b is actual accuracy and x are the fitting coefficients
+    //where a_ij = atanh^j(r_i), tanh(b_i) is actual accuracy and x are the fitting coefficients
     printf("border_calibrated: preparing for fitting\n");
     order=O;
-    A=gsl_matrix_alloc(nfit, order+1);
-    x=gsl_vector_alloc(order+1);
+    A=gsl_matrix_alloc(nfit, order+1-cflag);
+    x=gsl_vector_alloc(order+1-cflag);
     b=gsl_vector_alloc(nfit);
 
     //fill vectors and matrices:
     for (int i=0; i<nfit; i++) {
       printf("%g %g\n", tab[0][i], tab[1][i]);
-      for (int j=0; j<=order; j++) {
+      for (int j=cflag; j<=order; j++) {
         //here we don't care so much about efficiency because we only do the
 	//fitting once and it's a small problem...
-        gsl_matrix_set(A, i, j, pow(tab[0][i], j));
+        gsl_matrix_set(A, i, j-cflag, pow(tab[0][i]+cterm, j));
       }
       gsl_vector_set(b, i, tab[1][i]);
     }
 
     //allocate extra stuff we need to perform the fitting:
-    work=gsl_multifit_linear_alloc(nfit, order+1);
-    cov=gsl_matrix_alloc(order+1, order+1);
+    work=gsl_multifit_linear_alloc(nfit, order+1-cflag);
+    cov=gsl_matrix_alloc(order+1-cflag, order+1-cflag);
 
     //perform fitting:
     printf("border_calibrated: performing fitting\n");
@@ -749,7 +781,8 @@ namespace libagf {
     printf("border_calibrated: storing coefficients\n");
     delete [] coef;
     coef=new real[order+1];
-    for (int i=0; i<=order; i++) coef[i]=gsl_vector_get(x, i);
+    for (int i=cflag; i<=order; i++) coef[i]=gsl_vector_get(x, i-cflag);
+    if (cflag) coef[0]=cterm;
 
     //clean up:
     printf("border_calibrated: cleaning up\n");

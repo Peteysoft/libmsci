@@ -14,8 +14,8 @@ namespace libagf {
 		cls_t &nclr);				//number of classes in retrieved
 
   //calculate the uncertainty coefficient:
-  template <class cls_t>
-  double uncertainty_coefficient(nel_ta **acc_mat, 	//contingency table
+  template <typename cls_t, typename count_t>
+  double uncertainty_coefficient(count_t **acc_mat, 	//contingency table
 		cls_t nclt, 				//rows in contingency table
 		cls_t nclr, 				//columns in contingency table
 		double &ucr, 				//reverse uncertainty coeff.
