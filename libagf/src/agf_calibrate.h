@@ -72,6 +72,16 @@ namespace libagf {
 		  real *rsort,			//sorted probabilities
 		  nel_ta n);			//number of results
 
+  //calibrates the estimated difference in conditional probabilities by fitting
+  //the inverse arc-tangent to a polynomical
+  //"true" probabilities estimated with a running average
+  template <typename real, typename cls_t>
+  real * calibrate_r(cls_t *cls,		//true classes
+		  real *r,			//probability estimates
+		  nel_ta n,			//number of estimates
+		  int order,			//order of fit
+		  nel_ta k);			//size of box
+
 } //end namespace libagf
 
 #endif

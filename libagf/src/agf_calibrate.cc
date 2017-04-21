@@ -3,6 +3,9 @@
 #include <string.h>
 #include <getopt.h>
 
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_multifit.h>
+
 #include "peteys_tmpl_lib.h"
 #include "roots_mins.h"
 
@@ -209,6 +212,90 @@ namespace libagf {
 
     return result;
   }
+
+  template <typename real, typename cls_t>
+  real * calibrate_r(cls_t *cls, real *r, nel_ta n, int order, nel_ta k) {
+    real d[k];		//distances
+    real acc[n-k];	//actual accuracies as a function of r
+    real rave[n-k];	//sorted r which we transform with inverse tangent
+    nel_ta none=0;	//number of ones in the zone of interest
+    long *sind=heapsort(r, n);
+    //for fitting:
+    gsl_matrix *A;		//A^T A x = A^T b		
+    gsl_vector *x;
+    gsl_vector *b;
+    //for the fitting:
+    gsl_matrix *cov;
+    gsl_multifit_linear_workspace *work;
+    double chisq;
+
+    //constant term is not supplied:
+    int cflag=0;
+    real cterm=0;
+
+    //results
+    real * coef;
+ 
+    rave[0]=0;
+    for (nel_ta i=0; i<k; i++) none+=cls[sind[i]];
+
+    //interesting that this itself is a density estimation problem:
+    for (nel_ta i=0; i<n-k; i++) {
+      rave[i]=0;
+      for (nel_ta j=0; j<k; j++) rave+=atanh(r[sind[i+j-k/2]]);
+      rave[i]=rave[i]/k;
+      acc[i]=atanh(2*none/k-1);
+      none-=cls[sind[i]];
+      none+=cls[sind[i+k]];
+    }
+
+    //allocate vectors and matrices that define the fitting problem:
+    //best fit for A x = b
+    //where a_ij = atanh^j(r_i), tanh(b_i) is actual accuracy and x are the fitting coefficients
+    printf("border_calibrated: preparing for fitting\n");
+    A=gsl_matrix_alloc(n, order+1-cflag);
+    x=gsl_vector_alloc(order+1-cflag);
+    b=gsl_vector_alloc(n);
+
+    //fill vectors and matrices:
+    for (int i=0; i<n; i++) {
+      //printf("%g %g\n", tab[0][i], tab[1][i]);
+      for (int j=cflag; j<=order; j++) {
+        //here we don't care so much about efficiency because we only do the
+	//fitting once and it's a small problem...
+        gsl_matrix_set(A, i, j-cflag, pow(rave[i]+cterm, j));
+      }
+      gsl_vector_set(b, i, acc[i]);
+    }
+
+    //allocate extra stuff we need to perform the fitting:
+    work=gsl_multifit_linear_alloc(n, order+1-cflag);
+    cov=gsl_matrix_alloc(order+1-cflag, order+1-cflag);
+
+    //perform fitting:
+    printf("border_calibrated: performing fitting\n");
+    gsl_multifit_linear(A, b, x, cov, &chisq, work);
+
+    //pull coefficients out from GSL vector type:
+    printf("border_calibrated: storing coefficients\n");
+    coef=new real[order+1];
+    for (int i=cflag; i<=order; i++) coef[i]=gsl_vector_get(x, i-cflag);
+    if (cflag) coef[0]=cterm;
+
+    //clean up:
+    printf("calibrate_r: cleaning up\n");
+    gsl_multifit_linear_free(work);
+    gsl_matrix_free(A);
+    gsl_matrix_free(cov);
+    gsl_vector_free(x);
+    gsl_vector_free(b);
+
+    delete [] sind;
+
+    //return the coefficients:
+    return coef;
+  }
+
 
   template void sortr_cumulate_ones<float, cls_ta>(cls_ta *truth, float *r, nel_ta n, nel_ta *nonecum, float *rsort);
   template void sortr_cumulate_ones<double, cls_ta>(cls_ta *truth, double *r, nel_ta n, nel_ta *nonecum, double *rsort);

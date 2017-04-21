@@ -44,13 +44,14 @@ The normalization coefficient, $\norm$, normalizes $\vectorkernel$:
 	\norm = \int_V \vectorkernel(\point, \point^\prime, \kernelparam) \mathrm d \point^\prime
 \end{equation}
 
-The method can be used for statistical classification by simply comparing
+The method can be used for statistical classification by comparing
 results from the different classes:
 \begin{equation}
 	\class = \arg \min_i \sum_{j|\classlabel_j = i} K(\sample_j, \testpoint, \kernelparam)
 \end{equation}
-where $\classlabel_j$ is the class of the $j$th sample. Naturally the method can also
-be used to estimate both the joint and conditional probabilities 
+where $\classlabel_j$ is the class of the $j$th sample.
+Similarly, the method can also return estimates of
+the joint and conditional probabilities 
 ($\condprob(\class, \vec x)$ and $\condprob(\class |\vec x)$ respectively). 
 More on this later.
 
@@ -157,12 +158,12 @@ into the decision function in (\ref{decision_function0}) produces the following:
 	\svmdecision(\testpoint) = \sum_i \svmcoeff_i \classlabel_i \vectorkernel (\testpoint, \sample_i) + \svmborderconst
 	\label{svm_decision}
 \end{equation}
-Meanwhile, the final, dual, quadratic optimization problem looks like this:
+Thus, the final, dual, quadratic optimization problem looks like this:
 \begin{eqnarray}
 	\max_{\lbrace \svmcoeff_i \rbrace} & \sum_i \svmcoeff_i 
 	- \frac{1}{2} \sum_{i, j} \svmcoeff_i \svmcoeff_j \classlabel_i \classlabel_j \vectorkernel(\sample_i, \sample_j) \label{dual_problem} \\
 	& \svmcoeff_i \ge 0 \label{constraint1} \\
-	& \sum_i \svmcoeff \classlabel_i = 0 \label{constraint2}
+	& \sum_i \svmcoeff_i \classlabel_i = 0 \label{constraint2}
 \end{eqnarray}
 There are a number of refinements that can be applied to the optimization
 problem in (\ref{dual_problem})-(\ref{constraint2}), chiefly to reduce over-fitting and to add
@@ -425,6 +426,23 @@ Classifications are then performed with \verb/classify_m/.
 	\caption{Summary of datasets used in the numerical trials.}
 \end{table}
 
+The borders classification algorithm was tested on a total of 
+17 different datasets.
+It failed on three of the datasets, succeeded on eight and generated
+mixed results for the remaining six datasets.
+By fail, we mean either it was significantly slower than the SVM 
+or it produced an unacceptable reduction in accuracy.
+By mixed, we mean that either the algorithm failed to produce a significant
+speed increase over the SVM
+or it produced a small but signficant reduction in accuracy.
+By succeed we mean that it both significantly improved the speed of the SVM
+and produced an acceptable reduction in accuracy.
+We will make the meaning of an acceptable reduction in accuracy more precise
+in the next section.
+
+To save space, only six datasets will be discussed here.
+Two for which the algorithm failed, two for which it produced mixed results
+and two for which it failed.
 We test the algorithm on six different datasets. Five of the six are from
 the ``Statlog'' project \citep{King_etal1995} whose collection of datasets 
 cover a fairly broad range: size, types of problems, number of classes and attributes.

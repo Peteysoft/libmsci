@@ -99,13 +99,14 @@ AGFOPT_pendigits=-k 200 -W 2 -s 200
 AGFOPT_dna=-k 300 -s 500 -W 20
 AGFOPT_usps=-k 100 -W 1 -s 250
 AGFOPT_seismic=-W 40 -k 500 -s 200
-AGFOPT_ijcnn1=-W 15 -k 400 -s 500
+AGFOPT_ijcnn1=-W 10 -k 400 -s 500
 AGFOPT_madelon=-W 10 -k 200
-AGFOPT_phishing=-W 5 -k 250 -s 500
-#AGFOPT_splice=-W 15 -s 1000 -r-0.23
-AGFOPT_splice=-W 15 -s 1000
+AGFOPT_phishing=-W 7 -k 250 -s 500
+AGFOPT_splice=-W 15 -s 1000 -r-0.23
+#AGFOPT_splice=-W 15 -s 1000
 AGFOPT_humidity=-k 400 -W 10 -s 200
 AGFOPT_mnist=-k 200 -W 1 -s 500
+AGFOPT_mushrooms=-k 300 -W 3 -s 500
 
 AGFOPT=$(AGFOPT_$(VER))
 
@@ -119,6 +120,7 @@ SVMOPT_letter=-c 50 -h 0
 SVMOPT_seismic=-c 50 -h 0
 SVMOPT_humidity=-h 0 -c 50
 SVMOPT_mnist=-c 50
+SVMOPT_mushrooms=-c 50 -h 0
 
 SVMOPT=$(SVMOPT_$(VER))
 
@@ -137,6 +139,8 @@ K_phishing=-k 3
 K_splice=-k 1
 K_humidity=-k 51
 K_mnist=-k 9
+K_ijcnn1=-k 11
+K_mushrooms=-k 3
 
 K=$(K_$(VER))
 
@@ -153,15 +157,17 @@ NSAMP_seismic=-s 200
 NSAMP_ijcnn1=-s 500
 NSAMP_phishing=-s 500
 NSAMP_splice=-s 1000 -r-0.99
-NSAMP_humidity=-s 200
 #NSAMP_splice=-s 1000
+NSAMP_humidity=-s 200
 NSAMP_mnist=-s 500
+NSAMP_mushrooms=-s 200
 
 NSAMP=$(NSAMP_$(VER))
 
 #clean targets for collecting stats: 
 #(which parts of the makefile do we want to rerun?)
 CLEAN_letter=clean_but_borders
+CLEAN_ijcnn1=clean_borders
 CLEAN_seismic=clean_borders
 CLEAN_codrna=clean_borders
 CLEAN_humidity=clean_borders
@@ -189,6 +195,9 @@ TEST=$(BASE).tst
 
 #append all results in here:
 RESULTS=$(WORKDIR)/results.txt
+
+#unless you make stats in which it's stuck in here:
+STATFILE=$(VER).txt
 
 #one-vs-one control file:
 MULTICONTROL=$(WORKDIR)/onevsone.mbc
@@ -254,7 +263,7 @@ stats: calc_stats
 	#for I in {$(NLINE)..$(NRUN)}; do 
 	for ((I=$(NLINE); I<$(NRUN); I++)); do \
 		make $(CLEAN_TARGET); \
-		make RESULTS=$(VER).txt; \
+		make RESULTS=$(STATFILE); \
 	done
 	./calc_stats < $(VER).txt
 
@@ -309,8 +318,8 @@ clean:
 
 #clean only AGF and SVM-borders:
 clean_borders:
-	rm -f $(AGFMODEL)
-	rm -f $(ACCELERATOR)
+	rm -f $(AGFMODEL)*
+	rm -f $(ACCELERATOR)*
 
 #clean everything but AGF-borders (get stats on timing at least...):
 clean_but_borders:
@@ -449,6 +458,9 @@ $(WORKDIR)/sat.trn.cls $(WORKDIR)/shuttle.trn.cls: $(WORKDIR)/%.cls: $(DATADIR)/
 	lvq2agf -H $(DATADIR)/$(VER).trn.txt $(TRAIN)
 	lvq2agf -H $(DATADIR)/$(VER).tst.txt $(TEST)
 	agf_preprocess -U $(PRE) $(TRAIN) $(TRAIN)
+ifdef SUBSAMPLE
+	agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+endif
 	agf_preprocess $(NORMCLAUSE) -U $(TEST) $(TEST)
 
 VEHICLE_SUFFIX=.dat.txt
@@ -465,12 +477,18 @@ $(WORKDIR)/vehicle.trn.cls: $(addprefix, $(DATADIR)/, $(VEHICLE_FILES))
 	lvq2agf -H $< $(WORKDIR)/$(VER).trn.txt $(TRAIN)
 	lvq2agf -H $< $(WORKDIR)/$(VER).tst.txt $(TEST)
 	agf_preprocess -U $(PRE) $(TRAIN) $(TRAIN)
+ifdef SUBSAMPLE
+	agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+endif
 	agf_preprocess $(NORMCLAUSE) -U $(TEST) $(TEST)
 
-$(WORKDIR)/phishing.trn.cls $(WORKDIR)/covtype.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
+$(WORKDIR)/mushrooms.trn.cls $(WORKDIR)/phishing.trn.cls $(WORKDIR)/covtype.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
 	svm2agf -E 0 $(DATADIR)/$(VER) $(WORKDIR)/$(VER)
 	agf_preprocess $(PRE) -Uzf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
+ifdef SUBSAMPLE
+	agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+endif
 
 $(addsuffix .trn.cls, $(addprefix $(WORKDIR)/, $(SVMTTDATA))): $(WORKDIR)/%.trn.cls: $(DATADIR)/%
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi

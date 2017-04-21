@@ -13,14 +13,16 @@ FIGURES = global_classic_sonde_error.eps \
 	     global_PC_xval_error.eps \
 	     global_PC_xval_scatter.eps \
 	     lyap_spec.eps \
+	     Nhemi_classic_sonde.eps \
 	     Nhemi_PC_sonde.eps \
+	     ozone_sonde_stations.ps \
 	     tracer_correlation.eps \
 	     classic_O3.1998.10.01.ps \
 	     firstpc1997.12.01.ps \
 	     passive1997.12.01.ps \
 	     pc_O3.1998.10.01.ps \
 	     svl1.ps svl2.ps svl3.ps svl4.ps \
-	     svr1.ps svr2.ps svr3.ps svr4.ps
+	     svr1.ps svr2.ps svr3.ps svr4.ps 
 
 $(TARGET).pdf: $(TARGET).tex $(DEPENDENTS) $(FIGURES)
 	latex $(TARGET)

@@ -434,7 +434,7 @@ int main(int argc, char *argv[]) {
       nel_ta *cind=sort_classes(train, nres, (cls_ta *) ord, ncls);
       fprintf(diagfs, "Class locations:\n");
       for (cls_ta i=0; i<ncls; i++) {
-        fprintf(diagfs, "%d: %d %d\n", i, cind[i], cind[i+1]-cind[i]+1);
+        fprintf(diagfs, "%d: %d %d\n", i, cind[i], cind[i+1]-cind[i]);
       }
       delete [] cind;
     }

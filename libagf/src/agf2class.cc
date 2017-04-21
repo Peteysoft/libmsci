@@ -405,7 +405,7 @@ namespace libagf {
         }
       }
     } else {
-      if (this->D!=nvar) throw DIMENSION_MISMATCH;
+      if (this->D1!=nvar) throw DIMENSION_MISMATCH;
       this->D=this->D1;
       xtran=x;
     }
