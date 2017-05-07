@@ -72,7 +72,7 @@ For example, consider a second-order finite difference scheme in one dimension:
 	\frac{2 d}{\Delta x^2} q_i + 
 	\left (\frac{v_i}{2 \Delta x} + \frac{d}{\Delta x^2} \right ) q_{i+1} \label{finite_difference_diffusion}
 \end{eqnarray}
-where $d$ is a scalar diffusion coefficient and $\Delta x$ is the grid spacing
+where $d$ is a scalar diffusion coefficient, $\Delta x$ is the grid spacing
 and $v_i$ is the wind speed at the $i$th grid point.
 Expressed as elements of the matrix, $A$:
 \begin{eqnarray}
@@ -109,7 +109,7 @@ we can calculate $\vect q$ given $\vect q$ at any other time:
 	\vect q(t) = R(t_0, t-t_0) \vect q_0
 	\label{tracer_integration}
 \end{equation}
-where $\vect q(t_0)=\vect q_0$ is the initial tracer configuration.
+where $\vect q_0 = \vect q(t_0)$ is the initial tracer configuration.
 
 To make this solution fully analytical, although not realizable in practice,
 we solve $R$ for an infinitessimal integration time using linear algebra:
@@ -172,7 +172,7 @@ and the center of the measurement window is the \italics{lead time}.
 
 We have the following minimization problem:
 \begin{equation}
-	\min_{\vect c} \sum_i \left \lbrace \sum_{j=1}^k c_j \vect w_i R(t_0, ~ t_n-t^{(i)}) \vect v^{(j)} - m_i \right \rbrace^2
+\min_{\vect c} \sum_i \left \lbrace \sum_{j=1}^k c_j \vect w_i R(t_0, ~ t^{(i)}-t_0) \vect v^{(j)} - m_i \right \rbrace^2
 	\label{PC_proxy_def}
 \end{equation}
 where $t^{(i)}$ is the time stamp of the $i$th measurement, $m_i$, 
@@ -258,6 +258,8 @@ For most systems:
 That is, as $H$ is integrated forward, the largest singular value and
 the largest singular vector will increasingly begin to dominate
 \citep{Ott1993}.
+The Lyapunov exponents can help us gauge the significance of each
+singular vector at a given lead time.
 
 \subsection{Special properties}
 
@@ -475,7 +477,8 @@ Daily averaged wind and temperature data was used to drive the advection model.
 
 \begin{figure}
   \begin{flushright}
-    \includegraphics[angle=90,width=0.9\textwidth]{ozone_sonde_stations.ps}
+    %\includegraphics[angle=90,width=0.9\textwidth]{ozone_sonde_stations}
+    \includegraphics[width=0.9\textwidth]{ozone_sonde_stations}
     \caption{Locations of ozone sonde launch stations}
     \label{ozone_sonde_stations}
   \end{flushright}
@@ -496,18 +499,19 @@ towards the equator.
 \section{Numerical preliminaries}
 
 \begin{figure}
-  \begin{tabular}{cccc}
-    \includegraphics[angle=-90,width=0.23\textwidth]{svr4} &
-    \includegraphics[angle=-90,width=0.23\textwidth]{svr3} &
-    \includegraphics[angle=-90,width=0.23\textwidth]{svr2} &
-    \includegraphics[angle=-90,width=0.23\textwidth]{svr1} \\
-    a. Right SV 1 & c. Right SV 2 & e. Right SV 3 & g. Right SV 4 \\
-    \includegraphics[angle=-90,width=0.23\textwidth]{svl4} &
-    \includegraphics[angle=-90,width=0.23\textwidth]{svl3} &
-    \includegraphics[angle=-90,width=0.23\textwidth]{svl2} &
-    \includegraphics[angle=-90,width=0.23\textwidth]{svl1} \\
-    b. Left SV 1 & d. Left SV 2 & f. Left SV 3 & h. Left SV 4
-  \end{tabular}
+  %\begin{tabular}{cccc}
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svr4} &
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svr3} &
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svr2} &
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svr1} \\
+  %  a. Right SV 1 & c. Right SV 2 & e. Right SV 3 & g. Right SV 4 \\
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svl4} &
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svl3} &
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svl2} &
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svl1} \\
+  %  b. Left SV 1 & d. Left SV 2 & f. Left SV 3 & h. Left SV 4
+  %\end{tabular}
+  \includegraphics[width=1\textwidth]{sample_sv}
   \caption{An example of the singular vectors derived from a discrete transport map.
   Sixty day integration started on August 1 1998.}
   \label{sample_SV}
@@ -531,7 +535,7 @@ have negligible dot products.
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=0.9\textwidth]{tracer_correlation.eps}
+\includegraphics[width=0.9\textwidth]{tracer_correlation}
 \caption{The correlation over time of two differently-initialized tracers
 (broken line)--zonally symmetric and meridionally symmetric--and of
 the zonally-symmetric-initialized tracer with the first principal component.
@@ -544,8 +548,10 @@ of one 1.2 hours.}\label{tcorr}
 \begin{figure}
 \begin{tabular}{ll}
 a. Tracer & b. First PC\\
-\includegraphics[angle=-90,width=0.45\textwidth]{passive1997.12.01.ps} &
-\includegraphics[angle=-90,width=0.45\textwidth]{firstpc1997.12.01.ps}
+%\includegraphics[angle=-90,width=0.45\textwidth]{passive1997_12_01} &
+\includegraphics[width=0.45\textwidth]{passive1997_12_01} &
+%\includegraphics[angle=-90,width=0.45\textwidth]{firstpc1997_12_01}
+\includegraphics[width=0.45\textwidth]{firstpc1997_12_01}
 \end{tabular}
 \caption{Comparison of a simulated tracer (a.) and the first principal
 component (b.) for the same time integration.
@@ -578,7 +584,7 @@ A sample PC as compared with the tracer is shown in Figure \ref{pc1}.
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=0.9\textwidth]{lyap_spec.eps}
+\includegraphics[width=0.9\textwidth]{lyap_spec}
 \caption{Plot of the top five (5) singular-values of a semi-Lagrangian
 tracer simulation over time.  Straight-line fits return the Lyapunov-spectrum.
 The simulation was done on the 500 K isentropic level.}
@@ -627,9 +633,9 @@ a given lead time--see Figure \ref{lyap_spec}.
 \begin{figure}
   %crude and inappropriate (like me) but does the job:
   \begin{tabular}{l}
-    \includegraphics[angle=-90,width=0.9\linewidth]{classic_O3.1998.10.01.ps} \\
+    \includegraphics[width=0.9\linewidth]{classic_O3_1998_10_01} \\
     a. Classic proxy tracer \\
-    \includegraphics[angle=-90,width=0.9\linewidth]{pc_O3.1998.10.01.ps} \\
+    \includegraphics[width=0.9\linewidth]{pc_O3_1998_10_01} \\
     b. PC proxy
   \end{tabular}
   \caption{Sample globally reconstructed ozone fields on the 500 K isentrop for October 1, 1998.}

@@ -121,6 +121,7 @@ SVMOPT_seismic=-c 50 -h 0
 SVMOPT_humidity=-h 0 -c 50
 SVMOPT_mnist=-c 50
 SVMOPT_mushrooms=-c 50 -h 0
+SVMOPT_codrna=-h 0
 
 SVMOPT=$(SVMOPT_$(VER))
 
@@ -173,10 +174,19 @@ CLEAN_codrna=clean_borders
 CLEAN_humidity=clean_borders
 CLEAN_mnist=clean_borders
 ifdef CLEAN_$(VER)
-CLEAN_TARGET=$(CLEAN_$(VER))
+  CLEAN_TARGET=$(CLEAN_$(VER))
 else
   #since most datasets are already separated into "test" and "training":
   CLEAN_TARGET=clean
+endif
+
+ifdef SUBSAMPLE
+  BUILD_TARGET=build_svm
+  CLEAN_TARGET=clean
+  STATFILE=$(VER).sub.txt
+else
+  #if you make stats results are stuck in here:
+  STATFILE=$(VER).txt
 endif
 
 #where to find scripts (for testing acc. vs. border samples):
@@ -195,9 +205,6 @@ TEST=$(BASE).tst
 
 #append all results in here:
 RESULTS=$(WORKDIR)/results.txt
-
-#unless you make stats in which it's stuck in here:
-STATFILE=$(VER).txt
 
 #one-vs-one control file:
 MULTICONTROL=$(WORKDIR)/onevsone.mbc
@@ -258,14 +265,14 @@ all: $(RESULTS)
 	@echo
 
 #how many lines does results file contain so far?
-NLINE!=cat $(VER).txt | wc -l
+NLINE!=cat $(STATFILE) | wc -l
 stats: calc_stats
 	#for I in {$(NLINE)..$(NRUN)}; do 
 	for ((I=$(NLINE); I<$(NRUN); I++)); do \
 		make $(CLEAN_TARGET); \
-		make RESULTS=$(STATFILE); \
+		make RESULTS=$(STATFILE) $(BUILD_TARGET); \
 	done
-	./calc_stats < $(VER).txt
+	./calc_stats < $(STATFILE)
 
 $(RESULTS): $(TEST).knn.cls $(TEST).agf.cls $(TEST).svm.cls $(TEST).acc.cls
 	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/knn_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
@@ -327,6 +334,28 @@ clean_but_borders:
 	rm -f $(SVMMODEL)
 	rm -f $(TEST).knn.*
 
+#build SVM only (for sub-sampling):
+build_svm: $(TEST).svm.cls $(TEST).svm.con
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/svm_ttime.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/svm_ttime.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/svm_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/svm_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	cls_comp_stats -Hb $(TEST).cls $(TEST).svm | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	wc -l $(TRAIN).svm | awk '{print $$1}' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep total_sv $(SVMMODEL) | awk '{print $$2}' >> $(RESULTS)
+	@echo "SVM:"
+	@echo
+	@cat $(WORKDIR)/svm_ttime.txt
+	@cat $(WORKDIR)/svm_time.txt
+	@echo
+	@cls_comp_stats $(TEST).cls $(TEST).svm
+	@echo
 
 $(VEHICLE_TEST):
 	make VER=vehicle VEHICLE_TEST=$(VEHICLE_TEST)
@@ -378,17 +407,17 @@ $(TEST).$(VEHICLE_TEST).%.vec: $(TEST).%.vec
 	cp $< $@
 
 #testing:
-$(TEST).knn.cls $(TEST).knn.cor: $(TRAIN).vec $(TRAIN).cls $(TEST).vec
+$(TEST).knn.cls $(TEST).knn.con: $(TRAIN).vec $(TRAIN).cls $(TEST).vec
 	$(TIME) -o $(WORKDIR)/knn_time.txt knn $K classify $(TRAIN) $(TEST).vec $(TEST).knn
 
-$(TEST).svm.cls $(TEST).svm.cor: $(SVMMODEL) $(TEST).svm
+$(TEST).svm.cls $(TEST).svm.con: $(SVMMODEL) $(TEST).svm
 	$(TIME) -o $(WORKDIR)/svm_time.txt svm-predict -b 1 $(TEST).svm $(SVMMODEL) $(TEST).svm.txt
 	svmout2agf $(TEST).svm.txt $(TEST).svm
 
-$(TEST).agf.cls $(TEST).agf.cor: $(AGFMODEL2) $(TEST).vec
+$(TEST).agf.cls $(TEST).agf.con: $(AGFMODEL2) $(TEST).vec
 	$(TIME) -o $(WORKDIR)/agf_time.txt $(BORDERS_TEST) $(AGFMODEL) $(TEST).vec $(TEST).agf > $(TEST).agf.txt
 
-$(TEST).acc.cls $(TEST).acc.cor: $(ACCELERATOR2) $(TEST).vec
+$(TEST).acc.cls $(TEST).acc.con: $(ACCELERATOR2) $(TEST).vec
 	$(TIME) -o $(WORKDIR)/acc_time.txt $(BORDERS_TEST) $(ACCELERATOR) $(TEST).vec $(TEST).acc > $(TEST).acc.txt
 
 #find number of border samples SVM-borders:
@@ -452,6 +481,9 @@ $(WORKDIR)/segment.trn.cls: $(DATADIR)/segment.dat.txt
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
 	lvq2agf -H $< $(WORKDIR)/$(VER)
 	agf_preprocess $(PRE) -FzUf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST) 0 1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
+ifdef SUBSAMPLE
+	subsample_special -zCf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+endif
 
 $(WORKDIR)/sat.trn.cls $(WORKDIR)/shuttle.trn.cls: $(WORKDIR)/%.cls: $(DATADIR)/%.txt
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
@@ -459,7 +491,8 @@ $(WORKDIR)/sat.trn.cls $(WORKDIR)/shuttle.trn.cls: $(WORKDIR)/%.cls: $(DATADIR)/
 	lvq2agf -H $(DATADIR)/$(VER).tst.txt $(TEST)
 	agf_preprocess -U $(PRE) $(TRAIN) $(TRAIN)
 ifdef SUBSAMPLE
-	agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+	#agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+	subsample_special -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
 endif
 	agf_preprocess $(NORMCLAUSE) -U $(TEST) $(TEST)
 
@@ -478,7 +511,8 @@ $(WORKDIR)/vehicle.trn.cls: $(addprefix, $(DATADIR)/, $(VEHICLE_FILES))
 	lvq2agf -H $< $(WORKDIR)/$(VER).tst.txt $(TEST)
 	agf_preprocess -U $(PRE) $(TRAIN) $(TRAIN)
 ifdef SUBSAMPLE
-	agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+	#agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+	subsample_special -Czf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
 endif
 	agf_preprocess $(NORMCLAUSE) -U $(TEST) $(TEST)
 
@@ -487,7 +521,8 @@ $(WORKDIR)/mushrooms.trn.cls $(WORKDIR)/phishing.trn.cls $(WORKDIR)/covtype.trn.
 	svm2agf -E 0 $(DATADIR)/$(VER) $(WORKDIR)/$(VER)
 	agf_preprocess $(PRE) -Uzf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
 ifdef SUBSAMPLE
-	agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+	#agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+	subsample_special -Czf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
 endif
 
 $(addsuffix .trn.cls, $(addprefix $(WORKDIR)/, $(SVMTTDATA))): $(WORKDIR)/%.trn.cls: $(DATADIR)/%
@@ -496,7 +531,8 @@ $(addsuffix .trn.cls, $(addprefix $(WORKDIR)/, $(SVMTTDATA))): $(WORKDIR)/%.trn.
 	svm2agf -E 0 $(DATADIR)/$(VER).t $(TEST)
 	agf_preprocess $(PRE) -U $(TRAIN) $(TRAIN)
 ifdef SUBSAMPLE
-	agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+	#agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+	subsample_special -Czf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
 endif
 	agf_preprocess $(NORMCLAUSE) -U $(TEST) $(TEST)
 
@@ -512,7 +548,8 @@ $(WORKDIR)/humidity.trn.cls: ../humidity_data/train_SQ36s.dat ../humidity_data/e
 	float_to_class -q $(NCLS_humidity) -g ../humidity_data/train_SQ36s.dat $(WORKDIR)/humidity.cls 0.00007 0.001
 	agf_preprocess -zf $(FRAC) $(PRE) $(WORKDIR)/humidity $(TRAIN) $(TEST)
 ifdef SUBSAMPLE
-	agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+	#agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+	subsample_special -Czf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
 endif
 
 $(WORKDIR)/mnist.trn.cls: $(DATADIR)/mnist $(DATADIR)/mnist.t
@@ -525,7 +562,8 @@ $(WORKDIR)/mnist.trn.cls: $(DATADIR)/mnist $(DATADIR)/mnist.t
 	agf_preprocess -F $(TEST) $(TEST) $(MNIST_INDICES)
 	agf_preprocess $(PRE) $(TRAIN) $(TRAIN)
 ifdef SUBSAMPLE
-	agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+	#agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+	subsample_special -Czf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
 endif
 	agf_preprocess $(NORMCLAUSE) $(TEST) $(TEST)
 

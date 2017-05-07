@@ -388,7 +388,7 @@ conditional probability and $\lmult$ is a Lagrange multiplier.
 They also show that it can be solved iteratively so that the constraints 
 not included in the problem, that the probabilities are all positive, are satisfied.
 
-\section{Software}
+\section{Software and data}
 
 \subsection{LIBSVM}
 
@@ -417,17 +417,109 @@ with the libAGF library. To convert a LIBSVM model to a borders model,
 the single command, \verb/svm_accelerate/, can be used.
 Classifications are then performed with \verb/classify_m/.
 
-\section{Data}
+\subsection{Datasets}
 
 \label{datasets}
 
 \begin{table}
-	\input{summary.tex}
 	\caption{Summary of datasets used in the numerical trials.}
+	\label{summary}
+	\input{summary.tex}
 \end{table}
 
 The borders classification algorithm was tested on a total of 
 17 different datasets.
+These will be briefly described in this section.
+Fourr of the datasets are from
+the ``Statlog'' project \citep{King_etal1995} whose collection of datasets 
+cover a fairly broad range: size, types of problems, number of classes and attributes.
+They are nicknamed ``heart'', ``shuttle'', ``sat'', ``segment''.
+The heart disease (''heart'') dataset 
+contains thirteen attributes of 270 patients along with one of two class labels denoting either the presence or absence of heart disease.
+The dataset comes originally from the Cleveland Clinic Foundation and two versions are stored on the machine learning database of U. C. Irvine.
+
+The shuttle dataset is interesting because it is not well suited to the types
+of algorithms discussed in this paper. Since the features are categorical,
+it is better suited to rule-based and symbolic classifiers.
+Moreover the classes have a very uneven distribution meaning that multi-class
+classifiers, such as one-vs.-one with a symmetric break-down of the classes, 
+tend to also perform poorly.
+The shuttle dataset comes originally
+from NASA and was taken from an actual space shuttle flight.
+The classes describe actions to be taken at different flight configurations.
+
+The satellite (''sat'') dataset is a satellite remote-sensing land classification problem.
+The attributes represent 3-by-3 segments of pixels in a Landsat 
+image with the class corresponding to the type of land cover in the central pixel.
+The segmentation (''segment'') dataset is also an image classification dataset consisting of 3-by-3
+pixel sets from outdoor images.
+
+The DNA dataset is concerned with classifying a 60 base-pair sequence of DNA into
+one of three values: an intron-extron boundary, an extron-intron boundary or
+neither of those two.
+That is, during protein creation, part of the sequence is spliced out, with
+the section kept being the intron and that spliced out being the extron.
+There are two versions of it: one with the original 4-valued base-pairs but
+only two classes called
+``splice'' and one called ``dna'' in which
+the features data has been reprocessed so that
+the 60 DNA base values were transformed to 180 binary attributes but with the
+original three classes \citep{Michie_etal1994}.
+Another dataset from the field of microbiology is the ``codrna'' dataset
+which deals with detection of non-coding RNA sequences
+\citep{Uzilov_etal2006}.
+
+There are four text-classification datasets: ``letter'', ``pendigits'',
+``usps'' and ``mnist''.
+The ``letter'' dataset is a text-recognition problem concerned with classifying
+a character into one of the 26 letters of the alphabet based on processed
+attributes of the isolated character \citep{Frey_Slate1991}.
+The pendigits dataset is similar to the letter dataset except for
+classifying numbers instead of letters \citep{Alimoglu1996}.
+The ``usps'' dataset deals with classifying text for the purpose of mailing
+letters \citep{Hull1994}.
+The ``mnist'' dataset uses 28 by 28 pixel images to classify text into one
+of ten different characters \citep{LeCun_etal1998}. 
+Pixels that always take on the same value have been removed.
+
+The ``seismic'' dataset deals with vehicle classification from seismic data
+\citep{Duarte_Hu2004}.
+The ``mushroom'' dataset classifies wild mushrooms
+into poisonous and non-poisonous types based on their physical characteristics \citep{Isa_etal1988}.
+The ``phishing'' dataset uses characteristics of a web address to predict whether
+or not a website is being used for nefarious purposes \citep{Mohommad_etal2012}.
+
+There are three sources for the datasets.
+The first is the LIBSVM data repository \citep{Chang_Lin2011}.
+Most of these datasets have been divided into a ``test'' set and a ``training'' set.
+If this is the case, then it is noted in the summary in Table \ref{summary}
+and the data has been used as given with the training set used for training
+and the test set used for testing.
+If the data is provided all in one lump, then it was randomly divided into 
+test and training sets with the division different for each trial.
+The second source for data was the UCI Machine Learning Repository
+\citep{Lichman2003} and the third source was the author.
+
+Only one dataset was from the author and this was the ``humidity'' dataset.
+The humidity dataset comprises simulated satellite radiometer radiances across 7 different frequencies in the microwave range.
+Corresponding to each instance is a value for relative humidity at a single
+vertical level.
+These humidity values have been discretized into 8 ranges to convert it into a statistical classification problem.
+A full description of the genesis of this dataset as well as a rationale for
+treatment using statistical classification is contained in \citet{Mills2009}.
+The statistical classification methods discussed in this paper were originally
+designed specifically for this problem.
+
+To provide the best idea of when the technique is effective and when it is
+not, results from all 17 datasets will be shown. 
+All datasets were pre-processed in the same way: by taking the averages and
+standard deviations of each feature from the training data and subtracting
+the averages from both the test and training data and dividing by the 
+standard deviations.
+Features that took on the same value in the training data were removed.
+
+
+
 It failed on three of the datasets, succeeded on eight and generated
 mixed results for the remaining six datasets.
 By fail, we mean either it was significantly slower than the SVM 
@@ -443,29 +535,38 @@ in the next section.
 To save space, only six datasets will be discussed here.
 Two for which the algorithm failed, two for which it produced mixed results
 and two for which it failed.
-We test the algorithm on six different datasets. Five of the six are from
-the ``Statlog'' project \citep{King_etal1995} whose collection of datasets 
-cover a fairly broad range: size, types of problems, number of classes and attributes.
-This should give us a good idea of when to apply the borders method and when not
-to. 
-The five datasets are nicknamed ``heart'', ``shuttle'', ``sat'', ``segment''
-and ``vehicle''.
-The sixth dataset is nicknamed ``humidity'' and comes from \citet{Mills2009}. i
-This dataset is included 
-because the border method was actually designed for this very problem.
-Because the problem in \citet{Mills2009} required statistical classification results from
-millions satellite measurements, a method was sought to make the data processing
-more efficient.
-
-Some of the datasets have both test and training data in which case they were used
+These datasets are summarized in Table \ref{summary} and are described in
+more detail below.
+Three of the datasets come from the LIBSVM project page, two from the
+University of California at Irvine (UCI) machine learning repository,
+and one is from the author.
+The datasets from the LIBSVM project page have both test and training data in which case they were used
 as defined. If all instances have been lumped together, then the data was split
-randomly into both test and training and test classifications repeated over 20 trials.
+randomly into both test and training and test classifications repeated over 10 trials.
 
-\subsection{Heart disease dataset}
+\subsection{DNA dataset}
 
-The heart disease dataset comes from the Statlog project \citep{King_etal1995}.
-It contains thirteen attributes of 270 patients along with one of two class labels denoting either the presence or absence of heart disease.
-The dataset comes originally from the Cleveland Clinic Foundation and two versions are stored on the machine learning database of U. C. Irvine.
+The DNA dataset is concerned with classifying a 60 base-pair sequence of DNA into
+one of three values: an intron-extron boundary, an extron-intron boundary or
+neither of those two.
+That is, during protein creation, part of the sequence is spliced out, with
+the section kept being the intron and that spliced out being the extron.
+The data was taken from the LIBSVM repository and has been reprocessed so that
+the 60 DNA base values were transformed to 180 binary attributes.
+\citep{Michie_etal1994}
+
+\subsection{Letter dataset}
+
+The letter dataset is a text-recognition problem concerned with classifying
+a character into one of the 26 letters of the alphabet based on processed
+attributes of the isolated character \citep{Frey_Slate1991}.
+This dataset was taken from the UCI machine learning repository.
+
+\subsection{Pendigits dataset}
+
+The pendigits dataset is similar to the letter dataset except now we are 
+classify numbers instead of letters \citep{Alimoglu1996}.
+This dataset was obtained from the LIBSVM repository.
 
 \subsection{Shuttle dataset}
 
@@ -476,37 +577,26 @@ Moreover the classes have a very uneven distribution meaning that multi-class
 classifiers, such as one-vs.-one with a symmetric break-down of the classes, 
 tend to also perform poorly.
 
-The shuttle dataset is also part of the Statlog project, comes originally
+The shuttle dataset is part of the Statlog project \citep{King_etal1995,Michie_etal1994}, comes originally
 from NASA and was taken from an actual space shuttle flight.
 The classes describe actions to be taken at different flight configurations.
 There are nine attributes, seven classes, 43500 instances of training data and 14500 instances of test data.
 
-\subsection{Satellite dataset}
-
-The satellite dataset is a satellite remote-sensing land classification problem.
-The attributes represent 3-by-3 segments of pixels in a Landsat 
-image with the class corresponding to the type of land cover in the central pixel.
-There are 36 attributes total, 6 types of land cover, 4435 instances of training
-data and 2000 instances of test data.
-
-\subsection{Image segmentation dataset}
-
-The segmentation dataset is an image classification dataset consisting of 3-by-3
-pixel sets from outdoor images. There are 19 attributes, 7 classes and 2310 instances.
-
-\subsection{Vehicle dataset}
-
-The vehicle dataset classifies vehicle silhouettes by type. There are four different
-types of vehicles classified by 18 attributes and 845 instances separated into 9 groups for cross-validation purposes.
-
 \subsection{Humidity dataset}
 
-The humidity dataset is the only one not part of the Statlog project and comprises simulated satellite radiometer radiances across 7 different frequencies in the microwave range.
+The humidity dataset comprises simulated satellite radiometer radiances across 7 different frequencies in the microwave range.
 Corresponding to each instance is a value for relative humidity at a single
 vertical level.
 These humidity values have been discretized into 8 ranges to convert it into a statistical classification problem.
 A full description of the genesis of this dataset as well as a rationale for
 treatment using statistical classification is contained in \citet{Mills2009}.
+The statistical classification methods discussed in this paper were originally
+designed specifically for this problem.
+
+\subsection{RNA coding dataset}
+
+This datasets deals with detection of non-coding RNA sequences 
+\citep{Uzilov_etal2006}.
 
 \section{A simple example}
 
@@ -664,7 +754,7 @@ Both methods will tend to scale linearly with the number of attributes, with a s
 component independent but a different amount for each method.
 Once we take into account the number of classes and number of attributes, the
 model for time complexity becomes quite complex so no attempt will be made here
-to fit it since the comparison is only being tried on six different datasets.
+to fit it.
 
 \section{Case studies}
 

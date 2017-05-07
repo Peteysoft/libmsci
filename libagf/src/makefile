@@ -80,7 +80,8 @@ EXECUTABLES =	class_borders \
 		sort_discrete_vectors \
 		search_discrete_vectors \
 		optimize_r0 \
-		calibrate_borders
+		calibrate_borders \
+		subsample_special
 # more experimental stuff:
 #		optimize_r0 calibrate_p2 calc_joint_entropy \
 #		calibrate_p3 class_triangle 
@@ -91,7 +92,7 @@ OLD = 		classify_a \
 		int_knn \
 		test_classify \
 		test_classify_b \
-		test_knn 
+		test_knn \
 
 OBJECT_FILES = 	agf_metric2$(OPT_VER).o \
 		agf_engine$(OPT_VER).o \

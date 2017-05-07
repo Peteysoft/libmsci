@@ -129,12 +129,15 @@ int main(int argc, char *argv[]) {
     opt_args.Lflag=0;
   }
 
+  //if we are processing regression rather than classification datasets
+  //(floating point ordinates):
   if (opt_args.Lflag) {
     ordsize=sizeof(real_a);
   } else {
     ordsize=sizeof(cls_ta);
   }
 
+  //read from stdin:
   if (opt_args.stdinflag==0) {
     if (opt_args.asciiflag || opt_args.Cflag) {
       vecfile=new char[strlen(argv[0])+1];
@@ -145,6 +148,8 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  //linear transformation of features data (normalization, SVD and feature
+  //selection):
   if (opt_args.svd>0 || opt_args.normflag || opt_args.selectflag || opt_args.normfile!=NULL) {
     if (opt_args.normfile==NULL) {
       if (opt_args.stdoutflag) {
@@ -287,6 +292,7 @@ int main(int argc, char *argv[]) {
     argc--;
   }
 
+  //split into test and training--form file names:
   if (opt_args.fflag) {
     testvec=new char[strlen(argv[0])+5];
     sprintf(testvec, "%s.vec", argv[0]);
@@ -296,6 +302,7 @@ int main(int argc, char *argv[]) {
     } else {
       sprintf(testcls, "%s.cls", argv[0]);
     }
+    /**again, not conducive to easy maintenance:**/
     argv++;
     argc--;
   }
@@ -303,6 +310,7 @@ int main(int argc, char *argv[]) {
   nres=ntrain;
   all=train[0];		//need this when it's time to clean up
 
+  //map the class labels:
   if (opt_args.Cflag==0 && opt_args.Lflag==0) {
     //fprintf(stderr, "agf_preprocess: mapping class labels\n");
     cls_ta *cls=(cls_ta *) ord;
@@ -343,7 +351,7 @@ int main(int argc, char *argv[]) {
 
   }
 
-
+  //calculate auto-cross-correlation matrix:
   if (opt_args.Pflag) {
     //fprintf(stderr, "agf_preprocess: calculating covariance matrix\n");
       real_a **cov;
@@ -413,6 +421,7 @@ int main(int argc, char *argv[]) {
     //randomize_vec(train, nvar, nres, cls);
   }
 
+  //sort the class labels:
   if (opt_args.Bflag && opt_args.Pflag==0 && opt_args.Cflag==0) {
     //fprintf(stderr, "agf_preprocess: sorting ordinates\n");
     if (opt_args.Lflag) {
@@ -442,6 +451,7 @@ int main(int argc, char *argv[]) {
 
   //write the results to a file:
   if (opt_args.fflag && opt_args.Pflag!=1) {
+    //split into test and training:
     //fprintf(stderr, "agf_preprocess: splitting input data and writing to files\n");
     //randomize not only the division, but the numbers:
     if (opt_args.Rflag) {
@@ -508,10 +518,12 @@ int main(int argc, char *argv[]) {
     }
     delete [] testvec;
     delete [] testcls;
+  //split into partitions for n-fold validation:
   } else if (opt_args.div>0) {
     char *outfile;
     int rann;
     outfile=new char[strlen(outbase)+8];
+    //split based on random numbers:
     if (opt_args.Rflag) {
       FILE **outvfs;
       FILE **outcfs;
@@ -545,6 +557,7 @@ int main(int argc, char *argv[]) {
         fclose(outvfs[i]);
         if (opt_args.Cflag==0) fclose(outcfs[i]);
       }
+    //fixed size partitions:
     } else {
       nel_ta l1, l2;
       l1=0;
@@ -572,6 +585,7 @@ int main(int argc, char *argv[]) {
       }
     }
     delete [] outfile;
+  //single output file:
   } else {
     //fprintf(stderr, "agf_preprocess: writing output data\n");
     if (opt_args.asciiflag) {
