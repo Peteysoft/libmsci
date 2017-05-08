@@ -11,7 +11,7 @@ FIG = border_vectors.eps \
 	border_time.eps \
 	break_even.eps
 
-SOURCE = summary.tex param.tex results.tex sum_nsv.tex
+SOURCE = summary.tex param.tex results.tex sum_nsv.tex subsample.tex
 
 all: $(TARGET).pdf
 

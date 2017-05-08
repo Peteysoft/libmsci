@@ -32,76 +32,90 @@ non-parametric density estimation. A typical ``kernel-density estimator"
 looks like this:
 \begin{equation}
 	\densityestimator(\testpoint) = \frac {1}{\norm \nsample} \sum_{i=1}^\nsample \vectorkernel(\sample_i, \testpoint, \kernelparam)
+	\label{kernel_estimator}
 \end{equation}
 where $\densityestimator$ is an estimator for the density, $\probability$, 
 $\vectorkernel$ is the kernel function,
-$\lbrace \sample_i \rbrace$ are a set of samples, 
+$\lbrace \sample_i \rbrace$ are a set of training samples, 
 $\nsample$ is the number of samples,
 $\testpoint$ is the test point,
 and $\kernelparam$ is a set of parameters. 
 The normalization coefficient, $\norm$, normalizes $\vectorkernel$:
 \begin{equation}
 	\norm = \int_V \vectorkernel(\point, \point^\prime, \kernelparam) \mathrm d \point^\prime
+	\label{norm_def}
 \end{equation}
 
 The method can be used for statistical classification by comparing
 results from the different classes:
 \begin{equation}
 	\class = \arg \min_i \sum_{j|\classlabel_j = i} K(\sample_j, \testpoint, \kernelparam)
+	\label{kernel_classification}
 \end{equation}
 where $\classlabel_j$ is the class of the $j$th sample.
 Similarly, the method can also return estimates of
 the joint and conditional probabilities 
-($\condprob(\class, \vec x)$ and $\condprob(\class |\vec x)$ respectively). 
-More on this later.
+($\condprob(\class, \vec x)$ and $\condprob(\class |\vec x)$)
+by dividing the sum in (\ref{kernel_classification})
+by $Nn$ or by the sum of all the kernels, respectively. 
 
 If the same kernel is used for every sample and every test point, the estimator
 may be sub-optimal, particularly in regions of very high or very low density.
-\citep{Terrell_Scott1992, Mills2011}.
 There are at least two solutions to this problem.
 In a ``variable-bandwidth'' estimator, the coefficients, $\kernelparam$, depend in some
-way on the density. Since the density itself is normally unavailable, the
-estimated density is used as a proxy. In \citet{Terrell_Scott1992} and
-\citet{Mills2011} 
-Let the kernel function takes the following form:
+way on the density itself. 
+Since the actual density is normally unavailable, the
+estimated density can be used as a proxy. 
+\citep{Terrell_Scott1992, Mills2011}.
+
+Let the kernel function take the following form:
 \begin{equation}
 	\vectorkernel(\point, \point^\prime, \bandwidth) = \scalarkernel \left (\frac{|\point - \point^\prime|}{\bandwidth} \right )
+	\label{scalar_kernel_def}
 \end{equation}
 where $\bandwidth$ is the ``bandwidth''. 
 In \citet{Mills2011}, $\bandwidth$ is made proportional to the density:
 \begin{equation}
 	\bandwidth \propto \frac{1}{\probability^{1/\dimension}} \approx \frac{1}{\densityestimator^{1/\dimension}}
+	\label{setting_the_bandwidth}
 \end{equation}
 where $\dimension$ is the dimension of the feature space.
 Since the normalization coefficient, $\norm$, must include the factor,
 ${\bandwidth^\dimension}$, some rearrangement shows that:
 \begin{equation}
-	\frac{1}{\nsample} \sum_i \scalarkernel \left (\frac{|\testpoint - \sample_i|}{\bandwidth} \right ) = \kernelaverage = const.
+	\frac{1}{\nsample} \sum_i \scalarkernel \left (\frac{|\testpoint - \sample_i|}{\bandwidth} \right ) = \kernelsum = const.
+	\label{agf_def}
 \end{equation}
 This is a generalization of the $k$-nearest-neighbours scheme in which the
-free parameter, $\kernelaverage$, takes the place of $k$. \citep{Mills2009, Mills2011}
-The bandwidth, $h$, can be solved
+free parameter, $\kernelsum$, takes the place of $k$. \citep{Mills2009, Mills2011}
+The bandwidth, $\bandwidth$, can be solved
 for using any numerical, one-dimensional root-finding algorithm.
-The bandwidth is determined at each test point.
+The bandwidth is determined uniquely for a given test point but is held constant for that
+one, which makes this a ``balloon'' estimator. 
+Contrast to a ``point-wise'' estimator
+in which bandwidths are different for each training point but need only be determined once
+\citep{Terrell_Scott1992}.
 
 Another method of improving the performance of a kernel-density estimator
 is to add a series of variable coefficients:
 \begin{equation}
 	\densityestimator(\testpoint) = \sum_i \svmcoeff_i \vectorkernel(\sample_i, \testpoint, \kernelparam)
+	\label{weighted_kernel_estimator}
 \end{equation}
 The coefficients, $\lbrace \svmcoeff_i \rbrace$, are found through an optimization
-procedure designed to minimize the error [citation...]. In the most popular
+procedure designed to minimize the error \citep{Chen_etal2015}. In the most popular
 form of this kernel method, Support Vector Machines (SVM), the coefficients
 are the result of a complex, dual optimization procedure which minimizes
 the classification error. We will briefly outline this procedure.
 
 \subsection{Support Vector Machines}
 
-The basic ``trick'' of kernel-base SVM methods is to replace a dot product
+The basic ``trick'' of kernel-based SVM methods is to replace a dot product
 with the kernel function in the assumption that it can be rewritten
 as a dot product of a transformed and expanded feature space:
 \begin{equation}
 	\vectorkernel(\point, \point^\prime) = \expandedspace(\point) \cdot \expandedspace(\point^\prime)
+	\label{phi_def}
 \end{equation}
 For simplicity we have ommitted the kernel parameters.
 $\expandedspace$ is a vector function of the feature space.
@@ -113,7 +127,7 @@ finite-dimensional $\expandedspace$ is the square of the dot product:
       & &	 ({\coord^\prime_1}^2, {\coord^\prime}_2^2, {\coord^\prime}_3^2, ..., \sqrt{2} \coord^\prime_1 \coord^\prime_2, \sqrt{2} \coord^\prime_1 \coord^\prime_3, ... \sqrt{2} \coord^\prime_2 \coord^\prime_3, ...) 
 \end{eqnarray}
 but it should be noted that in more complex cases, 
-there is no need to construct $\expandedspace$ since it is replaced by the 
+there is no need to actually construct $\expandedspace$ since it is replaced by the 
 kernel function, $\vectorkernel$, in the final analysis.
 
 In a binary SVM classifier, the classes are separated by a single hyper-plane
@@ -214,8 +228,9 @@ such as $\svmdecision$ in (\ref{svm_decision}).
 Let $\decisionfunction$ be a decision function. In the ideal case, it should
 be an accurate estimator for the difference in conditional probabilities:
 \begin{equation}
-	\decisionfunction(\point) = \diffcondprob(\point) = 
+	\decisionfunction(\point) \approx \diffcondprob(\point) = 
 	\condprob(1|\point) - \condprob(-1|\point)
+	\label{rdef}
 \end{equation}
 where $\condprob(\class|\point)$ represents the conditional probabilities of
 a binary classifier having labels $\class \in \lbrace -1, 1 \rbrace$.
@@ -226,9 +241,9 @@ $\diffcondprob$ is estimated as follows:
 	\label{kernel_decision}
 \end{equation}
 where $\classlabel_i \in \lbrace -1, 1 \rbrace$.
-For a variable bandwidth kernel estimator, this works out to:
+For the variable bandwidth kernel estimator defined by (\ref{agf_def}), this works out to:
 \begin{equation}
-	\vbdecision(\testpoint) = \frac{1}{\kernelaverage} \sum_i \classlabel_i \scalarkernel \left (\frac{|\testpoint - \sample_i|}{\bandwidth(\testpoint)} \right )
+	\vbdecision(\testpoint) = \frac{1}{\kernelsum} \sum_i \classlabel_i \scalarkernel \left (\frac{|\testpoint - \sample_i|}{\bandwidth(\testpoint)} \right )
 	\label{vb_kernel_r}
 \end{equation}
 A variable bandwidth kernel-density estimator with a Gaussian kernel,
@@ -271,12 +286,13 @@ The gradient of the variable-bandwidth kernel estimator in
 (\ref{vb_kernel_r}) is:
 \begin{equation}
 	\frac{\partial \vbdecision}{\partial \testcoord_j} = 
-	\frac{2 \bandwidth}{\kernelaverage} \sum_i \classlabel_i
+	\frac{2 \bandwidth}{\kernelsum} \sum_i \classlabel_i
 	\scalarkernelderiv \left (\frac{\distance_i}{\bandwidth} \right )
 	\left [\frac{\testcoord_j - \samplecoord_{ij}}{\distance_i} 
 	- \distance_i \frac{\sum_k \scalarkernelderiv \left (\frac{\distance_k}{\bandwidth} \right )
 	\frac{\testcoord_j - \samplecoord_{kj}}{\distance_k}}
 {\sum_k \distance_k \scalarkernelderiv \left (\frac{\distance_k}{\bandwidth} \right )} \right ]
+\label{kernel_gradient}
 \end{equation}
 where $\distance_i=|\point - \sample_i|$ is the distance between the 
 test point and the $i$th sample and $\scalarkernelderiv$ is the derivative
@@ -284,12 +300,13 @@ of $\scalarkernel$.
 For AGF, this works out to:
 \begin{equation}
 	\frac{\partial \vbdecision}{\partial \testcoord_j} = 
-	\frac{1}{\bandwidth^2 \kernelaverage} \sum_i \classlabel_i
+	\frac{1}{\bandwidth^2 \kernelsum} \sum_i \classlabel_i
 	\scalarkernel \left (\frac{\distance_i}{\bandwidth} \right )
 	\left [\samplecoord_{ij} - \testcoord
 	- \distance_i^2 \frac{\sum_k \scalarkernel \left (\frac{\distance_k}{\bandwidth} \right )
 	\left (\samplecoord_{kj} - \testcoord \right )}
 {\sum_k \scalarkernel \left (\frac{\distance_k}{\bandwidth} \right )\frac{1}{\distance_k^2}} \right ]
+\label{vb_gradient}
 \end{equation}
 where $K(x)=\exp(-x^2/2)$ \citep{Mills2011}.
 
@@ -381,6 +398,7 @@ the binary classifier that discriminates between the $i$th and $j$th classes.
 \citet{Wu_etal2004} transform this problem into the following linear system:
 \begin{eqnarray}
 	\sum_i \frac{1}{4} \left [ \multiprob_i \sum_{j|j \ne i} (\decisionfunction_{ij} + 1)^2 - \multiprob_i (\decisionfunction_{ij}^2 - \decisionfunction_{ij} - 2) \right ] + \lmult & = & 0 \\
+	\label{multiclass}
 	\sum_i \multiprob_i & = & 1
 \end{eqnarray}
 where $\multiprob_i = \condprob(i | \point)$ is the $i$th multi-class 
@@ -431,12 +449,12 @@ The borders classification algorithm was tested on a total of
 17 different datasets.
 These will be briefly described in this section.
 Fourr of the datasets are from
-the ``Statlog'' project \citep{King_etal1995} whose collection of datasets 
+the ``Statlog'' project \citep{Michie_etal1994,King_etal1995} whose collection of datasets 
 cover a fairly broad range: size, types of problems, number of classes and attributes.
 They are nicknamed ``heart'', ``shuttle'', ``sat'', ``segment''.
 The heart disease (''heart'') dataset 
 contains thirteen attributes of 270 patients along with one of two class labels denoting either the presence or absence of heart disease.
-The dataset comes originally from the Cleveland Clinic Foundation and two versions are stored on the machine learning database of U. C. Irvine.
+The dataset comes originally from the Cleveland Clinic Foundation and two versions are stored on the machine learning database of U. C. Irvine \citep{Lichman2013}.
 
 The shuttle dataset is interesting because it is not well suited to the types
 of algorithms discussed in this paper. Since the features are categorical,
@@ -480,12 +498,18 @@ The ``usps'' dataset deals with classifying text for the purpose of mailing
 letters \citep{Hull1994}.
 The ``mnist'' dataset uses 28 by 28 pixel images to classify text into one
 of ten different characters \citep{LeCun_etal1998}. 
-Pixels that always take on the same value have been removed.
+Pixels that always take on the same value were removed.
+
+Two of the datasets are machine-learning competition challenges.
+The ``ijcnn1'' dataset is from the International Joint Conference on Neural
+Networks Neural Networks Competition\citep{Feldkamp_Puskorius1998} while the ``madelon'' dataset comes 
+from the International Conference on Neural Information Processing Systems
+Feature Selection Challenge \citep{Guyon2004}.
 
 The ``seismic'' dataset deals with vehicle classification from seismic data
 \citep{Duarte_Hu2004}.
 The ``mushroom'' dataset classifies wild mushrooms
-into poisonous and non-poisonous types based on their physical characteristics \citep{Isa_etal1988}.
+into poisonous and non-poisonous types based on their physical characteristics \citep{Iba_etal1988}.
 The ``phishing'' dataset uses characteristics of a web address to predict whether
 or not a website is being used for nefarious purposes \citep{Mohommad_etal2012}.
 
@@ -498,7 +522,7 @@ and the test set used for testing.
 If the data is provided all in one lump, then it was randomly divided into 
 test and training sets with the division different for each trial.
 The second source for data was the UCI Machine Learning Repository
-\citep{Lichman2003} and the third source was the author.
+\citep{Lichman2013} and the third source was the author.
 
 Only one dataset was from the author and this was the ``humidity'' dataset.
 The humidity dataset comprises simulated satellite radiometer radiances across 7 different frequencies in the microwave range.
@@ -518,85 +542,6 @@ the averages from both the test and training data and dividing by the
 standard deviations.
 Features that took on the same value in the training data were removed.
 
-
-
-It failed on three of the datasets, succeeded on eight and generated
-mixed results for the remaining six datasets.
-By fail, we mean either it was significantly slower than the SVM 
-or it produced an unacceptable reduction in accuracy.
-By mixed, we mean that either the algorithm failed to produce a significant
-speed increase over the SVM
-or it produced a small but signficant reduction in accuracy.
-By succeed we mean that it both significantly improved the speed of the SVM
-and produced an acceptable reduction in accuracy.
-We will make the meaning of an acceptable reduction in accuracy more precise
-in the next section.
-
-To save space, only six datasets will be discussed here.
-Two for which the algorithm failed, two for which it produced mixed results
-and two for which it failed.
-These datasets are summarized in Table \ref{summary} and are described in
-more detail below.
-Three of the datasets come from the LIBSVM project page, two from the
-University of California at Irvine (UCI) machine learning repository,
-and one is from the author.
-The datasets from the LIBSVM project page have both test and training data in which case they were used
-as defined. If all instances have been lumped together, then the data was split
-randomly into both test and training and test classifications repeated over 10 trials.
-
-\subsection{DNA dataset}
-
-The DNA dataset is concerned with classifying a 60 base-pair sequence of DNA into
-one of three values: an intron-extron boundary, an extron-intron boundary or
-neither of those two.
-That is, during protein creation, part of the sequence is spliced out, with
-the section kept being the intron and that spliced out being the extron.
-The data was taken from the LIBSVM repository and has been reprocessed so that
-the 60 DNA base values were transformed to 180 binary attributes.
-\citep{Michie_etal1994}
-
-\subsection{Letter dataset}
-
-The letter dataset is a text-recognition problem concerned with classifying
-a character into one of the 26 letters of the alphabet based on processed
-attributes of the isolated character \citep{Frey_Slate1991}.
-This dataset was taken from the UCI machine learning repository.
-
-\subsection{Pendigits dataset}
-
-The pendigits dataset is similar to the letter dataset except now we are 
-classify numbers instead of letters \citep{Alimoglu1996}.
-This dataset was obtained from the LIBSVM repository.
-
-\subsection{Shuttle dataset}
-
-The shuttle dataset is interesting because it is not well suited to the types
-of algorithms discussed in this paper. Since the features are categorical,
-it is better suited to rule-based and symbolic classifiers.
-Moreover the classes have a very uneven distribution meaning that multi-class
-classifiers, such as one-vs.-one with a symmetric break-down of the classes, 
-tend to also perform poorly.
-
-The shuttle dataset is part of the Statlog project \citep{King_etal1995,Michie_etal1994}, comes originally
-from NASA and was taken from an actual space shuttle flight.
-The classes describe actions to be taken at different flight configurations.
-There are nine attributes, seven classes, 43500 instances of training data and 14500 instances of test data.
-
-\subsection{Humidity dataset}
-
-The humidity dataset comprises simulated satellite radiometer radiances across 7 different frequencies in the microwave range.
-Corresponding to each instance is a value for relative humidity at a single
-vertical level.
-These humidity values have been discretized into 8 ranges to convert it into a statistical classification problem.
-A full description of the genesis of this dataset as well as a rationale for
-treatment using statistical classification is contained in \citet{Mills2009}.
-The statistical classification methods discussed in this paper were originally
-designed specifically for this problem.
-
-\subsection{RNA coding dataset}
-
-This datasets deals with detection of non-coding RNA sequences 
-\citep{Uzilov_etal2006}.
 
 \section{A simple example}
 
@@ -813,6 +758,66 @@ where $\gamma$ is a tunable parameter.
 $C$ is a cost parameter added to reduce over-fitting.
 For more information, see \citet{Chang_Lin2011} and \citet{kernel_intro}.
 
-\bibliography{../agf_bib}
+\subsection{Skill scores}
+
+It is important to evaluate a result based on skill scores that reliably reflect
+how well a given classifier is doing.
+Thus we will define the two scores used in this validation exercise in particular
+since one is not commonly used in the literature even though it has several
+features that make it attractive.
+
+Let $\lbrace \confusion_{ij} \rbrace$ be the confusion matrix, that is the number
+test values for which the first classifier (the ``truth'') takes on the value $i$
+while the second classifier (the estimate) takes on the value $j$.
+Let $\ntest=\sum_i \sum_j \confusion_{ij}$ be the total number of test points.
+
+The accuracy is given:
+\begin{equation}
+\accuracy=\frac{\sum_i \confusion_{ii}}{\ntest}
+\label{accuracy}
+\end{equation}
+or simply the fraction of correct guesses.
+
+The uncertainty coefficient is a more sophisticated measure based on the channel 
+capacity \citep{Shannon}. It has the advantage over simple accuracy in that 
+it is not affected by the relative size of each class distribution.
+It is also not affected by consistent rearrangement of the class labels.
+
+The entropy of the prior distribution is given:
+\begin{eqnarray}
+	\priorentropy & = & - \sum_i \left (\sum_j \frac{\confusion_{ij}}{\ntest} \right ) 
+	\log \left (\sum_j \frac{\confusion_{ij}}{\ntest} \right )\\
+	& = & - \frac{1}{\ntest} \left [\sum_i \left (\sum_j \confusion_{ij} \right ) 
+	\log \left (\sum_j \confusion_{ij} \right )
+	- \log \ntest \right ]
+	\label{prior_entropy}
+\end{eqnarray}
+while the entropy of the posterior distribution is given:
+\begin{eqnarray}
+	\posteriorentropy & = & - \sum_i \sum_j \left ( \frac{\confusion_{ij}}{\ntest} \right ) \log \left (\frac{\confusion_{ij}}{\sum_i \confusion_{ij}} \right )
+	\label{posterior_entropy} \\
+	& = & - \frac{1}{\ntest} \left [ \sum_i \sum_j \confusion_{ij} \log \confusion_{ij} 
++ \sum_j \left ( \sum_i \confusion_{ij} \right ) \log \left ( \sum_i \confusion_{ij} \right ) \right ]
+\end{eqnarray}
+The uncertainty coefficient is defined in terms of the prior entropy, $\priorentropy$, and the
+posterior entropy, $\posteriorentropy$, as follows:
+\begin{equation}
+	\UC = \frac{\priorentropy - \posteriorentropy}{\priorentropy}
+	\label{uncertainty_coefficient}
+\end{equation}
+and tells us: 
+for a given test classification, how many bits of information does the estimate
+supply of the true class value? \citep{Press_etal1992, Mills2011}.
+
+\subsection{Borders acceleration versus subsampling}
+
+\begin{table}
+  {\small
+    \input{subsample.tex}
+  }
+\end{table}
+
+
+\bibliography{../agf_bib,svm_accel}
 
 \end{document}

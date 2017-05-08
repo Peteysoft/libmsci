@@ -3,31 +3,47 @@
 
 \begin{tabular}{lll}
 symbol & definition & first used \\ \hline
-	$\vectorkernel$ & kernel function taking two vector arguments & \\
-	$\kernelparam$ & parameters in vector kernel & \\
-	$\scalarkernel$ & kernel function taking a single scalar argument & \\
-	$\norm$ & kernel normalization coefficient & \\
-	$\nsample$ & number of training samples & \\
-	$\dimension$ & number of dimensions in feature space & \\
-	$\densityestimator$ & kernel density estimator & \\
-	$\bandwidth$ & ``bandwidth'': sets the size of a scalar kernel & \\
-	$\coord_i$ & $i$th component of a point in the feature space & \\
-	$\lbrace \sample_i \rbrace$ & set of training samples & \\
-	$\testpoint$ & test point & \\
-	$\point$ & point in the feature space & \\
-	$\classlabel_i$ & class label of $i$th training sample & \\
-	$\class$ & value of the class label & \\
-	$\probability$ & true probability density & \\
-	$\condprob$ & conditional probability & \\
-	$\kernelaverage$ & average of the values of the kernels at each training sample & \\
-	$\svmcoeff$ & coefficients in weighted kernel estimator & \\
-	$\expandedspace$ & theoretical expanded feature space in kernel-based SVM & \\
-	$\svmdecision$ & raw decision function in binary SVM & \\
-	$\svmbordervector$ & hyperplane normal of decision boundary in SVM & \\
-	$\svmborderconst$ & constant value defining location of decision boundary in SVM & \\
-	$\decisionfunction$ & decision function which is estimator of $\diffcondprob$ & \\
-	$\kerneldecision$ & kernel estimator for $\diffcondprob$ & \\
-	$\diffcondprob$ & difference in conditional probabilities & 
+	$\densityestimator$ & kernel density estimator & (\ref{kernel_estimator})\\
+	$\vectorkernel$ & kernel function taking two vector arguments & (\ref{kernel_estimator})\\
+	$\lbrace \sample_i \rbrace$ & set of training samples & (\ref{kernel_estimator})\\
+	$\testpoint$ & test point & (\ref{kernel_estimator})\\
+	$\kernelparam$ & parameters in vector kernel & (\ref{kernel_estimator})\\
+	$\norm$ & kernel normalization coefficient & (\ref{kernel_estimator})\\
+	$\nsample$ & number of training samples & (\ref{kernel_estimator})\\
+	$\point=\lbrace \coord_i \rbrace$ & point in the feature space & (\ref{norm_def})\\
+	$\scalarkernel$ & kernel function taking a single scalar argument & (\ref{scalar_kernel_def})\\
+	$\bandwidth$ & ``bandwidth'': sets the size of a scalar kernel & (\ref{scalar_kernel_def})\\
+	$\probability$ & true probability density & (\ref{setting_the_bandwidth})\\
+	$\dimension$ & number of dimensions in feature space & (\ref{setting_the_bandwidth})\\
+	$\classlabel_i$ & class label of $i$th training sample & (\ref{kernel_classification})\\
+	$\class$ & class label & (\ref{kernel_classification})\\
+	$\condprob$ & conditional probability & (\ref{rdef})\\
+	$\kernelsum$ & sum of the kernels at each training sample & (\ref{agf_def})\\
+	$\svmcoeff$ & coefficients in weighted kernel estimator & (\ref{weighted_kernel_estimator})\\
+	$\expandedspace$ & theoretical expanded feature space in kernel-based SVM & (\ref{phi_def})\\
+	$\svmdecision$ & raw decision function in binary SVM & (\ref{decision_function0})\\
+	$\svmbordervector$ & hyperplane normal of decision boundary in SVM & (\ref{decision_function0})\\
+	$\svmborderconst$ & constant value defining location of decision boundary in SVM & (\ref{decision_function0})\\
+	$\diffcondprob$ & difference in conditional probabilities & (\ref{rdef}) \\
+	$\decisionfunction$ & decision function which is estimator of $\diffcondprob$ & (\ref{rdef})\\
+	$\kerneldecision$ & kernel estimator for $\diffcondprob$ & (\ref{kernel_decision}) \\
+	$\vbdecision$ & variablekernel estimator for $\diffcondprob$ & (\ref{vb_kernel_r}) \\
+	$\lbrace \bordervector_i \rbrace$ & set of vectors defining the class border & (\ref{border_decision}) \\
+	$\lbrace \bordernormal_i \rbrace$ & set of normals to the class border & (\ref{border_decision}) \\
+	$\nborder$ & number of border vectors & (\ref{border_decision}) \\
+	$\borderdecision$ & raw decision function for border classification & (\ref{border_decision}) \\
+	$\distance$ & distance in feature space & (\ref{kernel_gradient}) \\
+	$\scalarkernelderiv$ & derivative of a scalar kernel, $\scalarkernel$ & (\ref{kernel_gradient}) \\
+	$\svmprob$ & LIBSVM estimator for $\diffcondprob$ & (\ref{svm_prob}) \\
+	$\svmprobcoeffA$ & coefficient used in $\svmprob$ & (\ref{svm_prob}) \\
+	$\svmprobcoeffB$ & coefficient used in $\svmprob$ & (\ref{svm_prob}) \\
+	$\borderprob$ & borders estimator for $\diffcondprob$ & (\ref{border_probability}) \\
+	$\lmult$ & Lagrange multiplier in multi-class problem & (\ref{multiclass}) \\
+	$\lbrace \confusion_{ij} \rbrace$ & confusion matrix & (\ref{accuracy}) \\
+	$\ntest$ & number of test points & (\ref{accuracy}) \\
+	$\priorentropy$ & entropy of the prior distribution & (\ref{prior_entropy}) \\
+	$\posteriorentropy$ & entropy of the posterior distribution & (\ref{posterior_entropy}) \\
+	$\UC$ & uncertainty coefficient (normalized channel capacity) & (\ref{uncertainty_coefficient})
 \end{tabular}
 
 

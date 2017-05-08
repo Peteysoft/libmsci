@@ -1,4 +1,4 @@
-DATASET="shuttle segment sat codrna pendigits usps ijcnn1 mushrooms phishing humidity"
+DATASET="shuttle segment sat codrna pendigits usps ijcnn1 mushrooms phishing humidity mnist"
 
 # col  value
 # 0    training time user

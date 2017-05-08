@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 
   for (int i=0; i<n; i++) {
     mean[i]/=nline;
-    printf("%10.4lg ", mean[i]);
+    printf("%10.6lg ", mean[i]);
   }
   printf("\n");
 

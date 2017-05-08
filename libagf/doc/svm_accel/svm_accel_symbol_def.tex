@@ -1,50 +1,86 @@
 %symbols for general kernel methods:
-\newcommand{\vectorkernel}{K}
-\newcommand{\scalarkernel}{K}
-\newcommand{\kernelparam}{k}
-\newcommand{\norm}{N}
-\newcommand{\nsample}{n}
-\newcommand{\dimension}{D}
+\newcommand{\vectorkernel}{K}		%kernel function of two vectors
+\newcommand{\scalarkernel}{K}		%kernel function of a single scalar
+\newcommand{\kernelparam}{k}		%kernel parameter
+\newcommand{\norm}{N}			%integral of kernel function
+\newcommand{\nsample}{n}		%number of training samples
+\newcommand{\dimension}{D}		%dimension of feature space
+%kernel density estimator
 \newcommand{\densityestimator}{\tilde p}
+%"bandwidth":
 \newcommand{\bandwidth}{\sigma}
+%single coordinate:
 \newcommand{\coord}{x}
+%coordinate of a training sample:
 \newcommand{\samplecoord}{x}
+%sample:
 \newcommand{\sample}{\vec \samplecoord}
+%coordinate of a test point:
 \newcommand{\testcoord}{x}
+%test point:
 \newcommand{\testpoint}{\vec \testcoord}
+%point (bound variable):
 \newcommand{\point}{\vec \coord}
+%labels of training data:
 \newcommand{\classlabel}{y}
+%class (bound variable):
 \newcommand{\class}{c}
+%actual probability:
 \newcommand{\probability}{P}
+%actual conditional probability:
 \newcommand{\condprob}{p}
-\newcommand{\kernelaverage}{W}
+%sum of all the kernels:
+\newcommand{\kernelsum}{W}
 
 %symbols for SVM kernel method:
+%Lagrange multipliers in dual optimization scheme:
 \newcommand{\svmcoeff}{w}
+%theoretical expanded kernel space:
 \newcommand{\expandedspace}{\vec\phi}
+%decision function:
 \newcommand{\svmdecision}{f}
+%parameters for theoretical linear discrimination border:
 \newcommand{\svmbordervector}{\vec v}
 \newcommand{\svmborderconst}{b}
 
-%borders classification
+%borders classification:
+%decision function that approximates a difference in conditional %probabilities:
 \newcommand{\decisionfunction}{\tilde r}
+%the true difference in conditional probabilities:
 \newcommand{\diffcondprob}{r}
+%decision function for a general kernel estimator:
 \newcommand{\kerneldecision}{\decisionfunction_{kern}}
+%decision function for a variable-bandwidth kernel estimator:
 \newcommand{\vbdecision}{\decisionfunction_{vb}}
+%border vector:
 \newcommand{\bordervector}{\vec b}
+%normal to the border:
 \newcommand{\bordernormal}{\vec v}
+%number of border vectors:
 \newcommand{\nborder}{n_b}
+%decision function for a borders classifier:
 \newcommand{\borderdecision}{g}
 %derivative of variable bandwidth kernel estimator:
-\newcommand{\distance}{d}
+\newcommand{\distance}{d}		%intermediate value
 \newcommand{\scalarkernelderiv}{\dot \scalarkernel}
 
+%estimated difference in conditional probabilities for a SVM:
 \newcommand{\svmprob}{\decisionfunction_{svm}}
+%coefficients used to estimate probabilities in LIBSVM:
 \newcommand{\svmprobcoeffA}{A}
 \newcommand{\svmprobcoeffB}{B}
 \newcommand{\borderprob}{\decisionfunction_{border}}
 
 %multi-classes:
-\newcommand{\nclass}{n_c}
-\newcommand{\multiprob}{p}
-\newcommand{\lmult}{\lambda}
+\newcommand{\nclass}{n_c}	%number of classes
+\newcommand{\multiprob}{p}	%probability for each class
+\newcommand{\lmult}{\lambda}	%Lagrange multiplier
+
+%skill scores:
+\newcommand{\confusion}{\gamma}		%confusion matrix
+\newcommand{\ntest}{n_{test}}		%number of test points
+\newcommand{\entropy}{H}
+\newcommand{\priorentropy}{\entropy_i}
+\newcommand{\posteriorentropy}{\entropy(i|j)}
+\newcommand{\accuracy}{a}
+\newcommand{\UC}{U(i|j)}
