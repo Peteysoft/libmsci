@@ -704,9 +704,9 @@ to fit it.
 \section{Case studies}
 
 \begin{table}
-		\input{param.tex}
-	\label{param}
 	\caption{Summary of the parameters used in the numerical trials for each of the four methods: KNN ($k$-nearest-neighbours), AGF (adaptive Gaussian filtering), SVM (support vector machine) and ACC (``accelerated'' SVM).}
+	\label{param}
+	\input{param.tex}
 \end{table}
 
 \begin{table}
@@ -720,12 +720,12 @@ to fit it.
 	{\small
 		\input{results2.tex}
 	}
-	\caption{Collation of results for numerical trials of the four different statistical classification methods over six different datasets.}
+	\caption{Collation of results for numerical trials of the four different statistical classification methods over seventeen different datasets.}
 \end{table}
 
 \begin{table}
-	\input{sum_nsv.tex}
 	\caption{Total number of support vectors versus total number of border samples.}
+	\input{sum_nsv.tex}
 \end{table}
 
 Four classification models were tested on each of the six datasets described in
@@ -764,11 +764,11 @@ It is important to evaluate a result based on skill scores that reliably reflect
 how well a given classifier is doing.
 Thus we will define the two scores used in this validation exercise in particular
 since one is not commonly used in the literature even though it has several
-features that make it attractive.
+attractive features.
 
 Let $\lbrace \confusion_{ij} \rbrace$ be the confusion matrix, that is the number
-test values for which the first classifier (the ``truth'') takes on the value $i$
-while the second classifier (the estimate) takes on the value $j$.
+test values for which the first classifier (the ``truth'') returns the $i$th class
+while the second classifier (the estimate) returns the $j$th class.
 Let $\ntest=\sum_i \sum_j \confusion_{ij}$ be the total number of test points.
 
 The accuracy is given:
@@ -797,7 +797,7 @@ while the entropy of the posterior distribution is given:
 	\posteriorentropy & = & - \sum_i \sum_j \left ( \frac{\confusion_{ij}}{\ntest} \right ) \log \left (\frac{\confusion_{ij}}{\sum_i \confusion_{ij}} \right )
 	\label{posterior_entropy} \\
 	& = & - \frac{1}{\ntest} \left [ \sum_i \sum_j \confusion_{ij} \log \confusion_{ij} 
-+ \sum_j \left ( \sum_i \confusion_{ij} \right ) \log \left ( \sum_i \confusion_{ij} \right ) \right ]
+- \sum_j \left ( \sum_i \confusion_{ij} \right ) \log \left ( \sum_i \confusion_{ij} \right ) \right ]
 \end{eqnarray}
 The uncertainty coefficient is defined in terms of the prior entropy, $\priorentropy$, and the
 posterior entropy, $\posteriorentropy$, as follows:
@@ -812,11 +812,68 @@ supply of the true class value? \citep{Press_etal1992, Mills2011}.
 \subsection{Borders acceleration versus subsampling}
 
 \begin{table}
+  \caption{Results from SVM trials after sub-sampling to match SVM-borders:
+	  either the skill or classification time, whichever requires the most
+  training samples.}
+  \label{subsampling_table}
   {\small
     \input{subsample.tex}
   }
 \end{table}
 
+Ten of the classification show a significant speed increase with the application
+of the borders technique with heart, segment, sat, letter, pendigits, dna
+and splice being the exceptions.
+This increase in speed, however, usually comes at the cost of accuracy.
+The question is, is this speed increase worth the decrease in skill?
+To test this, we sub-sample the datasets and then re-apply the SVM training
+until either the speed or the accuracy of the two methods--SVM
+and SVM-borders--matches, whichever comes first.
+
+Depending on how much the dataset is reduced, sub-sampling should be done with at
+least some care. 
+On one hand, a more sophisticated sub-sampling technique might be considered a method on its own, 
+comparable with the borders technique, but also likely requiring multiple training phases using the
+original technique thus making it significantly slower.
+On the other hand, at minimum we should consider the relative size of each class distribution.
+If there are roughly the same number of classes, then for small sub-samples the relative
+numbers should be kept constant.
+The shuttle dataset, however, has very uneven class numbers so it was sub-sampled differently
+in order to ensure that the smallest classes have some examples.
+Let $\classsize_i$ be the number of samples of the $i$th class.
+Then the sub-sampled numbers are given:
+\begin{equation}
+	\classsize^\prime_i = \subsample(\classsize_i) \classsize_i
+\end{equation}
+where $0 \le \subsample(n) \le 1$.
+The form of $\subsample$ used for the shuttle dataset was:
+\begin{equation}
+	\subsample(n) = \submultcoef n^{-\subexp}
+\end{equation}
+where $\submultcoef=\classsize_1^\subexp$, $\subexp$ is determined based on the
+desired total fraction and $\classsize_1$ is the class with the fewest samples.
+To understand how this functional form was chosen, please see Appendix \ref{shuttle_subsampling}.
+
+The results of the sub-sampling exercise are shown in table \ref{subsampling_table}.
+
+\section{Discussion}
+
+\subsection{Recalibration}
+
+\section{Conclusions}
+
+\begin{table}
+	\caption{Summary of results for all 17 datasets including a verdict on the success or failure of borders classification to speed up SVM.}
+	\label{verdict}
+	\input{verdict.tex}
+\end{table}
+
+\appendix
+
+\section{Sub-sampling}
+\label{shuttle_subsampling}
+
+\input{shuttle_subsampling}
 
 \bibliography{../agf_bib,svm_accel}
 

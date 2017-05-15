@@ -1,4 +1,5 @@
-DATASET="shuttle segment sat codrna pendigits usps ijcnn1 mushrooms phishing humidity mnist"
+#DATASET="shuttle segment sat codrna pendigits usps ijcnn1 mushrooms phishing humidity mnist"
+DATASET="splice"
 
 # col  value
 # 0    training time user
@@ -13,6 +14,5 @@ DATASET="shuttle segment sat codrna pendigits usps ijcnn1 mushrooms phishing hum
 for D in $DATASET; do
   #printf "%10s" $D
    ./sum_col.exe 6 / 7 / 0 1 / 2 3 / 4 / 5  < $D.sub.txt | ./calc_stats 10 | ./write_results2 $D
-   echo "\\hline"
 done
 

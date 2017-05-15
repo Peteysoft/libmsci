@@ -1,0 +1,40 @@
+Let $\classsize_i$ be the number of samples of the $i$th class such
+that:
+\begin{equation}
+\classsize_i \ge \classsize_{i-1}
+\end{equation}
+Let $0 \le \subsample(n) \le 1$ be a function used to sub-sample each of the class
+distributions in turn:
+\begin{equation}
+\classsize_i^\prime = \subsample(\classsize_i) \classsize_i
+\end{equation}
+We wish to retain the rank ordering of the class sizes:
+\begin{equation}
+\subsample(\classsize_i) \classsize_i 
+\ge \subsample(\classsize_{i-1}) \classsize_{i-1} 
+\end{equation}
+while ensuring that the smallest classes have some minimum representation:
+\begin{equation}
+\subsample(\classsize_i) \le \subsample(\classsize_{i-1})
+\label{subsample_constraint1}
+\end{equation}
+Thus:
+\begin{equation}
+	\frac{\mathrm d}{\mathrm d n} \left [ n \subsample(n) \right ] = \subsample(n) + n \frac{\mathrm d \subsample}{\mathrm n} \ge 0
+\end{equation}
+\begin{equation}
+	\frac{\mathrm d \subsample}{\mathrm d n} \ge - \frac{\subsample(n)}{n}
+\label{subsample_constraint2}
+\end{equation}
+The simplest means of ensuring that both (\ref{subsample_constraint1}) and
+(\ref{subsample_constraint2}) are fulfilled, is to multiply the right side
+of (\ref{subsample_constraint2}) with a constant, $0 \le \subexp \le 1$,
+and equate it with the left side:
+\begin{equation}
+	\frac{\mathrm d \subsample}{\mathrm d n} = - \frac{k \subsample(n)}{n}
+\end{equation}
+Integrating:
+\begin{equation}
+	\subsample(n)=\submultcoef n^{-\subexp}
+\end{equation}
+
