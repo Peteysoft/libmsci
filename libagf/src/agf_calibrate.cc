@@ -214,11 +214,12 @@ namespace libagf {
   }
 
   template <typename real, typename cls_t>
-  real * calibrate_r(cls_t *cls, real *r, nel_ta n, int order, nel_ta k) {
+  real * calibrate_r(cls_t *cls, real *r, nel_ta n, int order, nel_ta k, real r0) {
     real d[k];		//distances
     real acc[n-k];	//actual accuracies as a function of r
     real rave[n-k];	//sorted r which we transform with inverse tangent
     nel_ta none=0;	//number of ones in the zone of interest
+    printf("calibrate_r: sorting probability estimates\n");
     long *sind=heapsort(r, n);
     //for fitting:
     gsl_matrix *A;		//A^T A x = A^T b		
@@ -228,26 +229,62 @@ namespace libagf {
     gsl_matrix *cov;
     gsl_multifit_linear_workspace *work;
     double chisq;
+    nel_ta nbad=0;
 
-    //constant term is not supplied:
-    int cflag=0;
-    real cterm=0;
+    //constant term:
+    int cflag;
+    real cterm;
 
     //results
     real * coef;
- 
+
+    if (r0 <= -1 || r0 >= 1) {
+      cterm=0;
+      cflag=0;
+    } else {
+      cterm=-atanh(r0);
+      cflag=1;
+    }
+
+    printf("calibrate_r: calculating probabilities\n");
     rave[0]=0;
-    for (nel_ta i=0; i<k; i++) none+=cls[sind[i]];
+    for (nel_ta i=0; i<k; i++) {
+      none+=cls[sind[i]];
+    }
 
     //interesting that this itself is a density estimation problem:
     for (nel_ta i=0; i<n-k; i++) {
+      nel_ta nrave;
+      nrave=0;
       rave[i]=0;
-      for (nel_ta j=0; j<k; j++) rave+=atanh(r[sind[i+j-k/2]]);
-      rave[i]=rave[i]/k;
-      acc[i]=atanh(2*none/k-1);
+      for (nel_ta j=0; j<k; j++) {
+	if (r[sind[i+j]] > -1 && r[sind[i+j]] < 1) {
+          rave[i]+=atanh(r[sind[i+j]]);
+	  nrave++;
+	}
+      }
+      rave[i]=rave[i]/nrave;
+      acc[i]=atanh(2.*none/k-1);
       none-=cls[sind[i]];
       none+=cls[sind[i+k]];
+      printf("%g %g\n", acc[i], rave[i]);
+      //printf("%g %g %d\n", 2.*none/k-1, r[sind[i+k/2]], cls[sind[i+k/2]]);
     }
+
+    //remove "bad" values:
+    for (nel_ta i=0; i<n-k; i++) {
+      if (isfinite(acc[i])!=1 || isfinite(rave[i])!=1) {
+        nbad++;
+      } else {
+        acc[i-nbad]=acc[i];
+	rave[i-nbad]=rave[i];
+      }
+    }
+    n-=nbad+k;
+
+    //for (nel_ta i=0; i<n; i++) {
+    //  printf("%g %g\n", acc[i], rave[i]);
+    //}
 
     //allocate vectors and matrices that define the fitting problem:
     //best fit for A x = b
@@ -321,5 +358,7 @@ namespace libagf {
   template float corr_bin<float>(float, float, float, float);
   template double corr_bin<double>(double, double, double, double);
 
+  template float * calibrate_r<float, cls_ta>(cls_ta *, float *, nel_ta, int, nel_ta, float);
+  template double * calibrate_r<double, cls_ta>(cls_ta *, double *, nel_ta, int, nel_ta, double);
 } //end namespace libagf
 

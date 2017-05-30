@@ -227,6 +227,7 @@ int main(int argc, char *argv[]) {
 
   //find the parameter to get the desired fraction:
   real_a C;
+  real_a fmax;
   if (opt_args.Cflag!=1) {
     void *param[4];
     long niter;
@@ -234,9 +235,9 @@ int main(int argc, char *argv[]) {
     param[1]=cind;
     param[2]=&n0;
     param[3]=&opt_args.ftest;
-    real_a fmax=root_false_position(&ffromk, (void *) param, (real_a) 0., (real_a) 1., (real_a) 1e-6, (real_a) 1e-6, (long) 1000, niter);
+    fmax=root_false_position(&ffromk, (void *) param, (real_a) 0., (real_a) 1., (real_a) 1e-6, (real_a) 1e-6, (long) 1000, niter);
+    C=pow(n0, fmax);
   }
-  C=pow(n0, fmax);
   for (cls_ta i=0; i<ncls; i++) {
     nel_ta ni=cind[i+1]-cind[i];
     size_t l1, l2;

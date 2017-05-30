@@ -1,3 +1,9 @@
+%linear classifiers:
+\newcommand{\lindecision}{f}
+%normal to the border:
+\newcommand{\bordernormal}{\vec v}
+\newcommand{\borderconst}{b}
+
 %symbols for general kernel methods:
 \newcommand{\vectorkernel}{K}		%kernel function of two vectors
 \newcommand{\scalarkernel}{K}		%kernel function of a single scalar
@@ -38,10 +44,10 @@
 %theoretical expanded kernel space:
 \newcommand{\expandedspace}{\vec\phi}
 %decision function:
-\newcommand{\svmdecision}{f}
+\newcommand{\svmdecision}{f_{svm}}
 %parameters for theoretical linear discrimination border:
-\newcommand{\svmbordervector}{\vec v}
-\newcommand{\svmborderconst}{b}
+\newcommand{\svmbordernormal}{\bordernormal}
+\newcommand{\svmborderconst}{\borderconst}
 
 %borders classification:
 %decision function that approximates a difference in conditional %probabilities:
@@ -54,12 +60,10 @@
 \newcommand{\vbdecision}{\decisionfunction_{vb}}
 %border vector:
 \newcommand{\bordervector}{\vec b}
-%normal to the border:
-\newcommand{\bordernormal}{\vec v}
 %number of border vectors:
 \newcommand{\nborder}{n_b}
 %decision function for a borders classifier:
-\newcommand{\borderdecision}{g}
+\newcommand{\borderdecision}{f_{border}}
 %derivative of variable bandwidth kernel estimator:
 \newcommand{\distance}{d}		%intermediate value
 \newcommand{\scalarkernelderiv}{\dot \scalarkernel}

@@ -23,7 +23,120 @@
 
 \section{Introduction}
 
+Linear classifiers are well studied in the literature. Methods such as
+the perceptron, Fisher discriminant, logistic regression and now linear
+support vector machines (SVM) \citep{Michie_etal1994}
+are often appropriate for relatively simple,
+binary classification problems in which the two classes are both closely 
+clustered or are well separated.
+An obvious extension for more complex problems is a piecewise linear classifier 
+in which the decision boundary is built up from a series of linear classifiers.
+Piecewise linear classifiers enjoyed some popularity during the early 
+development of the field of machine learning 
+\citep{Osborne1977, Sklansky_Michelotti1980, Lee_Richards1984, Lee_Richards1985,}
+Because of the versatility, generality and simplicity of such methods there has been recent renewed interest 
+\citep{Bagirov2005, Kostin2006, Gai_Zhang2010, Webb2012, Wang_Saligrama2013, Pavlidis_etal2016}.
+
+A linear classifier typically takes the form:
+\begin{equation}
+	\lindecision(\testpoint) = \bordernormal \cdot \testpoint + \borderconst
+	\label{linear_classifier}
+\end{equation}
+where $\testpoint$ is the test point, $\bordernormal$ is a normal to
+the decision hyper-surface, $\borderconst$ determines the location of the
+decision boundary along the normal and
+$\lindecision$ is the decision function which we use to estimate the class 
+of the test through its sign:
+\begin{equation}
+	\class(\testpoint) = \frac{\lindecision(\testpoint)}{|\lindecision(\testpoint)|}
+\end{equation}
+A piecewise linear classifier collects a set of such linear classifiers:
+$\lbrace \bordernormal_i \rbrace = \lbrace \bordernormal_1, \bordernormal_2,
+\bordernormal_3 ... \rbrace$; $\lbrace \borderconst_i \rbrace =
+\lbrace \borderconst_1, \borderconst_2, \borderconst_3, ... \rbrace$.
+The two challenges here are, first, how to efficiently train each of the
+decision boundaries and, second, the related problem of how to partition the 
+feature space to figure out which linear decision boundary to use for a given 
+test point.
+
+In \citet{Bagirov2005} for instance, the decision function is defined by
+partitioning the set of linear classifiers and maximizing the minimum
+linear decision value in each partition.
+To train the classifier, a cost function is defined in terms
+of this decision function and directly minimized using an
+analog to the derivative for non-smooth functions \citep{Bagirov1999}.
+Naturally, such an approach will be quite computationally costly.
+
+Partitioning of the feature space can be separate from the discrimination 
+borders \citep{Huang_etal2013} but more normally the discrimination borders 
+are themselves sufficient to partition the feature space 
+\citep{Osborne1977, Lee_Richards1984, Bagirov2005, Kostin2006}.
+This means that all or a significant fraction of the component
+linear classifiers must be evaluated.
+In \citet{Kostin2006}, for instance, the linear classifiers form a decision
+tree.
+In the method described in this paper, the constant term, $\borderconst_i$,
+is changed to a vector and the partitioning accomplished through a nearest
+neighbours to this vector. 
+Thus the zone of influence for each hyperplane
+will be described by the Veronoi tesselation \citep{Kohonen2000}.
+If the class domains are simply connected, the partitions will also tend to
+be pyramidal in shape, with axes of the pyramids roughly perpendicular to
+the decision border.
+A dot product with each of the vectors must be calculated, similar
+to a linear classifier, but afterwards only a single linear decision function is
+evaluated.
+
+There seems to be some tension in the literature between training the
+decision boundary through global optimization \citep{Bagirov2005, Wang_Saligrama2013} or through
+methods that are more local \citep{Gai_Zhang2010}.
+We can also distinguish between simultaneous training of the decision surfaces 
+versus methods that are more piece-meal \citep{Herman_Yeung1992, Kostin2006}.
+Obviously, global, simultaneous optimization will be more accurate than methods
+that are local and piece-meal but also much more computationally expensive.
+In addition, finding global minima for cost functions 
+involving more than a handful of hyper-surfaces will be all but impossible.
+Then there is the issue of separability. Many of the current crop of 
+methods seem to be designed with disjoint classes in mind \citep{Herman_Yeung1992}, for instance
+\citet{Gai_Zhang2010} who stick the hyper-plane borders between pairs of 
+opposing classes.
+Yet there is no reason why a piecewise linear classifier cannot be just as
+effective for overlapping classes.
+
+The technique under discussion in this paper mitigates all of these issues 
+because it is not actually a stand-alone method and requires estimates
+of the conditional probabilities.
+It is used to improve the time performance of kernel methods while 
+maintaining, in all but a few cases, most of the accuracy.
+
+Several of the piecewise linear techniques found in the literature work by
+positioning each hyperplane between pairs of clusters or pairs of training
+samples of opposite class 
+\citep{Sklansky_Michelotti1980, Tenmoto_etal1998, Kostin2006, Gai_Zhang2010}.
+Other unsupervised or semi-supervised classifiers work by placing the 
+hyperplanes in regions of minimum density \citep{Pavlidis_etal2016}.
+The method described in this paper in some senses combines these two techniques
+by finding the root of the difference in conditional probabilities along a
+line between two points of opposite class.
+It will be tested on two kernel-based classifiers--a support vector
+machine (SVM) \citep{Michie_etal1994, Mueller_etal2001}
+and a simpler, ``pointwise estimator'' \citep{Terrell_Scott1992}--and evaluated based on how
+well it improves classification speed and at what cost to accuracy.
+
+Section \ref{theory} describes the theory of support
+vector machines and the pointwise estimator (``adaptive Guassian filtering'')
+as well as the piecewise linear classifier or ``borders'' classifier
+that will be trained on the two kernel estimators.
+Section \ref{methods} describes the software and test datasets then in
+section \ref{example} we analyze the different classification algorithms on
+a simple, synthetic dataset.
+Section \ref{results} outlines the results for 17 case studies
+while in Section \ref{discussion} we discuss the results.
+Section \ref{conclusion} concludes the paper.
+
 \section{Theory}
+
+\label{theory}
 
 \subsection{Kernel estimation}
 
@@ -65,7 +178,7 @@ There are at least two solutions to this problem.
 In a ``variable-bandwidth'' estimator, the coefficients, $\kernelparam$, depend in some
 way on the density itself. 
 Since the actual density is normally unavailable, the
-estimated density can be used as a proxy. 
+estimated density can be used as a proxy
 \citep{Terrell_Scott1992, Mills2011}.
 
 Let the kernel function take the following form:
@@ -87,7 +200,7 @@ ${\bandwidth^\dimension}$, some rearrangement shows that:
 	\label{agf_def}
 \end{equation}
 This is a generalization of the $k$-nearest-neighbours scheme in which the
-free parameter, $\kernelsum$, takes the place of $k$. \citep{Mills2009, Mills2011}
+free parameter, $\kernelsum$, takes the place of $k$ \citep{Mills2009, Mills2011}.
 The bandwidth, $\bandwidth$, can be solved
 for using any numerical, one-dimensional root-finding algorithm.
 The bandwidth is determined uniquely for a given test point but is held constant for that
@@ -104,7 +217,7 @@ is to add a series of variable coefficients:
 \end{equation}
 The coefficients, $\lbrace \svmcoeff_i \rbrace$, are found through an optimization
 procedure designed to minimize the error \citep{Chen_etal2015}. In the most popular
-form of this kernel method, Support Vector Machines (SVM), the coefficients
+form of this kernel method, support vector machines (SVM), the coefficients
 are the result of a complex, dual optimization procedure which minimizes
 the classification error. We will briefly outline this procedure.
 
@@ -131,13 +244,13 @@ there is no need to actually construct $\expandedspace$ since it is replaced by 
 kernel function, $\vectorkernel$, in the final analysis.
 
 In a binary SVM classifier, the classes are separated by a single hyper-plane
-defined by $\svmbordervector$ and $\svmborderconst$.
+defined by $\svmbordernormal$ and $\svmborderconst$.
 In a kernel-based SVM, this hyperplane bisects not the regular feature
 space, but the theoretical, transformed space defined by the function,
 $\expandedspace(\point)$.
 The {\it decision value} is calculated via a dot product:
 \begin{equation}
-	\svmdecision(\testpoint)=\svmbordervector \cdot \expandedspace(\testpoint) + \svmborderconst
+	\svmdecision(\testpoint)=\svmbordernormal \cdot \expandedspace(\testpoint) + \svmborderconst
 	\label{decision_function0}
 \end{equation}
 and the class determined by the sign of the decision value:
@@ -148,22 +261,22 @@ and the class determined by the sign of the decision value:
 where for convenience, the class labels are given by $c \in \lbrace -1, 1 \rbrace$.
 
 In the first step of the minimization procedure, 
-the magnitude of the border normal, $\svmbordervector$, 
+the magnitude of the border normal, $\svmbordernormal$, 
 is minimized subject to the constraint that there are no classification 
 errors:
 \begin{eqnarray}
-	\min_{\svmbordervector, \svmborderconst} \frac{1}{2} | \svmbordervector | \\ \nonumber
+	\min_{\svmbordernormal, \svmborderconst} \frac{1}{2} | \svmbordernormal | \\ \nonumber
 	\svmdecision(\sample_i) \classlabel_i \ge 1
 \end{eqnarray}
 Introducing the coefficients, $\lbrace \svmcoeff_i \rbrace$, 
 as Lagrange multipliers on the constraints:
 \begin{equation}
-	\min_{\svmbordervector, b} \left \lbrace \frac{1}{2} | \svmbordervector | - \sum_i \svmcoeff_i \left [ \svmdecision(\sample_i) \classlabel_i -1 \right ] \right \rbrace
+	\min_{\svmbordernormal, b} \left \lbrace \frac{1}{2} | \svmbordernormal | - \sum_i \svmcoeff_i \left [ \svmdecision(\sample_i) \classlabel_i -1 \right ] \right \rbrace
 \end{equation}
 generates the following pair of analytic expressions:
 \begin{eqnarray}
 	\sum_i \svmcoeff_i \classlabel_i & = & 0 \\
-	\svmbordervector & = & \sum_i \svmcoeff_i \classlabel \expandedspace(\sample_i) \label{border_vector_equation}
+	\svmbordernormal & = & \sum_i \svmcoeff_i \classlabel \expandedspace(\sample_i) \label{border_vector_equation}
 \end{eqnarray}
 through setting the derivatives w.r.t. the minimizers to zero.
 Substituting the second equation, (\ref{border_vector_equation}),
@@ -319,7 +432,10 @@ the raw SVM decision function, $\svmdecision$, in (\ref{svm_decision}):
 \end{equation}
 where $\svmprobcoeffA$ and $\svmprobcoeffB$ are coefficients derived from
 the training data via
-nonlinear least-squares fitting \citep{Lin_etal2007, Chang_Lin2011}.
+nonlinear least-squares fitting \citep{Platt1999, Lin_etal2007, Chang_Lin2011}.
+The nonlinear fitting technique
+is similar to logistic regression \citep{Michie_etal1994}
+in that it allows probability estimates to be fitted directly against the class values.
 
 The gradient of the revised SVM decision function, above, is:
 \begin{equation}
@@ -397,16 +513,20 @@ and $\diffcondprob_{ij}$ is the difference in conditional probabilities of
 the binary classifier that discriminates between the $i$th and $j$th classes.
 \citet{Wu_etal2004} transform this problem into the following linear system:
 \begin{eqnarray}
-	\sum_i \frac{1}{4} \left [ \multiprob_i \sum_{j|j \ne i} (\decisionfunction_{ij} + 1)^2 - \multiprob_i (\decisionfunction_{ij}^2 - \decisionfunction_{ij} - 2) \right ] + \lmult & = & 0 \\
+	\sum_i \frac{\multiprob_i}{4} \left [ \sum_{j|j \ne i} (\diffcondprob_{ij} + 1)^2 - \diffcondprob_{ij}^2 - \diffcondprob_{ij} - 2 \right ] + \lmult & = & 0 \\
 	\label{multiclass}
 	\sum_i \multiprob_i & = & 1
 \end{eqnarray}
 where $\multiprob_i = \condprob(i | \point)$ is the $i$th multi-class 
 conditional probability and $\lmult$ is a Lagrange multiplier.
-They also show that it can be solved iteratively so that the constraints 
-not included in the problem, that the probabilities are all positive, are satisfied.
+They also show that the constraints not included in the problem--that
+the probabilities are all positive--are always satisfied
+and describe an algorithm for solving it iteratively, although a
+simple matrix solver is more than sufficient.
 
 \section{Software and data}
+
+\label{methods}
 
 \subsection{LIBSVM}
 
@@ -544,6 +664,8 @@ Features that took on the same value in the training data were removed.
 
 
 \section{A simple example}
+
+\label{example}
 
 \begin{figure}
 \includegraphics[width=0.9\textwidth]{support_vectors}
@@ -703,6 +825,8 @@ to fit it.
 
 \section{Case studies}
 
+\label{results}
+
 \begin{table}
 	\caption{Summary of the parameters used in the numerical trials for each of the four methods: KNN ($k$-nearest-neighbours), AGF (adaptive Gaussian filtering), SVM (support vector machine) and ACC (``accelerated'' SVM).}
 	\label{param}
@@ -710,17 +834,19 @@ to fit it.
 \end{table}
 
 \begin{table}
+	\caption{Collation of results for numerical trials of the four different statistical classification methods over six different datasets.}
+	\label{results}
 	{\small
 		\input{results.tex}
 	}
-	\caption{Collation of results for numerical trials of the four different statistical classification methods over six different datasets.}
 \end{table}
 
 \begin{table}
+	\caption{Collation of results for numerical trials of the four different statistical classification methods over seventeen different datasets.}
+	\label{results2}
 	{\small
 		\input{results2.tex}
 	}
-	\caption{Collation of results for numerical trials of the four different statistical classification methods over seventeen different datasets.}
 \end{table}
 
 \begin{table}
@@ -757,6 +883,19 @@ For SVM, a Gaussian kernel is used:
 where $\gamma$ is a tunable parameter. 
 $C$ is a cost parameter added to reduce over-fitting.
 For more information, see \citet{Chang_Lin2011} and \citet{kernel_intro}.
+
+The results are summarized in Tables \ref{results} and \ref{results2} including training
+and test time for each method as well as skill scores. There are two skill scores,
+the first being simple accuracy or fraction of correct guesses while the second,
+called the uncertainty coefficient, is based on information entropy and is described
+below.
+The best values for each dataset are highlighted in bold.
+Note that KNN does not have a training phase but sometimes its classification phase
+is shorter than all the others' training phase in which case none of the numbers
+are highlighted but rather the hyphen that's put in place of the KNN training
+time.
+The SVM-borders method is not a stand-alone method thus its training time is never
+highlighted.
 
 \subsection{Skill scores}
 
@@ -809,7 +948,9 @@ and tells us:
 for a given test classification, how many bits of information does the estimate
 supply of the true class value? \citep{Press_etal1992, Mills2011}.
 
-\subsection{Borders acceleration versus subsampling}
+\section{Discussion}
+
+\label{discussion}
 
 \begin{table}
   \caption{Results from SVM trials after sub-sampling to match SVM-borders:
@@ -825,7 +966,7 @@ Ten of the classification show a significant speed increase with the application
 of the borders technique with heart, segment, sat, letter, pendigits, dna
 and splice being the exceptions.
 This increase in speed, however, usually comes at the cost of accuracy.
-The question is, is this speed increase worth the decrease in skill?
+The question is, is the speed increase worth the decrease in skill?
 To test this, we sub-sample the datasets and then re-apply the SVM training
 until either the speed or the accuracy of the two methods--SVM
 and SVM-borders--matches, whichever comes first.
@@ -855,18 +996,87 @@ desired total fraction and $\classsize_1$ is the class with the fewest samples.
 To understand how this functional form was chosen, please see Appendix \ref{shuttle_subsampling}.
 
 The results of the sub-sampling exercise are shown in table \ref{subsampling_table}.
+This gives us a clearer understanding of whether or not and
+when SVM acceration through borders sampling is effective.
+Sometimes the speed increase is so great that even the AGF-borders method will provide an
+improvement over a sub-sampled SVM model, the results for AGF being wholly
+disappointing.
 
-\section{Discussion}
+AGF-borders beats SVM in accuracy on only one dataset and then not statistically-
+significantly so.
+It rarely even equals KNN in accuracy even though it's essentially the same method
+but using a more sophisticated kernel and with the borders training applied.
+Nonetheless, there is good reason to develop the method further: 
+training time varies with the number of training samples ($O(n)$) rather than with
+the square ($O(n^2)$).
+This is apparent for the largest datasets with more than a few thousand training samples
+at which point the AGF-borders method starts to train faster than LIBSVM borders.
+
+There are at least three major sources of error for the AGF-borders technique.
+First, the kernel method upon which it is based is only first-order accurate.
+Second, the borders method provides only limited sampling of the discrimination
+border and this sampling is not strongly optimized.
+The sampling method, using pairs of training points of opposite class, will
+tend to favour regions of high density, however  
+directly optimizing for classification skill would be the ideal solution.
+Finally, the probability estimates extrapolate from only a single point.
+All these errors will tend to compound, especially after converting to
+multiple classes.
+Two of these errors sources also affect SVM-borders but don't seem to have a large
+effect on the final results.
+
+One potential improvement is to recalibrate the probability estimates as 
+done with the LIBSVM decision in equation (\ref{svm_prob})) \citep{Platt1999, Lin_etal2007}.
+There are many other methods of recalibrating classification probability
+estimates: see for instance 
+\citet{Niculescu-Mizil_Caruana2005, Zadrozny_Elkan2001}.
+
 
 \subsection{Recalibration}
 
+Neither SVM nor the borders method return an integer that represents the class,
+but rather a continuum value (or more precisely a limited-precision floating point 
+value that approximates this real number) whose sign determines the class.
+Thus a single measure of classification skill is not a complete representation
+of the classifiers' accuracy since 
+it's possible to recalibrate the results by choosing a different threshold.
+This can be done either to maximize a particular skill score or to account for
+different costs for the different types of error and different rewards for
+the different correct guesses.
+
+Consider the confusion matrices for the splice problem for both SVM
+and SVM-borders classifiers shown in Table \ref{confusion}.
+
 \section{Conclusions}
+
+\label{conclusion}
 
 \begin{table}
 	\caption{Summary of results for all 17 datasets including a verdict on the success or failure of borders classification to speed up SVM.}
 	\label{verdict}
 	\input{verdict.tex}
 \end{table}
+
+The primary goal of this work was to improve the classification time of a SVM
+using a simple, piecewise linear classifier which we call the borders classifier.
+The outcome for each of the 17 datasets is summarized in Table \ref{verdict}.
+The method succeeded for seven of the datasets and failed for three while it
+broke even for six.
+Not a stellar performance but certainly worthwhile to try for operational retrievals
+where time performance is critical, for instance classifying large amounts of satellite
+data in real time.
+It's worthwhile to note where the algorithm is most likely to succeed and conversely
+where it might fail.
+Since it was designed with continuum features data in mind, it tends to work poorly
+with integer or categorical data.
+Indeed, two of the problems where it fails the most spectaculary, dna and splice, 
+use binary and categorical data respectively.
+Also, since there is no redundancy in calculations for multiple classes, 
+whereas in SVM there is considerable redundancy, problems with a large number of
+classes should also be avoided.
+This could be mitigated somewhat by using a multi-class classification method
+requiring fewer binary classifiers such as one-versus-the-rest rather than
+one-versus-one.
 
 \appendix
 
@@ -875,6 +1085,6 @@ The results of the sub-sampling exercise are shown in table \ref{subsampling_tab
 
 \input{shuttle_subsampling}
 
-\bibliography{../agf_bib,svm_accel}
+\bibliography{../agf_bib,svm_accel,../pwl}
 
 \end{document}

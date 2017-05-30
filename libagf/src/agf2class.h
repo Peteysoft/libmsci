@@ -158,6 +158,14 @@ namespace libagf {
 					//4 optimize correlation
 		      real r0=0);		//constant term
 
+      void calibrate2(real **train, 		//training data
+		      cls_t *cls, 
+		      nel_ta ntrain, 		//number of samples
+		      int O=CALIBRATION_ORDER,	//order
+		      int nhist=NCONHIST,	//number of divisions
+		      int optimize=0,	//optimize skill:
+		      real r0=2);		//constant term
+
       void print_calib(FILE *fs);
 
       virtual real R(real *x, real *praw=NULL);

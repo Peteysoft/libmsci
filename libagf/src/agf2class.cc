@@ -797,6 +797,49 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  void borders_calibrated<real, cls_t>::calibrate2(real **train, cls_t *cls, nel_ta ntrain, int O, int nhist, int optimize, real r0) {
+    real r[ntrain];		//difference in conditional probabilities
+    real *rsort;
+    nel_ta *nonecum;
+
+    order=O;
+    //classify each training sample using this classifier:
+    printf("borders_calibrated: classifiying training data\n");
+    for (int i=0; i<ntrain; i++) {
+      r[i]=this->R_t(train[i]);
+      //r[i]=this->borders_classifier<real, cls_t>::R_t(train[i]);
+    }
+
+    //the coup de grace:
+    if (optimize>1) {
+      rsort=new real[ntrain];
+      nonecum=new nel_ta[ntrain];
+      sortr_cumulate_ones(cls, r, ntrain, nonecum, rsort);
+    } else if (optimize==0) {
+      r0=2;
+    }
+    switch (optimize) {
+      case(2):
+	r0=optimize_binary_skill_rig(nonecum, rsort, ntrain, &acc_bin);
+	break;
+      case(3):
+	r0=optimize_binary_skill_rig(nonecum, rsort, ntrain, &uc_bin);
+	break;
+      case(4):
+	r0=optimize_binary_skill_rig(nonecum, rsort, ntrain, &corr_bin);
+	break;
+    }
+    if (optimize>1) {
+      delete [] rsort;		//this is wasted!
+      delete [] nonecum;
+    }
+
+    printf("borders_calibrated: calling calibrate_r\n");
+    delete [] coef;
+    coef=calibrate_r(cls, r, ntrain, order, nhist, r0);
+  }
+
+  template <class real, class cls_t>
   void borders_calibrated<real, cls_t>::print_calib(FILE *fs) {
     print_matrix(fs, &coef, 1, order+1);
   }

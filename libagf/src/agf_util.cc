@@ -312,9 +312,9 @@ int agf_parse_command_opts(int &argc, char **&argv, const char *optlist, agf_com
                fprintf(stderr, "Warning: garbled option argument: -q %s", optarg);
                errcode=COMMAND_OPTION_PARSE_ERROR;
 	     } else if (opt_args->nt < 4) {
-               fprintf(stderr, "Warning: parameter nt=%d out of range\n", opt_args->nt);
-               errcode=PARAMETER_OUT_OF_RANGE;
-               opt_args->nt=NT_DEFAULT;
+               //fprintf(stderr, "Warning: parameter nt=%d out of range\n", opt_args->nt);
+               //errcode=PARAMETER_OUT_OF_RANGE;
+               //opt_args->nt=NT_DEFAULT;
              }
 	     break;
       case ('Q'):

@@ -80,7 +80,8 @@ namespace libagf {
 		  real *r,			//probability estimates
 		  nel_ta n,			//number of estimates
 		  int order,			//order of fit
-		  nel_ta k);			//size of box
+		  nel_ta k,			//size of box
+		  real r0=2);			//threshold
 
 } //end namespace libagf
 

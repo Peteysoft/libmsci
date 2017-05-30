@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
 
   real_a *ave=NULL;
   real_a **mat=NULL;
+  real_a *all;
   dim_ta nvar1, nvar2;	//check number of variables against other files
 
   real_a r0;		//threshold probability
@@ -55,6 +56,7 @@ int main(int argc, char *argv[]) {
   opt_args.nt=NCONHIST;
   opt_args.Qtype=CALIBRATION_ORDER;
   opt_args.algtype=0;
+  opt_args.rthresh=0;
 
   //normalization options: -n -S -a
   //supernewton iteration: -h -i -I
@@ -163,6 +165,7 @@ int main(int argc, char *argv[]) {
   for (nel_ta i=0; i<ntrain; i++) if (cls[i]>=nclass) nclass=cls[i]+1;
 
   //if there are partitions:
+  nel_ta *clind;
   if (argc>3) {
     cls_ta map[nclass];
     cls_ta nncls=1;			//new number of classes
@@ -175,6 +178,11 @@ int main(int argc, char *argv[]) {
     for (cls_ta i=0; i<nclass; i++) if (map[i]>=nncls) nncls=map[i]+1;
     nclass=nncls;
   }
+
+  //remove excluded/out-of-range classes:
+  all=train[0];
+  clind=sort_classes(train, ntrain, cls, nclass);
+
   if (nclass < 2) {
     fprintf(stderr, "class_borders: Cannot perform classifications with less than two classes!\n");
     return PARAMETER_OUT_OF_RANGE;
@@ -208,7 +216,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  classifier->calibrate(train, cls, ntrain, opt_args.Qtype, opt_args.nt, opt_args.algtype, opt_args.rthresh);
+  classifier->calibrate2(train+clind[0], cls+clind[0], clind[2]-clind[0], opt_args.Qtype, opt_args.nt, opt_args.algtype, opt_args.rthresh);
 
   //create the new calibration file:
   outfile=new char[strlen(argv[2])+5];
@@ -239,9 +247,10 @@ int main(int argc, char *argv[]) {
   delete [] cpcommand;
 
   //delete integer and real_aing point arrays:
+  delete[] all;
   delete[] train;
-  delete[] train[0];
   delete [] cls;
+  delete [] clind;
 
   if (ave!=NULL) delete [] ave;
   if (mat!=NULL) delete_matrix(mat);
