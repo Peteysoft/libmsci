@@ -204,7 +204,7 @@ int main(int argc, char ** argv) {
     real_a **roc;
     roc=calc_roc(nonecum, rsort, n1);
     for (nel_ta i=0; i<n1; i++) {
-      fprintf(fs, "%g %g\n", roc[0][i], roc[1][i]);
+      fprintf(fs, "%g %g %g\n", rsort[i], roc[0][i], roc[1][i]);
     }
   } else if (type==2) {
     for (int i=0; i<n1; i++) {

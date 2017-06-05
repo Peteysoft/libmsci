@@ -72,17 +72,6 @@ else
   PRE=-n
 endif
 
-#list of datasets from LIBSVM website with test and training:
-SVMTTDATA=madelon \
-	ijcnn1 \
-	seismic \
-	usps \
-	dna \
-	pendigits \
-	codrna \
-	poker \
-	splice
-
 #options for AGF-borders:
 AGFOPT_heart=-W 10
 AGFOPT_shuttle=-W 1.5 -k 200 -s 250
@@ -223,7 +212,8 @@ NSUPPORT=$(WORKDIR)/nsupport.txt
 
 #need this to normalize test data same as training data, if applicable:
 ifneq ($(strip $(PRE)),)
-  NORMCLAUSE=-a $(TRAIN).std
+  NORMFILE=$(TRAIN).std
+  NORMCLAUSE=-a $(NORMFILE)
 endif
 
 #phony targets:
@@ -462,9 +452,6 @@ $(TRAIN).svm: $(TRAIN).cls $(TRAIN).vec
 $(TEST).svm: $(TEST).cls $(TEST).vec
 	agf2ascii -M $(TEST) $(TEST).svm
 
-#since multiple targets aren't possible with suffix rules (I don't think):
-$(TRAIN).vec $(TEST).cls $(TEST).vec: $(TRAIN).cls
-
 #file conversion:
 #steps:
 #1. convert to libAGF format and copy to working directory
@@ -473,103 +460,109 @@ $(TRAIN).vec $(TEST).cls $(TEST).vec: $(TRAIN).cls
 #     - normalization (optional)
 #     - SVD (optional)
 #     - make class labels go from 0 to Nc-1
-$(WORKDIR)/heart.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%.dat.txt
-	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
-	lvq2agf -H $< $(WORKDIR)/$(VER)
-	agf_preprocess $(PRE) -Uzf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
+#list of datasets from LIBSVM website with test and training:
 
-#3rd feature must be removed before normalization 
-#since it only takes on one value:
-$(WORKDIR)/segment.trn.cls: $(DATADIR)/segment.dat.txt
+#list of datasets from LIBSVM website with test and training:
+SVMTTDATA=madelon \
+	ijcnn1 \
+	seismic \
+	usps \
+	dna \
+	pendigits \
+	codrna \
+	poker 
+	#splice
+
+#list of datasets that need to be separated into test and training:
+ALLINONE=	heart \
+		segment \
+		mushrooms \
+		phishing \
+		covtype \
+		letter \
+		humidity
+
+#make the working directory:
+$(WORKDIR)/$(VER).timestamp:
 	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
+	date > $(WORKDIR)/$(VER).timestamp
+
+#UCI datasets in LVQ format (sans header) with only training data:
+$(WORKDIR)/heart.cls: $(WORKDIR)/%.cls: $(DATADIR)/%.dat.txt $(WORKDIR)/$(VER).timestamp
 	lvq2agf -H $< $(WORKDIR)/$(VER)
-	agf_preprocess $(PRE) -FzUf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST) 0 1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
+
+$(WORKDIR)/segment.cls: $(DATADIR)/segment.dat.txt $(WORKDIR)/$(VER).timestamp
+	lvq2agf -H $< $(WORKDIR)/$(VER)
+	#3rd feature must be removed since it only takes on one value:
+	agf_preprocess -F $(WORKDIR)/$(VER) $(WORKDIR)/segment 0 1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
+
+$(WORKDIR)/letter.cls: $(DATADIR)/letter-recognition.data.txt $(WORKDIR)/$(VER).timestamp
+	sed 's/A/0/;s/B/1/;s/C/2/;s/D/3/;s/E/4/;s/F/5/;s/G/6/;s/H/7/;s/I/8/;s/J/9/;s/K/10/;s/L/11/;s/M/12/;s/N/13/;s/O/14/;s/P/15/;s/Q/16/;s/Q/16/;s/R/17/;s/S/18/;s/T/19/;s/U/20/;s/V/21/;s/W/22/;s/X/23/;s/Y/24/;s/Z/25/;' < $< | awk -F ',' '{print $$2, $$3, $$4, $$5, $$6, $$7, $$8, $$9, $$10, $$11, $$12, $$13, $$14, $$15, $$16, $$1}' > $(WORKDIR)/letter.txt
+	lvq2agf -H $(WORKDIR)/letter.txt $(WORKDIR)/letter
+
+#UCI datasets in LVQ format (sans header) with both training and test data:
+$(WORKDIR)/sat.trn.raw.cls $(WORKDIR)/shuttle.trn.raw.cls: $(WORKDIR)/%.trn.raw.cls: $(DATADIR)/%.trn.txt $(WORKDIR)/$(VER).timestamp
+	lvq2agf -H $(DATADIR)/$(VER).trn.txt $(TRAIN).raw
+
+$(WORKDIR)/sat.tst.raw.cls $(WORKDIR)/shuttle.tst.raw.cls: $(WORKDIR)/%.tst.raw.cls: $(DATADIR)/%.tst.txt $(WORKDIR)/$(VER).timestamp
+	lvq2agf -H $(DATADIR)/$(VER).tst.txt $(TEST).raw
+
+#LIBSVM datasets with only training data:
+$(WORKDIR)/mushrooms.cls $(WORKDIR)/phishing.cls $(WORKDIR)/covtype.cls: $(WORKDIR)/%.cls: $(DATADIR)/% $(WORKDIR)/$(VER).timestamp
+	svm2agf -E 0 $(DATADIR)/$(VER) $(WORKDIR)/$(VER)
+
+#LIBSVM datasets with both test and training data:
+$(addsuffix .trn.raw.cls, $(addprefix $(WORKDIR)/, $(SVMTTDATA))): $(WORKDIR)/%.trn.raw.cls: $(DATADIR)/% $(WORKDIR)/$(VER).timestamp
+	svm2agf -E 0 $(DATADIR)/$(VER) $(TRAIN).raw
+
+$(addsuffix .tst.raw.cls, $(addprefix $(WORKDIR)/, $(SVMTTDATA))): $(WORKDIR)/%.tst.raw.cls: $(DATADIR)/%.t $(WORKDIR)/$(VER).timestamp
+	svm2agf -E 0 $(DATADIR)/$(VER).t $(TEST).raw
+
+#rearrange splice features:
+SED_PROGRAM='s/1\./3\./;s/2\./2\./;s/3\./0\./;s/4\./1\./;'
+$(WORKDIR)/splice.trn.raw.cls: $(DATADIR)/splice $(WORKDIR)/$(VER).timestamp
+	sed $(SED_PROGRAM) < $< > $(WORKDIR)/splice.txt
+	svm2agf -E 0 $(WORKDIR)/splice.txt $(WORKDIR)/splice.trn.raw
+
+$(WORKDIR)/splice.tst.raw.cls: $(DATADIR)/splice.t $(WORKDIR)/$(VER).timestamp
+	sed $(SED_PROGRAM) < $< > $(WORKDIR)/splice.t.txt
+	svm2agf -E 0 $(WORKDIR)/splice.t.txt $(WORKDIR)/splice.tst.raw
+
+$(WORKDIR)/mnist.trn.raw.cls: $(DATADIR)/mnist $(WORKDIR)/$(VER).timestamp
+	svm2agf -E 0 $(DATADIR)/$(VER) $(TRAIN).raw
+	agf_preprocess -F $(TRAIN).raw $(TRAIN).raw $(MNIST_INDICES)
+
+$(WORKDIR)/mnist.tst.raw.cls: $(DATADIR)/mnist.t $(WORKDIR)/$(VER).timestamp
+	svm2agf -E 0 $(DATADIR)/$(VER).t $(TEST).raw
+	#because test data has different dimensions from the training
+	#data, feature selection has to be done separately:
+	agf_preprocess -F $(TEST).raw $(TEST).raw $(MNIST_INDICES)
+
+#my own dataset:
+$(WORKDIR)/humidity.cls: ../humidity_data/train_SQ36s.dat ../humidity_data/est_bt_cld_land_z0.00.vec
+	cp ../humidity_data/est_bt_cld_land_z0.00.vec $(WORKDIR)/humidity.vec
+	float_to_class -q $(NCLS_humidity) -g ../humidity_data/train_SQ36s.dat $(WORKDIR)/humidity.cls 0.00007 0.001
+
+#convert raw data into normalized training and test sets:
+
+#datasets where all the data is lumped together and needs to be separated:
+$(addsuffix .tst.raw.cls, $(addprefix $(WORKDIR)/, $(ALLINONE))): $(WORKDIR)/%.tst.raw.cls: $(WORKDIR)/%.trn.raw.cls
+
+#separate test from training:
+$(addsuffix .trn.raw.cls, $(addprefix $(WORKDIR)/, $(ALLINONE))): $(WORKDIR)/%.trn.raw.cls: $(WORKDIR)/%.cls
+#$(TRAIN).raw.cls $(TEST).raw.cls: $(WORKDIR)/$(VER).cls
+	agf_preprocess $(PRE) -zf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN).raw $(TEST).raw
+
+#process training data:
+$(TRAIN).vec $(TRAIN).cls $(NORMFILE): $(TRAIN).raw.cls
+	agf_preprocess $(PRE) -U $(TRAIN).raw $(TRAIN)
 ifdef SUBSAMPLE
 	subsample_special -zCf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
 endif
 
-$(WORKDIR)/sat.trn.cls $(WORKDIR)/shuttle.trn.cls: $(WORKDIR)/%.cls: $(DATADIR)/%.txt
-	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
-	lvq2agf -H $(DATADIR)/$(VER).trn.txt $(TRAIN)
-	lvq2agf -H $(DATADIR)/$(VER).tst.txt $(TEST)
-	agf_preprocess -U $(PRE) $(TRAIN) $(TRAIN)
-ifdef SUBSAMPLE
-	#agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
-	subsample_special -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
-endif
-	agf_preprocess $(NORMCLAUSE) -U $(TEST) $(TEST)
-
-VEHICLE_SUFFIX=.dat.txt
-VEHICLE_FILES=xaa xab xac xad xae xaf xag xah xai
-VEHICLE_TEST=xaa
-VEHICLE_TRAIN=$(addsuffix $(VEHICLE_SUFFIX), $(filter-out $(VEHICLE_TEST), $(VEHICLE_FILES)))
-
-#$(WORKDIR)/vehicle.$(VEHICLE_TEST).trn.cls: $(WORKDIR)/vehicle.trn.cls \
-
-$(WORKDIR)/vehicle.trn.cls: $(addprefix, $(DATADIR)/, $(VEHICLE_FILES))
-	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
-	cat $(addprefix $(DATADIR)/, $(VEHICLE_TRAIN)) | sed 's/opel/0/;s/saab/1/;s/bus/2/;s/van/3/' > $(WORKDIR)/vehicle.trn.txt
-	cat $(DATADIR)/$(VEHICLE_TEST)$(VEHICLE_SUFFIX) | sed 's/opel/0/;s/saab/1/;s/bus/2/;s/van/3/' > $(WORKDIR)/$(VER).tst.txt
-	lvq2agf -H $< $(WORKDIR)/$(VER).trn.txt $(TRAIN)
-	lvq2agf -H $< $(WORKDIR)/$(VER).tst.txt $(TEST)
-	agf_preprocess -U $(PRE) $(TRAIN) $(TRAIN)
-ifdef SUBSAMPLE
-	#agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
-	subsample_special -Czf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
-endif
-	agf_preprocess $(NORMCLAUSE) -U $(TEST) $(TEST)
-
-$(WORKDIR)/mushrooms.trn.cls $(WORKDIR)/phishing.trn.cls $(WORKDIR)/covtype.trn.cls: $(WORKDIR)/%.trn.cls: $(DATADIR)/%
-	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
-	svm2agf -E 0 $(DATADIR)/$(VER) $(WORKDIR)/$(VER)
-	agf_preprocess $(PRE) -Uzf $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
-ifdef SUBSAMPLE
-	#agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
-	subsample_special -Czf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
-endif
-
-$(addsuffix .trn.cls, $(addprefix $(WORKDIR)/, $(SVMTTDATA))): $(WORKDIR)/%.trn.cls: $(DATADIR)/%
-	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
-	svm2agf -E 0 $(DATADIR)/$(VER) $(TRAIN)
-	svm2agf -E 0 $(DATADIR)/$(VER).t $(TEST)
-	agf_preprocess $(PRE) -U $(TRAIN) $(TRAIN)
-ifdef SUBSAMPLE
-	#agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
-	subsample_special -Czf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
-endif
-	agf_preprocess $(NORMCLAUSE) -U $(TEST) $(TEST)
-
-$(WORKDIR)/letter.trn.cls: $(DATADIR)/letter-recognition.data.txt
-	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
-	sed 's/A/0/;s/B/1/;s/C/2/;s/D/3/;s/E/4/;s/F/5/;s/G/6/;s/H/7/;s/I/8/;s/J/9/;s/K/10/;s/L/11/;s/M/12/;s/N/13/;s/O/14/;s/P/15/;s/Q/16/;s/Q/16/;s/R/17/;s/S/18/;s/T/19/;s/U/20/;s/V/21/;s/W/22/;s/X/23/;s/Y/24/;s/Z/25/;' < $< | awk -F ',' '{print $$2, $$3, $$4, $$5, $$6, $$7, $$8, $$9, $$10, $$11, $$12, $$13, $$14, $$15, $$16, $$1}' > $(WORKDIR)/letter.txt
-	lvq2agf -H $(WORKDIR)/letter.txt $(WORKDIR)/letter
-	agf_preprocess -zf $(FRAC) $(PRE) $(WORKDIR)/letter $(TRAIN) $(TEST)
-
-$(WORKDIR)/humidity.trn.cls: ../humidity_data/train_SQ36s.dat ../humidity_data/est_bt_cld_land_z0.00.vec
-	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
-	cp ../humidity_data/est_bt_cld_land_z0.00.vec $(WORKDIR)/humidity.vec
-	float_to_class -q $(NCLS_humidity) -g ../humidity_data/train_SQ36s.dat $(WORKDIR)/humidity.cls 0.00007 0.001
-	agf_preprocess -zf $(FRAC) $(PRE) $(WORKDIR)/humidity $(TRAIN) $(TEST)
-ifdef SUBSAMPLE
-	#agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
-	subsample_special -Czf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
-endif
-
-$(WORKDIR)/mnist.trn.cls: $(DATADIR)/mnist $(DATADIR)/mnist.t
-	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
-	svm2agf -E 0 $(DATADIR)/$(VER) $(TRAIN)
-	svm2agf -E 0 $(DATADIR)/$(VER).t $(TEST)
-	#because test data has different dimensions from the training
-	#data, feature selection has to be done separately:
-	agf_preprocess -F $(TRAIN) $(TRAIN) $(MNIST_INDICES)
-	agf_preprocess -F $(TEST) $(TEST) $(MNIST_INDICES)
-	agf_preprocess $(PRE) $(TRAIN) $(TRAIN)
-ifdef SUBSAMPLE
-	#agf_preprocess -zf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
-	subsample_special -Czf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
-endif
-	agf_preprocess $(NORMCLAUSE) $(TEST) $(TEST)
-
+#process test data:
+$(TEST).vec $(TEST).cls: $(TEST).raw.cls $(NORMFILE)
+	agf_preprocess $(NORMCLAUSE) -U $(TEST).raw $(TEST)
 
 #we like the mnist dataset because it takes 3 days to train in LIBSVM:
 MNIST_INDICES = 33 \
