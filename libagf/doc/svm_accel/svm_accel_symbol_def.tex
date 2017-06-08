@@ -7,7 +7,7 @@
 %symbols for general kernel methods:
 \newcommand{\vectorkernel}{K}		%kernel function of two vectors
 \newcommand{\scalarkernel}{K}		%kernel function of a single scalar
-\newcommand{\kernelparam}{k}		%kernel parameter
+\newcommand{\kernelparam}{\vec k}	%kernel parameters
 \newcommand{\norm}{N}			%integral of kernel function
 \newcommand{\nsample}{n}		%number of training samples
 \newcommand{\dimension}{D}		%dimension of feature space
@@ -48,6 +48,7 @@
 %parameters for theoretical linear discrimination border:
 \newcommand{\svmbordernormal}{\bordernormal}
 \newcommand{\svmborderconst}{\borderconst}
+\newcommand{\svmcost}{C}
 
 %borders classification:
 %decision function that approximates a difference in conditional %probabilities:
@@ -80,8 +81,11 @@
 \newcommand{\multiprob}{p}	%probability for each class
 \newcommand{\lmult}{\lambda}	%Lagrange multiplier
 
+%svm kernels:
+\newcommand{\rbkernelparam}{\gamma}
+
 %skill scores:
-\newcommand{\confusion}{\gamma}		%confusion matrix
+\newcommand{\confusion}{\eta}		%confusion matrix
 \newcommand{\ntest}{n_{test}}		%number of test points
 \newcommand{\entropy}{H}
 \newcommand{\priorentropy}{\entropy_i}
