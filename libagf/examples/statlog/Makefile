@@ -93,7 +93,7 @@ AGFOPT_ijcnn1=-W 10 -k 400 -s 500
 AGFOPT_madelon=-W 10 -k 200
 AGFOPT_phishing=-W 7 -k 250 -s 500
 #AGFOPT_splice=-W 15 -s 200 -r-0.23
-AGFOPT_splice=-W 15 -s 200
+AGFOPT_splice=-W 15 -s 500
 #AGFOPT_splice=-W 15 -s 1000
 AGFOPT_humidity=-k 400 -W 10 -s 200
 AGFOPT_mnist=-k 200 -W 1 -s 500
@@ -145,14 +145,14 @@ NSAMP_letter=-s 75
 #NSAMP_codrna=-s 500 -r-0.1
 NSAMP_codrna=-s 500
 NSAMP_pendigits=-s 50
-NSAMP_dna=-s 1000
+NSAMP_dna=-s 500
 NSAMP_usps=-s 50
 NSAMP_seismic=-s 200
 NSAMP_ijcnn1=-s 500
 NSAMP_phishing=-s 500
 #NSAMP_splice=-s 200 -r-0.99
 #NSAMP_splice=-s 1000
-NSAMP_splice=-s 200
+NSAMP_splice=-s 500
 NSAMP_humidity=-s 200
 NSAMP_mnist=-s 500
 NSAMP_mushrooms=-s 200
@@ -174,6 +174,7 @@ else
   CLEAN_TARGET=clean
 endif
 
+#subsampling:
 ifdef SUBSAMPLE
   BUILD_TARGET=build_svm
   CLEAN_TARGET=clean
@@ -181,6 +182,11 @@ ifdef SUBSAMPLE
 else
   #if you make stats results are stuck in here:
   STATFILE=$(VER).txt
+endif
+
+#for all datasets except shuttle we keep class ratios constant:
+ifneq ($(VER),shuttle)
+  CONSTCLASS=C
 endif
 
 #where to find scripts (for testing acc. vs. border samples):
@@ -559,7 +565,7 @@ $(addsuffix .trn.raw.cls, $(addprefix $(WORKDIR)/, $(ALLINONE))): $(WORKDIR)/%.t
 $(TRAIN).vec $(TRAIN).cls $(NORMFILE): $(TRAIN).raw.cls
 	agf_preprocess $(PRE) -U $(TRAIN).raw $(TRAIN)
 ifdef SUBSAMPLE
-	subsample_special -zCf $(SUBSAMPLE) $(TRAIN) $(WORK)/dum $(TRAIN)
+	subsample_special -z$(CONSTCLASS)f $(SUBSAMPLE) $(TRAIN) $(WORKDIR)/dum $(TRAIN)
 endif
 
 #process test data:

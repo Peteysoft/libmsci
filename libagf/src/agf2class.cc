@@ -647,12 +647,14 @@ namespace libagf {
     fs=fopen(fname, "r");
     if (fs==NULL) {
       fprintf(stderr, "borders_calibrated: calibration file, %s, not found.\n", fname);
+      delete [] fname;
       return;
     }
     mat=scan_matrix<real, cls_t>(fs, m, n);
     if (m!=1 || mat==NULL) {
       fprintf(stderr, "borders_calibrated: error reading calibration file, %s .\n", fname);
       delete [] fname;
+      fclose(fs);
       return;
     }
     delete [] coef;

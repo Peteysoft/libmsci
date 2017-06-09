@@ -463,6 +463,7 @@ int main (int argc, char **argv) {
 
   delete [] extra;
 
+  if (opt_args.Kflag==0) delete [] commandbuf;
   if (buffer != NULL) delete [] buffer;
 
 }
