@@ -54,6 +54,10 @@ namespace libagf {
 		real W,			//total weights
 		int smallflag=0);	//small dataset?
 
+  //reset variance brackets if necessary:
+  template <typename real>
+  void agfparam_reset_var(agfparam<real> *param);
+
   template <class real>
   void agfbordparam_clean(bordparam<real> *param);
 

@@ -1,0 +1,75 @@
+\documentclass[twoside,11pt]{article}
+
+% Any additional packages needed should be included after jmlr2e.
+% Note that jmlr2e.sty includes epsfig, amssymb, natbib and graphicx,
+% and defines many common macros, such as 'proof' and 'example'.
+%
+% It also sets the bibliographystyle to plainnat; for more information on
+% natbib citation styles, see the natbib documentation, a copy of which
+% is archived at http://www.jmlr.org/format/natbib.pdf
+
+\usepackage{jmlr2e}
+
+\usepackage{url}
+
+% Definitions of handy macros can go here
+
+\input{svm_accel_symbol_def.tex}
+
+% Heading arguments are {volume}{year}{pages}{submitted}{published}{author-full-names}
+
+\jmlrheading{18}{2017}{1-32}{6/17}{7/17}{Peter Mills}
+
+% Short headings should be running head and authors last names
+
+\ShortHeadings{SVM Acceleration}{Peter Mills}
+\firstpageno{1}
+
+\begin{document}
+
+\title{When Support Vector Machines Are Just Too Slow}
+
+\author{\name Peter Mills
+	\email peteymills@hotmail.com \\
+       \addr 1159 Meadowlane\\
+       Cumberland ON\\
+       Canada K4C 1C3}
+
+\editor{Kevin Murphy and Bernhard Sch{\"o}lkopf}
+
+\maketitle
+
+\begin{abstract}%   <- trailing '%' for backward compatibility of .sty file
+	\input{svm_accel_abstract.txt}
+\end{abstract}
+
+\begin{keywords}
+support vector machines,
+kernel methods,
+piecewise linear classifier, 
+discrimination boundary,
+class borders,
+numerical methods, 
+inverse problems,
+\end{keywords}
+
+\input{svm_accel_body.tex}
+
+\newpage
+
+\appendix
+
+\input{shuttle_subsampling.tex}
+
+\section*{Acknowledgements}
+
+Thanks to my brother, Steve, for the use of his computer for the numerical
+trials when mine was producing inconsistent results.
+Thanks to Chih-Chung Chan and Chih-Jen Lin of the National Taiwan University
+for data from the LIBSVM archive and also to David Aha and the curators of
+the UCI Machine Learning Repository for statistical classification datasets.
+
+\vskip 0.2in
+\bibliography{../agf_bib,svm_accel,../pwl}
+
+\end{document}

@@ -1,0 +1,1153 @@
+
+\section{Introduction}
+
+Linear classifiers are well studied in the literature. Methods such as
+the perceptron, Fisher discriminant, logistic regression and now linear
+support vector machines (SVM) \citep{Michie_etal1994}
+are often appropriate for relatively simple,
+binary classification problems in which both classes are closely 
+clustered or are well separated.
+An obvious extension for more complex problems is a piecewise linear classifier 
+in which the decision boundary is built up from a series of linear classifiers.
+Piecewise linear classifiers enjoyed some popularity during the early 
+development of the field of machine learning 
+\citep{Osborne1977, Sklansky_Michelotti1980, Lee_Richards1984, Lee_Richards1985}
+and because of their versatility, generality and simplicity there has been recent renewed interest 
+\citep{Bagirov2005, Kostin2006, Gai_Zhang2010, Webb2012, Wang_Saligrama2013, Pavlidis_etal2016}.
+
+A linear classifier takes the form:
+\begin{equation}
+	\lindecision(\testpoint) = \bordernormal \cdot \testpoint + \borderconst
+	\label{linear_classifier}
+\end{equation}
+where $\testpoint$ is the test point, $\bordernormal$ is a normal to
+the decision hyper-surface, $\borderconst$ determines the location of the
+decision boundary along the normal and
+$\lindecision$ is the decision function which we use to estimate the class 
+of the test point through its sign.
+
+A piecewise linear classifier collects a set of such linear classifiers:
+$\lbrace \bordernormal_i \rbrace = \lbrace \bordernormal_1, \bordernormal_2,
+\bordernormal_3 ... \rbrace$; $\lbrace \borderconst_i \rbrace =
+\lbrace \borderconst_1, \borderconst_2, \borderconst_3, ... \rbrace$.
+The two challenges here are, first, how to efficiently train each of the
+decision boundaries and, second, the related problem of how to partition the 
+feature space to determine which linear decision boundary is used for a given 
+test point.
+
+In \citet{Bagirov2005} for instance, the decision function is defined by
+partitioning the set of linear classifiers and maximizing the minimum
+linear decision value in each partition.
+To train the classifier, a cost function is defined in terms
+of this decision function and directly minimized using an
+analog to the derivative for non-smooth functions \citep{Bagirov1999}.
+Naturally, such an approach will be quite computationally costly.
+
+Partitioning of the feature space can be separate from the discrimination 
+borders \citep{Huang_etal2013} but more normally the discrimination borders 
+are themselves sufficient to partition the feature space 
+\citep{Osborne1977, Lee_Richards1984, Bagirov2005, Kostin2006}.
+This means that all or a significant fraction of the component
+linear classifiers must be evaluated.
+In \citet{Kostin2006}, for instance, the linear classifiers form a decision
+tree.
+
+In the method described in this paper, the constant term, $\borderconst_i$,
+is changed to a vector and the partitioning accomplished through a nearest
+neighbours to this vector. 
+Thus the zone of influence for each hyperplane
+will be described by the Veronoi tesselation \citep{Kohonen2000}.
+If the class domains are simply connected and don't curve back on themselves, 
+then the partitions will also be shaped as hyper-pyramids, 
+with the axes of the pyramids roughly perpendicular to the decision border.
+A dot product with each of the vectors must be calculated, similar
+to a linear classifier, but afterwards only a single linear decision function is
+evaluated.
+
+There seems to be some tension in the literature between training the
+decision boundary through simultaneous optimization \citep{Bagirov2005, Wang_Saligrama2013} or through
+methods that are more piece meal \citep{Gai_Zhang2010, Herman_Yeung1992, Kostin2006}.
+Obviously, simultaneous optimization will be more accurate than methods
+that are more piece-meal but also much more computationally expensive.
+In addition, finding global minima for cost functions 
+involving more than a handful of hyper-surfaces will be all but impossible.
+There is also the issue of separability. Many of the current crop of 
+methods seem to be designed with disjoint classes in mind \citep{Herman_Yeung1992}, for instance
+\citet{Gai_Zhang2010}, who stick the hyper-plane borders between 
+neighbouring pairs of opposite classes.
+Yet there is no reason why a piecewise linear classifier cannot be just as
+effective for overlapping classes.
+
+The technique under discussion in this paper mitigates all of these issues 
+because it is not actually a stand-alone method but requires estimates
+of the conditional probabilities.
+It is used to improve the time performance of kernel methods, or for that matter,
+any binary classifier that returns a continuous decision function 
+that can approximate a conditional probability.
+This is done while maintaining, in all but a few cases, most of the accuracy.
+
+Several of the piecewise linear techniques found in the literature work by
+positioning each hyperplane between pairs of clusters or pairs of training
+samples of opposite class 
+\citep{Sklansky_Michelotti1980, Tenmoto_etal1998, Kostin2006, Gai_Zhang2010}.
+Other unsupervised or semi-supervised classifiers work by placing the 
+hyperplanes in regions of minimum density \citep{Pavlidis_etal2016}.
+The method described in this paper in some senses combines these two techniques
+by finding the root of the difference in conditional probabilities along a
+line between two points of opposite class.
+It will be tested on two kernel-based classifiers--a support vector
+machine (SVM) \citep{Michie_etal1994, Mueller_etal2001}
+and a simpler, ``pointwise estimator'' \citep{Terrell_Scott1992, Mills2011}--and evaluated based on how
+well it improves classification speed and at what cost to accuracy.
+
+Section \ref{theory} describes the theory of support
+vector machines and the pointwise estimator (``adaptive Guassian filtering'')
+as well as the piecewise linear classifier or ``borders'' classifier
+that will be trained on the two kernel estimators.
+Section \ref{methods} describes the software and test datasets then in
+section \ref{example} we analyze the different classification algorithms on
+a simple, synthetic dataset.
+Section \ref{results_section} outlines the results for 17 case studies
+while in Section \ref{discussion} we discuss the results.
+Section \ref{conclusion} concludes the paper.
+
+\section{Theory}
+
+\label{theory}
+
+\subsection{Kernel estimation}
+
+A kernel is a scalar function of two vectors that can be used for 
+non-parametric density estimation. A typical ``kernel-density estimator"
+looks like this:
+\begin{equation}
+	\densityestimator(\testpoint) = \frac {1}{\norm \nsample} \sum_{i=1}^\nsample \vectorkernel(\sample_i, \testpoint, \kernelparam)
+	\label{kernel_estimator}
+\end{equation}
+where $\densityestimator$ is an estimator for the density, $\probability$, 
+$\vectorkernel$ is the kernel function,
+$\lbrace \sample_i \rbrace$ are a set of training samples, 
+$\nsample$ is the number of samples,
+$\testpoint$ is the test point,
+and $\kernelparam$ is a set of parameters. 
+The normalization coefficient, $\norm$, normalizes $\vectorkernel$:
+\begin{equation}
+	\norm = \int_V \vectorkernel(\point, \point^\prime, \kernelparam) \mathrm d \point^\prime
+	\label{norm_def}
+\end{equation}
+
+The method can be used for statistical classification by comparing
+results from the different classes:
+\begin{equation}
+	\class = \arg \min_i \sum_{j|\classlabel_j = i} K(\sample_j, \testpoint, \kernelparam)
+	\label{kernel_classification}
+\end{equation}
+where $\classlabel_j$ is the class of the $j$th sample.
+Similarly, the method can also return estimates of
+the joint ($\condprob(\class, \vec x)$) and conditional probabilities 
+($\condprob(\class |\vec x)$)
+by dividing the sum in (\ref{kernel_classification})
+by $Nn$ or by the sum of all the kernels, respectively. 
+
+If the same kernel is used for every sample and every test point, the estimator
+may be sub-optimal, particularly in regions of very high or very low density.
+There are at least two ways to address this problem.
+In a ``variable-bandwidth'' estimator, the coefficients, $\kernelparam$, depend in some
+way on the density itself. 
+Since the actual density is normally unavailable, the
+estimated density can be used as a proxy
+\citep{Terrell_Scott1992, Mills2011}.
+
+Let the kernel function take the following form:
+\begin{equation}
+	\vectorkernel(\point, \point^\prime, \bandwidth) = \scalarkernel \left (\frac{|\point - \point^\prime|}{\bandwidth} \right )
+	\label{scalar_kernel_def}
+\end{equation}
+where $\bandwidth$ is the ``bandwidth''. 
+In \citet{Mills2011}, $\bandwidth$ is made proportional to the density:
+\begin{equation}
+	\bandwidth \propto \frac{1}{\probability^{1/\dimension}} \approx \frac{1}{\densityestimator^{1/\dimension}}
+	\label{setting_the_bandwidth}
+\end{equation}
+where $\dimension$ is the dimension of the feature space.
+Since the normalization coefficient, $\norm$, must include the factor,
+${\bandwidth^\dimension}$, some rearrangement shows that:
+\begin{equation}
+	\frac{1}{\nsample} \sum_i \scalarkernel \left (\frac{|\testpoint - \sample_i|}{\bandwidth} \right ) = \kernelsum = const.
+	\label{agf_def}
+\end{equation}
+This is a generalization of the $k$-nearest-neighbours scheme in which the
+free parameter, $\kernelsum$, takes the place of $k$ \citep{Mills2009, Mills2011}.
+The bandwidth, $\bandwidth$, can be solved
+for using any numerical, one-dimensional root-finding algorithm.
+The bandwidth is determined uniquely for a given test point but is held constant for that
+one, which makes this a ``balloon'' estimator. 
+Contrast a ``point-wise'' estimator
+in which bandwidths are different for each training point but need only be determined once
+\citep{Terrell_Scott1992}.
+
+Another method of improving the performance of a kernel-density estimator
+is to add a series of variable coefficients:
+\begin{equation}
+	\densityestimator(\testpoint) = \sum_i \svmcoeff_i \vectorkernel(\sample_i, \testpoint, \kernelparam)
+	\label{weighted_kernel_estimator}
+\end{equation}
+The coefficients, $\lbrace \svmcoeff_i \rbrace$, are found through an optimization
+procedure designed to minimize the error \citep{Chen_etal2015}. In the most popular
+form of this kernel method, support vector machines (SVM), the coefficients
+are the result of a complex, dual optimization procedure which minimizes
+the classification error. We will briefly outline this procedure.
+
+\subsection{Support Vector Machines}
+
+The basic ``trick'' of kernel-based SVM methods is to replace a dot product
+with the kernel function in the assumption that it can be rewritten
+as a dot product of a transformed and expanded feature space:
+\begin{equation}
+	\vectorkernel(\point, \point^\prime) = \expandedspace(\point) \cdot \expandedspace(\point^\prime)
+	\label{phi_def}
+\end{equation}
+For simplicity we have ommitted the kernel parameters.
+$\expandedspace$ is a vector function of the feature space.
+The simplest example of a kernel function that has a closed, analytical and
+finite-dimensional $\expandedspace$ is the square of the dot product:
+\begin{eqnarray}
+	\vectorkernel(\point, \point^\prime) & = & (\point \cdot \point^\prime)^2 \\ \nonumber
+					 & = & (\coord_1^2, \coord_2^2, \coord_3^2, ..., \sqrt{2} \coord_1 \coord_2, \sqrt{2} \coord_1 \coord_3, ... \sqrt{2} \coord_2 \coord_3, ...) \cdot \\ \nonumber
+      & &	 ({\coord^\prime_1}^2, {\coord^\prime}_2^2, {\coord^\prime}_3^2, ..., \sqrt{2} \coord^\prime_1 \coord^\prime_2, \sqrt{2} \coord^\prime_1 \coord^\prime_3, ... \sqrt{2} \coord^\prime_2 \coord^\prime_3, ...) 
+\end{eqnarray}
+but it should be noted that in more complex cases, 
+there is no need to actually construct $\expandedspace$ since it is replaced by the 
+kernel function, $\vectorkernel$, in the final analysis.
+
+In a binary SVM classifier, the classes are separated by a single hyper-plane
+defined by $\svmbordernormal$ and $\svmborderconst$.
+In a kernel-based SVM, this hyperplane bisects not the regular feature
+space, but the theoretical, transformed space defined by the function,
+$\expandedspace(\point)$.
+The {\it decision value} is calculated via a dot product:
+\begin{equation}
+	\svmdecision(\testpoint)=\svmbordernormal \cdot \expandedspace(\testpoint) + \svmborderconst
+	\label{decision_function0}
+\end{equation}
+and the class determined, as before, by the sign of the decision value:
+\begin{equation}
+	\class(\testpoint) = \frac{\lindecision(\testpoint)}{|\lindecision(\testpoint)|}
+	\label{class_value}
+\end{equation}
+where for convenience, the class labels are given by $c \in \lbrace -1, 1 \rbrace$.
+
+In the first step of the minimization procedure, 
+the magnitude of the border normal, $\svmbordernormal$, 
+is minimized subject to the constraint that there are no classification 
+errors:
+\begin{eqnarray}
+	\min_{\svmbordernormal, \svmborderconst} \frac{1}{2} | \svmbordernormal | \\ \nonumber
+	\svmdecision(\sample_i) \classlabel_i \ge 1
+\end{eqnarray}
+Introducing the coefficients, $\lbrace \svmcoeff_i \rbrace$, 
+as Lagrange multipliers on the constraints:
+\begin{equation}
+	\min_{\svmbordernormal, b} \left \lbrace \frac{1}{2} | \svmbordernormal | - \sum_i \svmcoeff_i \left [ \svmdecision(\sample_i) \classlabel_i -1 \right ] \right \rbrace
+\end{equation}
+generates the following pair of analytic expressions:
+\begin{eqnarray}
+	\sum_i \svmcoeff_i \classlabel_i & = & 0 \\
+	\svmbordernormal & = & \sum_i \svmcoeff_i \classlabel \expandedspace(\sample_i) \label{border_vector_equation}
+\end{eqnarray}
+through setting the derivatives w.r.t. the minimizers to zero.
+Substituting the second equation, (\ref{border_vector_equation}),
+into the decision function in (\ref{decision_function0}) produces the following:
+\begin{equation}
+	\svmdecision(\testpoint) = \sum_i \svmcoeff_i \classlabel_i \vectorkernel (\testpoint, \sample_i) + \svmborderconst
+	\label{svm_decision}
+\end{equation}
+Thus, the final, dual, quadratic optimization problem looks like this:
+\begin{eqnarray}
+	\max_{\lbrace \svmcoeff_i \rbrace} & \sum_i \svmcoeff_i 
+	- \frac{1}{2} \sum_{i, j} \svmcoeff_i \svmcoeff_j \classlabel_i \classlabel_j \vectorkernel(\sample_i, \sample_j) \label{dual_problem} \\
+	& \svmcoeff_i \ge 0 \label{constraint1} \\
+	& \sum_i \svmcoeff_i \classlabel_i = 0 \label{constraint2}
+\end{eqnarray}
+There are a number of refinements that can be applied to the optimization
+problem in (\ref{dual_problem})-(\ref{constraint2}), chiefly to reduce over-fitting and to add
+some ``margin'' to the decision border to allow for the possibility of
+classification errors.
+For instance, substitute the following for (\ref{constraint1}):
+\begin{equation}
+ 0 \le \svmcoeff_i \le \svmcost
+ \label{svmcost}
+\end{equation}
+where $\svmcost$ is the cost \citep{Mueller_etal2001}.
+Mainly we are concerned here with the decision
+function in (\ref{svm_decision}) since the initial fitting will be done with
+an external software package, namely LIBSVM \citep{Chang_Lin2011}.
+
+Two things should be noted. First, the function $\expandedspace$ appears in
+neither the final decision function, (\ref{svm_decision}), nor in the
+optimization problem, (\ref{dual_problem}). Second, while the use of
+$\expandedspace$ implies that the time complexity of the decision function 
+could be $O(1)$ as in a parametric statistical model, in actual fact it is
+dependent on the number of non-zero values in $\lbrace \svmcoeff_i \rbrace$.
+While the coefficient set, $\lbrace \svmcoeff_i \rbrace$, does tend to be sparse,
+nonetheless in most real problems the number of non-zero coefficients is
+proportional to the number of samples, $\nsample$, producing a time complexity
+of $O(\nsample)$. Thus for large problems, calculating the decision value will
+be slow, just as in other kernel estimation problems.
+
+The advantage of SVM lies chiefly in its accuracy since it is minimizing the
+classification error whereas a more basic kernel method is more ad hoc
+and does little more than sum the number of samples of a given class,
+weighted by distance.
+
+\subsection{Borders classification}
+
+\label{border_method}
+
+In kernel SVM, the decision border exists only implicitly in a hypothetical,
+abstract space. Even in linear SVM, if the software is generalized to 
+recognize the simple dot product as only one among many possible kernels,
+then the decision function may be built up, as in (\ref{svm_decision})
+through a sum of weighted kernels. This is the case for LIBSVM.
+The advantage of an explicit decision border as in 
+(\ref{linear_classifier}) or (\ref{decision_function0})
+is that it is fast. The problem with a linear border is that, except for a
+small class of problems, it is not very accurate.
+
+In the binary classification method described in \citet{Mills2011},
+a non-linear decision border is built up piece-wise from a collection of linear borders.
+It is essentially a root-finding procedure for a decision function,
+such as $\svmdecision$ in (\ref{svm_decision}).
+Let $\decisionfunction$ be a decision function
+that approximates the difference in conditional probabilities:
+\begin{equation}
+	\decisionfunction(\point) \approx \diffcondprob(\point) = 
+	\condprob(1|\point) - \condprob(-1|\point)
+	\label{rdef}
+\end{equation}
+where $\condprob(\class|\point)$ represents the conditional probabilities of
+a binary classifier having labels $\class \in \lbrace -1, 1 \rbrace$.
+For a simple kernel estimator, for instance, 
+$\diffcondprob$ is estimated as follows:
+\begin{equation}
+	\kerneldecision(\testpoint) = \frac{\sum_i \classlabel_i \vectorkernel(\testpoint, \sample_i)}{\sum_i \vectorkernel(\testpoint, \sample_i)}
+	\label{kernel_decision}
+\end{equation}
+where $\classlabel_i \in \lbrace -1, 1 \rbrace$.
+For the variable bandwidth kernel estimator defined by (\ref{agf_def}), this works out to:
+\begin{equation}
+	\vbdecision(\testpoint) = \frac{1}{\kernelsum} \sum_i \classlabel_i \scalarkernel \left (\frac{|\testpoint - \sample_i|}{\bandwidth(\testpoint)} \right )
+	\label{vb_kernel_r}
+\end{equation}
+A variable bandwidth kernel-density estimator with a Gaussian kernel,
+\begin{equation}
+	\vectorkernel(\testpoint, \sample_i, \bandwidth) = \exp \left [ - \frac{|\testpoint - \sample_i|^2}{\bandwidth^2} \right ]
+	\label{Gaussian_kernel}
+\end{equation}
+%$\scalarkernel(x)=\exp(-x^2/2)$
+we will refer to as an ``Adaptive Gaussian Filter'' or AGF for short.
+
+The procedure is as follows: pick a pair of points on either side of the decision
+boundary (the decision function has opposite signs). Good candidates are one
+random training sample from each class. Then, zero the decision function
+along the line between the points. This can be done as many times as needed
+to build up a good representation of the decision boundary.
+We now have a set of points, $\lbrace \bordervector_i \rbrace$, such that
+$\decisionfunction(\bordervector_i)=0$ for every $i \in [1..\nborder]$ where
+$\nborder$ is the number of border samples.
+
+Along with the border samples,  $\lbrace \bordervector_i \rbrace$, we also
+collect a series of normal vectors, $\lbrace \bordernormal_i \rbrace$
+such that:
+\begin{equation}
+\bordernormal_i=\nabla_{\point}{\decisionfunction |_{\point=\bordervector_i}}
+\end{equation}
+With this system, determining the class is a two step proces.
+First, the nearest border sample to the test point is found.
+Second, we define a new decision function, $\borderdecision$, 
+equivalent to (\ref{linear_classifier}), through a dot product with the normal:
+\begin{eqnarray}
+	i & = & \arg \min_j |\testpoint - \bordervector_j| \\ \nonumber
+	\borderdecision(\testpoint) & = & \bordernormal_i \cdot (\testpoint - \bordervector_i)
+	\label{border_decision}
+\end{eqnarray}
+The class is determined by the sign of the decision function as in 
+(\ref{class_value}).
+The time complexity is completely independent of the number
+of training samples, rather it is linearly proportional to the number of
+border vectors, $\nborder$, a tunable parameter. The number required for
+accurate classifications is dependent on the complexity of the decision
+border.
+
+The gradient of the variable-bandwidth kernel estimator in 
+(\ref{vb_kernel_r}) is:
+\begin{equation}
+	\frac{\partial \vbdecision}{\partial \testcoord_j} = 
+	\frac{2 \bandwidth}{\kernelsum} \sum_i \classlabel_i
+	\scalarkernelderiv \left (\frac{\distance_i}{\bandwidth} \right )
+	\left [\frac{\testcoord_j - \samplecoord_{ij}}{\distance_i} 
+	- \distance_i \frac{\sum_k \scalarkernelderiv \left (\frac{\distance_k}{\bandwidth} \right )
+	\frac{\testcoord_j - \samplecoord_{kj}}{\distance_k}}
+{\sum_k \distance_k \scalarkernelderiv \left (\frac{\distance_k}{\bandwidth} \right )} \right ]
+\label{kernel_gradient}
+\end{equation}
+where $\distance_i=|\point - \sample_i|$ is the distance between the 
+test point and the $i$th sample and $\scalarkernelderiv$ is the derivative
+of $\scalarkernel$.
+For AGF, this works out to:
+\begin{equation}
+	\frac{\partial \vbdecision}{\partial \testcoord_j} = 
+	\frac{1}{\bandwidth^2 \kernelsum} \sum_i \classlabel_i
+	\scalarkernel \left (\frac{\distance_i}{\bandwidth} \right )
+	\left [\samplecoord_{ij} - \testcoord
+	- \distance_i^2 \frac{\sum_k \scalarkernel \left (\frac{\distance_k}{\bandwidth} \right )
+	\left (\samplecoord_{kj} - \testcoord \right )}
+{\sum_k \scalarkernel \left (\frac{\distance_k}{\bandwidth} \right )\frac{1}{\distance_k^2}} \right ]
+\label{vb_gradient}
+\end{equation}
+where $K(x)=\exp(-x^2/2)$ \citep{Mills2011}.
+
+In LIBSVM, conditional probabilities are estimated by applying a
+sigmoid function to
+the raw SVM decision function, $\svmdecision$, in (\ref{svm_decision}):
+\begin{equation}
+	\svmprob(\testpoint) = \tanh \left (\frac{\svmprobcoeffA \svmdecision(\testpoint)+ \svmprobcoeffB}{2} \right )
+	\label{svm_prob}
+\end{equation}
+where $\svmprobcoeffA$ and $\svmprobcoeffB$ are coefficients derived from
+the training data via
+nonlinear least-squares fitting \citep{Platt1999, Lin_etal2007, Chang_Lin2011}.
+The nonlinear fitting technique
+is similar to logistic regression \citep{Michie_etal1994}
+in that it allows probability estimates to be fitted directly against the class values.
+
+The gradient of the revised SVM decision function, above, is:
+\begin{equation}
+	\nabla_{\point} {\svmprob} = \left [1 - \svmprob^2(\point) \right ] \sum_i \svmcoeff_i \classlabel_i \nabla_{\point} \vectorkernel(\point, \sample_i)
+\end{equation}
+
+Gradients of the initial decision function are useful not just to derive normals to
+the decision boundary, but also as an aid to root finding when searching for
+border samples. If the decision function used to compute the border samples
+represents an estimator for the
+difference in conditional probabilities, then the raw decision value,
+$\borderdecision$,
+derived from the border sampling technique in (\ref{border_decision})
+can also return estimates of the conditional probabilities with little
+extra effort and little loss of accuracy--also using a sigmoid function:
+\begin{equation}
+	\borderprob(\testpoint) = \tanh \left [\borderdecision (\testpoint) \right ]
+	\label{border_probability}
+\end{equation}
+This assumes that the class posterior probabilities,
+$\condprob(\point | c)$, are approximately Gaussian near the border
+\citep{Mills2011}.
+
+The border classification algorithm returns an estimator,
+$\borderprob$, for the difference in conditional probabilities of
+a binary classifier using
+equations (\ref{border_decision}) and (\ref{border_probability}).
+It can be trained with the functions $\kerneldecision$ in (\ref{kernel_decision}),
+$\vbdecision$ in (\ref{vb_kernel_r}), $\svmprob$ in (\ref{svm_prob}),
+or any other 
+continuous, differentiable, non-parametric estimator for the difference
+in conditional probabilities, $\diffcondprob$.
+At the cost of a small reduction in accuracy,
+it has the potential to drastically reduce classification time for kernel
+estimators and other non-parametric statistical classifiers,
+especially for large training datasets,
+since it has $O(\nborder)$ time complexity instead of $O(\nsample)$
+complexity, where $\nborder$, the number of border samples, is a free parameter.
+The actual number chosen
+can trade off between speed and accuracy with rapidly diminishing returns
+beyond a certain point. 
+One hundred border samples ($\nborder=100$) is usually sufficient.
+The computation of $\borderprob$ also involves very simple operations--
+floating point addition, multiplication and numerical comparison, with no
+transcendental functions except for the very last step (which can be omitted)--so the coefficient for the time complexity will be small.
+
+A border classifier trained with AGF will be referred to as an ``AGF-borders''
+classifier while a border classifier trained with SVM estimates will
+be referred to as an ``SVM-borders'' classifier or an ``accelerated'' SVM classifier.
+
+\subsection{Multi-class classification}
+
+The border classification algorithm, like SVM, only works for binary 
+classification problems. It is quite easy to generalize a binary classifier
+to perform multi-class classifications by using several of them and the
+number of ways of doing so grows exponentially with the number of classes.
+Since LIBSVM uses the ``one-versus-one'' method \citep{Hsu_Lin2002} of 
+multi-class classification, this is the one we will adopt. 
+
+A major advantage of the
+borders classifier is that it returns probability estimates.
+These estimates have many uses including measuring the confidence of as well
+as recalibrating the class estimates \citep{Mills2009, Mills2011}.
+Thus the multi-class method
+should also solve for the conditional probabilities in addition to returning
+the class label.
+
+In a one-vs.-one scheme, the multi-class conditional probabilities 
+can be related to those of the binary classifiers as follows:
+\begin{equation}
+	\diffcondprob_{ij}(\point) = \frac{\condprob(j|\point) - \condprob(i|\point)}{\condprob(i|\point) + \condprob(j|\point)}
+\end{equation}
+where $i \in [1..\nclass-1]$, $j \in [1..\nclass]$, $\nclass$ is the number of classes, $j>i$,
+and $\diffcondprob_{ij}$ is the difference in conditional probabilities of
+the binary classifier that discriminates between the $i$th and $j$th classes.
+\citet{Wu_etal2004} transform this problem into the following linear system:
+\begin{eqnarray}
+	\sum_i \frac{\multiprob_i}{4} \left [ \sum_{j|j \ne i} (\diffcondprob_{ij} + 1)^2 - \diffcondprob_{ij}^2 - \diffcondprob_{ij} - 2 \right ] + \lmult & = & 0 \\
+	\label{multiclass}
+	\sum_i \multiprob_i & = & 1
+\end{eqnarray}
+where $\multiprob_i = \condprob(i | \point)$ is the $i$th multi-class 
+conditional probability and $\lmult$ is a Lagrange multiplier.
+They also show that the constraints not included in the problem--that
+the probabilities are all positive--are always satisfied
+and describe an algorithm for solving it iteratively, although a
+simple matrix solver is sufficient.
+
+\section{Software and data}
+
+\label{methods}
+
+\subsection{LIBSVM}
+
+LIBSVM is a machine learning software library for support vector machines 
+developed by Chih-Chung Chang and Chih-Jen Lin of 
+the National Taiwan University, Taipei, Taiwan \citep{Chang_Lin2011}.
+It includes statistical classification using two regularization methods 
+for minimizing over-fitting: 
+{\it C-SVM} and {\it $\nu$-SVM}.
+It also includes code for nonlinear regression and density estimation or
+``one-class SVM''.
+SVM models were trained using the \verb/svm-train/ command while
+classifications done with \verb/svm-predict/.
+LIBSVM can be found at: \url{https://www.csie.ntu.edu.tw/~cjlin/libsvm}
+
+\subsection{LibAGF}
+
+Similar to LIBSVM, libAGF is a machine learning library but for variable kernel 
+estimation \citep{Mills2011,Terrell_Scott1992} rather than SVM.
+Like LIBSVM, it supports statistical classification, lonlinear regression
+and density estimation.
+It supports both Gaussian kernels and k-nearest neighbours.
+It was written by Peter Mills and can be found at
+\url{https://github.com/peteysoft/libmsci}.
+
+Except for training and classifying the SVM models, all calculations in this paper were done 
+with the libAGF library. To convert a LIBSVM model to a borders model,
+the single command, \verb/svm_accelerate/, can be used.
+Classifications are then performed with \verb/classify_m/.
+
+\subsection{Datasets}
+
+\label{datasets}
+
+\begin{table}
+	\caption{Summary of datasets used in the numerical trials.}
+	\label{summary}
+	\input{summary.tex}
+\end{table}
+
+The borders classification algorithm was tested on a total of 
+17 different datasets.
+These will be briefly described in this section.
+The collection covers a fairly broad range of size and types of problems, 
+number of classes and number and types of attributes but with
+the focus on larger datasets where the borders technique is actually useful.
+Four of the datasets are from
+the ``Statlog'' project \citep{Michie_etal1994,King_etal1995} 
+and are nicknamed ``\dataset{heart}'', ``\dataset{shuttle}'', ``\dataset{sat}'' and ``\dataset{segment}''.
+The heart disease (``\dataset{heart}'') dataset 
+contains thirteen attributes of 270 patients along with one of two class labels denoting either the presence or absence of heart disease.
+The dataset comes originally from the Cleveland Clinic Foundation and two versions are stored on the machine learning database of U. C. Irvine \citep{Lichman2013}.
+
+The \dataset{shuttle} dataset is interesting because 
+the classes have a very uneven distribution meaning that multi-class
+classifiers
+with a symmetric break-down of the classes, 
+such as one-vs.-one,
+tend to perform poorly.
+The \dataset{shuttle} dataset comes originally
+from NASA and was taken from an actual space shuttle flight.
+The classes describe actions to be taken at different flight configurations.
+
+The satellite (``\dataset{sat}'') dataset is a satellite remote-sensing land classification problem.
+The attributes represent 3-by-3 segments of pixels in a Landsat 
+image with the class corresponding to the type of land cover in the central pixel.
+The segmentation (``\dataset{segment}'') dataset is also an image classification dataset consisting of 3-by-3
+pixel sets from outdoor images.
+
+The DNA dataset is concerned with classifying a 60 base-pair sequence of DNA into
+one of three values: an intron-extron boundary, an extron-intron boundary or
+neither of those two.
+That is, during protein creation, part of the sequence is spliced out, with
+the section kept being the intron and that spliced out being the extron.
+There are two versions of it: one called ``\dataset{splice}'' with the original 
+sequence of 4 nucleotide bases but only two classes 
+and one called ``\dataset{dna}'' in which
+the features data has been reprocessed so that
+the 60 base values are transformed to 180 binary attributes but keeping the
+original three classes \citep{Michie_etal1994}.
+Another dataset from the field of microbiology is the ``\dataset{codrna}'' dataset
+which deals with detection of non-coding RNA sequences
+\citep{Uzilov_etal2006}.
+
+There are four text-classification datasets: ``\dataset{letter}'', ``\dataset{pendigits}'',
+``\dataset{usps}'' and ``\dataset{mnist}''.
+The ``\dataset{letter}'' dataset is a text-recognition problem concerned with classifying
+a character into one of the 26 letters of the alphabet based on processed
+attributes of the isolated character \citep{Frey_Slate1991}.
+The \dataset{pendigits} dataset is similar to the \dataset{letter} dataset except for
+classifying numbers instead of letters \citep{Alimoglu1996}.
+The ``\dataset{usps}'' dataset deals with classifying text for the purpose of mailing
+letters \citep{Hull1994}.
+The ``\dataset{mnist}'' dataset uses 28 by 28 pixel images to classify text into one
+of ten different characters \citep{LeCun_etal1998}. 
+Pixels that always take on the same value were removed.
+
+Two of the datasets are machine-learning competition challenges.
+The ``\dataset{ijcnn1}'' dataset is from the International Joint Conference on Neural
+Networks Neural Networks Competition\citep{Feldkamp_Puskorius1998} while the ``\dataset{madelon}'' dataset comes 
+from the International Conference on Neural Information Processing Systems
+Feature Selection Challenge \citep{Guyon2004}.
+
+The ``\dataset{seismic}'' dataset deals with vehicle classification from \dataset{seismic} data
+\citep{Duarte_Hu2004}.
+The ``\dataset{mushrooms}'' dataset classifies wild mushrooms
+into poisonous and non-poisonous types based on their physical characteristics \citep{Iba_etal1988}.
+The ``\dataset{phishing}'' dataset uses characteristics of a web address to predict whether
+or not a website is being used for nefarious purposes \citep{Mohommad_etal2012}.
+
+There are three sources for the datasets.
+The first is the LIBSVM data repository \citep{Chang_Lin2011}.
+Most of these datasets have been divided into a ``test'' set and a ``training'' set.
+If this is the case, then it is noted in the summary in Table \ref{summary}
+and the data has been used as given with the training set used for training
+and the test set used for testing.
+If the data is provided all in one lump, then it was randomly divided into 
+test and training sets with the division different for each trial.
+The second source for data was the UCI Machine Learning Repository
+\citep{Lichman2013} and the third source was the author.
+
+Only one dataset was from the author and this was the ``\dataset{humidity}'' dataset.
+The \dataset{humidity} dataset comprises simulated satellite radiometer radiances across 7 different frequencies in the microwave range.
+Corresponding to each instance is a value for relative humidity at a single
+vertical level.
+These humidity values have been discretized into 8 ranges to convert it into a statistical classification problem.
+A full description of the genesis of this dataset as well as a rationale for
+treatment using statistical classification is contained in \citet{Mills2009}.
+The statistical classification methods discussed in this paper were originally
+devised specifically for this problem.
+
+To provide the best idea of when the technique is effective and when it is
+not, results from all 17 datasets will be shown. 
+All datasets were pre-processed in the same way: by taking the averages and
+standard deviations of each feature from the training data and subtracting
+the averages from both the test and training data and dividing by the 
+standard deviations.
+Features that took on the same value in the training data were removed.
+
+
+\section{A simple example}
+
+\label{example}
+
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{support_vectors}
+\caption{Support vectors for a pair of synthetic test classes.}\label{sample_sv}
+\end{figure}
+
+We use the pair of synthetic test classes defined in \citet{Mills2011} to 
+illustrate the difference between support vectors and border vectors and 
+between border vectors derived from AGF and from a LIBSVM model.
+Figure \ref{sample_sv} shows a realization of the two sample classes 
+in red and blue, comprising 300 samples total, along
+with the support vectors derived from a LIBSVM model.
+The support vectors are a subset of the training samples and while they
+tend to cluster around the border, they do not define it.
+For reference, the border between the two classes is also shown.
+This has been derived from the border-classification method described in 
+Section \ref{border_method} using the mathematical definition of the classes,
+hence it represents the ``true'' border to within a very small numerical error.
+
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{border_vectors}
+\caption{Borders mapped by the border-classification method starting with probabilities from the class definitions, adaptive Gaussian filtering (AGF), and a support vector machine (SVM).}
+\label{border_vectors}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{skill_v_nb}
+\caption{Classification accuracy and uncertainty coefficient for border-classification starting with probabilities from the class definitions, adaptive Gaussian filtering (AGF), and a support vector machine (SVM). Average of 20 trials.}
+\label{skill_v_nb}
+\end{figure}
+
+The true border is also compared with those derived from AGF and LIBSVM
+probability estimates in Figure \ref{border_vectors}.
+The classes are again shown for reference.
+While these borders contain several hundred samples for a clear view of where
+they are located using each method, in fact the method works well with
+surprisingly few samples.  Figure \ref{skill_v_nb} shows a plot of the skill
+versus the number of border samples, where {\it U.C.} stands for
+uncertainty coefficient. Note that the scores saturate at only about 20
+samples meaning that for this problem at least, very fast classifications are
+possible.
+
+Unlike support vectors, the number of border samples required is approximately
+independent of the number of training samples.
+In addition to skill as a function of border samples for both AGF- and 
+SVM-trained border-classifiers, Figure \ref{skill_v_nb} also shows results
+for a border classifier trained from the mathematical definition of the 
+classes themselves. 
+The skill scores of this latter curve do not level significantly faster than the 
+other two.
+So long as the complexity of
+the problem does not increase, adding new training samples does not increase
+the number of border samples required for maximum accuracy.
+
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{nsv}
+\caption{Number of support vectors against number of training vectors for pair of synthetic test classes. Fitted curve returns exponent of 0.94 and multiplication coefficient of 0.38.}
+\label{nsv}
+\end{figure}
+
+Figure \ref{nsv} shows the number of support vectors versus the
+number of training samples. The fitted curve is approximately linear 
+with an exponent of 0.94 and multiplications coefficient of 0.38.
+In other words, there will be approximately 38 \% as many support vectors as 
+there are training vectors.
+
+Of course it's possible to speed up an SVM by sub-sampling the training data
+or the resulting support vectors.
+In such case, the sampling must be done carefully so as not to reduce the
+accuracy of the result.
+Figure \ref{skill_v_nt} shows the effect on classification skill for the
+synthetic test classes when the number of training samples is reduced.
+Skill scores start to saturate at between 200 and 300 samples.
+By contrast, Figure \ref{skill_v_nb} implies that you need only 20 border samples
+for good accuracy, so even with only 200 training samples you will still
+have improved efficiency by using the borders technique.
+
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{skill_v_nt}
+\caption{Classification accuracy and uncertainty coefficient for a support vector machine (SVM) trained with different numbers of samples.
+Error bars represent the standard deviation of 20 trials.}
+\label{skill_v_nt}
+\end{figure}
+
+This suggests a simple scaling law. The number of training samples required
+for good accuracy, and hence the number of support vectors, 
+should be proportional to the volume occupied by the
+training data in the feature space: $n_0 \propto V$ where 
+$n_0$ is the minimum number of training vectors and $V$ is volume.
+Then the number of border vectors should be proportional to the volume
+taken to the root of one less than the dimension of the feature space:
+$n_{b0} \propto V^\frac{1}{D-1}$.
+Putting it together, we can relate the two as follows:
+\begin{equation}
+	n_{b0} \propto n_0^\frac{1}{N-1}
+\end{equation}
+where $n_{b0}$ is the minimum number of border vectors required for good
+accuracy.
+
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{svm_time}
+\caption{Classification time for a SVM for a single test point versus number of support vectors.}
+\label{svm_time}
+\end{figure}
+
+In other words, provided the class borders are not fractal \citep{Ott1993}, 
+mapping only the border between classes should always be
+faster than techniques that map the entirety of the class locations.
+This includes kernel density methods including SVM as well
+as similar methods such as learning vector quantization (LVQ) 
+\citep{Kohonen2000, LVQ_PAK}
+that attempt to create an idealized representation of the classes through
+a set of ``codebook'' vectors.
+
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{border_time}
+\caption{Classification time for a border classifier for a single test point versus number of border samples.}
+\label{border_time}
+\end{figure}
+
+To make this more concrete, Figure \ref{svm_time}
+plots the classification time versus the number of support vectors
+for a SVM
+while Figure \ref{border_time} plots the classification time
+versus the number of border samples for a border classifier.
+Classification times are for a single test point.
+Fitted straight lines are overlaid for each and the slope and intercept 
+printed in the subtitle.
+
+\begin{figure}
+\includegraphics[width=0.9\textwidth]{break_even}
+\caption{Number of border samples versus number of support vectors for equal classification times.}
+\label{break_even}
+\end{figure}
+
+Figure \ref{break_even} plots the number of border vectors versus the number
+of support vectors at the ``break even'' point: that is, the classfication
+time is the same for each method.
+This graph was simply derived from the fitted coefficents of the previous
+two graphs.
+It is somewhat optimistic
+since LIBSVM has a larger overhead than the border classifiers.
+This overhead would be less significant for larger problems 
+with the ``rule of thumb'' suggested by the slope 
+that the number of border vectors should be less than three times the support
+for a reasonable gain in efficiency.
+
+Unfortunately the graph is not general: while the borders method scales linearly with
+the number of classes, in LIBSVM there is some shared calculation for multi-class problems.
+That is, some of the support vectors are shared between classes moreover the number will be different for each problem.
+Model size comparisons between the two methods should ideally be between the total 
+number of support vectors versus the total number of border vectors, not border (or support) vectors per class.
+Both methods will tend to scale linearly with the number of attributes, with a small
+component independent but a different amount for each method.
+Once we take into account the number of classes and number of attributes, the
+model for time complexity becomes quite complex so no attempt will be made here
+to fit it.
+
+\section{Case studies}
+
+\label{results_section}
+
+\begin{table}
+	\caption{Summary of the parameters used in the numerical trials for each of the four methods: KNN ($k$-nearest-neighbours), AGF (adaptive Gaussian filtering), SVM (support vector machine) and ACC (``accelerated'' SVM).
+	If the number of trials has been starred, some operations received only a single trial 
+	either because processing times were too long or because the dataset came with
+test and training sets already separated. See text.}
+	\label{param}
+	\input{param.tex}
+\end{table}
+
+\begin{table}
+	\caption{Collation of results for numerical trials of the four different statistical classification methods over six different datasets.}
+	\label{results}
+	{\small
+		\input{results.1.tex}
+	}
+\end{table}
+
+\begin{table}
+	\caption{Collation of results for numerical trials of the four different statistical classification methods over seventeen different datasets.}
+	\label{results2}
+	{\small
+		\input{results2.1.tex}
+	}
+\end{table}
+
+Four classification models were tested on each of the 17 datasets described in
+Section \ref{datasets}: k-nearest-neighbours (KNN), a borders model derived from
+adaptive Gaussian filters (AGF), a support vector machine (SVM) and a borders
+model derived from the previous SVM model (Accel. for ``accelerated'' SVM).
+KNN is useful to get a baseline accuracy from a stable, reliable method although
+not always an efficient or high-performing one.
+AGF-borders is compared with SVM-borders to see how much deriving the class borders
+from a SVM improves accuracy over using a direct pointwise kernel density estimator.
+The speed should be the same for the same number of border vectors.
+Also, raw AGF is normally about as accurate as KNN so we can see how much the 
+borders method increases classification speed (and decreases accuracy) of this simpler kernel estimator.
+Ideally, for large problems, the borders technique should produce significant time
+savings while having little effect on accuracy.
+
+The parameters used for each method are summarized in Table \ref{param}.
+Parameters for the AGF method were chosen strictly to maximize accuracy while
+the single parameter, number of border samples, in the SVM-borders technique
+was chosen for the best compromise between reduced accuracy and a speed
+improvement over SVM. The parameter, $k$, for AGF is the number of nearest
+neighbours used when computing the probabilities: 
+while the order of the method, $O(n)$, remains the same, nonetheless it can produce a significant speed improvement for large problems.
+The parameter, $n_{samp}$, is the number of class borders used in both 
+AGF and SVM-borders.
+
+In order to get a confidence interval on the results,
+ten trials were performed for most of the datasets.
+In some cases, only a single trial was performed either because the operation
+took too long or because of a pre-existing separation between test and training
+data which was taken ``as is''. Single trials are indicated through the absence of
+error bars which are calculated from the standard deviation.
+
+For SVM, a Gaussian kernel is used as in (\ref{Gaussian_kernel})
+where $\rbkernelparam=1/\sigma^2$ is a tunable parameter. 
+$\svmcost$ is a cost parameter added to reduce over-fitting--see
+Equations (\ref{dual_problem}) and (\ref{svmcost}).
+
+The results are summarized in Tables \ref{results} and \ref{results2} including training
+and test time for each method as well as skill scores. There are two skill scores,
+the first being simple accuracy or fraction of correct guesses while the second,
+called the uncertainty coefficient, is based on information entropy and is described
+below.
+The best values for each dataset are highlighted in bold.
+Note that KNN does not have a training phase but sometimes its classification phase
+is shorter than all the others' training phase in which case none of the numbers
+are highlighted but rather the hyphen that's put in place of the KNN training
+time.
+The SVM-borders method is not a stand-alone method thus its training time is never
+highlighted.
+
+Interestingly, the heart dataset classifiers so fast that it was not detected
+by the system clock. Even more interestingly, skill scores for SVM-borders 
+are higher than those for SVM. This does not break any
+laws of probability, however, since the two scores are well within each others' error
+bars and the interval for borders is larger than that for SVM.
+
+\subsection{Skill scores}
+
+It is important to evaluate a result based on skill scores that reliably reflect
+how well a given classifier is doing.
+Thus we will define the two scores used in this validation exercise 
+since one in particular is not commonly seen in the literature even though it has several
+attractive features.
+
+Let $\lbrace \confusion_{ij} \rbrace$ be the confusion matrix, that is the number
+test values for which the first classifier (the ``truth'') returns the $i$th class
+while the second classifier (the estimate) returns the $j$th class.
+Let $\ntest=\sum_i \sum_j \confusion_{ij}$ be the total number of test points.
+
+The accuracy is given:
+\begin{equation}
+\accuracy=\frac{\sum_i \confusion_{ii}}{\ntest}
+\label{accuracy}
+\end{equation}
+or simply the fraction of correct guesses.
+
+The uncertainty coefficient is a more sophisticated measure based on the channel 
+capacity \citep{Shannon}. It has the advantage over simple accuracy in that 
+it is not affected by the relative size of each class distribution.
+It is also not affected by consistent rearrangement of the class labels.
+
+The entropy of the prior distribution is given:
+\begin{eqnarray}
+	\priorentropy & = & - \sum_i \left (\sum_j \frac{\confusion_{ij}}{\ntest} \right ) 
+	\log \left (\sum_j \frac{\confusion_{ij}}{\ntest} \right )\\
+	& = & - \frac{1}{\ntest} \left [\sum_i \left (\sum_j \confusion_{ij} \right ) 
+	\log \left (\sum_j \confusion_{ij} \right )
+	- \log \ntest \right ]
+	\label{prior_entropy}
+\end{eqnarray}
+while the entropy of the posterior distribution is given:
+\begin{eqnarray}
+	\posteriorentropy & = & - \sum_i \sum_j \left ( \frac{\confusion_{ij}}{\ntest} \right ) \log \left (\frac{\confusion_{ij}}{\sum_i \confusion_{ij}} \right )
+	\label{posterior_entropy} \\
+	& = & - \frac{1}{\ntest} \left [ \sum_i \sum_j \confusion_{ij} \log \confusion_{ij} 
+- \sum_j \left ( \sum_i \confusion_{ij} \right ) \log \left ( \sum_i \confusion_{ij} \right ) \right ]
+\end{eqnarray}
+The uncertainty coefficient is defined in terms of the prior entropy, $\priorentropy$, and the
+posterior entropy, $\posteriorentropy$, as follows:
+\begin{equation}
+	\UC = \frac{\priorentropy - \posteriorentropy}{\priorentropy}
+	\label{uncertainty_coefficient}
+\end{equation}
+and tells us: 
+for a given test classification, how many bits of information 
+one average does the estimate
+supply of the true class value? \citep{Press_etal1992, Mills2011}.
+
+\section{Discussion}
+
+\label{discussion}
+
+\begin{table}
+	\caption{Total number of support vectors versus total number of border samples.}
+	\input{sum_nsv.tex}
+	\label{sum_nsv}
+\end{table}
+
+\begin{table}
+  \caption{Results from SVM trials after sub-sampling to match SVM-borders:
+	  either the skill or classification time, whichever requires the most
+  training samples.}
+  \label{subsampling_table}
+  {\small
+    \input{subsample.1.tex}
+  }
+\end{table}
+
+Thirteen of the classification problems show a significant speed increase with the application
+of the borders technique with \dataset{heart}, \dataset{segment}, \dataset{dna}, \dataset{pendigits} being the exceptions.
+Table \ref{sum_nsv} is an attempt to get a handle on the relative time complexity 
+of the two methods and lists all the relevant variables: number of variables,
+number of classes, total number of training samples, total support for SVM,
+total number of border samples for the borders method compared with the resulting
+classification time for the two methods. The two most relevant variables are the
+number of support vectors versus the number of border vectors.
+In order to get a successful speed increase, the former should be larger than 
+the latter, but as is apparent from some problems such as \dataset{sat}, \dataset{usps}, and \dataset{mnist},
+even having slightly more border samples can sometimes produce a significant,
+although modest, improvement.
+
+All increases in speed, however, come at the cost of accuracy.
+The question is, is the speed increase worth the decrease in skill?
+To test this, we sub-sample the datasets and then re-apply the SVM training
+until the speed the two methods, SVM and SVM-borders, matches.
+In some cases, SVM could not be made fast enough by sub-sampling, in which
+case skill was matched instead.
+
+Depending on how much the dataset is reduced, sub-sampling should be done with at
+least some care. 
+On one hand, a more sophisticated sub-sampling technique might be considered a method on its own, 
+comparable with the borders technique, but also likely requiring multiple training phases using the
+original technique thus making it significantly slower.
+On the other hand, at minimum we should consider the relative size of each class distribution.
+If there are roughly the same number of classes, then for small sub-samples the relative
+numbers should be kept constant.
+The \dataset{shuttle} dataset, however, has very uneven class numbers so it was sub-sampled differently
+in order to ensure that the smallest classes retain some membership.
+Let $\classsize_i$ be the number of samples of the $i$th class.
+Then the sub-sampled numbers are given:
+\begin{equation}
+	\classsize^\prime_i = \subsample(\classsize_i) \classsize_i
+\end{equation}
+where $0 \le \subsample(n) \le 1$.
+The form of $\subsample$ used for the \dataset{shuttle} dataset was:
+\begin{equation}
+	\subsample(n) = \submultcoef n^{-\subexp}
+\end{equation}
+where $\submultcoef=\classsize_1^\subexp$, $\subexp$ is determined based on the
+desired total fraction and $\classsize_1$ is the class with the fewest samples.
+To understand how this functional form was chosen, please see Appendix \ref{shuttle_subsampling}.
+
+The results of the sub-sampling exercise are shown in Table \ref{subsampling_table}.
+This gives us a clearer understanding of whether or not and
+when SVM acceration through borders sampling is effective.
+In some trials the speed increase is enough that even the AGF-borders method will provide an
+improvement over a sub-sampled SVM model, the results for AGF being wholly
+disappointing.
+And in a few trials, the speed increase is so great, SVM cannot match the borders
+method even through sub-sampling.
+
+AGF-borders never beats SVM in skill and
+rarely even equals KNN even though it's essentially the same method
+but using a more sophisticated kernel and with the borders training applied.
+Nonetheless, there is good reason to develop the method further: 
+training time varies with the number of training samples ($O(n)$) rather than with
+the square ($O(n^2)$).
+This is apparent for the largest datasets with more than a few thousand training samples
+at which point the AGF-borders method starts to train faster than SVM.
+
+There are at least three major sources of error for the AGF-borders technique.
+First, the kernel method upon which it is based is only first-order accurate.
+In particular, this will affect gradient estimates, 
+which are semi-analytic--see Equation (\ref{vb_gradient}).
+Second, the borders method provides only limited sampling of the discrimination
+border and this sampling is not strongly optimized.
+The sampling method, using pairs of training points of opposite class, will
+tend to favour regions of high density, however  
+directly optimizing for classification skill would be the ideal solution.
+Finally, the probability estimates extrapolate from only a single point.
+All these errors will tend to compound, especially after converting to
+multiple classes.
+Two of these errors sources also affect SVM-borders but don't seem to have a large
+effect on the final results.
+
+One potential improvement is to recalibrate the probability estimates as 
+done with the LIBSVM decision in equation (\ref{svm_prob}) \citep{Platt1999, Lin_etal2007}.
+There are many other methods of recalibrating classification probability
+estimates: see for instance 
+\citet{Niculescu-Mizil_Caruana2005, Zadrozny_Elkan2001}.
+Initial trials have shown some success.
+Recalibrating results for the \dataset{splice} dataset by a simple shift of the threshold value
+for the decision function, for instance, increases the
+uncertainty coefficient to 0.43 (accuracy=0.87) for AGF-borders and 0.48 (accuracy=0.88)
+for SVM-borders.
+This simplest method of recalibration is built in to the libAGF software
+and was used to good effect in \citet{Mills2009} and \citet{Mills2011}.
+SVM results for the same problem were already well enough calibrated
+that no significant improvement could be made by the same technique.
+Other problems were better calibrated, even for the borders classifiers.
+
+\section{Conclusions}
+
+\label{conclusion}
+
+\begin{table}
+	\caption{Summary of results for all 17 datasets including a verdict on the success or failure of borders classification to speed up SVM.}
+	\label{verdict}
+	\input{verdict.1.tex}
+	\vspace{1 ex}
+
+	\raggedright $^*$ SVM-borders classifier has been calibrated.
+\end{table}
+
+The primary goal of this work was to improve the classification time of a SVM
+using a simple, piecewise linear classifier which we call the borders classifier.
+The outcome for each of the 17 datasets is summarized in Table \ref{verdict}.
+When trained from the SVM, the method succeeded for nine of the datasets and
+by the same criteria, when trained from the simpler pointwise estimator (``AGF''),
+as compared with SVM, it succeeded for six of the datasets
+if we include the calibrated \dataset{splice} results.
+Not a perfect score but certainly worthwhile to try for operational retrievals
+where time performance is critical, for instance classifying large amounts of satellite
+data in real time.
+This is especially true considering the high performance ratios for some of the problems: the
+humidity dataset is sped up by almost 20 times, for instance, with even higher factors
+for some of the binary datasets.
+
+It's worthwhile to note where the algorithm is most likely to succeed and conversely
+where it might fail.
+One of the most successful trials was for the \dataset{humidity} dataset which produced one of
+the largest time improvements combined with relatively little loss of accuracy.
+This makes sense since the method was devised specifically for this problem and
+the \dataset{humidity} dataset epitomizes the characteristics for which the technique is most
+effective.
+
+Since it assumes that the difference in conditional probabilities is a
+smooth and continuous function, the borders method 
+tends to work poorly with integer or categorical data as well as problems
+with sharply defined, non-overlapping classes.
+Indeed, two of the problems where it took the biggest hit in accuracy, \dataset{dna} and \dataset{splice}, 
+use binary and categorical data respectively.
+Also, since there is no redundancy in calculations for multiple classes, 
+whereas in SVM there is considerable redundancy, problems with a large number of
+classes should also be avoided.
+This can be mitigated by using a multi-class classification method
+requiring fewer binary classifiers such as one-versus-the-rest with $O(\nclass)$
+performance or a decision tree with $O(\log \nclass)$ performance, rather than
+one-versus-one with its $O(\nclass^2)$ time complexity.
+While not covered in this paper, preliminary trials indicate that
+a decision tree or a multi-class method with $O(\nclass)$ time complexity
+can be just as accurate as one-vs.-one.
+
+The most important characteristic for success with the borders classification 
+method is a large number of training samples
+used to train a SVM for maximum accuracy.
+This also implies a large number of support vectors, making the
+SVM slow.
+Choosing an appropriate number of border samples allows one to trade off
+accuracy for speed, with diminishing returns for larger numbers of border samples.
+The borders method, unlike SVM, also has a straightforward interpretation:
+the location of the samples represent a hyper-surface that divides the two
+classes and their gradients are the normals to this surface.
+In this regard it is somewhat similar to rule-based classifiers such as
+decision trees.
+
+There are many directions for future work.
+An obvious refinement would be to distribute the border samples less 
+randomly and cluster them where they are most needed.
+As it is, the method of choosing by selecting random pairs of opposite
+classes, will tend to distribute them in areas of high density.
+The current, random method was found to work well enough.
+Another potential improvement would be to position the border samples
+so as to directly minimize classification error.
+This need not be done all at once as in some of the methods mentioned
+in the Introduction, but rather point-by-point to keep the training
+relatively fast.
+A first guess could be found through a kernel method and then each
+pointed shifted along the normal.
+
+For certain types of datasets, particularly those with continuum features
+data, smooth probability functions (typically overlapping classes) and a large number of samples, 
+the borders classification algorithm is an 
+effective method of improving the classification time of kernel methods.
+Because it is not a stand-alone method, but requires probability estimates,
+it can acheive a fast training time since it is not solving a global
+optimization problem, yet still maintain reasonable accuracy.
+While it may not be the first choice for cracking ``hard'' problems, it
+is ideal for workaday problems, such as operational retrievals,
+for which speed is critical.
+

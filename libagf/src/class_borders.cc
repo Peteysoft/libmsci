@@ -56,6 +56,8 @@ int main(int argc, char *argv[]) {
   real_a *std, *ave;	//average, standard deviation...
   real_a vart;
 
+  agfparam<real_a> rparam;	//parameters for AGF to pass to borders routine
+
   int exit_code;
   int err_code;
 
@@ -260,7 +262,7 @@ int main(int argc, char *argv[]) {
   strcat(grdfile, ".bgd");
 
   //dammit: recalculate the variances, even if they've just been calculated, above??
-  if (opt_args.var[0] <= 0 || opt_args.var[1] <= 0) {
+  if (opt_args.var[0] <= 0 || opt_args.var[1] <= 0 && opt_args.Zflag==0) {
     //calculate the averages and standard deviations:
     std=new real_a[nvar];
     ave=new real_a[nvar];
@@ -275,12 +277,12 @@ int main(int argc, char *argv[]) {
     vart=0;
     for (dim_ta i=0; i<nvar; i++) vart+=std[i]*std[i];
     if (opt_args.var[0] <= 0) {
-      opt_args.var[0]=vart/pow(ntrain, 2./nvar);
-      printf("Using %10.3g for lower filter variance bracket\n\n", opt_args.var[0]);
+      rparam.var[0]=vart/pow(ntrain, 2./nvar);
+      printf("Using %10.3g for lower filter variance bracket\n\n", rparam.var[0]);
     }
     if (opt_args.var[1] <= 0) {
-      opt_args.var[1]=vart;
-      printf("Using %10.3g for upper filter variance bracket\n\n", opt_args.var[1]);
+      rparam.var[1]=vart;
+      printf("Using %10.3g for upper filter variance bracket\n\n", rparam.var[1]);
     }
     delete [] ave;
     delete [] std;
@@ -324,7 +326,10 @@ int main(int argc, char *argv[]) {
   if (opt_args.multicommand==NULL) {
     real_a (*rfunc) (real_a *, void *, real_a *);
     svm2class<real_a, cls_ta> *svmmod;
-    agfparam<real_a> rparam;
+    bord_diag<real_a> diag;
+    //so we can have an accurate readout at the end:
+    nel_ta i;
+    int err;
 
     if (opt_args.Zflag) {
       rfunc=&svmrfunc<real_a, cls_ta>;
@@ -332,14 +337,35 @@ int main(int argc, char *argv[]) {
       param.rparam=svmmod;
     } else {
       rfunc=&agfrfunc<real_a>;
-      agfparam_init(&rparam, opt_args.var, opt_args.k, opt_args.W2);
+      agfparam_init(&rparam, rparam.var, opt_args.k, opt_args.W2);
       param.rparam=&rparam;
     }
 
-    opt_args.n=sample_class_borders(rfunc, sfunc, &param, 
-		opt_args.n, nvar, opt_args.tol, agf_global_borders_maxiter, 
-		border, gradient, opt_args.rthresh);
+    zero_bord_diag<real_a>(&diag);
 
+    for (i=0; i<opt_args.n; i++) {
+      if (opt_args.Zflag==0) {
+        //(re)set variance brackets for AGF-borders:
+        if (opt_args.var[0]>0) rparam.var[0]=opt_args.var[0];
+        if (opt_args.var[1]>0) rparam.var[1]=opt_args.var[1];
+      }
+      for (int j=0; j<40; j++) printf("\b");
+      printf("%7d of %7d vectors found: %5.1f%%", i, opt_args.n, (100.*(i+1))/opt_args.n);
+      fflush(stdout);
+      err=single_sample_cb(rfunc, sfunc, &param, 
+		nvar, opt_args.tol, agf_global_borders_maxiter, 
+		border[i], gradient[i], &diag, opt_args.rthresh);
+      if (err==OUT_OF_DATA) {
+        fprintf(stderr, "class_borders: ran out of samples (%d found), finishing\n", i);
+	break;
+      } else if (err!=0) {
+        i--;
+      }
+    }
+    for (int j=0; j<40; j++) printf("\b");
+    printf("%7d of %7d vectors found: %5.1f%%", i, opt_args.n, (100.*(i+1))/opt_args.n);
+    opt_args.n=i;
+    print_bord_diag<real_a>(stdout, &diag, opt_args.n);
     if (opt_args.Zflag) {
       delete svmmod;
     } else {

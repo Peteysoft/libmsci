@@ -179,6 +179,12 @@ namespace libagf {
     return 0;
   }
 
+  template <typename real>
+  void agfparam_reset_var(bordparam<real> *param) {
+    if (param->var0[0]>0) param->var[0]=param->var0[0];
+    if (param->var0[1]>0) param->var[1]=param->var0[1];
+  }
+
   template <class real>
   void agfbordparam_clean(bordparam<real> *param) {
     bordparam_clean(param);

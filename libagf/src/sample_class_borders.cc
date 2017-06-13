@@ -606,6 +606,12 @@ namespace libagf {
   template void bordparam_clean<float>(bordparam<float> *);
   template void bordparam_clean<double>(bordparam<double> *);
 
+  template void zero_bord_diag<float>(bord_diag<float> *);
+  template void zero_bord_diag<double>(bord_diag<double> *);
+
+  template void print_bord_diag<float>(FILE *, bord_diag<float> *diag, nel_ta);
+  template void print_bord_diag<double>(FILE *, bord_diag<double> *diag, nel_ta);
+
   template int oppositesample<float>(void *, float *, float *);
   template int oppositesample<double>(void *, double *, double *);
 

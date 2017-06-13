@@ -1,17 +1,20 @@
-Support vector machines (SVM) are a family of powerful statistical 
+Support vector machines (SVM) and other kernel techniques represent a family of powerful statistical 
 classification methods with high accuracy and broad applicability.
-Because they are kernel-based, however, they can be slow, especially for large
-problems.
+Because they use all or a significant portion of the training data, 
+however, they can be slow, especially for large problems.
+Piecewise linear classifiers are similarly versatile, yet have the additional
+advantages of simplicity, ease of interpretation and, if the number of 
+component linear classifiers is not too large, speed.
 Here we show how a simple, piecewise linear classifier can be trained from
 a kernel-based classifier in order to improve the classification speed.
 The method works by finding the root of the difference in conditional
 probabilities between pairs of opposite classes to build up a representation
-of the decision border.
+of the decision boundary.
 When tested on 17 different datasets, it succeeded in improving the
-speed of a SVM for 9 of the datasets, failed for 2 and broke even for 6.
+classification speed of a SVM for 9 of them by factors as high as 88 times or more.
 The method is best suited to problems with continuum features
-data.
+data and smooth probability functions.
 Because the component linear classifiers are built up individually from an
 existing classifier, rather than through a simultaneous optimization procedure,
-the classifier is also fast to train.
+the classifier is also fast to train. 
 
