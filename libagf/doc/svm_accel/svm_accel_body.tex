@@ -20,7 +20,7 @@ A linear classifier takes the form:
 	\lindecision(\testpoint) = \bordernormal \cdot \testpoint + \borderconst
 	\label{linear_classifier}
 \end{equation}
-where $\testpoint$ is the test point, $\bordernormal$ is a normal to
+where $\testpoint$ is a test point in the feature space, $\bordernormal$ is a normal to
 the decision hyper-surface, $\borderconst$ determines the location of the
 decision boundary along the normal and
 $\lindecision$ is the decision function which we use to estimate the class 
@@ -121,7 +121,7 @@ A kernel is a scalar function of two vectors that can be used for
 non-parametric density estimation. A typical ``kernel-density estimator"
 looks like this:
 \begin{equation}
-	\densityestimator(\testpoint) = \frac {1}{\norm \nsample} \sum_{i=1}^\nsample \vectorkernel(\sample_i, \testpoint, \kernelparam)
+	\densityestimator(\testpoint) = \frac {1}{\nsample \norm} \sum_{i=1}^\nsample \vectorkernel(\testpoint, \sample_i, \kernelparam)
 	\label{kernel_estimator}
 \end{equation}
 where $\densityestimator$ is an estimator for the density, $\probability$, 
@@ -139,7 +139,7 @@ The normalization coefficient, $\norm$, normalizes $\vectorkernel$:
 The method can be used for statistical classification by comparing
 results from the different classes:
 \begin{equation}
-	\class = \arg \min_i \sum_{j|\classlabel_j = i} K(\sample_j, \testpoint, \kernelparam)
+	\class = \arg \min_i \sum_{j|\classlabel_j = i} K(\testpoint, \sample_i, \kernelparam)
 	\label{kernel_classification}
 \end{equation}
 where $\classlabel_j$ is the class of the $j$th sample.
@@ -189,7 +189,7 @@ in which bandwidths are different for each training point but need only be deter
 Another method of improving the performance of a kernel-density estimator
 is to add a series of variable coefficients:
 \begin{equation}
-	\densityestimator(\testpoint) = \sum_i \svmcoeff_i \vectorkernel(\sample_i, \testpoint, \kernelparam)
+	\densityestimator(\testpoint) = \sum_i \svmcoeff_i \vectorkernel(\testpoint, \sample_i, \kernelparam)
 	\label{weighted_kernel_estimator}
 \end{equation}
 The coefficients, $\lbrace \svmcoeff_i \rbrace$, are found through an optimization
@@ -232,7 +232,7 @@ The {\it decision value} is calculated via a dot product:
 \end{equation}
 and the class determined, as before, by the sign of the decision value:
 \begin{equation}
-	\class(\testpoint) = \frac{\lindecision(\testpoint)}{|\lindecision(\testpoint)|}
+	\class(\testpoint) = \frac{\svmdecision(\testpoint)}{|\svmdecision(\testpoint)|}
 	\label{class_value}
 \end{equation}
 where for convenience, the class labels are given by $c \in \lbrace -1, 1 \rbrace$.
@@ -263,11 +263,13 @@ into the decision function in (\ref{decision_function0}) produces the following:
 	\label{svm_decision}
 \end{equation}
 Thus, the final, dual, quadratic optimization problem looks like this:
+\begin{equation}
+	\max_{\lbrace \svmcoeff_i \rbrace} \left [ \sum_i \svmcoeff_i 
+	- \frac{1}{2} \sum_{i, j} \svmcoeff_i \svmcoeff_j \classlabel_i \classlabel_j \vectorkernel(\sample_i, \sample_j) \right ] \label{dual_problem}
+\end{equation}
 \begin{eqnarray}
-	\max_{\lbrace \svmcoeff_i \rbrace} & \sum_i \svmcoeff_i 
-	- \frac{1}{2} \sum_{i, j} \svmcoeff_i \svmcoeff_j \classlabel_i \classlabel_j \vectorkernel(\sample_i, \sample_j) \label{dual_problem} \\
-	& \svmcoeff_i \ge 0 \label{constraint1} \\
-	& \sum_i \svmcoeff_i \classlabel_i = 0 \label{constraint2}
+	\svmcoeff_i & \ge & 0 \label{constraint1} \\
+	\sum_i \svmcoeff_i \classlabel_i & = & 0 \label{constraint2}
 \end{eqnarray}
 There are a number of refinements that can be applied to the optimization
 problem in (\ref{dual_problem})-(\ref{constraint2}), chiefly to reduce over-fitting and to add
@@ -341,11 +343,13 @@ For the variable bandwidth kernel estimator defined by (\ref{agf_def}), this wor
 \end{equation}
 A variable bandwidth kernel-density estimator with a Gaussian kernel,
 \begin{equation}
-	\vectorkernel(\testpoint, \sample_i, \bandwidth) = \exp \left [ - \frac{|\testpoint - \sample_i|^2}{\bandwidth^2} \right ]
+	\vectorkernel(\point, \point^\prime, \bandwidth) = \exp \left ( - \frac{|\point - \point^\prime|^2}{\bandwidth^2} \right )
 	\label{Gaussian_kernel}
 \end{equation}
 %$\scalarkernel(x)=\exp(-x^2/2)$
 we will refer to as an ``Adaptive Gaussian Filter'' or AGF for short.
+This kernel will also be used for SVM where it's often called a ``radial
+basis function'' or RBF for short.
 
 The procedure is as follows: pick a pair of points on either side of the decision
 boundary (the decision function has opposite signs). Good candidates are one
@@ -399,9 +403,9 @@ For AGF, this works out to:
 	\frac{\partial \vbdecision}{\partial \testcoord_j} = 
 	\frac{1}{\bandwidth^2 \kernelsum} \sum_i \classlabel_i
 	\scalarkernel \left (\frac{\distance_i}{\bandwidth} \right )
-	\left [\samplecoord_{ij} - \testcoord
+	\left [\samplecoord_{ij} - \testcoord_j
 	- \distance_i^2 \frac{\sum_k \scalarkernel \left (\frac{\distance_k}{\bandwidth} \right )
-	\left (\samplecoord_{kj} - \testcoord \right )}
+	\left (\samplecoord_{kj} - \testcoord_j \right )}
 {\sum_k \scalarkernel \left (\frac{\distance_k}{\bandwidth} \right )\frac{1}{\distance_k^2}} \right ]
 \label{vb_gradient}
 \end{equation}
@@ -862,8 +866,13 @@ was chosen for the best compromise between reduced accuracy and a speed
 improvement over SVM. The parameter, $k$, for AGF is the number of nearest
 neighbours used when computing the probabilities: 
 while the order of the method, $O(n)$, remains the same, nonetheless it can produce a significant speed improvement for large problems.
-The parameter, $n_{samp}$, is the number of class borders used in both 
+The parameter, $\nborder$, is the number of class borders used in both 
 AGF and SVM-borders.
+
+For SVM, a Gaussian kernel is used as in (\ref{Gaussian_kernel})
+where $\rbkernelparam=1/\sigma^2$ is a tunable parameter. 
+$\svmcost$ is a cost parameter added to reduce over-fitting--see
+Equations (\ref{dual_problem}) and (\ref{svmcost}).
 
 In order to get a confidence interval on the results,
 ten trials were performed for most of the datasets.
@@ -871,11 +880,8 @@ In some cases, only a single trial was performed either because the operation
 took too long or because of a pre-existing separation between test and training
 data which was taken ``as is''. Single trials are indicated through the absence of
 error bars which are calculated from the standard deviation.
-
-For SVM, a Gaussian kernel is used as in (\ref{Gaussian_kernel})
-where $\rbkernelparam=1/\sigma^2$ is a tunable parameter. 
-$\svmcost$ is a cost parameter added to reduce over-fitting--see
-Equations (\ref{dual_problem}) and (\ref{svmcost}).
+$\datafraction$ is the fraction of test data relative to the total number
+of samples.
 
 The results are summarized in Tables \ref{results} and \ref{results2} including training
 and test time for each method as well as skill scores. There are two skill scores,
@@ -890,7 +896,7 @@ time.
 The SVM-borders method is not a stand-alone method thus its training time is never
 highlighted.
 
-Interestingly, the heart dataset classifiers so fast that it was not detected
+Interestingly, the heart dataset classifiers are so fast that they were not detected
 by the system clock. Even more interestingly, skill scores for SVM-borders 
 are higher than those for SVM. This does not break any
 laws of probability, however, since the two scores are well within each others' error
@@ -945,7 +951,7 @@ posterior entropy, $\posteriorentropy$, as follows:
 \end{equation}
 and tells us: 
 for a given test classification, how many bits of information 
-one average does the estimate
+on average does the estimate
 supply of the true class value? \citep{Press_etal1992, Mills2011}.
 
 \section{Discussion}
@@ -971,10 +977,10 @@ supply of the true class value? \citep{Press_etal1992, Mills2011}.
 Thirteen of the classification problems show a significant speed increase with the application
 of the borders technique with \dataset{heart}, \dataset{segment}, \dataset{dna}, \dataset{pendigits} being the exceptions.
 Table \ref{sum_nsv} is an attempt to get a handle on the relative time complexity 
-of the two methods and lists all the relevant variables: number of variables,
+of the two methods and lists all the relevant variables: number of features,
 number of classes, total number of training samples, total support for SVM,
 total number of border samples for the borders method compared with the resulting
-classification time for the two methods. The two most relevant variables are the
+classification time for the two methods. The two most relevant variables here are the
 number of support vectors versus the number of border vectors.
 In order to get a successful speed increase, the former should be larger than 
 the latter, but as is apparent from some problems such as \dataset{sat}, \dataset{usps}, and \dataset{mnist},
@@ -1003,13 +1009,13 @@ Then the sub-sampled numbers are given:
 \begin{equation}
 	\classsize^\prime_i = \subsample(\classsize_i) \classsize_i
 \end{equation}
-where $0 \le \subsample(n) \le 1$.
 The form of $\subsample$ used for the \dataset{shuttle} dataset was:
 \begin{equation}
 	\subsample(n) = \submultcoef n^{-\subexp}
 \end{equation}
-where $\submultcoef=\classsize_1^\subexp$, $\subexp$ is determined based on the
-desired total fraction and $\classsize_1$ is the class with the fewest samples.
+where $\submultcoef=\classsize_1^\subexp$, $0 < \subexp < 1$ is determined based on the
+desired total fraction and $\classsize_1$ is the number of samples in the 
+smallest class.
 To understand how this functional form was chosen, please see Appendix \ref{shuttle_subsampling}.
 
 The results of the sub-sampling exercise are shown in Table \ref{subsampling_table}.
@@ -1084,9 +1090,9 @@ if we include the calibrated \dataset{splice} results.
 Not a perfect score but certainly worthwhile to try for operational retrievals
 where time performance is critical, for instance classifying large amounts of satellite
 data in real time.
-This is especially true considering the high performance ratios for some of the problems: the
-humidity dataset is sped up by almost 20 times, for instance, with even higher factors
-for some of the binary datasets.
+This is especially so in light of the high performance ratios for some of the problems:
+the \dataset{humidity} dataset is sped up by almost 20 times,
+for instance, with even higher factors for some of the binary datasets.
 
 It's worthwhile to note where the algorithm is most likely to succeed and conversely
 where it might fail.

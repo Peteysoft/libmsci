@@ -1,5 +1,6 @@
 %linear classifiers:
-\newcommand{\lindecision}{f}
+\newcommand{\decision}{g}
+\newcommand{\lindecision}{\decision}
 %normal to the border:
 \newcommand{\bordernormal}{\vec v}
 \newcommand{\borderconst}{b}
@@ -7,7 +8,7 @@
 %symbols for general kernel methods:
 \newcommand{\vectorkernel}{K}		%kernel function of two vectors
 \newcommand{\scalarkernel}{K}		%kernel function of a single scalar
-\newcommand{\kernelparam}{\vec k}	%kernel parameters
+\newcommand{\kernelparam}{\vec \kappa}	%kernel parameters
 \newcommand{\norm}{N}			%integral of kernel function
 \newcommand{\nsample}{n}		%number of training samples
 \newcommand{\dimension}{D}		%dimension of feature space
@@ -44,7 +45,7 @@
 %theoretical expanded kernel space:
 \newcommand{\expandedspace}{\vec\phi}
 %decision function:
-\newcommand{\svmdecision}{f_{svm}}
+\newcommand{\svmdecision}{\decision_{svm}}
 %parameters for theoretical linear discrimination border:
 \newcommand{\svmbordernormal}{\bordernormal}
 \newcommand{\svmborderconst}{\borderconst}
@@ -64,7 +65,7 @@
 %number of border vectors:
 \newcommand{\nborder}{n_b}
 %decision function for a borders classifier:
-\newcommand{\borderdecision}{f_{border}}
+\newcommand{\borderdecision}{\decision_{border}}
 %derivative of variable bandwidth kernel estimator:
 \newcommand{\distance}{d}		%intermediate value
 \newcommand{\scalarkernelderiv}{\dot \scalarkernel}
@@ -84,6 +85,9 @@
 %svm kernels:
 \newcommand{\rbkernelparam}{\gamma}
 
+%sub-sampling: fraction of data split off from main body
+\newcommand{\datafraction}{f}
+
 %skill scores:
 \newcommand{\confusion}{\eta}		%confusion matrix
 \newcommand{\ntest}{n_{test}}		%number of test points
@@ -99,7 +103,7 @@
 %multiplication coefficient for sub-sampling function:
 \newcommand{\submultcoef}{C}
 %exponent for sub-sampling function:
-\newcommand{\subexp}{k}
+\newcommand{\subexp}{\zeta}
 
 %non-mathematical:
 \newcommand{\dataset}[1]{\textsf{#1}}
