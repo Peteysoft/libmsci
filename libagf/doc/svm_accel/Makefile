@@ -24,7 +24,6 @@ SOURCE = summary.tex \
 	svm_accel.bib \
 	svm_accel_symbol_def.tex \
 	svm_accel_symbol_table.tex \
-	svm_accel_symbol_table2.tex \
 	../agf_bib.bib \
 	../pwl.bib
 
