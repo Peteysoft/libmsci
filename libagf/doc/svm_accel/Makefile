@@ -1,6 +1,6 @@
 BIBFILE = ../agf_bib.bib
 
-TARGET = svm_accel_jmlr
+TARGET = svm_accel
 
 FIG = border_vectors.eps \
       support_vectors.eps \
@@ -22,15 +22,15 @@ SOURCE = summary.tex \
 	svm_accel_body.tex \
 	svm_accel_abstract.txt \
 	svm_accel.bib \
+	svm_accel_symbol_def.tex \
+	svm_accel_symbol_table.tex \
+	svm_accel_symbol_table2.tex \
 	../agf_bib.bib \
 	../pwl.bib
 
 all: $(TARGET).pdf
 
 clean:
-	make TARGET=svm_accel_jmlr clean_target
-
-clean_target:
 	rm -f $(TARGET).dvi
 	rm -f $(TARGET).aux
 	rm -f $(TARGET).bbl

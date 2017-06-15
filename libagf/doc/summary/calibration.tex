@@ -1,0 +1,89 @@
+\documentclass{article}
+
+\newcommand{\classvalue}{c}
+\newcommand{\binarydecision}{f}
+\newcommand{\multidecision}{f}
+\newcommand{\testpoint}{\vec x}
+\newcommand{\transform}{g}
+\newcommand{\param}{k}
+\newcommand{\estimator}{{p}}
+\newcommand{\condprob}{P}
+\newcommand{\coord}{x}
+\newcommand{\ord}{y}
+\newcommand{\bound}{\epsilon}
+
+\begin{document}
+
+\section{Introduction}
+
+Most statistical classification algorithms return not a discrete value as an 
+integer or symbol, but rather a
+number or a set of numbers that are transformed into class values through
+their magnitude.
+A binary classifier, for instance, might return a single ``decision value'' that
+is transformed into classification result through its sign:
+\begin{equation}
+	\classvalue(\testpoint) = \frac{\binarydecision(\testpoint)}{|\binarydecision(\testpoint)}
+\end{equation}
+For a multi-class classifier, a vector valued decision function, 
+$\vec \multidecision$, would be appropriate, with the class chosen as the
+index of the maximum value:
+\begin{equation}
+	\classvalue(\testpoint) = \arg \min_i \multidecision_i (\vec x)
+\end{equation}
+
+The topic of this review, is how to transform the decision function into a
+well-calibrated estimator for the conditional probability?
+That is, we want a function, $\transform$,
+\begin{equation}
+  \vec \estimator = \transform(\vec \multidecision, \vec \param)
+\end{equation}
+that transforms the decision
+values, $\vec \multidecision$, into an estimator for the conditional
+probabilities: $\estimator_i \approx \condprob(i|\testpoint)$.
+The parameters for the function, $\vec \param$, are determined from a set of 
+training data, $\lbrace \vec \coord_i \rightarrow \ord_i \rbrace$.
+
+To make this more precise (since we rarely have access to the true
+probabilities), suppose we organize the training data such that
+the estimators for one of the classes are sorted from low to high:
+\begin{equation}
+	\estimator_c (\vec \coord_{k_{i+1}}) \ge \estimator_c (\vec \coord_{k_i})
+\end{equation}
+where $i\in[1, n]$.
+Now suppose further, that the difference between the smallest and largest
+estimators is bounded by $\bound$:
+\begin{equation}
+	\estimator_c (\vec \coord_{k_n}) - \estimator_c (\vec \coord_{k_1}) \le \bound
+\end{equation}
+In the limit as the training set becomes infinite and for every $\bound$,
+the sum of the estimators should be equal to the number of ordinates taking
+on value $c$:
+\begin{equation}
+	\forall \bound \lim_{n \rightarrow \infty} \sum_{i=1}^n \left \lbrace \estimator_c\left (\vec \coord[k[i]]\right ) - \delta_{c\ord[k[i]]} \right \rbrace = 0
+	\label{calibrated_definition}
+\end{equation}
+where $\delta$ is the Kronecker delta and for clarity, we have replaced the
+subscript operator with brackets, that is, $k[i]=k_i$.
+
+Obviously, since we don't have access to infinite amounts of training data,
+we need to transform this to some other, more accessible criterion.
+Rearranging equation (\ref{calibrated_definition}) and removing the limit and
+quantifier produces the following:
+\begin{equation}
+	n \approx \sum_{i=1}^n \frac{\delta_{c\ord[k[i]]}}{\estimator_c\left (\vec \coord[k[i]] \right )}
+\end{equation}
+In other words, the right-hand-side should, on average, equal the rank of the
+largest estimator used in the calculation.
+Plotting the left-hand-side against the right-hand-side for each class and
+calculating the correlation or another, similar measure of statistical
+association should give a good measure of how well calibrated the
+estimator is.
+
+Interestingly, this is, for the binary case at least, a density estimation
+problem much like the classification problem preceding it.
+That is, assuming the same rank ordering, the value of
+$\estimator$ for a given class should be equal to the density of training
+samples with that class at the value of $\binarydecision$.
+
+\end{document}

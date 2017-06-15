@@ -14,15 +14,16 @@ symbol & definition & first used \\ \hline
 	$\norm$ & kernel normalization coefficient & (\ref{kernel_estimator})\\
 	$\nsample$ & number of training samples & (\ref{kernel_estimator})\\
 	$\point=\lbrace \coord_i \rbrace$ & point in the feature space & (\ref{norm_def})\\
+	$\class$ & class label & (\ref{kernel_classification})\\
+	$\classlabel_i$ & class label of $i$th training sample & (\ref{kernel_classification})\\
+	$\condprob$ & conditional probability & S \ref{theory}\\
+	$\jointprob$ & joint probability & S \ref{theory} \\
 	$\scalarkernel$ & kernel function taking a single scalar argument & (\ref{scalar_kernel_def})\\
 	$\bandwidth$ & ``bandwidth'': sets the size of a scalar kernel & (\ref{scalar_kernel_def})\\
 	$\probability$ & true probability density & (\ref{setting_the_bandwidth})\\
 	$\dimension$ & number of dimensions in feature space & (\ref{setting_the_bandwidth})\\
-	$\classlabel_i$ & class label of $i$th training sample & (\ref{kernel_classification})\\
-	$\class$ & class label & (\ref{kernel_classification})\\
-	$\condprob$ & conditional probability & (\ref{rdef})\\
 	$\kernelsum$ & sum of the kernels at each training sample & (\ref{agf_def})\\
-	$\svmcoeff$ & coefficients in weighted kernel estimator & (\ref{weighted_kernel_estimator})\\
+	$\lbrace \svmcoeff_i \rbrace$ & coefficients in weighted kernel estimator & (\ref{weighted_kernel_estimator})\\
 	$\expandedspace$ & theoretical expanded feature space in kernel-based SVM & (\ref{phi_def})\\
 	$\svmdecision$ & raw decision function in binary SVM & (\ref{decision_function0})\\
 	$\svmcost$ & cost parameter in SVM for reducing over-fitting & (\ref{svmcost}) \\
@@ -40,13 +41,8 @@ symbol & definition & first used \\ \hline
 	$\svmprobcoeffA$ & coefficient used in $\svmprob$ & (\ref{svm_prob}) \\
 	$\svmprobcoeffB$ & coefficient used in $\svmprob$ & (\ref{svm_prob}) \\
 	$\borderprob$ & borders estimator for $\diffcondprob$ & (\ref{border_probability}) \\
+	$\multiprob_i=\condprob(i|\point)$ & conditional probability of $i$th class & (\ref{multiclass}) \\
 	$\lmult$ & Lagrange multiplier in multi-class problem & (\ref{multiclass}) \\
-	$\rbkernelparam$ & parameter used for Gaussian kernels in SVM & S \ref{results_section} \\
-	$\lbrace \confusion_{ij} \rbrace$ & confusion matrix & (\ref{accuracy}) \\
-	$\ntest$ & number of test points & (\ref{accuracy}) \\
-	$\priorentropy$ & entropy of the prior distribution & (\ref{prior_entropy}) \\
-	$\posteriorentropy$ & entropy of the posterior distribution & (\ref{posterior_entropy}) \\
-	$\UC$ & uncertainty coefficient (normalized channel capacity) & (\ref{uncertainty_coefficient})
 \end{tabular}
 
 

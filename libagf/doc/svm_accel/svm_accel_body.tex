@@ -126,8 +126,7 @@ looks like this:
 \end{equation}
 where $\densityestimator$ is an estimator for the density, $\probability$, 
 $\vectorkernel$ is the kernel function,
-$\lbrace \sample_i \rbrace$ are a set of training samples, 
-$\nsample$ is the number of samples,
+$\lbrace \sample_i | ~ \in [1,\nsample] \rbrace$ are a set of training samples, 
 $\testpoint$ is the test point,
 and $\kernelparam$ is a set of parameters. 
 The normalization coefficient, $\norm$, normalizes $\vectorkernel$:
@@ -187,7 +186,7 @@ in which bandwidths are different for each training point but need only be deter
 \citep{Terrell_Scott1992}.
 
 Another method of improving the performance of a kernel-density estimator
-is to add a series of variable coefficients:
+is to multiply each kernel by a coefficient:
 \begin{equation}
 	\densityestimator(\testpoint) = \sum_i \svmcoeff_i \vectorkernel(\testpoint, \sample_i, \kernelparam)
 	\label{weighted_kernel_estimator}
@@ -1008,10 +1007,12 @@ Let $\classsize_i$ be the number of samples of the $i$th class.
 Then the sub-sampled numbers are given:
 \begin{equation}
 	\classsize^\prime_i = \subsample(\classsize_i) \classsize_i
+	\label{subsample}
 \end{equation}
 The form of $\subsample$ used for the \dataset{shuttle} dataset was:
 \begin{equation}
 	\subsample(n) = \submultcoef n^{-\subexp}
+	\label{subfunction}
 \end{equation}
 where $\submultcoef=\classsize_1^\subexp$, $0 < \subexp < 1$ is determined based on the
 desired total fraction and $\classsize_1$ is the number of samples in the 

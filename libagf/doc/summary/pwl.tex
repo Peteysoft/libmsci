@@ -1,0 +1,43 @@
+\documentclass{article}
+
+\newcommand{\decision}{f}
+\newcommand{\testpoint}{\vec x}
+\newcommand{\domainfunction}{\eta}
+\newcommand{\normal}{v}
+\newcommand{\constant}{b}
+\newcommand{\dimension}{N}
+\newcommand{\ndomain}{m}
+\newcommand{\sample}{x}
+\newcommand{\ord}{y}
+\newcommand{\ntrain}{n}
+
+\begin{document}
+
+\section{Introduction}
+
+A piecewise linear classifier takes the following form:
+\begin{equation}
+\decision(\testpoint) = \vec \normal_{\domainfunction(\testpoint)} \cdot \testpoint + \constant_{\domainfunction(\testpoint)}
+\end{equation}
+where:
+\begin{itemize}
+  \item $\decision:\Re^\dimension \rightarrow \Re$ is the decision function which returns the class through its sign
+  \item $\testpoint \in \Re^\dimension$ is a test point in a 
+	  $\dimension$-dimensional feature space
+  \item $\lbrace \vec \normal_i|~ i \in [1,\ndomain] \rbrace$ is a set of $\ndomain$
+	  normals to the decision hyper-plane of each of the 
+	  component linear classifiers,
+  \item $\lbrace \constant_i|~ i \in [1,\ndomain] \rbrace$ are their corresponding intercepts
+  \item $\domainfunction:\Re^\dimension \rightarrow [1:\ndomain]$ is an integer
+function returning which component linear classifier to use for a given
+test point.
+\end{itemize}
+
+While it looks simple, training this type of binary, 
+supervised statistical classifier is not trivial.
+Accurate methods tend to be slow while fast methods tend not to be accurate.
+This paper reviews methods of constructing such classifiers from a set of 
+training data: $\lbrace \vec \sample_i \rightarrow \ord_i; i \in \ntrain \rbrace$
+where $\ord_i \in [-1,~ 1]$.
+
+\end{document}
