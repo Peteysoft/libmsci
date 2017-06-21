@@ -9,12 +9,15 @@
 % is archived at http://www.jmlr.org/format/natbib.pdf
 
 \usepackage{jmlr2e}
-
+\usepackage{amsmath}
 \usepackage{url}
 
 % Definitions of handy macros can go here
 
 \input{svm_accel_symbol_def.tex}
+
+\newenvironment{eqnnon}{\begin{equation*}}{\end{equation*}}
+\newenvironment{eqnarraynon}{\begin{eqnarray*}}{\end{eqnarray*}}
 
 % Heading arguments are {volume}{year}{pages}{submitted}{published}{author-full-names}
 
@@ -27,7 +30,7 @@
 
 \begin{document}
 
-\title{Accelerating Kernel Classifiers with a Simple, Piecewise-Linear Classifier}
+\title{Accelerating Kernel Classifiers Through Borders Mapping}
 
 \author{\name Peter Mills
 	\email peteymills@hotmail.com \\
@@ -44,10 +47,10 @@
 \end{abstract}
 
 \begin{keywords}
-support vector machines,
 class borders,
-numerical methods, 
-inverse problems,
+multi-dimensional root-finding,
+adaptive Gaussian filtering,
+binary classifier,
 multi-class classifier,
 non-parametric statistics,
 variable kernel density estimation

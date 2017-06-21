@@ -2,13 +2,19 @@
 
 \bibliographystyle{apa}
 \usepackage{natbib}
+\usepackage{amsmath}
 \usepackage[dvips]{graphicx}
 \usepackage{url}
 %\usepackage{tablefootnote}
 
+%to keep our list of symbols intact yet still submit to journals
+%that require un-used equations not to be numbered:
+\newenvironment{eqnnon}{\begin{equation}}{\end{equation}}
+\newenvironment{eqnarraynon}{\begin{eqnarray}}{\end{eqnarray}}
+
 \begin{document}
 
-\title{Accelerating Kernel Classifiers with a Simple, Piecewise-Linear Classificatier}
+\title{Accelerating Kernel Classifiers Through Borders Mapping}
 
 \author{Peter Mills\\\textit{peteymills@hotmail.com}}
 
@@ -21,11 +27,10 @@
 \end{abstract}
 
 \subsection*{Keywords}
-\textbf{support vector machines, 
-	class borders,
-numerical methods, 
-inverse problems,
-adaptive kernel estimators, 
+\textbf{class borders,
+multi-dimensional root-finding,
+adaptive Gaussian filtering,
+binary classifier,
 multi-class classifier, 
 non-parametric statistics, 
 variable kernel density estimation}

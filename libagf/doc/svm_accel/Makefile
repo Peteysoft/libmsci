@@ -1,6 +1,6 @@
-BIBFILE = ../agf_bib.bib
+#JOURNAL = _jmlr
 
-TARGET = svm_accel
+TARGET = svm_accel$(JOURNAL)
 
 FIG = border_vectors.eps \
       support_vectors.eps \
@@ -38,7 +38,7 @@ clean:
 $(TARGET).pdf: $(TARGET).dvi
 	dvipdf $(TARGET)
 
-$(TARGET).dvi: $(TARGET).tex $(SOURCE) $(BIBFILE) $(FIG)
+$(TARGET).dvi: $(TARGET).tex $(SOURCE) $(FIG)
 	latex $(TARGET)
 	bibtex $(TARGET)
 	latex $(TARGET)

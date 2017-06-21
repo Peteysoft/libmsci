@@ -67,8 +67,7 @@ evaluated.
 There seems to be some tension in the literature between training the
 decision boundary through simultaneous optimization \citep{Bagirov2005, Wang_Saligrama2013} or through
 methods that are more piece meal \citep{Gai_Zhang2010, Herman_Yeung1992, Kostin2006}.
-Obviously, simultaneous optimization will be more accurate than methods
-that are more piece-meal but also much more computationally expensive.
+Obviously, simultaneous optimization will be more accurate but also much more computationally expensive.
 In addition, finding global minima for cost functions 
 involving more than a handful of hyper-surfaces will be all but impossible.
 There is also the issue of separability. Many of the current crop of 
@@ -79,7 +78,7 @@ Yet there is no reason why a piecewise linear classifier cannot be just as
 effective for overlapping classes.
 
 The technique under discussion in this paper mitigates all of these issues 
-because it is not actually a stand-alone method but requires estimates
+because it is not a stand-alone method but requires estimates
 of the conditional probabilities.
 It is used to improve the time performance of kernel methods, or for that matter,
 any binary classifier that returns a continuous decision function 
@@ -120,20 +119,20 @@ Section \ref{conclusion} concludes the paper.
 A kernel is a scalar function of two vectors that can be used for 
 non-parametric density estimation. A typical ``kernel-density estimator"
 looks like this:
-\begin{equation}
+\begin{eqnnon}
 	\densityestimator(\testpoint) = \frac {1}{\nsample \norm} \sum_{i=1}^\nsample \vectorkernel(\testpoint, \sample_i, \kernelparam)
 	\label{kernel_estimator}
-\end{equation}
+\end{eqnnon}
 where $\densityestimator$ is an estimator for the density, $\probability$, 
 $\vectorkernel$ is the kernel function,
 $\lbrace \sample_i | ~ i \in [1,\nsample] \rbrace$ are a set of training samples, 
 $\testpoint$ is the test point,
 and $\kernelparam$ is a set of parameters. 
 The normalization coefficient, $\norm$, normalizes $\vectorkernel$:
-\begin{equation}
+\begin{eqnnon}
 	\norm = \int_V \vectorkernel(\point, \point^\prime, \kernelparam) \mathrm d \point^\prime
 	\label{norm_def}
-\end{equation}
+\end{eqnnon}
 
 The method can be used for statistical classification by comparing
 results from the different classes:
@@ -158,16 +157,16 @@ estimated density can be used as a proxy
 \citep{Terrell_Scott1992, Mills2011}.
 
 Let the kernel function take the following form:
-\begin{equation}
+\begin{eqnnon}
 	\vectorkernel(\point, \point^\prime, \bandwidth) = \scalarkernel \left (\frac{|\point - \point^\prime|}{\bandwidth} \right )
 	\label{scalar_kernel_def}
-\end{equation}
+\end{eqnnon}
 where $\bandwidth$ is the ``bandwidth''. 
 In \citet{Mills2011}, $\bandwidth$ is made proportional to the density:
-\begin{equation}
+\begin{eqnnon}
 	\bandwidth \propto \frac{1}{\probability^{1/\dimension}} \approx \frac{1}{\densityestimator^{1/\dimension}}
 	\label{setting_the_bandwidth}
-\end{equation}
+\end{eqnnon}
 where $\dimension$ is the dimension of the feature space.
 Since the normalization coefficient, $\norm$, must include the factor,
 ${\bandwidth^\dimension}$, some rearrangement shows that:
@@ -187,10 +186,10 @@ in which bandwidths are different for each training point but need only be deter
 
 Another method of improving the performance of a kernel-density estimator
 is to multiply each kernel by a coefficient:
-\begin{equation}
+\begin{eqnnon}
 	\densityestimator(\testpoint) = \sum_i \svmcoeff_i \vectorkernel(\testpoint, \sample_i, \kernelparam)
 	\label{weighted_kernel_estimator}
-\end{equation}
+\end{eqnnon}
 The coefficients, $\lbrace \svmcoeff_i \rbrace$, are found through an optimization
 procedure designed to minimize the error \citep{Chen_etal2015}. In the most popular
 form of this kernel method, support vector machines (SVM), the coefficients
@@ -202,10 +201,10 @@ the classification error. We will briefly outline this procedure.
 The basic ``trick'' of kernel-based SVM methods is to replace a dot product
 with the kernel function in the assumption that it can be rewritten
 as a dot product of a transformed and expanded feature space:
-\begin{equation}
+\begin{eqnnon}
 	\vectorkernel(\point, \point^\prime) = \expandedspace(\point) \cdot \expandedspace(\point^\prime)
 	\label{phi_def}
-\end{equation}
+\end{eqnnon}
 For simplicity we have ommitted the kernel parameters.
 $\expandedspace$ is a vector function of the feature space.
 The simplest example of a kernel function that has a closed, analytical and
@@ -224,7 +223,7 @@ defined by $\svmbordernormal$ and $\svmborderconst$.
 In a kernel-based SVM, this hyperplane bisects not the regular feature
 space, but the theoretical, transformed space defined by the function,
 $\expandedspace(\point)$.
-The {\it decision value} is calculated via a dot product:
+The decision value is calculated via a dot product:
 \begin{equation}
 	\svmdecision(\testpoint)=\svmbordernormal \cdot \expandedspace(\testpoint) + \svmborderconst
 	\label{decision_function0}
@@ -240,10 +239,10 @@ In the first step of the minimization procedure,
 the magnitude of the border normal, $\svmbordernormal$, 
 is minimized subject to the constraint that there are no classification 
 errors:
-\begin{eqnarray}
+\begin{eqnarray*}
 	\min_{\svmbordernormal, \svmborderconst} \frac{1}{2} | \svmbordernormal | \\ \nonumber
 	\svmdecision(\sample_i) \classlabel_i \ge 1
-\end{eqnarray}
+\end{eqnarray*}
 Introducing the coefficients, $\lbrace \svmcoeff_i \rbrace$, 
 as Lagrange multipliers on the constraints:
 \begin{equation}
@@ -321,11 +320,11 @@ It is essentially a root-finding procedure for a decision function,
 such as $\svmdecision$ in (\ref{svm_decision}).
 Let $\decisionfunction$ be a decision function
 that approximates the difference in conditional probabilities:
-\begin{equation}
+\begin{eqnnon}
 	\decisionfunction(\point) \approx \diffcondprob(\point) = 
 	\condprob(1|\point) - \condprob(-1|\point)
 	\label{rdef}
-\end{equation}
+\end{eqnnon}
 where $\condprob(\class|\point)$ represents the conditional probabilities of
 a binary classifier having labels $\class \in \lbrace -1, 1 \rbrace$.
 For a simple kernel estimator, for instance, 
@@ -384,7 +383,7 @@ border.
 
 The gradient of the variable-bandwidth kernel estimator in 
 (\ref{vb_kernel_r}) is:
-\begin{equation}
+\begin{eqnnon}
 	\frac{\partial \vbdecision}{\partial \testcoord_j} = 
 	\frac{2 \bandwidth}{\kernelsum} \sum_i \classlabel_i
 	\scalarkernelderiv \left (\frac{\distance_i}{\bandwidth} \right )
@@ -393,7 +392,7 @@ The gradient of the variable-bandwidth kernel estimator in
 	\frac{\testcoord_j - \samplecoord_{kj}}{\distance_k}}
 {\sum_k \distance_k \scalarkernelderiv \left (\frac{\distance_k}{\bandwidth} \right )} \right ]
 \label{kernel_gradient}
-\end{equation}
+\end{eqnnon}
 where $\distance_i=|\point - \sample_i|$ is the distance between the 
 test point and the $i$th sample and $\scalarkernelderiv$ is the derivative
 of $\scalarkernel$.
@@ -425,9 +424,9 @@ is similar to logistic regression \citep{Michie_etal1994}
 in that it allows probability estimates to be fitted directly against the class values.
 
 The gradient of the revised SVM decision function, above, is:
-\begin{equation}
+\begin{equation*}
 	\nabla_{\point} {\svmprob} = \left [1 - \svmprob^2(\point) \right ] \sum_i \svmcoeff_i \classlabel_i \nabla_{\point} \vectorkernel(\point, \sample_i)
-\end{equation}
+\end{equation*}
 
 Gradients of the initial decision function are useful not just to derive normals to
 the decision boundary, but also as an aid to root finding when searching for
@@ -492,17 +491,17 @@ the class label.
 
 In a one-vs.-one scheme, the multi-class conditional probabilities 
 can be related to those of the binary classifiers as follows:
-\begin{equation}
+\begin{equation*}
 	\diffcondprob_{ij}(\point) = \frac{\condprob(j|\point) - \condprob(i|\point)}{\condprob(i|\point) + \condprob(j|\point)}
-\end{equation}
+\end{equation*}
 where $i \in [1..\nclass-1]$, $j \in [1..\nclass]$, $\nclass$ is the number of classes, $j>i$,
 and $\diffcondprob_{ij}$ is the difference in conditional probabilities of
 the binary classifier that discriminates between the $i$th and $j$th classes.
 \citet{Wu_etal2004} transform this problem into the following linear system:
 \begin{eqnarray}
-	\sum_i \frac{\multiprob_i}{4} \left [ \sum_{j|j \ne i} (\diffcondprob_{ij} + 1)^2 - \diffcondprob_{ij}^2 - \diffcondprob_{ij} - 2 \right ] + \lmult & = & 0 \\
-	\label{multiclass}
+	\sum_i \frac{\multiprob_i}{4} \left [ \sum_{j|j \ne i} (\diffcondprob_{ij} + 1)^2 - \diffcondprob_{ij}^2 - \diffcondprob_{ij} - 2 \right ] + \lmult & = & 0 \\ \nonumber
 	\sum_i \multiprob_i & = & 1
+	\label{multiclass}
 \end{eqnarray}
 where $\multiprob_i = \condprob(i | \point)$ is the $i$th multi-class 
 conditional probability and $\lmult$ is a Lagrange multiplier.
@@ -705,8 +704,8 @@ In addition to skill as a function of border samples for both AGF- and
 SVM-trained border-classifiers, Figure \ref{skill_v_nb} also shows results
 for a border classifier trained from the mathematical definition of the 
 classes themselves. 
-The skill scores of this latter curve do not level significantly faster than the 
-other two.
+The skill scores of this latter curve do not level significantly faster than 
+the other two.
 So long as the complexity of
 the problem does not increase, adding new training samples does not increase
 the number of border samples required for maximum accuracy.
@@ -720,8 +719,8 @@ the number of border samples required for maximum accuracy.
 Figure \ref{nsv} shows the number of support vectors versus the
 number of training samples. The fitted curve is approximately linear 
 with an exponent of 0.94 and multiplications coefficient of 0.38.
-In other words, there will be approximately 38 \% as many support vectors as 
-there are training vectors.
+In other words, for this problem there will be approximately 38 \% as many 
+support vectors as there are training vectors.
 
 Of course it's possible to speed up an SVM by sub-sampling the training data
 or the resulting support vectors.
@@ -743,17 +742,18 @@ Error bars represent the standard deviation of 20 trials.}
 
 This suggests a simple scaling law. The number of training samples required
 for good accuracy, and hence the number of support vectors, 
-should be proportional to the volume occupied by the
-training data in the feature space: $n_0 \propto V$ where 
-$n_0$ is the minimum number of training vectors and $V$ is volume.
+should be proportional to the approximate volume occupied by the
+training data in the feature space: $\mintrain \propto \featurevolume$ where 
+$\mintrain$ is the minimum number of training vectors and $\featurevolume$ is volume.
 Then the number of border vectors should be proportional to the volume
 taken to the root of one less than the dimension of the feature space:
-$n_{b0} \propto V^\frac{1}{D-1}$.
+$\minborders \propto \featurevolume^\frac{1}{\dimension-1}$.
 Putting it together, we can relate the two as follows:
-\begin{equation}
-	n_{b0} \propto n_0^\frac{1}{N-1}
-\end{equation}
-where $n_{b0}$ is the minimum number of border vectors required for good
+\begin{eqnnon}
+	\minborders \propto \mintrain^\frac{1}{\dimension-1}
+	\label{scaling_law}
+\end{eqnnon}
+where $\minborders$ is the minimum number of border vectors required for good
 accuracy.
 
 \begin{figure}
@@ -915,10 +915,10 @@ while the second classifier (the estimate) returns the $j$th class.
 Let $\ntest=\sum_i \sum_j \confusion_{ij}$ be the total number of test points.
 
 The accuracy is given:
-\begin{equation}
+\begin{eqnnon}
 \accuracy=\frac{\sum_i \confusion_{ii}}{\ntest}
 \label{accuracy}
-\end{equation}
+\end{eqnnon}
 or simply the fraction of correct guesses.
 
 The uncertainty coefficient is a more sophisticated measure based on the channel 
@@ -927,27 +927,27 @@ it is not affected by the relative size of each class distribution.
 It is also not affected by consistent rearrangement of the class labels.
 
 The entropy of the prior distribution is given:
-\begin{eqnarray}
+\begin{eqnarraynon}
 	\priorentropy & = & - \sum_i \left (\sum_j \frac{\confusion_{ij}}{\ntest} \right ) 
 	\log \left (\sum_j \frac{\confusion_{ij}}{\ntest} \right )\\
 	& = & - \frac{1}{\ntest} \left [\sum_i \left (\sum_j \confusion_{ij} \right ) 
 	\log \left (\sum_j \confusion_{ij} \right )
 	- \log \ntest \right ]
 	\label{prior_entropy}
-\end{eqnarray}
+\end{eqnarraynon}
 while the entropy of the posterior distribution is given:
-\begin{eqnarray}
+\begin{eqnarraynon}
 	\posteriorentropy & = & - \sum_i \sum_j \left ( \frac{\confusion_{ij}}{\ntest} \right ) \log \left (\frac{\confusion_{ij}}{\sum_i \confusion_{ij}} \right )
 	\label{posterior_entropy} \\
 	& = & - \frac{1}{\ntest} \left [ \sum_i \sum_j \confusion_{ij} \log \confusion_{ij} 
 - \sum_j \left ( \sum_i \confusion_{ij} \right ) \log \left ( \sum_i \confusion_{ij} \right ) \right ]
-\end{eqnarray}
+\end{eqnarraynon}
 The uncertainty coefficient is defined in terms of the prior entropy, $\priorentropy$, and the
 posterior entropy, $\posteriorentropy$, as follows:
-\begin{equation}
+\begin{eqnnon}
 	\UC = \frac{\priorentropy - \posteriorentropy}{\priorentropy}
 	\label{uncertainty_coefficient}
-\end{equation}
+\end{eqnnon}
 and tells us: 
 for a given test classification, how many bits of information 
 on average does the estimate
@@ -1005,15 +1005,15 @@ The \dataset{shuttle} dataset, however, has very uneven class numbers so it was 
 in order to ensure that the smallest classes retain some membership.
 Let $\classsize_i$ be the number of samples of the $i$th class.
 Then the sub-sampled numbers are given:
-\begin{equation}
+\begin{eqnnon}
 	\classsize^\prime_i = \subsample(\classsize_i) \classsize_i
 	\label{subsample}
-\end{equation}
+\end{eqnnon}
 The form of $\subsample$ used for the \dataset{shuttle} dataset was:
-\begin{equation}
+\begin{eqnnon}
 	\subsample(n) = \submultcoef n^{-\subexp}
 	\label{subfunction}
-\end{equation}
+\end{eqnnon}
 where $\submultcoef=\classsize_1^\subexp$, $0 < \subexp < 1$ is determined based on the
 desired total fraction and $\classsize_1$ is the number of samples in the 
 smallest class.
@@ -1109,6 +1109,7 @@ tends to work poorly with integer or categorical data as well as problems
 with sharply defined, non-overlapping classes.
 Indeed, two of the problems where it took the biggest hit in accuracy, \dataset{dna} and \dataset{splice}, 
 use binary and categorical data respectively.
+
 Also, since there is no redundancy in calculations for multiple classes, 
 whereas in SVM there is considerable redundancy, problems with a large number of
 classes should also be avoided.
@@ -1116,9 +1117,6 @@ This can be mitigated by using a multi-class classification method
 requiring fewer binary classifiers such as one-versus-the-rest with $O(\nclass)$
 performance or a decision tree with $O(\log \nclass)$ performance, rather than
 one-versus-one with its $O(\nclass^2)$ time complexity.
-While not covered in this paper, preliminary trials indicate that
-a decision tree or a multi-class method with $O(\nclass)$ time complexity
-can be just as accurate as one-vs.-one.
 
 The most important characteristic for success with the borders classification 
 method is a large number of training samples

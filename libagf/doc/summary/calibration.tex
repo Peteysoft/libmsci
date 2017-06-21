@@ -40,34 +40,38 @@ That is, we want a function, $\transform$,
 \end{equation}
 that transforms the decision
 values, $\vec \multidecision$, into an estimator for the conditional
-probabilities: $\estimator_i \approx \condprob(i|\testpoint)$.
+probability: $\estimator_i \approx \condprob(i|\testpoint)$.
 The parameters for the function, $\vec \param$, are determined from a set of 
 training data, $\lbrace \vec \coord_i \rightarrow \ord_i \rbrace$.
 
 To make this more precise (since we rarely have access to the true
 probabilities), suppose we organize the training data such that
-the estimators for one of the classes are sorted from low to high:
+the probabilities for one of the classes are sorted from low to high:
 \begin{equation}
-	\estimator_c (\vec \coord_{k_{i+1}}) \ge \estimator_c (\vec \coord_{k_i})
+	\condprob(c | \vec \coord_{k_{i+1}}) \ge \condprob(c | \vec \coord_{k_i})
 \end{equation}
 where $i\in[1, n]$.
-Now suppose further, that the difference between the smallest and largest
-estimators is bounded by $\bound$:
+Suppose further, that the difference between the smallest and largest
+probabilities is bounded by $\bound$:
 \begin{equation}
-	\estimator_c (\vec \coord_{k_n}) - \estimator_c (\vec \coord_{k_1}) \le \bound
+	\condprob(c | \vec \coord_{k_n}) - \condprob (c | \vec \coord_{k_1}) \le \bound
 \end{equation}
 In the limit as the training set becomes infinite and for every $\bound$,
-the sum of the estimators should be equal to the number of ordinates taking
+the sum of the probabilities should be equal to the number of ordinates taking
 on value $c$:
 \begin{equation}
-	\forall \bound \lim_{n \rightarrow \infty} \sum_{i=1}^n \left \lbrace \estimator_c\left (\vec \coord[k[i]]\right ) - \delta_{c\ord[k[i]]} \right \rbrace = 0
+	\forall \bound \lim_{n \rightarrow \infty} \sum_{i=1}^n \left \lbrace \condprob \left (c | \vec \coord[k[i]] \right ) - \delta_{c\ord[k[i]]} \right \rbrace = 0
 	\label{calibrated_definition}
 \end{equation}
 where $\delta$ is the Kronecker delta and for clarity, we have replaced the
 subscript operator with brackets, that is, $k[i]=k_i$.
+The neat thing about this definition is that it doesn't assume that there
+exist any two locations in the feature space where the conditional
+probabilities are exactly equal.
 
 Obviously, since we don't have access to infinite amounts of training data,
-we need to transform this to some other, more accessible criterion.
+we need to transform this to some other, more approximate version of this
+to test how well calibrated the estimator, $\estimator$, is.
 Rearranging equation (\ref{calibrated_definition}) and removing the limit and
 quantifier produces the following:
 \begin{equation}
@@ -80,10 +84,13 @@ calculating the correlation or another, similar measure of statistical
 association should give a good measure of how well calibrated the
 estimator is.
 
-Interestingly, this is, for the binary case at least, a density estimation
-problem much like the classification problem preceding it.
+Interestingly, this is, for the binary case at least, density estimation 
+problem much as the classification problem preceding it but in only one
+dimension.
 That is, assuming the same rank ordering, the value of
 $\estimator$ for a given class should be equal to the density of training
 samples with that class at the value of $\binarydecision$.
+Thus, for non-parametric methods, the parameters, $\param$, could potentially
+be the training data itself.
 
 \end{document}

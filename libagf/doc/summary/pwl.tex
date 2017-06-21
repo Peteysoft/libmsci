@@ -10,6 +10,7 @@
 \newcommand{\sample}{x}
 \newcommand{\ord}{y}
 \newcommand{\ntrain}{n}
+\newcommand{\normals}{V}
 
 \begin{document}
 
@@ -39,5 +40,15 @@ Accurate methods tend to be slow while fast methods tend not to be accurate.
 This paper reviews methods of constructing such classifiers from a set of 
 training data: $\lbrace \vec \sample_i : \ord_i|~ i \in [1, \ntrain] \rbrace$
 where $\ord_i \in [-1,~ 1]$.
+
+Typically, the component linear classifier to use depends on some or all of
+the others, thus:
+\begin{equation}
+	\domainfunction(\testpoint) = \domainfunction(\normals \testpoint + \vec \constant)
+\end{equation}
+where $\normals$ is a matrix combining all the normal vectors,
+$\normals=[ \vec \normal_1, \vec \normal_2, \vec \normal_3, ... ]$ and 
+$\vec \constant$ is a vector combining all the intercepts,
+$\vec \constant= [ \constant_1, \constant_2, \constant_3,... ]$.
 
 \end{document}
