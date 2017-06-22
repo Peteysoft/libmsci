@@ -94,9 +94,9 @@ hyperplanes in regions of minimum density \citep{Pavlidis_etal2016}.
 The method described in this paper in some senses combines these two techniques
 by finding the root of the difference in conditional probabilities along a
 line between two points of opposite class.
-It will be tested on two kernel-based classifiers--a support vector
+It will be tested on two kernel-based classifiers---a support vector
 machine (SVM) \citep{Michie_etal1994, Mueller_etal2001}
-and a simpler, ``pointwise estimator'' \citep{Terrell_Scott1992, Mills2011}--and evaluated based on how
+and a simpler, ``pointwise estimator'' \citep{Terrell_Scott1992, Mills2011}---and evaluated based on how
 well it improves classification speed and at what cost to accuracy.
 
 Section \ref{theory} describes the theory of support
@@ -145,7 +145,7 @@ Similarly, the method can also return estimates of
 the joint ($\condprob(\class, \vec x)$) and conditional probabilities 
 ($\condprob(\class |\vec x)$)
 by dividing the sum in (\ref{kernel_classification})
-by $Nn$ or by the sum of all the kernels, respectively. 
+by $\nsample \norm$ or by the sum of all the kernels, respectively. 
 
 If the same kernel is used for every sample and every test point, the estimator
 may be sub-optimal, particularly in regions of very high or very low density.
@@ -436,7 +436,7 @@ difference in conditional probabilities, then the raw decision value,
 $\borderdecision$,
 derived from the border sampling technique in (\ref{border_decision})
 can also return estimates of the conditional probabilities with little
-extra effort and little loss of accuracy--also using a sigmoid function:
+extra effort and little loss of accuracy, also using a sigmoid function:
 \begin{equation}
 	\borderprob(\testpoint) = \tanh \left [\borderdecision (\testpoint) \right ]
 	\label{border_probability}
@@ -464,9 +464,9 @@ The actual number chosen
 can trade off between speed and accuracy with rapidly diminishing returns
 beyond a certain point. 
 One hundred border samples ($\nborder=100$) is usually sufficient.
-The computation of $\borderprob$ also involves very simple operations--
+The computation of $\borderprob$ also involves very simple operations---
 floating point addition, multiplication and numerical comparison, with no
-transcendental functions except for the very last step (which can be omitted)--so the coefficient for the time complexity will be small.
+transcendental functions except for the very last step (which can be omitted)---so the coefficient for the time complexity will be small.
 
 A border classifier trained with AGF will be referred to as an ``AGF-borders''
 classifier while a border classifier trained with SVM estimates will
@@ -491,9 +491,10 @@ the class label.
 
 In a one-vs.-one scheme, the multi-class conditional probabilities 
 can be related to those of the binary classifiers as follows:
-\begin{equation*}
+\begin{eqnnon}
 	\diffcondprob_{ij}(\point) = \frac{\condprob(j|\point) - \condprob(i|\point)}{\condprob(i|\point) + \condprob(j|\point)}
-\end{equation*}
+	\label{bin2multi}
+\end{eqnnon}
 where $i \in [1..\nclass-1]$, $j \in [1..\nclass]$, $\nclass$ is the number of classes, $j>i$,
 and $\diffcondprob_{ij}$ is the difference in conditional probabilities of
 the binary classifier that discriminates between the $i$th and $j$th classes.
@@ -505,8 +506,8 @@ the binary classifier that discriminates between the $i$th and $j$th classes.
 \end{eqnarray}
 where $\multiprob_i = \condprob(i | \point)$ is the $i$th multi-class 
 conditional probability and $\lmult$ is a Lagrange multiplier.
-They also show that the constraints not included in the problem--that
-the probabilities are all positive--are always satisfied
+They also show that the constraints not included in the problem, that
+the probabilities are all positive, are always satisfied
 and describe an algorithm for solving it iteratively, although a
 simple matrix solver is sufficient.
 
@@ -614,14 +615,14 @@ Two of the datasets are machine-learning competition challenges.
 The ``\dataset{ijcnn1}'' dataset is from the International Joint Conference on Neural
 Networks Neural Networks Competition\citep{Feldkamp_Puskorius1998} while the ``\dataset{madelon}'' dataset comes 
 from the International Conference on Neural Information Processing Systems
-Feature Selection Challenge \citep{Guyon2004}.
+Feature Selection Challenge \citep{Guyon_etal2004}.
 
 The ``\dataset{seismic}'' dataset deals with vehicle classification from \dataset{seismic} data
 \citep{Duarte_Hu2004}.
 The ``\dataset{mushrooms}'' dataset classifies wild mushrooms
 into poisonous and non-poisonous types based on their physical characteristics \citep{Iba_etal1988}.
 The ``\dataset{phishing}'' dataset uses characteristics of a web address to predict whether
-or not a website is being used for nefarious purposes \citep{Mohommad_etal2012}.
+or not a website is being used for nefarious purposes \citep{Mohommad_etal2014}.
 
 There are three sources for the datasets.
 The first is the LIBSVM data repository \citep{Chang_Lin2011}.
@@ -718,7 +719,7 @@ the number of border samples required for maximum accuracy.
 
 Figure \ref{nsv} shows the number of support vectors versus the
 number of training samples. The fitted curve is approximately linear 
-with an exponent of 0.94 and multiplications coefficient of 0.38.
+with an exponent of 0.94 and multiplication coefficient of 0.38.
 In other words, for this problem there will be approximately 38 \% as many 
 support vectors as there are training vectors.
 
@@ -870,7 +871,7 @@ AGF and SVM-borders.
 
 For SVM, a Gaussian kernel is used as in (\ref{Gaussian_kernel})
 where $\rbkernelparam=1/\sigma^2$ is a tunable parameter. 
-$\svmcost$ is a cost parameter added to reduce over-fitting--see
+$\svmcost$ is a cost parameter added to reduce over-fitting: see
 Equations (\ref{dual_problem}) and (\ref{svmcost}).
 
 In order to get a confidence interval on the results,
@@ -1039,8 +1040,8 @@ at which point the AGF-borders method starts to train faster than SVM.
 
 There are at least three major sources of error for the AGF-borders technique.
 First, the kernel method upon which it is based is only first-order accurate.
-In particular, this will affect gradient estimates, 
-which are semi-analytic--see Equation (\ref{vb_gradient}).
+In particular, this will affect gradient estimates 
+which are semi-analytic: see Equation (\ref{vb_gradient}).
 Second, the borders method provides only limited sampling of the discrimination
 border and this sampling is not strongly optimized.
 The sampling method, using pairs of training points of opposite class, will
@@ -1144,6 +1145,8 @@ in the Introduction, but rather point-by-point to keep the training
 relatively fast.
 A first guess could be found through a kernel method and then each
 pointed shifted along the normal.
+Piecewise linear statistical classification methods are simple, 
+powerful and fast and we think they should receive more attention.
 
 For certain types of datasets, particularly those with continuum features
 data, smooth probability functions (typically overlapping classes) and a large number of samples, 
