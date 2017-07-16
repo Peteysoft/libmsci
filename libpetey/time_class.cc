@@ -29,10 +29,10 @@ int32_t month_days[13]={0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334
 
 //returns a 1 if year is leap, 0 if not:
 inline int isleap(int year) {
-  if (year % 400 == 0) return 1;
-  if (year % 100 == 0) return 0;
-  if (year % 4 == 0) return 1;
-  return 0;
+  if (year % 4 != 0) return 0;
+  if (year % 100 != 0) return 1;
+  if (year % 400 != 0) return 0;
+  return 1;
   //return (year/4 == year/4.0);
 }
 

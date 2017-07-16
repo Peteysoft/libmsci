@@ -1,5 +1,15 @@
 #
-# Copyright 2007 Peter Mills.  All rights reserved.
+# This software is released under the following terms:
+#
+# 1. No commercial use.
+# 2. Copies and derivative works are free to use and modify.
+# 3. Attribution must be given to all contributors of both original and derivative works.
+#
+# Authors:
+#
+# 2017-07-16 Peter Mills: added license information 
+#
+# libagf level 2 Makefile
 #
 
 #---------------------------------------------------------------------#
@@ -81,7 +91,8 @@ EXECUTABLES =	class_borders \
 		search_discrete_vectors \
 		optimize_r0 \
 		calibrate_borders \
-		subsample_special
+		subsample_special \
+		subsample_sv
 # more experimental stuff:
 #		optimize_r0 calibrate_p2 calc_joint_entropy \
 #		calibrate_p3 class_triangle 

@@ -1,5 +1,23 @@
+//
+// This software is released under the following terms:
+//
+// 1. No commercial use.
+// 2. Copies and derivative works are free to use and modify.
+// 3. Attribution must be given to all contributors of both original and derivative works.
+//
+// Authors:
+//
+// 2017-07-16 Peter Mills: added license information 
+//
 
-//Copyright (C) 2007 Peter Mills.  All rights reserved.
+//
+// Given a function, r(x), and a set of pairs of samples, {(y_i, z_i)}, returns 
+// a set of points, {b_j}, and a set of vectors, {v_j}, for which:
+//
+// r(b_j) = 0
+// v_j = grad(r(x)) | x=b_j
+// for every j there exists an i s.t. b_j = f y_i + (1 - f) z_i | 0 <= f <= 1
+//
 
 #include <stdio.h>
 #include <math.h>

@@ -158,7 +158,7 @@ or, in Eulerian form:
 \frac{\partial q}{\partial t} = - \vec v \cdot \nabla q
 \label{advection_eqn}
 \end{equation}
-This is the {\it advection equation}.
+This is the {\it advection equation} \citep{Pedlosky1987}.
 
 \section{Volume deformation}
 
@@ -370,7 +370,7 @@ or, in the un-transformed system:
 \label{solution_no_time_dependence} \\
 & \equiv & \exp(\Delta t A)\cdot \vec r_0
 \end{eqnarray}
-where $\vec r_0=\vec r(t_0)$.
+where $\vec r_0=\vec r(t_0)$ \citep{Robinson2004}.
 
 \subsection{Solving the time-dependent case}
 
@@ -493,7 +493,8 @@ R=U\cdot S\cdot V^T
 \end{equation}
 where $R$ is an $[m \times n]$ matrix, $U$ is an $[m \times n]$ ortho-normal
 matrix, $S$ is an $[n \times n]$ diagonal matrix of {\it singular values}
-($s_{ii}=s_i\ge s_{i+1}$) and $V$ is an $[n \times n]$ ortho-normal matrix.
+($s_{ii}=s_i\ge s_{i+1}$) and $V$ is an $[n \times n]$ ortho-normal matrix
+\citep{Press_etal1992}.
 
 $U$ and $V^T$ are also termed the left and right {\it singular vectors}, 
 respectively and are normally calculated through eigenvalue analysis:
@@ -518,7 +519,7 @@ Assuming that $R$ is an integrated tangent model as in
 (\ref{deformation_matrix}), (\ref{inverse_deformation_matrix})
 and (\ref{discrete_tracer_map}), 
 the Lyapunov exponents are defined as the time averages of the logarithms
-of the singular values in the limit as time goes to infinity:
+of the singular values in the limit as time goes to infinity \citep{Ott1993}:
 \begin{equation}
 h_i=\lim_{\Delta t \rightarrow \infty} \frac{1}{\Delta t} \log s_i
 \label{Lyap_def}
@@ -536,7 +537,7 @@ and:
 \label{large_Lyap}
 \end{equation}
 The Lyapunov exponent is often somewhat incorrectly defined as
-(\ref{large_Lyap}) above.
+(\ref{large_Lyap}) above \citep{Ott1993}.
 
 \section{Special properties}
 
@@ -555,7 +556,8 @@ In the solution of (\ref{deformation_matrix}) for instance,
 $A=\nabla \vec v$, while the velocity field, $\vec v$, is frequently non-divergent,
 that is $\nabla \cdot \vec v=0$ or $\mathrm{Tr}(A)=0$.
 It can be shown that 
-if the trace of a matrix is zero, then the eigenvalues sum to zero.
+if the trace of a matrix is zero, then the eigenvalues sum to zero
+\citep{Anton1987}.
 We provide a brief outline of the proof.
 
 We begin by writing the characteristic polynomial as follows:
@@ -879,11 +881,12 @@ the relationships will only be approximate.
 \label{practical_considerations}
 
 The traditional method of testing Eulerian tracer simulations for stability
-is von Neumann analysis.
+is von Neumann analysis \citep{Anderson1994}.
 Equation (\ref{simple_finite_difference}) provides a simple, finite
 difference method for
 calculating the evolution matrix, $A$, for an Eulerian tracer simulation.
-Assuming we've obeyed the Courant-Friedrichs-Lewy (CFL) criterion for choosing
+Assuming we've obeyed the Courant-Friedrichs-Lewy (CFL) criterion 
+\citep{Courant_etal1967} for choosing
 the time-step (which itself is derived from von Neumann analysis), von Neumann
 analysis shows this method to be unconditionally stable.
 
@@ -1022,9 +1025,9 @@ where $\omega$ is the angular frequency of a stationary wave
 and $q_0$ is its initial amplitude.
 In other words, if we decompose a function using Fourier analysis, the speed
 with which each component will decay is proportional to the square of the
-angular frequency times the diffusion coefficient.
+angular frequency times the diffusion coefficient \citep{Cannon1984}.
 
-Now consider a point distribution centred at the origin 
+Now consider an initial point distribution centred at the origin 
 which will be evenly spread
 in frequency space, leaving only the first factor in 
 Equation (\ref{diffusion_solution}). 
@@ -1034,7 +1037,7 @@ back into regular ($x$) space returns another Gaussion:
 	\frac{1}{2 \pi} \int e^{-d \omega^2 t} e^{i \omega x} \mathrm d \omega = \frac{e^{-\frac{x^2}{4 d t}}}{2 \sqrt{\pi d t}}
 	\label{Gaussian_diffusion}
 \end{equation}
-Thus, by convolution theorem, 
+Thus, by convolution theorem \citep{Katznelson1976}, 
 applying diffusion to a function for time $t$ 
 with diffusion coefficient $d$ 
 is equivalent to convolution with a Gaussian of width $\sqrt{2 d t}$.

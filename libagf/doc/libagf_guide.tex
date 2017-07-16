@@ -533,40 +533,6 @@ total number of calls: 1430
   To best understand how to interpret the diagnostics and use these to set the operational parameters, be sure to read the paper entitled, ``Adaptive Guassian Filters: a powerful new method for supervised learning'', in the \verb|doc/| sub-directory of this installation or \citet{Mills2011} which is a more fleshed-out version of it.
 
 
-\section{EXAMPLES}
-
-\label{EXAMPLES}
-
-  The \verb"examples" sub-directory collects together a number of test suites for comparison, validation and application of AGF.  The makefiles in these test cases can give you a good idea of how to use the various components of the library.
-
-\subsection{examples/class\_borders}
-
-The directory \verb"examples/class_borders" includes a number of routines for testing the algorithms and comparing them with other, popular classification algorithms.  The validation exercise is performed on a pair of two-dimensional, synthetic test classes and is described in \citet{Mills2011}.  To test the classification algorithms, type, \verb"make test".  To test the pdf estimation routines, type, \verb"make test_pdf".  To test both from the bottom level directory, type \verb"make test".  All tests are done on a pair of synthetic test classes, described in the paper.  To generate samples and analytical estimates for these classes, use the following commands
-
-\begin{tabular}{ll}
-\verb/sample_class/ & Generates random samples of the synthetic test classes.\\
-\verb/classify_sc/ & Returns class estimates using analytic/semi-analytic \\
-		   & estimates of the class pdfs; classifications should \\
-		     & therefore be close to the best possible for any supervised \\
-       & algorithm.\\
-\verb/pdf_sc1/ & Generates analytic pdf estimates for the first class.\\
-\verb/pdf_sc2/ & Generates semi-anaylitic (using quadrature) pdf estimates for \\
-	       & the second class.\\
-\verb/sc_borders/ & Find the border between the sample classes using the same \\
-		  & algorithm as that employed for the \verb"class_borders" command.
-\end{tabular}
-
-  To compare the algorithms with LIBSVM \citep{Chang_Lin2011} and Kohonen's LVQ algorithm \citep{Kohonen2000}, type, \verb"make compare".  You must have both modules installed and the executables in your path.
-
-\subsection{examples/humidity\_data}
-
-The test suite in \verb"examples/humidity_data" tests the multi-borders paradigm on a discretized sub-set of the satellite humidity data described in \citet{Mills2009}.  Use this directory for examples on how to use the multi-borders multi-class classification method.
-
-\subsection{examples/Landsat}
-
-In the Landsat directory there are a number of scripts for performing surface classifications using Landsat data.  In particular, there is a simple app that allows the user to classify pixels by hand.  It opens a window with a Landsat scene in it; clicking one of the three mouse buttons allows you to classify pixels in the scene.  There are three files that already contain hand-classified forest clearcut data.
-
-
 \section{MULTI-BORDERS CLASSIFICATION}
 
 \label{MULTI_BORDERS_CLASSIFICATION}
@@ -640,8 +606,8 @@ rm bar.139397543805655.cls
 Initial versions printed these commands to standard out with running them the
 job of the user. Now they are executed directly with the option of 
 running them in the background using the \verb"-x" switch.
-It is still possible to print out the commands only using the \verb"-K"
-switch which is meant for debugging purposes as it also leaves any temporary files.
+It is still possible to print out the commands only using the \verb"-0"
+or \verb"-K" switch.
 
 The contents of \verb"foobar.txt" are as follows:
 \begin{verbatim}
@@ -829,6 +795,40 @@ first the border vectors, then the gradient vectors.
 Each matrix has a one line header with the number of vectors plus the size of each vector.
 
 Running the commands, \verb/print_control/, \verb"multi_borders", \verb"classify_m", \verb"class_borders", \verb/svm_accelerate/, or \verb/mbh2mbm/ without arguments prints a generous help screen including a description of most of the features explained in this section.  There is also an example contained in the second half of the makefile under the \verb"examples/humidity_data" directory (see, Section \ref{EXAMPLES}, EXAMPLES, above).
+
+\section{EXAMPLES}
+
+\label{EXAMPLES}
+
+  The \verb"examples" sub-directory collects together a number of test suites for comparison, validation and application of AGF.  The makefiles in these test cases can give you a good idea of how to use the various components of the library.
+
+\subsection{examples/class\_borders}
+
+The directory \verb"examples/class_borders" includes a number of routines for testing the algorithms and comparing them with other, popular classification algorithms.  The validation exercise is performed on a pair of two-dimensional, synthetic test classes and is described in \citet{Mills2011}.  To test the classification algorithms, type, \verb"make test".  To test the pdf estimation routines, type, \verb"make test_pdf".  To test both from the bottom level directory, type \verb"make test".  All tests are done on a pair of synthetic test classes, described in the paper.  To generate samples and analytical estimates for these classes, use the following commands
+
+\begin{tabular}{ll}
+\verb/sample_class/ & Generates random samples of the synthetic test classes.\\
+\verb/classify_sc/ & Returns class estimates using analytic/semi-analytic \\
+		   & estimates of the class pdfs; classifications should \\
+		     & therefore be close to the best possible for any supervised \\
+       & algorithm.\\
+\verb/pdf_sc1/ & Generates analytic pdf estimates for the first class.\\
+\verb/pdf_sc2/ & Generates semi-anaylitic (using quadrature) pdf estimates for \\
+	       & the second class.\\
+\verb/sc_borders/ & Find the border between the sample classes using the same \\
+		  & algorithm as that employed for the \verb"class_borders" command.
+\end{tabular}
+
+  To compare the algorithms with LIBSVM \citep{Chang_Lin2011} and Kohonen's LVQ algorithm \citep{Kohonen2000}, type, \verb"make compare".  You must have both modules installed and the executables in your path.
+
+\subsection{examples/humidity\_data}
+
+The test suite in \verb"examples/humidity_data" tests the multi-borders paradigm on a discretized sub-set of the satellite humidity data described in \citet{Mills2009}.  Use this directory for examples on how to use the multi-borders multi-class classification method.
+
+\subsection{examples/Landsat}
+
+In the Landsat directory there are a number of scripts for performing surface classifications using Landsat data.  In particular, there is a simple app that allows the user to classify pixels by hand.  It opens a window with a Landsat scene in it; clicking one of the three mouse buttons allows you to classify pixels in the scene.  There are three files that already contain hand-classified forest clearcut data.
+
 
 \nocite{Kohonen2000}
 \nocite{Michie_etal1994}

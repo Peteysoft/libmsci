@@ -1,0 +1,125 @@
+%%%%%%%%%%%%%%%%%%%%%%% file template.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is a general template file for the LaTeX package SVJour3
+% for Springer journals.          Springer Heidelberg 2010/09/16
+%
+% Copy it to a new file with a new name and use it as the basis
+% for your article. Delete % signs as needed.
+%
+% This template includes a few options for different layouts and
+% content for various journals. Please consult a previous issue of
+% your journal as needed.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% First comes an example EPS file -- just ignore it and
+% proceed on the \documentclass line
+% your LaTeX will extract the file if required
+\begin{filecontents*}{example.eps}
+%!PS-Adobe-3.0 EPSF-3.0
+%%BoundingBox: 19 19 221 221
+%%CreationDate: Mon Sep 29 1997
+%%Creator: programmed by hand (JK)
+%%EndComments
+gsave
+newpath
+  20 20 moveto
+  20 220 lineto
+  220 220 lineto
+  220 20 lineto
+closepath
+2 setlinewidth
+gsave
+  .4 setgray fill
+grestore
+stroke
+grestore
+\end{filecontents*}
+%
+\RequirePackage{fix-cm}
+%
+%\documentclass{svjour3}                     % onecolumn (standard format)
+%\documentclass[smallcondensed]{svjour3}     % onecolumn (ditto)
+\documentclass[smallextended]{svjour3}       % onecolumn (second format)
+%\documentclass[twocolumn]{svjour3}          % twocolumn
+%
+\smartqed  % flush right qed marks, e.g. at end of proof
+%
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{url}
+%\usepackage{natbib}
+
+%don't label equations that aren't referenced in the text:
+\newenvironment{eqnnon}{\begin{equation*}}{\end{equation*}}
+\newenvironment{eqnarraynon}{\begin{eqnarray*}}{\end{eqnarray*}}
+
+%numbered citations: no difference between in-text and out-of-text citations:
+\newcommand{\citep}[1]{\cite{#1}}
+\newcommand{\citet}[1]{\cite{#1}}
+
+%symbol definitions:
+\input{svm_accel_symbol_def.tex}
+
+%
+% \usepackage{mathptmx}      % use Times fonts if available on your TeX system
+%
+% insert here the call for the packages your document requires
+%\usepackage{latexsym}
+% etc.
+%
+% please place your own definitions here and don't use \def but
+% \newcommand{}{}
+%
+% Insert the name of "your journal" with
+% \journalname{myjournal}
+%
+\begin{document}
+
+\title{Accelerating kernel classifiers through borders mapping}
+
+\titlerunning{Kernel acceleration}        % if too long for running head
+
+\author{""}
+
+%\authorrunning{Short form of author list} % if too long for running head
+
+%\institute{Peter Mills \at
+%	1159 Meadowlane, Cumberland ON, K4C 1C3 Canada
+%              Tel.: 1-613-833-3022\\
+%              \email{peteymills@hotmail.com}           %  \\
+%}
+
+\date{Received: date / Accepted: date}
+% The correct dates will be entered by the editor
+
+
+\maketitle
+
+\begin{abstract}
+	\input{svm_accel_abstract.txt}
+\keywords{class borders \and multi-dimensional root-finding \and adaptive Gaussian filtering
+\and binary classifier \and multi-class classifier \and non-parametric statistics 
+\and variable kernel density estimation}
+\end{abstract}
+
+\input{svm_accel_body.tex}
+
+\appendix
+
+\input{shuttle_subsampling.tex}
+
+\begin{acknowledgements}
+Thanks to Chih-Chung Chan and Chih-Jen Lin of the National Taiwan University
+for data from the LIBSVM archive and also to David Aha and the curators of
+the UCI Machine Learning Repository for statistical classification datasets.
+\end{acknowledgements}
+
+%\bibliographystyle{spbasic}      % basic style, author-year citations
+\bibliographystyle{spmpsci}      % mathematics and physical sciences
+%\bibliographystyle{spphys}       % APS-like style for physics
+\bibliography{../agf_bib,svm_accel,../pwl}   % name your BibTeX data base
+
+\end{document}
+% end of file template.tex
+

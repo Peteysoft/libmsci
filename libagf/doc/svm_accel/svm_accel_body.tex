@@ -11,9 +11,9 @@ An obvious extension for more complex problems is a piecewise linear classifier
 in which the decision boundary is built up from a series of linear classifiers.
 Piecewise linear classifiers enjoyed some popularity during the early 
 development of the field of machine learning 
-\citep{Osborne1977, Sklansky_Michelotti1980, Lee_Richards1984, Lee_Richards1985}
+\citep{Osborne1977,Sklansky_Michelotti1980,Lee_Richards1984,Lee_Richards1985}
 and because of their versatility, generality and simplicity there has been recent renewed interest 
-\citep{Bagirov2005, Kostin2006, Gai_Zhang2010, Webb2012, Wang_Saligrama2013, Pavlidis_etal2016}.
+\citep{Bagirov2005,Kostin2006,Gai_Zhang2010,Webb2012,Wang_Saligrama2013,Pavlidis_etal2016}.
 
 A linear classifier takes the form:
 \begin{equation}
@@ -46,7 +46,7 @@ Naturally, such an approach will be quite computationally costly.
 Partitioning of the feature space can be separate from the discrimination 
 borders \citep{Huang_etal2013} but more normally the discrimination borders 
 are themselves sufficient to partition the feature space 
-\citep{Osborne1977, Lee_Richards1984, Bagirov2005, Kostin2006}.
+\citep{Osborne1977,Lee_Richards1984,Bagirov2005,Kostin2006}.
 This means that all or a significant fraction of the component
 linear classifiers must be evaluated.
 In \citet{Kostin2006}, for instance, the linear classifiers form a decision
@@ -65,8 +65,8 @@ to a linear classifier, but afterwards only a single linear decision function is
 evaluated.
 
 There seems to be some tension in the literature between training the
-decision boundary through simultaneous optimization \citep{Bagirov2005, Wang_Saligrama2013} or through
-methods that are more piece meal \citep{Gai_Zhang2010, Herman_Yeung1992, Kostin2006}.
+decision boundary through simultaneous optimization \citep{Bagirov2005,Wang_Saligrama2013} or through
+methods that are more piece meal \citep{Gai_Zhang2010,Herman_Yeung1992,Kostin2006}.
 Obviously, simultaneous optimization will be more accurate but also much more computationally expensive.
 In addition, finding global minima for cost functions 
 involving more than a handful of hyper-surfaces will be all but impossible.
@@ -88,15 +88,15 @@ This is done while maintaining, in all but a few cases, most of the accuracy.
 Several of the piecewise linear techniques found in the literature work by
 positioning each hyperplane between pairs of clusters or pairs of training
 samples of opposite class 
-\citep{Sklansky_Michelotti1980, Tenmoto_etal1998, Kostin2006, Gai_Zhang2010}.
+\citep{Sklansky_Michelotti1980,Tenmoto_etal1998,Kostin2006,Gai_Zhang2010}.
 Other unsupervised or semi-supervised classifiers work by placing the 
 hyperplanes in regions of minimum density \citep{Pavlidis_etal2016}.
 The method described in this paper in some senses combines these two techniques
 by finding the root of the difference in conditional probabilities along a
 line between two points of opposite class.
 It will be tested on two kernel-based classifiers---a support vector
-machine (SVM) \citep{Michie_etal1994, Mueller_etal2001}
-and a simpler, ``pointwise estimator'' \citep{Terrell_Scott1992, Mills2011}---and evaluated based on how
+machine (SVM) \citep{Michie_etal1994,Mueller_etal2001}
+and a simpler, ``pointwise estimator'' \citep{Terrell_Scott1992,Mills2011}---and evaluated based on how
 well it improves classification speed and at what cost to accuracy.
 
 Section \ref{theory} describes the theory of support
@@ -154,7 +154,7 @@ In a ``variable-bandwidth'' estimator, the coefficients, $\kernelparam$, depend 
 way on the density itself. 
 Since the actual density is normally unavailable, the
 estimated density can be used as a proxy
-\citep{Terrell_Scott1992, Mills2011}.
+\citep{Terrell_Scott1992,Mills2011}.
 
 Let the kernel function take the following form:
 \begin{eqnnon}
@@ -175,7 +175,7 @@ ${\bandwidth^\dimension}$, some rearrangement shows that:
 	\label{agf_def}
 \end{equation}
 This is a generalization of the $k$-nearest-neighbours scheme in which the
-free parameter, $\kernelsum$, takes the place of $k$ \citep{Mills2009, Mills2011}.
+free parameter, $\kernelsum$, takes the place of $k$ \citep{Mills2009,Mills2011}.
 The bandwidth, $\bandwidth$, can be solved
 for using any numerical, one-dimensional root-finding algorithm.
 The bandwidth is determined uniquely for a given test point but is held constant for that
@@ -418,7 +418,7 @@ the raw SVM decision function, $\svmdecision$, in (\ref{svm_decision}):
 \end{equation}
 where $\svmprobcoeffA$ and $\svmprobcoeffB$ are coefficients derived from
 the training data via
-nonlinear least-squares fitting \citep{Platt1999, Lin_etal2007, Chang_Lin2011}.
+nonlinear least-squares fitting \citep{Platt1999,Lin_etal2007,Chang_Lin2011}.
 The nonlinear fitting technique
 is similar to logistic regression \citep{Michie_etal1994}
 in that it allows probability estimates to be fitted directly against the class values.
@@ -484,7 +484,7 @@ multi-class classification, this is the one we will adopt.
 A major advantage of the
 borders classifier is that it returns probability estimates.
 These estimates have many uses including measuring the confidence of as well
-as recalibrating the class estimates \citep{Mills2009, Mills2011}.
+as recalibrating the class estimates \citep{Mills2009,Mills2011}.
 Thus the multi-class method
 should also solve for the conditional probabilities in addition to returning
 the class label.
@@ -624,19 +624,8 @@ into poisonous and non-poisonous types based on their physical characteristics \
 The ``\dataset{phishing}'' dataset uses characteristics of a web address to predict whether
 or not a website is being used for nefarious purposes \citep{Mohommad_etal2014}.
 
-There are three sources for the datasets.
-The first is the LIBSVM data repository \citep{Chang_Lin2011}.
-Most of these datasets have been divided into a ``test'' set and a ``training'' set.
-If this is the case, then it is noted in the summary in Table \ref{summary}
-and the data has been used as given with the training set used for training
-and the test set used for testing.
-If the data is provided all in one lump, then it was randomly divided into 
-test and training sets with the division different for each trial.
-The second source for data was the UCI Machine Learning Repository
-\citep{Lichman2013} and the third source was the author.
-
-Only one dataset was from the author and this was the ``\dataset{humidity}'' dataset.
-The \dataset{humidity} dataset comprises simulated satellite radiometer radiances across 7 different frequencies in the microwave range.
+The final dataset, the ``\dataset{humidity}'' dataset, 
+comprises simulated satellite radiometer radiances across 7 different frequencies in the microwave range.
 Corresponding to each instance is a value for relative humidity at a single
 vertical level.
 These humidity values have been discretized into 8 ranges to convert it into a statistical classification problem.
@@ -644,6 +633,13 @@ A full description of the genesis of this dataset as well as a rationale for
 treatment using statistical classification is contained in \citet{Mills2009}.
 The statistical classification methods discussed in this paper were originally
 devised specifically for this problem.
+
+Most of the datasets have been supplied already divided into a ``test'' set and a ``training'' set.
+If this is the case, then it is noted in the summary in Table \ref{summary}
+and the data has been used as given with the training set used for training
+and the test set used for testing.
+If the data is provided all in one lump, then it was randomly divided into 
+test and training sets with the division different for each of the ten numerical trials.
 
 To provide the best idea of when the technique is effective and when it is
 not, results from all 17 datasets will be shown. 
@@ -768,7 +764,7 @@ mapping only the border between classes should always be
 faster than techniques that map the entirety of the class locations.
 This includes kernel density methods including SVM as well
 as similar methods such as learning vector quantization (LVQ) 
-\citep{Kohonen2000, LVQ_PAK}
+\citep{Kohonen2000,LVQ_PAK}
 that attempt to create an idealized representation of the classes through
 a set of ``codebook'' vectors.
 
@@ -952,7 +948,7 @@ posterior entropy, $\posteriorentropy$, as follows:
 and tells us: 
 for a given test classification, how many bits of information 
 on average does the estimate
-supply of the true class value? \citep{Press_etal1992, Mills2011}.
+supply of the true class value? \citep{Press_etal1992,Mills2011}.
 
 \section{Discussion}
 
@@ -1054,10 +1050,10 @@ Two of these errors sources also affect SVM-borders but don't seem to have a lar
 effect on the final results.
 
 One potential improvement is to recalibrate the probability estimates as 
-done with the LIBSVM decision in equation (\ref{svm_prob}) \citep{Platt1999, Lin_etal2007}.
+done with the LIBSVM decision in equation (\ref{svm_prob}) \citep{Platt1999,Lin_etal2007}.
 There are many other methods of recalibrating classification probability
 estimates: see for instance 
-\citet{Niculescu-Mizil_Caruana2005, Zadrozny_Elkan2001}.
+\citet{Niculescu-Mizil_Caruana2005,Zadrozny_Elkan2001}.
 Initial trials have shown some success.
 Recalibrating results for the \dataset{splice} dataset by a simple shift of the threshold value
 for the decision function, for instance, increases the

@@ -60,20 +60,23 @@ a mapping of the form:
 \end{equation}
 where $y_{ij}$ is the class value of $j$th sample of the transformed data 
 for trainng the $i$th binary classifier and 
-$C_i^+ \subset [1..n_c]$ is the set of classes from the original set, 
+$C_i^+ \subset [1,n_c]$ is the set of classes from the original set, 
 $[1..n_c]$, that map to $+1$ while
-$C_i^- \subset [1..n_c]$ is the set of classes that map to $-1$?
+$C_i^- \subset [1,n_c]$ is the set of classes that map to $-1$?
 
 Once we have partitioned the classes
-and trained the binary classifers, 
-how do we solve for the most likely class, 
+and trained the binary classifers,
+how do we solve for the conditional probabilities, $P(i|\vec x)$,
+where $i \in [1,n_c]$
+or alternatively, directly for the most likely class:
+%how do we solve for the most likely class, 
 \begin{equation}
 	c=\arg \max_i P(i | \vec x)
 \end{equation}
-given a test point, $\vec x$,
-or for the most likely estimate
-of $P(c | \vec x)$ where $c$ is either the most likely class
-or else can be any of the classes, $c \in [1..n_c]$?
+?
+%given a test point, $\vec x$,
+%or alternatively, directly for $P(c | \vec x)$ where $c$ is either the most likely class
+%or else can be any of the classes, $c \in [1,n_c]$?
 %--that is all of the conditional probabilities 
 %or just that of the ``winning'' class?
 
@@ -102,7 +105,7 @@ the $i$th partition
 It's more natural to describe the problem using a
 {\it coding matrix}, $A$, 
 which is structured such that
-$a_{ij} \in {-1, 0, 1}$ where $i$ enumerates the binary classifier and
+$a_{ij} \in \lbrace -1, 0, 1 \rbrace$ where $i$ enumerates the binary classifier and
 $j$ enumerates the class of the multi-class problem.
 In other words, if $a_{ij}$ is $-1$/$+1$, we would assign each of the $j$th class
 labels in the training data a value of $-1$/$+1$ when training the $i$th
@@ -110,8 +113,8 @@ binary classifier. If the value is $0$, the $j$th class label is excluded.
 
 The non-zero elements of $A$ are:
 \begin{eqnarray}
-	a_{ic_{ik}^-} & = & -1 | ~k = [1..n_{ci-}]\\
-a_{ic_{ik}^+} & = & +1 | ~k=[1..n_{ci+}]
+	a_{ic_{ik}^-} & = & -1 | ~k = [1..n_{c_i^-}]\\
+a_{ic_{ik}^+} & = & +1 | ~k=[1..n_{c_i^+}]
 \end{eqnarray}
 
 %We can relate the multi-class probabilities to the output of the 
@@ -199,6 +202,10 @@ known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
 There are of course some guidelines
 as to how to construct such a coding matrix. More on this in the later 
 sections.
+
+\citet{Hsu_Lin2002} find that the one-vs.-one method is more accurate
+for support vector machines (SVM) than either
+error-correcting codes or one-vs.-the-rest.
 
 \subsection{Basic inverse solution}
 
@@ -314,10 +321,10 @@ If we take the upright brackets once again to be a
 Euclidian metric and assume that $A$ is ``strict'' then this 
 reduces to minimizing the absolute value of the dot product,
 $|\vec a^{(i)} \cdot \vec a^{(j)}|$.
-Why the absolute value? 
-Because a coding vector that is the negative of another is degenerate.
+The absolute value is used because a pair of columns that are the same except 
+for a factor of -1 are degenerate.
 
-In other words, if the number of coding vectors is equal to the number of classes, the optimal coding vector will be orthogonal, $A^T A = I$, where $I$ is
+In other words, if the number of rows is equal to the number of classes, the optimal coding matrix will be orthogonal, $A^T A = I$, where $I$ is
 the identity matrix. Thus the voting solution and the (unconstrained) matrix 
 inverse will be equivalent. Orthogonal, ``strict'' coding matrices 
 are not hard to construct for certain class sizes, for instance:
@@ -364,7 +371,7 @@ A =
 0 & 0 & -1 & 1
 \end{bmatrix}
 \end{equation}
-While there are only three coding vectors for four classes, 
+While there are only three rows for four classes, 
 once we add in the constraint in (\ref{first_constraint}) the system becomes 
 fully determined, although it doesn't scale to larger problems:
 extra partitions will have to be added.

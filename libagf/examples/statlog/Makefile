@@ -177,6 +177,15 @@ endif
 #subsampling:
 ifdef SUBSAMPLE
   BUILD_TARGET=build_svm
+  CLEAN_TARGET=subsample_sv
+  STATFILE=$(VER).sub.txt
+else
+  #if you make stats results are stuck in here:
+  STATFILE=$(VER).txt
+endif
+
+ifdef SUBSAMPLE_OLD
+  BUILD_TARGET=build_svm
   CLEAN_TARGET=clean
   STATFILE=$(VER).sub.txt
 else
@@ -229,6 +238,7 @@ endif
 .PHONY: clean
 .PHONY: nborders
 .PHONY: stats
+.PHONY: subsample_sv
 
 #output results:
 all: $(RESULTS)
@@ -334,6 +344,12 @@ clean_but_borders:
 	rm -f $(ACCELERATOR)
 	rm -f $(SVMMODEL)
 	rm -f $(TEST).knn.*
+
+SVOLD=$(SVMMODEL).old
+
+subsample_sv:
+	if [ ! -e $(SVOLD) ]; then mv $(SVMMODEL) $(SVOLD); fi
+	subsample_sv -f $(SUBSAMPLE) $(SVOLD) $(SVMMODEL)
 
 #build SVM only (for sub-sampling):
 build_svm: $(TEST).svm.cls $(TEST).svm.con
@@ -564,8 +580,9 @@ $(addsuffix .trn.raw.cls, $(addprefix $(WORKDIR)/, $(ALLINONE))): $(WORKDIR)/%.t
 #process training data:
 $(TRAIN).vec $(TRAIN).cls $(NORMFILE): $(TRAIN).raw.cls
 	agf_preprocess $(PRE) -U $(TRAIN).raw $(TRAIN)
-ifdef SUBSAMPLE
-	subsample_special -z$(CONSTCLASS)f $(SUBSAMPLE) $(TRAIN) $(WORKDIR)/dum $(TRAIN)
+#which version works better?:
+ifdef SUBSAMPLE_OLD
+	subsample_special -z$(CONSTCLASS)f $(SUBSAMPLE_OLD) $(TRAIN) $(WORKDIR)/dum $(TRAIN)
 endif
 
 #process test data:

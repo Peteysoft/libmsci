@@ -1,5 +1,15 @@
+//
+// This software is released under the following terms:
+//
+// 1. No commercial use.
+// 2. Copies and derivative works are free to use and modify.
+// 3. Attribution must be given to all contributors of both original and derivative works.
+//
+// Authors:
+//
+// 2017-07-16 Peter Mills: added license information 
+//
 
-//Copyright (C) 2007 Peter Mills.  All rights reserved.
 
 #include <stdio.h>
 #include <math.h>

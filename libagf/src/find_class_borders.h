@@ -1,4 +1,18 @@
-//Copyright (C) 2007 Peter Mills.  All rights reserved.
+//
+// This software is released under the following terms:
+//
+// 1. No commercial use.
+// 2. Copies and derivative works are free to use and modify.
+// 3. Attribution must be given to all contributors of both original and derivative works.
+//
+// Authors:
+//
+// 2017-07-16 Peter Mills: added license information 
+//
+
+//
+// Not much of this shit is used any more. Kept for backwards compatability.
+//
 
 #ifndef CLASS_BORDERS_H_INCLUDED
 #define CLASS_BORDERS_H_INCLUDED 1

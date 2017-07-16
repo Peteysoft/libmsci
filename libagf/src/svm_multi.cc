@@ -672,6 +672,36 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  void svm_multi<real, cls_t>::subsample(real frac, int cclassflag) {
+    nel_ta *nsv_new;
+    nel_ta t1, t2;
+
+    nsv_new=new nel_ta[this->ncls];
+    for (int i=0; i<this->ncls; i++) {
+      nsv_new[i]=frac*nsv[i];
+    }
+
+    t1=nsv_new[0];
+    t2=nsv[0];
+    for (cls_t i=1; i<this->ncls; i++) {
+      for (nel_ta j=0; j<nsv_new[i]; j++) {
+        sv[j+t1]=sv[j+t2];
+	for (cls_t k=0; k<this->ncls-1; k++) {
+          coef[k][j+t1]=coef[k][j+t2];
+	}
+      }
+      t1+=nsv_new[i];
+      t2+=nsv[i];
+    }
+
+    nsv_total=t1;
+
+    delete [] nsv;
+    nsv=nsv_new;
+
+  }
+
+  template <class real, class cls_t>
   borders1v1<real, cls_t>::borders1v1(char *file, int vflag) {
     FILE *fs=fopen(file, "r");
     if (fs==NULL) throw UNABLE_TO_OPEN_FILE_FOR_READING;

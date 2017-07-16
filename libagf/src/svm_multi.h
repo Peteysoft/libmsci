@@ -69,6 +69,10 @@ namespace libagf {
 
       virtual int load(FILE *fs);
       virtual int save(FILE *fs);
+
+      void subsample(real frac, 		//fraction of data to keep
+		      int cconst); 		//keep relative class numbers
+      						//constant
   };
 
   template <class real, class cls_t>

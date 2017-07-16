@@ -13,6 +13,24 @@ namespace ctraj {
   using namespace libpetey;
   using namespace datasets;
 
+  // 2-D tracer field on azimuthal equidistant coords with standard diffusion:
+  //
+  // dq/dt = - v * grad(q) + d * div(grad(q))
+  //
+  // where:
+  // - q is the tracer field
+  // - t is time
+  // - v is fluid velocity
+  // - d is the diffusion coefficient
+  //
+  // Diffusion is modelled using a Gaussian kernel.
+  //
+  // See:
+  //
+  // Peter Mills (2014). "Matrix analysis of tracer transport." 
+  // arxiv:1506.06984; Section 10.1
+  //
+
   template <class real>
   class ctraj_tfield_diffusion:public ctraj_tfield_standard<real> {
     protected:

@@ -1,5 +1,22 @@
+//
+// This software is released under the following terms:
+//
+// 1. No commercial use.
+// 2. Copies and derivative works are free to use and modify.
+// 3. Attribution must be given to all contributors of both original and derivative works.
+//
+// Authors:
+//
+// 2017-07-16 Peter Mills: added license information 
+//
 
-//Copyright (C) 2007 Peter Mills.  All rights reserved.
+//
+// For subsampling keeping relative class ratios constant or making sure 
+// smallest classes have some representation for very uneven class 
+// distributions.
+//
+// Should be merged with agf_preprocess.
+//
 
 #include <math.h>
 #include <string.h>

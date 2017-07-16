@@ -1,5 +1,24 @@
+//
+// This software is released under the following terms:
+//
+// 1. No commercial use.
+// 2. Copies and derivative works are free to use and modify.
+// 3. Attribution must be given to all contributors of both original and derivative works.
+//
+// Authors:
+//
+// 2017-07-16 Peter Mills: added license information 
+//
 
-//Copyright (C) 2007 Peter Mills.  All rights reserved.
+//
+// Central "engine" of adaptive Gaussian filtering: set filter width (variance)
+// to keep the total of the weights constant.
+//
+// See:
+//
+// Peter Mills (2011). "Efficient statistical classification of satellite 
+// measurements." International Journal of Remote Sensing 32 (21): 6109-6132.
+//
 
 #include <stdio.h>
 #include <math.h>
