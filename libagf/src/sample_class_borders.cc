@@ -1,16 +1,4 @@
 //
-// This software is released under the following terms:
-//
-// 1. No commercial use.
-// 2. Copies and derivative works are free to use and modify.
-// 3. Attribution must be given to all contributors of both original and derivative works.
-//
-// Authors:
-//
-// 2017-07-16 Peter Mills: added license information 
-//
-
-//
 // Given a function, r(x), and a set of pairs of samples, {(y_i, z_i)}, returns 
 // a set of points, {b_j}, and a set of vectors, {v_j}, for which:
 //

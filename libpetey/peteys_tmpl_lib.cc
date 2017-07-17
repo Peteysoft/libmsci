@@ -1,6 +1,4 @@
 //
-// Copywrite 2004 Peter Mills.  All rights reserved.
-//
 // Compiles a number of instantiations of templated subroutines into
 // a single file
 //

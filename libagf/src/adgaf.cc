@@ -1,18 +1,4 @@
 //
-// This software is released under the following terms:
-//
-// 1. No commercial use.
-// 2. Copies and derivative works must include a copy of this license.
-// 3. Attribution must be given to all contributors of both original and derivative works.
-//
-// (like I care if anyone steals this heap of steaming turds... )
-//
-// Authors:
-//
-// 2017-07-16 Peter Mills: added license information 
-//
-
-//
 // Codes for AGF interpolation ("adgaf").
 //
 
