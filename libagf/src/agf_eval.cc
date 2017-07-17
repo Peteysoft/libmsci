@@ -1,7 +1,4 @@
 
-//Go ahead and copy this piece of shit all you like.  And don't bother to give me a dime or 
-//or even a thank you...
-
 #include <math.h>
 #include <stdint.h>
 
