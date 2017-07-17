@@ -1,6 +1,4 @@
 #
-# Released under the terms of the GNU Public license.
-#
 # Main contributer: Peter Mills (peteymills@hotmail.com)
 #
 # Makefile to build a set of executables for modelling trajectory
