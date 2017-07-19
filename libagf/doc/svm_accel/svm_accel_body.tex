@@ -990,6 +990,12 @@ until the speed the two methods, SVM and SVM-borders, matches.
 In some cases, SVM could not be made fast enough by sub-sampling, in which
 case skill was matched instead.
 
+It might seem more expedient to directly sub-sample the support vectors themselves
+rather than the training data.
+This, however, was found not to work and generated a precipitous drop in accuracy. 
+Since the sparse coefficient set, $\vec \svmcoeff$, is found through simultaneous 
+optimization, the support vectors turn out to be interdependent.
+
 Depending on how much the dataset is reduced, sub-sampling should be done with at
 least some care. 
 On one hand, a more sophisticated sub-sampling technique might be considered a method on its own, 

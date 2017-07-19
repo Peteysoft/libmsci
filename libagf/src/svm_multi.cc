@@ -676,22 +676,26 @@ namespace libagf {
     nel_ta *nsv_new;
     nel_ta t1, t2;
 
+    long *rind;
+
     nsv_new=new nel_ta[this->ncls];
     for (int i=0; i<this->ncls; i++) {
       nsv_new[i]=frac*nsv[i];
     }
 
-    t1=nsv_new[0];
-    t2=nsv[0];
-    for (cls_t i=1; i<this->ncls; i++) {
+    t1=0;
+    t2=0;
+    for (cls_t i=0; i<this->ncls; i++) {
+      rind=randomize(nsv[i]);
       for (nel_ta j=0; j<nsv_new[i]; j++) {
-        sv[j+t1]=sv[j+t2];
+        sv[j+t1]=sv[rind[j]+t2];
 	for (cls_t k=0; k<this->ncls-1; k++) {
-          coef[k][j+t1]=coef[k][j+t2];
+          coef[k][j+t1]=coef[k][rind[j]+t2];
 	}
       }
       t1+=nsv_new[i];
       t2+=nsv[i];
+      delete [] rind;
     }
 
     nsv_total=t1;

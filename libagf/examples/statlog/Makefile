@@ -175,16 +175,16 @@ else
 endif
 
 #subsampling:
-ifdef SUBSAMPLE
+ifdef SUBSAMPLE_SV
   BUILD_TARGET=build_svm
-  CLEAN_TARGET=subsample_sv
+  CLEAN_TARGET=delete_svsub
   STATFILE=$(VER).sub.txt
 else
   #if you make stats results are stuck in here:
   STATFILE=$(VER).txt
 endif
 
-ifdef SUBSAMPLE_OLD
+ifdef SUBSAMPLE
   BUILD_TARGET=build_svm
   CLEAN_TARGET=clean
   STATFILE=$(VER).sub.txt
@@ -219,7 +219,14 @@ RESULTS=$(WORKDIR)/results.txt
 MULTICONTROL=$(WORKDIR)/onevsone.mbc
 
 #model files: SVM, AGF, SVM-borders
-SVMMODEL=$(BASE).svmmod
+ifdef SUBSAMPLE_SV
+  SVMMODEL=$(BASE).svmmod.1
+  SVMMODEL0=$(BASE).svmmod
+else
+  SVMMODEL=$(BASE).svmmod
+  SVMMODEL0=$(SVMMODEL)
+endif
+
 AGFMODEL=$(BASE).agf
 ACCELERATOR=$(BASE).accel
 
@@ -347,9 +354,14 @@ clean_but_borders:
 
 SVOLD=$(SVMMODEL).old
 
-subsample_sv:
-	if [ ! -e $(SVOLD) ]; then mv $(SVMMODEL) $(SVOLD); fi
-	subsample_sv -f $(SUBSAMPLE) $(SVOLD) $(SVMMODEL)
+#new method of sub-sampling:
+delete_svsub:
+	rm -f $(SVMMODEL)
+
+ifdef SUBSAMPLE_SV
+$(SVMMODEL): $(SVMMODEL0)
+	subsample_sv -f $(SUBSAMPLE_SV) $(SVMMODEL0) $(SVMMODEL)
+endif
 
 #build SVM only (for sub-sampling):
 build_svm: $(TEST).svm.cls $(TEST).svm.con
@@ -454,12 +466,12 @@ $(NSUPPORT): $(TRAIN).svm
 	$(SCRIPTDIR)/svm_nsv.sh -G -q $(NTEST) $(SVMOPT) $(TRAIN) $(NSUPPORT)
 
 #svm-borders "accelerated" svm model
-$(ACCELERATOR2): $(SVMMODEL) $(TRAIN).vec $(TRAIN).cls
-	$(TIME) -o $(WORKDIR)/accel_ttime.txt $(ACCELERATE_COMMAND) $(NSAMP) $(SVMMODEL) $(TRAIN) $(ACCELERATOR)
+$(ACCELERATOR2): $(SVMMODEL0) $(TRAIN).vec $(TRAIN).cls
+	$(TIME) -o $(WORKDIR)/accel_ttime.txt $(ACCELERATE_COMMAND) $(NSAMP) $(SVMMODEL0) $(TRAIN) $(ACCELERATOR)
 
 #svm model:
-$(SVMMODEL): $(TRAIN).svm
-	$(TIME) -o $(WORKDIR)/svm_ttime.txt svm-train -b 1 $(SVMOPT) $(TRAIN).svm $(SVMMODEL)
+$(SVMMODEL0): $(TRAIN).svm
+	$(TIME) -o $(WORKDIR)/svm_ttime.txt svm-train -b 1 $(SVMOPT) $(TRAIN).svm $(SVMMODEL0)
 
 #agf borders model:
 $(AGFMODEL2): $(TRAIN).svm
@@ -581,8 +593,8 @@ $(addsuffix .trn.raw.cls, $(addprefix $(WORKDIR)/, $(ALLINONE))): $(WORKDIR)/%.t
 $(TRAIN).vec $(TRAIN).cls $(NORMFILE): $(TRAIN).raw.cls
 	agf_preprocess $(PRE) -U $(TRAIN).raw $(TRAIN)
 #which version works better?:
-ifdef SUBSAMPLE_OLD
-	subsample_special -z$(CONSTCLASS)f $(SUBSAMPLE_OLD) $(TRAIN) $(WORKDIR)/dum $(TRAIN)
+ifdef SUBSAMPLE
+	subsample_special -z$(CONSTCLASS)f $(SUBSAMPLE) $(TRAIN) $(WORKDIR)/dum $(TRAIN)
 endif
 
 #process test data:

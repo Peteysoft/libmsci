@@ -1,4 +1,5 @@
 #JOURNAL = _jmlr
+JOURNAL = _springer
 
 TARGET = svm_accel$(JOURNAL)
 
