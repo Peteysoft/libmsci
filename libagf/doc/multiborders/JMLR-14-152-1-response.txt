@@ -35,6 +35,8 @@ in more detail, libAGF seems lacking in most areas:
 1. Four page description is does not really describe the software.
 2. The breadth and significance appear limited.
 -> not sure how to address either of above two points...
+-> trying to build up a bigger user base by publicizing the software 
+   (you asswipe...) (Matthew effect in action...)
 3. Seems mostly OK.
 4. ? (not evaluated)
 5. Seems OK, should specify the license.

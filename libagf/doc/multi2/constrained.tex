@@ -7,6 +7,13 @@
 
 \bibliographystyle{apa}
 
+\usepackage{calc}
+\newsavebox\CBox
+\newcommand\hcancel[2][0.5pt]{%
+  \ifmmode\sbox\CBox{$#2$}\else\sbox\CBox{#2}\fi%
+  \makebox[0pt][l]{\usebox\CBox}%  
+  \rule[0.5\ht\CBox-#1/2]{\wd\CBox}{#1}}
+
 \begin{document}
 
 \title{Solving for multi-class: a working document}
@@ -516,6 +523,7 @@ The situation is illustrated in Figure \ref{fig1} for the case of three classes.
 The first constraint is easily applied by a change of variables, e.g.:
 \begin{equation}
 p_j=1-\sum_{i \ne j} p_i
+\label{changeofvariables}
 \end{equation}
 reducing the dimensionality of the problem by one. 
 
@@ -556,7 +564,7 @@ especially if there are fewer variables than before: now there are more constrai
 than variables. Harder problem to solve. 
 We can use a ``pseudo-inverse'' to transform the constraints:
 \begin{eqnarray}
-	\vec p & \approx & (A^T A)^{-1} A^T (\vec x + \vec r) \label{pseudoinverse}\\
+	\vec p & \approx & (A^T A)^{-1} A^T (\vec x + \vec r) \label{pseudoinverse2}\\
 	\vec x (A^T A)^{-1} \vec a^{(i)} + \vec r (A^T A)^{-1} \vec a^{(i)} & > & 0 \\
 	\vec v_i & = & (A^T A)^{-1} \vec a^{(i)} \\
 	b_i & = & \vec r (A^T A)^{-1} \vec a^{(i)}
@@ -568,7 +576,7 @@ or:
 \end{eqnarray}
 where $\vec a^{(i)}$ is the $i$th column of $A$.
 There may be issues transforming the problem back to the original
-coordinates since the inversion in (\ref{pseudoinverse}) is not exact.
+coordinates since the inversion in (\ref{pseudoinverse2}) is not exact.
 It may be better to first transform both $A$ and $\vec r$ to produce a square problem
 e.g. with the normal equation which we've used for our pseudo-inverse in (\ref{pseudoinverse}).
 
@@ -823,7 +831,22 @@ constant terms and constant factors from the last line. The unconstrained
 solution is $2 \vec x - 2 \vec x_0=0$ or $\vec x = \vec x_0$.
 
 Because of the way the coding matrix is constructed, the first constraint is
-always satisfied, that is, $\sum_i x_{0i}=1$. 
+always satisfied, that is, $\sum_i x_{0i}=1$.
+
+I don't believe the approach above works. You incorporate the constraint through
+a change of variables, as in (\ref{changeofvariables}) so that the problem now
+takes the following form:
+\begin{equation}
+	\sum_{k \ne j} (a_{ik} - a_{ij}) p_k = r_i + a_{ij}
+\end{equation}
+So we are searching for a coding matrix which is orthogonal after being
+transformed by subtracting any of its columns from the rest of it:
+\begin{eqnarray}
+	\sum_{i \ne j} (a_{ik} - a_{ij}) (a_{im} - a_{ij}) & = & c \delta_{km} \\
+	\sum_{i \ne j} a_{ik} a_{im} - \sum_{i \ne j} a_{ik} a_{ij} - \sum_{i \ne j} a_{im} a_{ij} + \hcancel{\sum_{i \ne j} a_{ij}^2} & = & c \delta_{km}
+\end{eqnarray}
+where $\delta$ is the Kronecker delta and $c$ is a constant.
+Consider the ``one-versus-the-rest''
 
 \bibliography{../agf_bib.bib} 
 
