@@ -127,6 +127,46 @@ namespace libagf {
 		int tflag, char *com, int Mflag, int Kflag, int sigcode, int Zflag) {
     nmodel=npart;
 
+    switch (type) {
+      case (0):
+        solve_class=&solve_class_constrained2<real>;
+	break;
+      case (1):
+	solve_class=&solve_class_scratch<real>;
+        break;
+      case (2):
+	solve_class=&solve_class_vote_pdf<real>;
+        break;
+      case (3):
+	solve_class=&solve_class_vote<real>;
+        break;
+      case (4):
+	solve_class=&solve_class_renorm<real>;
+        break;
+      case (5):
+	solve_class=&solve_class_renorm<real>;
+        break;
+      case (6):
+	solve_class=&solve_class_scratch<real>;
+        break;
+      case (7):
+        solve_class=&solve_class_constrained1<real>;
+	break;
+      case (8):
+	solve_class=&solve_class_vote_pdf<real>;
+        //cls1=vote_pdf2(b, pdf);
+	break;
+      case (10):
+	solve_class=&solve_class_1vR<real>;
+	break;
+      case (11):
+	solve_class=&solve_class_norm<real>;
+	break;
+      default:
+        solve_class=&solve_class_constrained2<real>;
+        break;
+    }
+
     //figure out how many classes:
     this->ncls=0;
     for (int i=0; i<nmodel; i++) {
@@ -169,6 +209,7 @@ namespace libagf {
 
     //create the mapping:
     map=gsl_matrix_alloc(nmodel+1, this->ncls);
+    code=zero_matrix<real>(nmodel, this->ncls);	//two formats
     gsl_matrix_set_zero(map);
     //the sum of the conditional probabilities should always equal 1:
     for (int i=0; i<this->ncls; i++) gsl_matrix_set(map, nmodel, i, constraint_weight);
@@ -178,7 +219,10 @@ namespace libagf {
     //classification result:
     for (int i=0; i<nmodel*2; i++) {
       double sgn=2*(i%2)-1;
-      for (int j=0; part[i][j]>=0; j++) gsl_matrix_set(map, i/2, part[i][j], sgn);
+      for (int j=0; part[i][j]>=0; j++) {
+        gsl_matrix_set(map, i/2, part[i][j], sgn);
+	code[i/2][part[i][j]]=sgn;
+      }
     }
 
     //find the inverse of this matrix when we need it (we don't yet):
@@ -212,6 +256,8 @@ namespace libagf {
     }
 
     if (pol!=NULL) delete [] pol;
+
+    delete_matrix(code);
   }
 
   //find the singular value decomposition of the coding matrix:
@@ -361,7 +407,7 @@ namespace libagf {
     //- we solve: p = A^T*r where the first value in r is a free parameter 
     //  which we vary for normalization if the other constraints in p are 
     //  violated)
-    p_renorm3(tly, this->ncls);
+    p_constrain_renorm1(tly, this->ncls);
 
     cls=choose_class(tly, this->ncls);
     return cls;
@@ -588,7 +634,7 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  cls_t multiclass<real, cls_t>::solve_class(gsl_vector *b, real *pdf) {
+  cls_t multiclass<real, cls_t>::solve_class_old(gsl_vector *b, real *pdf) {
     cls_t cls1, cls2;
     real pt;		//total of conditional probability estimates
     real k;		//correction value
@@ -645,7 +691,7 @@ namespace libagf {
       //(we use these specific forms of renormalization because they tend to
       //maximize the "peakedness" of the distribution which seem to better
       //reflect most real distributions)
-      p_renorm1(pdf, this->ncls);
+      p_constrain_renorm1(pdf, this->ncls);
 
       //if voting is different from matrix inversion, correct the results using a crude hack:
       if (cls1!=cls2) {
@@ -670,22 +716,25 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  cls_t multiclass<real, cls_t>::classify(real *x, real *pdf, real *praw) {
-    cls_t cls;
-    gsl_vector *b=gsl_vector_alloc(nmodel+1);
+  cls_t multiclass<real, cls_t>::classify(real *x, real *p, real *praw) {
+    real r[nmodel];
+    //gsl_vector *b=gsl_vector_alloc(nmodel+1);
 
     if (praw!=NULL) {
       //printf("multiclass raw pdfs: ");
-      for (int i=0; i<nmodel; i++) {
+      for (int i=0; i<nmodel; i++) r[i]=twoclass[i]->R(x, praw);
+      /*{
         gsl_vector_set(b, i, twoclass[i]->R(x, praw));
       }
-      gsl_vector_set(b, nmodel, constraint_weight);
+      gsl_vector_set(b, nmodel, constraint_weight);*/
     } else {
-      raw_classify(x, b);
+      for (int i=0; i<nmodel; i++) r[i]=twoclass[i]->R(x);
+      //raw_classify(x, b);
     }
-    cls=solve_class(b, pdf);
-    gsl_vector_free(b);
-    return cls;
+    (*solve_class)(code, nmodel, this->ncls, r, p);
+    //gsl_vector_free(b);
+    return choose_class(p, this->ncls);
+    //return solve_class_old(x, b);
   }
 
   template <class real, class cls_t>
@@ -711,7 +760,6 @@ namespace libagf {
   template <class real, class cls_t>
   void multiclass<real, cls_t>::batch_classify(real **x, cls_t *cls, real **p1, nel_ta n, dim_ta nvar) {
     real **r;
-    gsl_vector *b=gsl_vector_alloc(nmodel+1);
 
     //printf("multiclass: performing classifications with %d test vectors on %d models\n", n, nmodel);
     r=new real*[nmodel];
@@ -722,16 +770,12 @@ namespace libagf {
       twoclass[i]->batchR(x, r[i], n, nvar);
     }
     for (nel_ta i=0; i<n; i++) {
-      for (int j=0; j<nmodel; j++) {
-        gsl_vector_set(b, j, r[j][i]);
-      }
-      gsl_vector_set(b, nmodel, constraint_weight);
-      cls[i]=solve_class(b, p1[i]);
+      (*solve_class)(code, nmodel, this->ncls, r[i], p1[i]);
+      cls[i]=choose_class(p1[i], this->ncls);
     }
 
     delete [] r[0];
     delete [] r;
-    gsl_vector_free(b);
 
   }
 
@@ -858,14 +902,12 @@ namespace libagf {
   template <typename real, typename cls_t>
   int multiclass<real, cls_t>::detect_type() {
     int spec_type;		//0=1 v. rest; 1=1 v. 1; 2=adj.
-    int **code;				//coding matrix (as integers)
     int **proto;			//prototype to compare against
     int ind[nmodel];
     long dum[nmodel];
     vector<int> sd[nmodel];
     vector<int> p2[nmodel];
 
-    code=allocate_matrix<int, int32_t>(nmodel, this->ncls);
     for (int i=0; i<nmodel; i++) {
       sd[i].resize(this->ncls);
       for (int j=0; j<this->ncls; j++) sd[i][j]=gsl_matrix_get(map, i, j);
@@ -878,17 +920,17 @@ namespace libagf {
       switch (tc) {
         case(0):
           //check for 1 v rest:
-          proto=one_against_all(this->ncls);
+          proto=one_against_all<int>(this->ncls);
 	  nm=this->ncls;
 	  break;
         case(1):
           //check for 1 v 1:
-          proto=one_against_one(this->ncls);
+          proto=one_against_one<int>(this->ncls);
 	  nm=this->ncls*(this->ncls-1)/2;
 	  break;
         case(2):
 	  //check for adjacent partitioning:
-          proto=partition_adjacent(this->ncls);
+          proto=partition_adjacent<int>(this->ncls);
 	  nm=this->ncls-1;
 	  break;
       }
@@ -955,17 +997,12 @@ namespace libagf {
       type=10+spec_type;
     }
 
-    //clean up:
-    delete [] code[0];
-    delete [] code;
-      
     return spec_type;
   }
 
   template <typename real, typename cls_t>
   int multiclass<real, cls_t>::load(FILE *fs) {
     int err=0;
-    int **code;				//coding matrix (as integer)
     char **sub;
     int nsub;
     char *typestr=fget_line(fs, 1);
@@ -975,17 +1012,17 @@ namespace libagf {
     //type specific stuff:
     if (strcmp(typestr, "1vR")==0) {
       nmodel=this->ncls;
-      code=one_against_all(this->ncls);
+      code=one_against_all<real>(this->ncls);
       if (type<0) type=10;
       strictflag=1;
     } else if (strcmp(typestr, "1v1")==0) {
       nmodel=this->ncls*(this->ncls-1)/2;
-      code=one_against_one(this->ncls);
+      code=one_against_one<real>(this->ncls);
       if (type<0) type=11;
       strictflag=0;
     } else if (strcmp(typestr, "ADJ")==0) {
       nmodel=this->ncls-1;
-      code=partition_adjacent(this->ncls);
+      code=partition_adjacent<real>(this->ncls);
       if (type<0) type=12;
       strictflag=1;
     } else {

@@ -18,7 +18,7 @@ namespace libagf {
 
   template <class real>
   int solve_cond_prob_1v1(real **r, int ncls, real *p) {
-    int err;
+    int err=0;
     gsl_matrix *Q;
     gsl_vector *x;
     gsl_vector *b;
@@ -59,7 +59,7 @@ namespace libagf {
     //printf("\n");
 
     //use SVD solver:
-    err=solver(Q, b, x);
+    err=gsl_lsq_solver(Q, b, x);
 
     //gsl_vector_fprintf(stdout, x, "%lg ");
     //printf("\n");

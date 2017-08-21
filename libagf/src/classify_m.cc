@@ -14,27 +14,27 @@ int main(int argc, char *argv[]) {
   char *testfile;		//test data
   char *outfile;		//output classes
   char *confile;		//output confidences
-  FILE *fs;
-  FILE *logfs=stderr;
+  FILE *fs;			//general file stream
+  FILE *logfs=stderr;		//for logging error messages
 
   dim_ta nvar;			//number of variables
-  cls_ta ncls;		//number of classes
+  cls_ta ncls;			//number of classes
   nel_ta ntest;			//number of test data points
 
   cls_ta *clist;		//list of class labels
 
   real_a **brd;			//class border samples
   real_a **grd;			//gradient at the class border
-  real_a **test;			//test data vectors
+  real_a **test;		//test data vectors
   cls_ta *result;		//results of classification
-  real_a *con=NULL;			//estimated confidence
-  cls_ta *cls0=NULL;			//classes read from the test file
+  real_a *con=NULL;		//estimated confidence
+  cls_ta *cls0=NULL;		//classes read from the test file
 
-  multiclass_hier<real_a, cls_ta> *classifier;
+  multiclass_hier<real_a, cls_ta> *classifier;	//multi-class classifier
   
-  int errcode;
+  int errcode;			//returned error code
 
-  agf_command_opts opt_args;
+  agf_command_opts opt_args;	//command line options
 
   //normalization data:
   real_a **mat;		//transformation matrix
@@ -132,12 +132,19 @@ int main(int argc, char *argv[]) {
     exit(UNABLE_TO_OPEN_FILE_FOR_READING);
   }
   classifier=new multiclass_hier<real_a, cls_ta>();
+  //check first for all-in-one ASCII model file:
   if (classifier->load(fs, opt_args.Qtype)==PARAMETER_OUT_OF_RANGE) {
     delete classifier;
     rewind(fs);
-    classifier=new multiclass_hier<real_a, cls_ta>(fs,  
-		opt_args.Qtype,	opt_args.path, opt_args.multicommand, 
-		opt_args.Mflag, opt_args.Kflag, opt_args.algtype, opt_args.Zflag);
+    //otherwise use control file:
+    classifier=new multiclass_hier<real_a, cls_ta>(fs,		//file stream  
+		opt_args.Qtype,			//method to solve for prob.
+		opt_args.path, 			//path to dat files
+		opt_args.multicommand, 		//external binary classifier
+		opt_args.Mflag,			//external uses LIBSVM format
+		opt_args.Kflag, 		//keep temporary files
+		opt_args.algtype, 		//sig. fn extrap. bin prob
+		opt_args.Zflag);		//in-house SVM codes
   }
   fclose(fs);
 

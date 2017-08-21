@@ -38,7 +38,7 @@ namespace libpetey {
     return 0;
   }
 
-  int solver(gsl_matrix *a,
+  int gsl_lsq_solver(gsl_matrix *a,
 		gsl_vector *b,
 		gsl_vector *x) {
     int m, n;

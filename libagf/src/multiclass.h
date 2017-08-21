@@ -14,6 +14,9 @@ namespace libagf {
   template <class real, class cls_t>
   class multiclass:public classifier_obj<real, cls_t> {
     private:
+      //use this function to solve for the conditional probabilities:
+      void (* solve_class) (real **, int, int, real *, real *);
+
       //maps the actual results to the conditional probabilities:
       //(singular value decomposition of matrix mapping of final cond. prob. to raw cond. prob.)
       gsl_matrix *u;
@@ -28,12 +31,13 @@ namespace libagf {
       //run each of the binary classifiers and collect result into vector:
       void raw_classify(real *x, gsl_vector *b);
 
+      //old methods:
+      cls_t solve_class_old(gsl_vector *b, real *p1);
+
       //basic least squares solution:
       cls_t classify_basic(gsl_vector *b, real *p);
       cls_t vote_label(gsl_vector *b, real *tly);
       cls_t vote_pdf(gsl_vector *b, real *tly);
-      //brute-force constrained least squares:
-      cls_t solve_class(gsl_vector *b, real *p1);
 
       //special 1 versus rest solution:
       cls_t classify_1vR(gsl_vector *b, real *p);
@@ -70,6 +74,8 @@ namespace libagf {
 
       //raw mapping:
       gsl_matrix *map;
+      //in two formats:
+      real ** code;		//(want to keep only this format...)
 
       //is the mapping "strict"--i.e. each row includes all classes?
       int strictflag;

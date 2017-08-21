@@ -117,7 +117,7 @@ namespace libagf {
     optlen=argc+1;
     for (int i=0; i<argc; i++) optlen+=strlen(argv[i]);
     param.maxnstack=maxstacksize;
-    param.optstack=new char *[param.maxnstack];
+    param.optstack=new char *[param.maxnstack+1];
     param.optstack[0]=new char [optlen];
     strcpy(param.optstack[0], "");
     for (int i=0; i<argc; i++) {
@@ -164,6 +164,31 @@ namespace libagf {
     } else {
       fname=fname0;
     }
+
+    //in here are all the use cases:
+    //
+    // multiclass_hier / multiclass
+    //  - training
+    //    - borders
+    //    - external
+    //  - classification
+    //    - borders
+    //    - LIBSVM
+    //    - external
+    //  
+
+    // want that to be:
+    //
+    // multiclass_hier / multiclass
+    //  - training
+    //    - borders
+    //    - external
+    //  - classification
+    //    - borders
+    //    - LIBSVM
+    //    - anything else...
+    //    - external
+    // 
 
     //three possibilities:
     assert(flag!=2);

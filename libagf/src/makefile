@@ -116,6 +116,7 @@ OBJECT_FILES = 	agf_metric2$(OPT_VER).o \
 		multiclass$(OPT_VER).o \
 		multiclass_c$(OPT_VER).o \
 		multi_control$(OPT_VER).o \
+		multiclass_methods$(OPT_VER).o \
 		classifier_obj$(OPT_VER).o \
 		binaryclassifier$(OPT_VER).o \
 		agf2class$(OPT_VER).o \

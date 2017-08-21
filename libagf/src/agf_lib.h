@@ -34,7 +34,9 @@
 #include "multiclass.h"
 #include "multiclass_hier.h"
 #include "multiclass_c.h"
+#include "multiclass_methods.h"
 #include "multi_control.h"
+#include "solve_cond_prob.h"
 #include "batch_borders.h"
 
 #endif

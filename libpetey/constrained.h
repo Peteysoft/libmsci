@@ -14,7 +14,7 @@ namespace libpetey {
 		  gsl_vector *x);
 
   //solve linear least-squares problem using SVD:
-  int solver(gsl_matrix *a,
+  int gsl_lsq_solver(gsl_matrix *a,
 		gsl_vector *b,
 		gsl_vector *x);
 
@@ -25,7 +25,7 @@ namespace libpetey {
   					//to make interior point
 		int (* solver1) (gsl_matrix *,
 				gsl_vector *,
-				gsl_vector *)=&solver);
+				gsl_vector *)=&gsl_lsq_solver);
 
   void normalize_constraints(gsl_matrix *v, gsl_vector *c);
 
@@ -61,7 +61,7 @@ namespace libpetey {
 		gsl_vector *x,		//solution vector
 		int (* solver1) (gsl_matrix *,
 				gsl_vector *,
-				gsl_vector *)=&solver);
+				gsl_vector *)=&gsl_lsq_solver);
 
   int constrained(gsl_matrix *a,	//matrix to solve
 		gsl_vector *b,		//solution vector
@@ -70,7 +70,7 @@ namespace libpetey {
 		gsl_vector *x,		//result
 		int (* solver1) (gsl_matrix *,
 				gsl_vector *,
-				gsl_vector *)=&solver);
+				gsl_vector *)=&gsl_lsq_solver);
 }
 
 #endif

@@ -43,6 +43,7 @@ namespace libagf {
     char *commandname;			//command name
     //FILE *outfs;			//output control file stream
     //FILE *commandfs;			//write commands to this file stream (stdout, normally)
+    //vector<char *> optstack;		//list of previous options
     char **optstack;			//list of previous options
     int stackptr;
     int maxnstack;

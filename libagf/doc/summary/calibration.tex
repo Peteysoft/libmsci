@@ -14,14 +14,20 @@
 
 \begin{document}
 
+\title{Calibrating probability estimates from statistical classifiers}
+
+\author{Peter Mills}
+
+\maketitle
+
 \section{Introduction}
 
 Most statistical classification algorithms return not a discrete value as an 
-integer or symbol, but rather a
-number or a set of numbers that are transformed into class values through
+integer or symbol, but rather a floating-point
+number or a set of floats that are transformed into class values through
 their magnitude.
 A binary classifier, for instance, might return a single ``decision value'' that
-is transformed into classification result through its sign:
+is transformed into a classification result through its sign:
 \begin{equation}
 	\classvalue(\testpoint) = \frac{\binarydecision(\testpoint)}{|\binarydecision(\testpoint)}
 \end{equation}
@@ -71,7 +77,7 @@ probabilities are exactly equal.
 
 Obviously, since we don't have access to infinite amounts of training data,
 we need to transform this to some other, more approximate version of this
-to test how well calibrated the estimator, $\estimator$, is.
+to test how well calibrated the estimator, $\vec \estimator$, is.
 Rearranging equation (\ref{calibrated_definition}) and removing the limit and
 quantifier produces the following:
 \begin{equation}
@@ -84,7 +90,7 @@ calculating the correlation or another, similar measure of statistical
 association should give a good measure of how well calibrated the
 estimator is.
 
-Interestingly, this is, for the binary case at least, density estimation 
+Interestingly, this is, for the binary case at least, a density estimation 
 problem much as the classification problem preceding it but in only one
 dimension.
 That is, assuming the same rank ordering, the value of

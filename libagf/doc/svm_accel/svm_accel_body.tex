@@ -341,7 +341,7 @@ For the variable bandwidth kernel estimator defined by (\ref{agf_def}), this wor
 \end{equation}
 A variable bandwidth kernel-density estimator with a Gaussian kernel,
 \begin{equation}
-	\vectorkernel(\point, \point^\prime, \bandwidth) = \exp \left ( - \frac{|\point - \point^\prime|^2}{\bandwidth^2} \right )
+	\vectorkernel(\point, \point^\prime, \bandwidth) = \exp \left ( - \frac{|\point - \point^\prime|^2}{2 \bandwidth^2} \right )
 	\label{Gaussian_kernel}
 \end{equation}
 %$\scalarkernel(x)=\exp(-x^2/2)$
@@ -866,7 +866,7 @@ The parameter, $\nborder$, is the number of class borders used in both
 AGF and SVM-borders.
 
 For SVM, a Gaussian kernel is used as in (\ref{Gaussian_kernel})
-where $\rbkernelparam=1/\sigma^2$ is a tunable parameter. 
+where $\rbkernelparam=1/(2 \sigma^2)$ is a tunable parameter. 
 $\svmcost$ is a cost parameter added to reduce over-fitting: see
 Equations (\ref{dual_problem}) and (\ref{svmcost}).
 

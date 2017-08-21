@@ -4,6 +4,12 @@
 
 \begin{document}
 
+\title{Solving for multi-class with orthogonal coding matrices}
+
+\author{Peter Mills}
+
+\maketitle
+
 \section{Introduction}
 
 There are many different ways of generalizing binary classification to 
@@ -63,7 +69,7 @@ In vector notation:
 \end{equation}
 The more general case where a class can be excluded, that is each element of 
 the coding matrix is $a_{ij} \in \lbrace -1, 0, +1\rbrace$, 
-will not be needed here.
+will not be covered here.
 
 Note that this assumes that the binary decision functions, $\vec r$,
 estimate the conditional probabilities perfectly.
@@ -76,7 +82,10 @@ Thus, we wish to solve the following minimization problem:
 	\sum_j p_j & = & 1 \label{normalization}\\
 	p_j & \ge & 0 \label{nonnegative}
 \end{eqnarray}
-The minimization problem is trivially easy to solve if $A$ is orthogonal:
+
+Ignoring both sets of constraints,
+the minimization problem is trivially easy to solve
+if $A$ is orthogonal:
 \begin{equation}
 	A^T A = n I
 \end{equation}
@@ -109,7 +118,7 @@ constraint; 3. repeat step 2.
 More specifically, let $\vec 1$ be a vector of all $1$'s:
 \begin{itemize}
 	\item $n_0=n$
-	\item while $\exists k| p_k \le 0 \lor \vec p_i \cdot \vec 1 \ne 1$:
+	\item while $\exists k \, p_k \le 0 \lor \vec p_i \cdot \vec 1 \ne 1$:
 	\begin{itemize}
 		\item if $\vec p_i \cdot \vec 1 \ne 1$ then 
 		$\vec p_{i+1} = \vec p_i + (\vec p_i \cdot \vec 1 - 1)/n_i$
@@ -126,10 +135,22 @@ More specifically, let $\vec 1$ be a vector of all $1$'s:
 
 Note that the direction vectors form an orthogonal set.
 For instance, suppose $n_0=4$ and after enforcing the normalization constraint,
-$p_{1,1} < 0$ then the direction vectors for the two motions are:
+the first probability is less than zero, $p_{1,1} < 0$,
+then the direction vectors for the two motions are:
 \begin{equation}
-	\frac{1}{2}[1, 1, 1, 1] \cdot \frac{1}{2\sqrt{3}} [3, 1, 1, 1] = 0
+	\frac{1}{2}[1, 1, 1, 1] \cdot \frac{1}{2\sqrt{3}} [-3, 1, 1, 1] = 0
 \end{equation}
+
+More formally, consider the following sequence of vectors:
+\begin{equation}
+	v_{ij} = \frac{1}{\sqrt{(n-i)^2-n+i}} \left \lbrace \begin{array}{rl}
+			0; & j < i \\
+			-n+i+1; & j=i \\
+			1; & j > i
+		\end{array} \right .
+\end{equation}
+where $j \in [1, n]$.
+
 
 \section{Constructing the coding matrix}
 
@@ -154,7 +175,7 @@ Noting which versions of $A$ are degenerate (equivalent) can help us whittle
 away at the problem:
 \begin{itemize}
 	\item $-A$ is equivalent to $A$
-	\item re-arranging the columns (but not the rows) of $A$ makes an equivalent $A$: $A T_{ij}^T$ is equivalent to $A$ where $T_{ij}$ is the elementary matrix which exchanges rows $i$ and $j$
+	\item re-arranging either the rows or columns of $A$ makes an equivalent $A$: $T_{ij} A$ or $A T_{ij}^T$ are both equivalent to $A$ where $T_{ij}$ is the elementary matrix which exchanges rows $i$ and $j$
 \end{itemize}
 
 The most efficient method I've discovered so far of constructing an orthogonal
@@ -172,7 +193,7 @@ $m-k$ elements: there will of course be $2^{m-k}$ possibilities.
 If $v_i \in \lbrace -1, +1 \rbrace;~i=[1..k]$ then we have found a new 
 column of the matrix.
 
-With this algorithm, you will have to examine $2^{m(m+1)/2$ combinations
+With this algorithm, you will have to examine $2^{m(m+1)/2}$ combinations
 maximum.
 With a pure, brute force algorithm, this would be $2^{m^2-1}$ to examine all
 permutations while for a similarly brute force but combinatorial algorithm 
@@ -183,6 +204,11 @@ final matrix this would be $2^{m-1}$ choose $m$ or:
 \end{equation}
 By taking advantage of the negative degeneracy (first point, above) 
 we reduce both these algorithms by half, hence the use of $m-1$ instead of $m$.
+
+The final point concerns the size of $m$. In order to find on the order
+of $n=m$ columns to match the $m$ rows, it appears that $m$ should be 
+(at minimum) divisible by $4$: $m \mathrm{mod} 4 = 0$.
+Note that we can have more rows than columns but not the other way around.
 
 \bibliographystyle{apa}
 

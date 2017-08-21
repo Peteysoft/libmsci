@@ -15,21 +15,21 @@ symbol & definition & first used \\ \hline
 	$\point=\lbrace \coord_i \rbrace$ & point in the feature space & (\ref{norm_def})\\
 	$\class$ & class label & (\ref{kernel_classification})\\
 	$\classlabel_i$ & class label of $i$th training sample & (\ref{kernel_classification})\\
-	$\condprob$ & conditional probability & S \ref{theory}\\
-	$\jointprob$ & joint probability & S \ref{theory} \\
+	$\condprob(\class|\point)$ & conditional probability & S \ref{theory}\\
+	$\jointprob(\class,\,\point)$ & joint probability & S \ref{theory} \\
 	$\scalarkernel$ & kernel function taking a single scalar argument & (\ref{scalar_kernel_def})\\
 	$\bandwidth$ & ``bandwidth'': sets the size of a scalar kernel & (\ref{scalar_kernel_def})\\
-	$\probability$ & true probability density & (\ref{setting_the_bandwidth})\\
+	$\probability(\point)$ & true probability density & (\ref{setting_the_bandwidth})\\
 	$\dimension$ & number of dimensions in feature space & (\ref{setting_the_bandwidth})\\
 	$\kernelsum$ & sum of the kernels at each training sample & (\ref{agf_def})\\
-	$\lbrace \svmcoeff_i \rbrace$ & coefficients in weighted kernel estimator & (\ref{weighted_kernel_estimator})\\
+	$\vec \svmcoeff=\lbrace \svmcoeff_i \rbrace$ & coefficients in weighted kernel estimator & (\ref{weighted_kernel_estimator})\\
 	$\expandedspace$ & theoretical expanded feature space in kernel-based SVM & (\ref{phi_def})\\
 	$\svmdecision$ & raw decision function in binary SVM & (\ref{decision_function0})\\
 	$\svmcost$ & cost parameter in SVM for reducing over-fitting & (\ref{svmcost}) \\
 	$\diffcondprob$ & difference in conditional probabilities & (\ref{rdef}) \\
 	$\decisionfunction$ & decision function which is estimator of $\diffcondprob$ & (\ref{rdef})\\
 	$\kerneldecision$ & kernel estimator for $\diffcondprob$ & (\ref{kernel_decision}) \\
-	$\vbdecision$ & variablekernel estimator for $\diffcondprob$ & (\ref{vb_kernel_r}) \\
+	$\vbdecision$ & variable kernel estimator for $\diffcondprob$ & (\ref{vb_kernel_r}) \\
 	$\lbrace \bordervector_i \rbrace$ & set of vectors defining the class border & (\ref{border_decision}) \\
 	$\lbrace \bordernormal_i \rbrace$ & set of normals to the class border & (\ref{border_decision}) \\
 	$\nborder$ & number of border vectors & (\ref{border_decision}) \\
@@ -50,7 +50,7 @@ symbol & definition & first used \\ \hline
 	$\featurevolume$ & volume of the feature space occupied by training data & (\ref{scaling_law}) \\
 	$\mintrain$ & number of training samples needed for good accuracy & (\ref{scaling_law}) \\
 	$\minborders$ & number of border samples needed for good accuracy & (\ref{scaling_law}) \\
-	$\rbkernelparam$ & parameter used for Gaussian kernels in SVM & S \ref{results_section} \\
+	$\rbkernelparam=\frac{1}{2\bandwidth^2}$ & parameter used for Gaussian kernels in SVM & S \ref{results_section} \\
 	$\datafraction$ & fraction of data used for testing & S \ref{results_section} \\
 	$\lbrace \confusion_{ij} \rbrace$ & confusion matrix & (\ref{accuracy}) \\
 	$\ntest$ & number of test points & (\ref{accuracy}) \\

@@ -131,11 +131,12 @@ namespace libagf {
     return 0;
   }
 
-  //print out common control files:
-  int ** one_against_all(int ncls) {
-    int **coding_matrix;
-    coding_matrix=new int *[ncls];
-    coding_matrix[0]=new int[ncls*ncls];
+  //generate common coding matrices:
+  template <typename scalar>
+  scalar ** one_against_all(int ncls) {
+    scalar **coding_matrix;
+    coding_matrix=new scalar *[ncls];
+    coding_matrix[0]=new scalar[ncls*ncls];
     for (int i=0; i<ncls; i++) {
       coding_matrix[i]=coding_matrix[0]+i*ncls;
       for (int j=0; j<i; j++) coding_matrix[i][j]=-1;
@@ -145,12 +146,13 @@ namespace libagf {
     return coding_matrix;
   }
 
-  int ** one_against_one(int ncls) {
-    int **coding_matrix;
+  template <typename scalar>
+  scalar ** one_against_one(int ncls) {
+    scalar **coding_matrix;
     int k=0;
     int nrow=(ncls-1)*ncls/2;
-    coding_matrix=new int *[nrow];
-    coding_matrix[0]=new int[nrow*ncls];
+    coding_matrix=new scalar *[nrow];
+    coding_matrix[0]=new scalar[nrow*ncls];
     for (int i=0; i<ncls; i++) {
       for (int j=i+1; j<ncls; j++) {
         coding_matrix[k]=coding_matrix[0]+k*ncls;
@@ -163,10 +165,11 @@ namespace libagf {
     return coding_matrix;
   }
 
-  int ** partition_adjacent(int ncls) {
-    int **coding_matrix;
-    coding_matrix=new int *[ncls-1];
-    coding_matrix[0]=new int[ncls*(ncls-1)];
+  template <typename scalar>
+  scalar ** partition_adjacent(int ncls) {
+    scalar **coding_matrix;
+    coding_matrix=new scalar *[ncls-1];
+    coding_matrix[0]=new scalar[ncls*(ncls-1)];
     for (int i=1; i<ncls; i++) {
       coding_matrix[i-1]=coding_matrix[0]+(i-1)*ncls;
       for (int j=0; j<i; j++) coding_matrix[i-1][j]=-1;
@@ -176,14 +179,15 @@ namespace libagf {
   }
 
   //need to design a version of this for larger n:
-  int ** random_coding_matrix(int ncls, int &ntrial, int strictflag) {
+  template <typename scalar>
+  scalar ** random_coding_matrix(int ncls, int &ntrial, int strictflag) {
     tree_lg<vector<int> > used;
     vector<int> row(ncls);
-    int **coding_matrix;
+    scalar **coding_matrix;
     int err1, err2;
     double nperm=pow(3-strictflag, ncls);
-    coding_matrix=new int *[ntrial];
-    coding_matrix[0]=new int[ncls*ntrial];
+    coding_matrix=new scalar *[ntrial];
+    coding_matrix[0]=new scalar[ncls*ntrial];
 
     for (int i=0; i<ntrial; i++) {
       coding_matrix[i]=coding_matrix[0]+i*ncls;
@@ -204,14 +208,15 @@ namespace libagf {
     done: return coding_matrix;
   }
 
-  int ** exhaustive_coding_matrix(int ncls) {
+  template <typename scalar>
+  scalar ** exhaustive_coding_matrix(int ncls) {
     int64_t nrow;
-    int **coding_matrix;
+    scalar **coding_matrix;
 
     nrow=pow(2, ncls-1)-1;
 
-    coding_matrix=new int *[nrow];
-    coding_matrix[0]=new int[nrow*ncls];
+    coding_matrix=new scalar *[nrow];
+    coding_matrix[0]=new scalar[nrow*ncls];
 
     for (int64_t i=0; i<nrow; i++) {
       //bit_array *tobits=new bit_array((word *) &i, (sizeof(long)+1)/sizeof(word), ncls-1);
@@ -227,11 +232,12 @@ namespace libagf {
   }
 
   //generate orthogonal coding matrix:
-  int ** ortho_coding_matrix_nqbf(int n, int strictflag, int toprow1) {
+  template <typename scalar>
+  scalar ** ortho_coding_matrix_nqbf(int n, int strictflag, int toprow1) {
     tree_lg<vector<int> > list0;
     vector<int> trial0(n);
     double nperm0=pow(3-strictflag, n);
-    int **coding_matrix;
+    scalar **coding_matrix;
     double eps=1e-12;
     int nfilled;
 
@@ -239,8 +245,8 @@ namespace libagf {
     assert(strictflag==0 || strictflag==1);
 
     //allocate the coding matrix:
-    coding_matrix=new int *[n];
-    coding_matrix[0]=new int[n*n];
+    coding_matrix=new scalar *[n];
+    coding_matrix[0]=new scalar[n*n];
     for (int i=1; i<n; i++) coding_matrix[i]=coding_matrix[0]+n*i;
 
     do {
@@ -399,18 +405,19 @@ namespace libagf {
   }
 
   //need to design a more efficient version of this...
-  int ** ortho_coding_matrix_brute_force(int n, int toprow1) {
+  template <typename scalar>
+  scalar ** ortho_coding_matrix_brute_force(int n, int toprow1) {
     long *trial;
     //bit_array *tobits;
     bitset<sizeof(int)*8> *tobits;
-    int **coding_matrix;
+    scalar **coding_matrix;
     int nfilled;
     int nperm;
 
     nperm=pow(2, n);
 
-    coding_matrix=new int *[n];
-    coding_matrix[0]=new int[n*n];
+    coding_matrix=new scalar *[n];
+    coding_matrix[0]=new scalar[n*n];
     for (int i=1; i<n; i++) coding_matrix[i]=coding_matrix[0]+n*i;
 
     if (n>8*sizeof(long)-1) {
@@ -494,7 +501,8 @@ namespace libagf {
     }
   }
 
-  void print_control_nonhier(FILE *fs, int **coding_matrix, int n, int ncls, const char *options) {
+  template <typename scalar>
+  void print_control_nonhier(FILE *fs, scalar **coding_matrix, int n, int ncls, const char *options) {
     for (int i=0; i<n; i++) {
       if (coding_matrix[i]==NULL) break;
       if (options!=NULL) fprintf(fs, "\"%s\" ", options); else fprintf(fs, "\"\" ");
@@ -511,6 +519,39 @@ namespace libagf {
     for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
     fprintf(fs, "}\n");
   }
+
+
+  template int ** one_against_all<int>(int);
+  template float ** one_against_all<float>(int);
+  template double ** one_against_all<double>(int);
+
+  template int ** one_against_one<int>(int);
+  template float ** one_against_one<float>(int);
+  template double ** one_against_one<double>(int);
+
+  template int ** partition_adjacent<int>(int);
+  template float ** partition_adjacent<float>(int);
+  template double ** partition_adjacent<double>(int);
+
+  template int ** random_coding_matrix<int>(int, int &, int);
+  template float ** random_coding_matrix<float>(int, int &, int);
+  template double ** random_coding_matrix<double>(int, int &, int);
+
+  template int ** exhaustive_coding_matrix<int>(int);
+  template float ** exhaustive_coding_matrix<float>(int);
+  template double ** exhaustive_coding_matrix<double>(int);
+
+  template int ** ortho_coding_matrix_nqbf<int>(int,int,int);
+  template float ** ortho_coding_matrix_nqbf<float>(int,int,int);
+  template double ** ortho_coding_matrix_nqbf<double>(int,int,int);
+
+  template int ** ortho_coding_matrix_brute_force<int>(int, int);
+  template float ** ortho_coding_matrix_brute_force<float>(int, int);
+  template double ** ortho_coding_matrix_brute_force<double>(int, int);
+
+  template void print_control_nonhier<int>(FILE *fs, int **, int, int, const char *);
+  template void print_control_nonhier<float>(FILE *fs, float **, int, int, const char *);
+  template void print_control_nonhier<double>(FILE *fs, double **, int, int, const char *);
 
 }
 

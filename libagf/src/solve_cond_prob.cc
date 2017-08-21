@@ -1,6 +1,9 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_multifit.h>
 
+//other effort (equally worthless...):
+#include "constrained.h"
+
 #include "full_util.h"
 #include "randomize.h"
 #include "gsl_util.h"
@@ -11,32 +14,6 @@
 using namespace libpetey;
 
 namespace libagf {
-
-//strictly for profiler so we don't have to recompile the gsl library:
-void gsl_lsq_solver(gsl_matrix *a, gsl_vector *r, gsl_vector *p) {
-  //gsl_matrix *u;
-  gsl_matrix *vt;
-  gsl_vector *work;
-  gsl_vector *s;
-
-  int m=a->size1;
-  int n=a->size2;
-
-  vt=gsl_matrix_alloc(n, n);
-  //u=gsl_matrix_alloc(m, n);
-  s=gsl_vector_alloc(n);
-  work=gsl_vector_alloc(n);
-
-  //gsl_matrix_memcpy(u, a);
-  gsl_linalg_SV_decomp(a, vt, s, work);
-  gsl_linalg_SV_solve(a, vt, s, r, p);
-
-  gsl_vector_free(s);
-  gsl_vector_free(work);
-  gsl_matrix_free(vt);
-  //gsl_matrix_free(u);
-
-}
 
 int solve_cond_prob2(gsl_matrix *a,		//decision matrix
 		gsl_vector *r,			//original "raw" probabilities
