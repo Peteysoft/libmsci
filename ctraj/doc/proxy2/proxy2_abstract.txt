@@ -14,6 +14,6 @@ which returned RMS errors of 0.30 ppmv and 0.59 ppmv for cross-validation
 and sonde validation respectively.
 The method seems especially effective for shorter lived tracers and was far
 more accurate than the classic method at predicting ozone concentration in the
-Southern hemisphere at the end of winter.
+Southern hemisphere over the same time period.
 
  

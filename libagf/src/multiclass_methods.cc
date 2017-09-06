@@ -9,6 +9,8 @@
 
 #include "gsl_util.h"
 #include "constrained.h"
+#include "randomize.h"
+#include "full_util.h"
 
 #include "agf_lib.h"
 
@@ -19,7 +21,6 @@ namespace libagf {
   template <class real>
   void prep_nonstrict(real **a, int m, int n, real *r,
 		  gsl_matrix *q, gsl_vector *b) {
-   
     //transform coding matrix to a linear system: 
     for (int i=0; i<m; i++) {
       for (int j=0; j<n; j++) {
@@ -27,14 +28,12 @@ namespace libagf {
           //gsl_matrix_set(q, i, j, 1);
           gsl_matrix_set(q, i, j, r[i]);
 	} else {
-          //gsl_matrix_set(q, i, j, map_el/b[i]);
+          //gsl_matrix_set(q, i, j, map_el/r[i]);
           gsl_matrix_set(q, i, j, a[i][j]);
 	}
       }
       gsl_vector_set(b, i, r[i]);
     }
-    //print_gsl_matrix(stdout, q);
-    //gsl_vector_fprintf(stdout, b, "%g");
   }
 
   //various lame-ass methods of re-normalizing conditional probabilities to
@@ -112,21 +111,29 @@ namespace libagf {
   }
 
   template <class real>
-  void solve_class_scratch(real **a, int m, int n, real *r, real *p) {
+  void solve_class_scratch(real **a0, int m, int n, real *r, real *p) {
     gsl_matrix *u1;
-    gsl_vector *work;
     gsl_vector *b1;
     gsl_vector *p1;
 
     //prepare the linear system:
-    u1=gsl_matrix_alloc(m, n);
-    b1=gsl_vector_alloc(m);
+    u1=gsl_matrix_alloc(m+1, n);
+    b1=gsl_vector_alloc(m+1);
 
-    prep_nonstrict(a, m, n, r, u1, b1);
+    prep_nonstrict(a0, m, n, r, u1, b1);
+
+    //if problem is under-determined or otherwise unstable, this will
+    //help, otherwise it makes no difference:
+    for (int i=0; i<n; i++) gsl_matrix_set(u1, m, i, 1);
+    gsl_vector_set(b1, m, 1);
+
+    //print_gsl_matrix(stdout, u1);
+    //gsl_vector_fprintf(stdout, b1, "%g");
 
     //solve the linear system:
     p1=gsl_vector_alloc(n);
     gsl_lsq_solver(u1, b1, p1);
+    //gsl_vector_fprintf(stdout, p1, "%g");
 
     for (int i=0; i<n; i++) p[i]=gsl_vector_get(p1, i);
 
@@ -157,8 +164,58 @@ namespace libagf {
     }
   }
 
+  //here we add the constraint in the form of a "slack" variable after first
+  //forming the normal equations:
   template <class real>
-  void solve_class_norm(real **a, int m, int n, real *r, real *p) {
+  void solve_class_norm2(real **a0, int m, int n, real *r, real *p) {
+    real **a;
+    real **at;
+    real **ata;
+
+    //since normalization constraint has been added, we can use a linear
+    //system in which the result is 0:
+    a=copy_matrix(a0, m, n);
+    for (int i=0; i<m; i++) {
+      for (int j=0; j<n; j++) {
+	if (a[i][j]!=0) a[i][j]-=r[i];
+      }
+    }
+    at=matrix_transpose(a, m, n);
+    ata=matrix_mult(at, a, n, m, n);
+
+    gsl_matrix *q=gsl_matrix_alloc(n+1, n+1);
+    gsl_vector *b=gsl_vector_alloc(n+1);
+    
+    for (int i=0; i<n; i++) {
+      for (int j=0; j<n; j++) {
+        gsl_matrix_set(q, i, j, ata[i][j]);
+      }
+      gsl_vector_set(b, i, 0);
+      gsl_matrix_set(q, i, n, 1);
+      gsl_matrix_set(q, n, i, 1);
+    }
+    gsl_matrix_set(q, n, n, 0);
+    gsl_vector_set(b, n, 1);
+
+    gsl_vector *p1=gsl_vector_alloc(n+1);
+    gsl_lsq_solver(q, b, p1);
+
+    for (int i=0; i<n; i++) p[i]=gsl_vector_get(p1, i);
+
+    delete_matrix(a);
+    delete_matrix(at);
+    delete_matrix(ata);
+
+    gsl_matrix_free(q);
+    gsl_vector_free(b);
+    gsl_vector_free(p1);
+
+  }
+
+  //here we add the constraint in the form of a "slack" variable before
+  //solving the least-squares problem:
+  template <class real>
+  void solve_class_norm1(real **a, int m, int n, real *r, real *p) {
     gsl_matrix *q;
     gsl_vector *b;
     //solution:
@@ -166,8 +223,17 @@ namespace libagf {
 
     //prepare linear system:
     q=gsl_matrix_alloc(m+1, n+1);
+    gsl_matrix_set_zero(q);
     b=gsl_vector_alloc(m+1);
-    prep_nonstrict(a, m, n, r, q, b);
+
+    //since normalization constraint has been added, we can use a linear
+    //system in which the result is 0:
+    for (int i=0; i<m; i++) {
+      for (int j=0; j<n; j++) {
+	if (a[i][j]!=0) gsl_matrix_set(q, i, j, a[i][j]-r[i]);
+      }
+      gsl_vector_set(b, i, 0);
+    }
 
     //set normalization constraints:
     for (int i=0; i<m; i++) gsl_matrix_set(q, i, n, 1);
@@ -230,7 +296,7 @@ namespace libagf {
     gsl_vector *cthresh=gsl_vector_alloc(n);
     gsl_vector_view lastrow;
 
-    int ind;
+    long *ind0=randomize(n);
 
     //initialize the constraints:
     gsl_matrix_set_identity(cnorm);
@@ -239,20 +305,37 @@ namespace libagf {
     gsl_vector_set_all(&lastrow.vector, -1);
     gsl_vector_set(cthresh, n-1, -1);
 
-    for (ind=0; ind<n; ind++) {
+    for (int k=0; k<n; k++) {
+      int ind=ind0[k];
+      //int ind=2;
       for (int i=0; i<m; i++) {
         //double aind=gsl_matrix_get(map1, i, ind);
 	double aind=a[i][ind];
+	if (aind==0) aind=r[i];
         gsl_vector_set(bt, i, r[i]-aind);
         for (int j=0; j<ind; j++) {
           //gsl_matrix_set(at, i, j, gsl_matrix_get(map1, i, j)-aind);
-          gsl_matrix_set(at, i, j, a[i][j]-aind);
+	  if (a[i][j]==0) {
+            gsl_matrix_set(at, i, j, r[i]-aind);
+	  } else {
+            gsl_matrix_set(at, i, j, a[i][j]-aind);
+	  }
         }
         for (int j=ind+1; j<n; j++) {
           //gsl_matrix_set(at, i, j-1, gsl_matrix_get(map1, i, j)-aind);
-          gsl_matrix_set(at, i, j-1, a[i][j]-aind);
+	  if (a[i][j]==0) {
+            gsl_matrix_set(at, i, j-1, r[i]-aind);
+	  } else {
+            gsl_matrix_set(at, i, j-1, a[i][j]-aind);
+	  }
         }
       }
+
+      //print_matrix(stdout, a, m, n);
+      //printf("\n");
+
+      //print_gsl_matrix(stdout, at);
+      //printf("\n");
 
       constrained(at, bt, cnorm, cthresh, p2);
 
@@ -269,6 +352,7 @@ namespace libagf {
       if (p[ind] >= 0) break;
     }
 
+    delete [] ind0;
     gsl_vector_free(p2);
     gsl_vector_free(bt);
     gsl_matrix_free(at);
@@ -291,6 +375,7 @@ namespace libagf {
       
   template <class real>
   void solve_class_1vR(real **a, int m, int n, real *r, real *p) {
+    printf("%d %d\n", m, n);
     assert(m<=n);
     for (int i=0; i<m; i++) p[i]=(1+r[i])/2;
   }
@@ -313,8 +398,11 @@ namespace libagf {
   template void solve_class_vote_pdf<float>(float **, int, int, float *, float *);
   template void solve_class_vote_pdf<double>(double **, int, int, double *, double *);
 
-  template void solve_class_norm<float>(float **, int, int, float *, float *);
-  template void solve_class_norm<double>(double **, int, int, double *, double *);
+  template void solve_class_norm1<float>(float **, int, int, float *, float *);
+  template void solve_class_norm1<double>(double **, int, int, double *, double *);
+
+  template void solve_class_norm2<float>(float **, int, int, float *, float *);
+  template void solve_class_norm2<double>(double **, int, int, double *, double *);
 
   template void solve_class_constrained1<float>(float **, int, int, float *, float *);
   template void solve_class_constrained1<double>(double **, int, int, double *, double *);

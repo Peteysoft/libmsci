@@ -409,19 +409,16 @@ For AGF, this works out to:
 \end{equation}
 where $K(x)=\exp(-x^2/2)$ \citep{Mills2011}.
 
-In LIBSVM, conditional probabilities are estimated by applying a
-sigmoid function to
+In LIBSVM, conditional probabilities are estimated by applying
+logistic regression \citep{Michie_etal1994} to
 the raw SVM decision function, $\svmdecision$, in (\ref{svm_decision}):
 \begin{equation}
 	\svmprob(\testpoint) = \tanh \left (\frac{\svmprobcoeffA \svmdecision(\testpoint)+ \svmprobcoeffB}{2} \right )
 	\label{svm_prob}
 \end{equation}
+\citep{Chang_Lin2011},
 where $\svmprobcoeffA$ and $\svmprobcoeffB$ are coefficients derived from
-the training data via
-nonlinear least-squares fitting \citep{Platt1999,Lin_etal2007,Chang_Lin2011}.
-The nonlinear fitting technique
-is similar to logistic regression \citep{Michie_etal1994}
-in that it allows probability estimates to be fitted directly against the class values.
+the training data via a nonlinear fitting technique \citep{Platt1999,Lin_etal2007}.
 
 The gradient of the revised SVM decision function, above, is:
 \begin{equation*}
@@ -500,12 +497,14 @@ and $\diffcondprob_{ij}$ is the difference in conditional probabilities of
 the binary classifier that discriminates between the $i$th and $j$th classes.
 \citet{Wu_etal2004} transform this problem into the following linear system:
 \begin{eqnarray}
-	\sum_i \frac{\multiprob_i}{4} \left [ \sum_{j|j \ne i} (\diffcondprob_{ij} + 1)^2 - \diffcondprob_{ij}^2 - \diffcondprob_{ij} - 2 \right ] + \lmult & = & 0 \\ \nonumber
-	\sum_i \multiprob_i & = & 1
+	%\frac{1}{4} \sum_i \left [ \sum_{j|j \ne i} (\diffcondprob_{ij} + 1)^2 - \diffcondprob_{ij}^2 - \diffcondprob_{ij} - 2 \right ] \multiprob_i + \lmult & = & 0 \\ \nonumber -- where the fuck does this come from???
+	\multiprob_i \sum_{k|k \ne i} (r_{ki} + 1)^2 +
+	\frac{1}{2} \sum_{j|j \ne i} \multiprob_j (1 - r_{ij}^2) & = & 0 \\ \nonumber
+	\sum_j \multiprob_j & = & 1
 	\label{multiclass}
 \end{eqnarray}
 where $\multiprob_i = \condprob(i | \point)$ is the $i$th multi-class 
-conditional probability and $\lmult$ is a Lagrange multiplier.
+conditional probability and $\lmult$ is a ``slack'' variable.
 They also show that the constraints not included in the problem, that
 the probabilities are all positive, are always satisfied
 and describe an algorithm for solving it iteratively, although a

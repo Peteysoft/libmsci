@@ -43,9 +43,12 @@ namespace libagf {
   void solve_class_vote_pdf(real **a, int m, int n, real *r, real *p);
 
   //least square applying only normalization constraint:
-  //(appropriate for 1 vs. 1)
   template <class real>
-  void solve_class_norm(real **a, int m, int n, real *r, real *p);
+  void solve_class_norm1(real **a, int m, int n, real *r, real *p);
+
+  //appropriate for 1 vs. 1:
+  template <class real>
+  void solve_class_norm2(real **a, int m, int n, real *r, real *p);
 
   //two attempts at fully constrained, general solutions:
   template <class real>
@@ -64,6 +67,8 @@ namespace libagf {
   template <class real>
   void solve_class_vote_pdf2(real **a, int m, int n, real *r, real *p);
 
+  //one-versus-rest: basic solution; if you ignore "the rest" then the 
+  //binary probabilities are the same as the multi-class probs.
   template <class real>
   void solve_class_1vR(real **a, int m, int n, real *r, real *p);
 

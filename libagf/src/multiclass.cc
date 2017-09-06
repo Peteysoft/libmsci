@@ -27,7 +27,6 @@ namespace libagf {
   template <class real, class cls_t>
   multiclass<real, cls_t>::multiclass(int ct) {
     type=ct;
-    constraint_weight=1;
 
     //set model variables to NULL:
     twoclass=NULL;
@@ -43,8 +42,6 @@ namespace libagf {
     //"polarity":
     pol=NULL;
 
-    //constraints:
-    cnorm=NULL;
   }
 
   template <class real, class cls_t>
@@ -62,9 +59,6 @@ namespace libagf {
 
     fclose(param.infs);
     //multi_partition_strict(fname, part, nmodel);
-
-    //weight for normalization constraint:
-    param.cw=1;
 
     param.commandname=NULL;
     if (com!=NULL) {
@@ -103,7 +97,6 @@ namespace libagf {
 
     //classification type and constraint weight:
     type=param.type;
-    constraint_weight=param.cw;
 
     //pass to another initialization routine (duh...):
     init(name, part, nmodel, param.prefix, param.trainflag, param.commandname, 
@@ -141,26 +134,23 @@ namespace libagf {
 	solve_class=&solve_class_vote<real>;
         break;
       case (4):
-	solve_class=&solve_class_renorm<real>;
+	solve_class=&solve_class_norm1<real>;
         break;
       case (5):
-	solve_class=&solve_class_renorm<real>;
+	solve_class=&solve_class_norm2<real>;
         break;
       case (6):
-	solve_class=&solve_class_scratch<real>;
+	solve_class=&solve_class_renorm<real>;
         break;
       case (7):
         solve_class=&solve_class_constrained1<real>;
 	break;
       case (8):
-	solve_class=&solve_class_vote_pdf<real>;
-        //cls1=vote_pdf2(b, pdf);
+	solve_class=&solve_class_vote_pdf2<real>;
 	break;
-      case (10):
+      case (9):
 	solve_class=&solve_class_1vR<real>;
 	break;
-      case (11):
-	solve_class=&solve_class_norm<real>;
 	break;
       default:
         solve_class=&solve_class_constrained2<real>;
@@ -212,7 +202,7 @@ namespace libagf {
     code=zero_matrix<real>(nmodel, this->ncls);	//two formats
     gsl_matrix_set_zero(map);
     //the sum of the conditional probabilities should always equal 1:
-    for (int i=0; i<this->ncls; i++) gsl_matrix_set(map, nmodel, i, constraint_weight);
+    for (int i=0; i<this->ncls; i++) gsl_matrix_set(map, nmodel, i, 1);
 
     //sum of the conditional probabilities on one side of the partition
     //is equal to the conditional probability returned from the 2-class
@@ -230,10 +220,6 @@ namespace libagf {
     vt=NULL;
     s=NULL;
 
-    //initialize constraints when we need them:
-    cnorm=NULL;
-    cthresh=NULL;
-
     return 0;
 
   }
@@ -249,11 +235,6 @@ namespace libagf {
     gsl_vector_free(s);
     gsl_matrix_free(vt);
     gsl_matrix_free(u);
-
-    if (cnorm!=NULL) {
-      gsl_matrix_free(cnorm);
-      gsl_vector_free(cthresh);
-    }
 
     if (pol!=NULL) delete [] pol;
 
@@ -294,21 +275,6 @@ namespace libagf {
 
   }
 
-  //initialize the constraint coefficents and thresholds:
-  template <class real, class cls_t>
-  void multiclass<real, cls_t>::init_constraint() {
-    if (cnorm==NULL) {
-      gsl_vector_view lastrow;
-      cnorm=gsl_matrix_alloc(this->ncls, this->ncls-1);
-      gsl_matrix_set_identity(cnorm);
-      cthresh=gsl_vector_alloc(this->ncls);
-      gsl_vector_set_zero(cthresh);
-      lastrow=gsl_matrix_row(cnorm, this->ncls-1);
-      gsl_vector_set_all(&lastrow.vector, -1);
-      gsl_vector_set(cthresh, this->ncls-1, -1);
-    }
-  }
-
   //load a linear transformation to apply to the test points:
   template <class real, class cls_t>
   int multiclass<real, cls_t>::ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2) {
@@ -330,411 +296,23 @@ namespace libagf {
     return err;
   }
 
-  //vote based on class values from raw probabilities:
-  template <class real, class cls_t>
-  cls_t multiclass<real, cls_t>::vote_label(gsl_vector *b, real *tly) {
-    real val;
-    cls_t cls;
-    //we just inline it:
-    for (int i=0; i<this->ncls; i++) tly[i]=0;
-    for (int i=0; i<nmodel; i++) {
-      val=gsl_vector_get(b, i);
-      for (int j=0; j<this->ncls; j++) {
-        tly[j]+=gsl_matrix_get(map, i, j)*val/fabs(val);
-      }
-    }
-    //correction isn't perfect, but should move tallies closer to 
-    //conditional probability:
-    for (int j=0; j<this->ncls; j++) tly[j]=(tly[j]+1)/(nmodel+1);
-    cls=choose_class(tly, this->ncls);
-    return cls;
-  }
-
-  //vote based on probabilities from the binary classifier:
-  template <class real, class cls_t>
-  cls_t multiclass<real, cls_t>::vote_pdf(gsl_vector *b, real *tly) {
-    real val;
-    cls_t cls;
-    //we just inline it:
-    for (int i=0; i<this->ncls; i++) tly[i]=0;
-    for (int i=0; i<nmodel; i++) {
-      val=gsl_vector_get(b, i);
-      for (int j=0; j<this->ncls; j++) {
-        tly[j]+=gsl_matrix_get(map, i, j)*val;
-      }
-    }
-    cls=choose_class(tly, this->ncls);
-    return cls;
-  }
-
-  //vote based on probabilities from the binary classifier:
-  //corrected and re-normalized:
-  template <class real, class cls_t>
-  cls_t multiclass<real, cls_t>::vote_pdf2(gsl_vector *b, real *tly) {
-    real val;
-    cls_t cls;
-    real pt=0;			//total of computed cond. prob.
-    cls_t ind[this->ncls];	//flag the good values
-    cls_t ng=0;			//number of good values
-    cls_t ng2;
-    float k;			//additive normalization constant
-
-    //we just inline it:
-    for (int i=0; i<this->ncls; i++) tly[i]=0;
-    for (int i=0; i<nmodel; i++) {
-      val=gsl_vector_get(b, i);
-      for (int j=0; j<this->ncls; j++) {
-        tly[j]+=gsl_matrix_get(map, i, j)*val;
-      }
-    }
-    //must be done in two steps (I think...):
-    //correction step:
-    for (int i=0; i<this->ncls; i++) {
-      tly[i]=(tly[i]+1)/(nmodel+1);
-      if (tly[i]<0) {
-        tly[i]=0;
-      } else {
-        pt+=tly[i];
-	ind[ng]=i;
-	ng++;
-      }
-    }
-    //re-normalization step (farm out to another unit):
-    //(use this version since we assume:
-    //- A^T*A=nI where A is the coding matrix
-    //- top row of A is all 1's which is not explicitly included in the control
-    //  file but is included in above calculation
-    //- we solve: p = A^T*r where the first value in r is a free parameter 
-    //  which we vary for normalization if the other constraints in p are 
-    //  violated)
-    p_constrain_renorm1(tly, this->ncls);
-
-    cls=choose_class(tly, this->ncls);
-    return cls;
-  }
-
-  //gets results from all the binary models:
-  template <class real, class cls_t>
-  void multiclass<real, cls_t>::raw_classify(real *x, gsl_vector *b) {
-    //printf("multiclass raw pdfs: ");
-    for (int i=0; i<nmodel; i++) {
-      gsl_vector_set(b, i, twoclass[i]->R(x));
-    }
-    //printf("\n");
-    gsl_vector_set(b, nmodel, constraint_weight);
-  }
-
-  //classification from pseudo-inverse (linear least squares via SVD):
-  template <class real, class cls_t>
-  cls_t multiclass<real, cls_t>::classify_basic(gsl_vector *b, real *p) {
-    cls_t cls;
-    gsl_vector *p1=gsl_vector_alloc(this->ncls);
-
-    if (strictflag==0) classify_scratch(b, p);
-
-    code_svd();
-
-    gsl_linalg_SV_solve(u, vt, s, b, p1);
-    for (cls_t i=0; i<this->ncls; i++) p[i]=gsl_vector_get(p1, i);
-    cls=choose_class(p, this->ncls);
-    gsl_vector_free(p1);
-
-    return cls;
-  }
-
-  //solve matrix equation from scratch so we can apply regularizations to it:
-  template <class real, class cls_t>
-  cls_t multiclass<real, cls_t>::classify_scratch(gsl_vector *b, real *p) {
-    cls_t cls;
-    gsl_vector *s1;
-    gsl_matrix *u1;
-    gsl_matrix *vt1;
-    gsl_vector *work;
-    gsl_vector *b1;
-
-    gsl_vector *p1=gsl_vector_alloc(this->ncls);
-
-    vt1=gsl_matrix_alloc(this->ncls, this->ncls);
-    s1=gsl_vector_alloc(this->ncls);
-    work=gsl_vector_alloc(this->ncls);
-
-    //copy mapping:
-    u1=gsl_matrix_alloc(nmodel+1, this->ncls);
-    gsl_matrix_memcpy(u1, map);
-
-    //normalize on the basis of the raw probabilities:
-    b1=gsl_vector_alloc(nmodel+1);
-    gsl_vector_set(b1, nmodel, 1);
-    for (int i=0; i<nmodel; i++) {
-      real val=gsl_vector_get(b, i);
-      for (int j=0; j<this->ncls; j++) {
-        real map_el=gsl_matrix_get(u1, i, j);
-	if (map_el==0) {
-          //gsl_matrix_set(u1, i, j, 1);
-          gsl_matrix_set(u1, i, j, val);
-	} else {
-          //gsl_matrix_set(u1, i, j, map_el/val);
-          gsl_matrix_set(u1, i, j, 1);
-	}
-      }
-      gsl_vector_set(b1, i, 1);
-    }
-
-    gsl_linalg_SV_decomp(u1, vt1, s1, work);
-
-    gsl_linalg_SV_solve(u1, vt1, s1, b, p1);
-    for (cls_t i=0; i<this->ncls; i++) p[i]=gsl_vector_get(p1, i);
-    cls=choose_class(p, this->ncls);
-
-    //clean up:
-    gsl_vector_free(p1);
-    gsl_vector_free(work);
-    gsl_vector_free(s1);
-    gsl_matrix_free(u1);
-    gsl_matrix_free(vt1);
-    gsl_vector_free(b1);
-
-    return cls;
-  }
-
-  //"constrained" version (not completely rigorous, but works quite well):
-  int solve_cond_prob(gsl_matrix *, gsl_vector *, gsl_vector *);
-
-  template <class real, class cls_t>
-  cls_t multiclass<real, cls_t>::classify_special(gsl_vector *b, real *p) {
-    real pt=0;
-    gsl_matrix *map1;
-
-    if (strictflag) {
-      map1=map;
-    } else {
-      map1=gsl_matrix_alloc(nmodel+1, this->ncls);
-      gsl_matrix_memcpy(map1, map);
-      for (cls_t i=0; i<nmodel; i++) {
-        cls_t cnt=0;
-	real r_i=gsl_vector_get(b, i);
-        for (cls_t j=0; j<this->ncls; j++) {
-          real map_el=gsl_matrix_get(map, i, j);
-          if (map_el==0) gsl_matrix_set(map1, i, j, r_i);
-	}
-      }
-    }
-
-    //old method:
-    if (type==7) {	//(logic isn't pretty, but simplest way to implement)
-      gsl_vector *p1=gsl_vector_alloc(this->ncls);
-      solve_cond_prob(map1, b, p1);
-      for (cls_t i=0; i<this->ncls; i++) {
-        p[i]=gsl_vector_get(p1, i);
-      }
-      gsl_vector_free(p1);
-    //new method:
-    } else {
-      gsl_vector *bt=gsl_vector_alloc(nmodel);
-      gsl_vector *p2=gsl_vector_alloc(this->ncls-1);
-      //apply normalization constraint:  
-      //to avoid any biases produced by using the same variable each time
-      int ind=ranu()*this->ncls;
-      gsl_matrix *at=gsl_matrix_alloc(nmodel, this->ncls-1);
-      init_constraint();
-
-      for (int i=0; i<nmodel; i++) {
-        double aind=gsl_matrix_get(map1, i, ind);
-        gsl_vector_set(bt, i, gsl_vector_get(b, i)-aind);
-        for (int j=0; j<ind; j++) {
-          gsl_matrix_set(at, i, j, gsl_matrix_get(map1, i, j)-aind);
-        }
-        for (int j=ind+1; j<this->ncls; j++) {
-          gsl_matrix_set(at, i, j-1, gsl_matrix_get(map1, i, j)-aind);
-        }
-      }
-
-      constrained(at, bt, cnorm, cthresh, p2);
-
-      //reconstitute missing variable and extract the rest:
-      p[ind]=1;
-      for (int j=0; j<ind; j++) {
-        p[j]=gsl_vector_get(p2, j);
-        p[ind]-=p[j];
-      }
-      for (int j=ind+1; j<this->ncls; j++) {
-        p[j]=gsl_vector_get(p2, j-1);
-        p[ind]-=p[j];
-      }
-      gsl_vector_free(p2);
-      gsl_vector_free(bt);
-      gsl_matrix_free(at);
-    }
-
-    if (strictflag!=1) gsl_matrix_free(map1);
-
-    return choose_class(p, this->ncls);
-
-  }
-
-  template <class real, class cls_t>
-  cls_t multiclass<real, cls_t>::classify_1vR(gsl_vector *b, real *p) {
-    int ind[this->ncls];		//still being worked on
-    int nwork;				//how many prob. still being worked on
-    int k=ranu()*this->ncls;		//omit random classifier
-    int dflag;
-    int iter=0;
-    int cor=0;
-
-    for (cls_t i=0; i<this->ncls; i++) p[i]=(1+pol[i]*gsl_vector_get(b, i))/2;
-
-    for (cls_t i=0; i<k; i++) ind[i]=i;
-    for (cls_t i=k+1; i<this->ncls; i++) ind[i-1]=i;
-    nwork=this->ncls-1;
-
-    do {
-      real pt;
-      dflag=1;
-      for (cls_t i=0; i<nwork; i++) {
-        if (p[ind[i]]<0) {
-          p[ind[i]]=0;
-	  for (cls_t j=i+1; j<nwork; j++) ind[j-1]=ind[j];
-	  nwork--;
-	  dflag=0;
-	  //break;
-	}
-      }
-      if (nwork==0) break;
-      pt=0;
-      for (cls_t i=0; i<nwork; i++) pt+=p[ind[i]];
-      if (pt>1) {
-        for (cls_t i=0; i<nwork; i++) p[ind[i]]=p[ind[i]]-(pt-1)/nwork;
-	cor++;
-	dflag=0;
-      }
-      iter++;
-    } while (dflag==0);
-
-    printf("multiclass::classify_1vR: %d iterations; %d correction steps\n", iter, cor);
-
-    p[k]=1;
-    for (int i=0; i<nwork; i++) p[k]-=p[ind[i]];
-
-    return choose_class(p, this->ncls);
-  }
-
-  template <class real, class cls_t>
-  cls_t multiclass<real, cls_t>::classify_1v1(gsl_vector *b, real *p) {
-    real **praw=allocate_matrix<real, int32_t>(this->ncls, this->ncls);
-    int k=0;
-    for (cls_t i=0; i<this->ncls; i++) {
-      for (cls_t j=i+1; j<this->ncls; j++) {
-        praw[i][j]=(1+pol[k]*gsl_vector_get(b, k))/2;
-	k++;
-      }
-    }
-    solve_cond_prob_1v1(praw, this->ncls, p);
-    delete_matrix(praw);
-    return choose_class(p, this->ncls);
-  }
-
-  template <class real, class cls_t>
-  cls_t multiclass<real, cls_t>::solve_class_old(gsl_vector *b, real *pdf) {
-    cls_t cls1, cls2;
-    real pt;		//total of conditional probability estimates
-    real k;		//correction value
-    real tally[this->ncls];
-    char flag[this->ncls];
-    int nc2=0;
-
-    cls2=-1;
-
-    //printf("classification type=%d\n", type);
-    switch(type) {
-      case (0):
-	cls1=classify_special(b, pdf);
-	break;
-      case (1):
-        cls1=classify_basic(b, pdf);
-        break;
-      case (2):
-        cls1=vote_pdf(b, pdf);
-        break;
-      case (3):
-        cls1=vote_label(b, pdf);
-        break;
-      case (4):
-	cls1=classify_basic(b, pdf);
-        cls2=vote_pdf(b, tally);
-        break;
-      case (5):
-        cls1=classify_basic(b, pdf);
-        cls2=vote_label(b, tally);
-        break;
-      case (6):
-        cls1=classify_scratch(b, pdf);
-        break;
-      case (7):
-	cls1=classify_special(b, pdf);
-	break;
-      case (8):
-        cls1=vote_pdf2(b, pdf);
-	break;
-      case (10):
-	cls1=classify_1vR(b, pdf);
-	break;
-      case (11):
-	cls1=classify_1v1(b, pdf);
-	break;
-      default:
-        cls1=classify_special(b, pdf);
-        break;
-    }
-
-    if (cls2 >= 0) {
-      //correct the resultant conditional probabilities (=hack):
-      //(we use these specific forms of renormalization because they tend to
-      //maximize the "peakedness" of the distribution which seem to better
-      //reflect most real distributions)
-      p_constrain_renorm1(pdf, this->ncls);
-
-      //if voting is different from matrix inversion, correct the results using a crude hack:
-      if (cls1!=cls2) {
-        cls_t swp=cls1;
-        cls1=cls2;
-        cls2=swp;
-        pt=pdf[cls2];
-        for (cls_t i=0; i<this->ncls; i++) if (i!=cls1) pt+=pdf[i];
-        k=(pdf[cls2]-pdf[cls1])/pt;
-        for (cls_t i=0; i<this->ncls; i++) if (i!=cls1) pdf[i]=(1-k)*pdf[i];
-        pdf[cls1]=pdf[cls2];
-        //pt=0;
-        //for (cls_t i=0; i<this->ncls; i++) pt+=pdf[i];
-        //printf("pt (2)=%g\n", pt);
-      }
-    }
-    pt=0;
-    for (cls_t i=0; i<this->ncls; i++) pt+=pdf[i];
-    //printf("pt (2)=%g\n", pt);
-
-    return cls1;
-  }
-
   template <class real, class cls_t>
   cls_t multiclass<real, cls_t>::classify(real *x, real *p, real *praw) {
     real r[nmodel];
-    //gsl_vector *b=gsl_vector_alloc(nmodel+1);
+    real pt=0;
 
     if (praw!=NULL) {
       //printf("multiclass raw pdfs: ");
-      for (int i=0; i<nmodel; i++) r[i]=twoclass[i]->R(x, praw);
-      /*{
-        gsl_vector_set(b, i, twoclass[i]->R(x, praw));
+      for (int i=0; i<nmodel; i++) {
+        r[i]=twoclass[i]->R(x, praw);
       }
-      gsl_vector_set(b, nmodel, constraint_weight);*/
     } else {
       for (int i=0; i<nmodel; i++) r[i]=twoclass[i]->R(x);
-      //raw_classify(x, b);
     }
     (*solve_class)(code, nmodel, this->ncls, r, p);
-    //gsl_vector_free(b);
+    //for (cls_t i=0; i<this->ncls; i++) pt+=p[i];
+    //printf("pt=%g\n", pt);
     return choose_class(p, this->ncls);
-    //return solve_class_old(x, b);
   }
 
   template <class real, class cls_t>
@@ -1065,7 +643,6 @@ namespace libagf {
       for (int j=0; j<this->ncls; j++) gsl_matrix_set(map, i, j, code[i][j]);
     }
     for (int j=0; j<this->ncls; j++) gsl_matrix_set(map, nmodel, j, 1);
-    constraint_weight=1;
 
     return err;
   }

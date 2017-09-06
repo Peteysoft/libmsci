@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
   if (argc != 3) {
     FILE *helpfs=stdout;
     fprintf(helpfs, "\n");
-    fprintf(helpfs, "Syntax:   classify_c [-Q type] [-w cw] [-a normfile [-u]] \\\n");
+    fprintf(helpfs, "Syntax:   classify_c [-Q type] [-a normfile [-u]] \\\n");
     fprintf(helpfs, "                       [-O command [-K] [-M [-E missing] | [-H] [-C]]] \\\n");
     fprintf(helpfs, "                       control test output\n");
     fprintf(helpfs, "\n");
@@ -76,7 +76,6 @@ int main(int argc, char *argv[]) {
     fprintf(helpfs, "                3 = voting from classes, no re-normalization\n");
     fprintf(helpfs, "                4 = voting overrides matrix inversion, conditional probabilities\n");
     fprintf(helpfs, "                    are adjusted and re-normalized\n");
-    fprintf(helpfs, "  -w cw       regularization weight (sum of cond. prob.) [1.]\n\n");
     fprintf(helpfs, "  -O command  external command for estimating classes and probabilities\n");
     fprintf(helpfs, "\n");
     fprintf(helpfs, "The following options are in conjunction with the -O option only:\n");
@@ -107,8 +106,7 @@ int main(int argc, char *argv[]) {
   ran_init();			//random numbers resolve ties
 
   //read in class borders:
-  classifier=new multiclass_c<real_a, cls_ta>(argv[0], opt_args.Qtype,
-		opt_args.W1);
+  classifier=new multiclass_c<real_a, cls_ta>(argv[0], opt_args.Qtype);
 
   //ncls : number of class labels
   ncls=classifier->n_class();

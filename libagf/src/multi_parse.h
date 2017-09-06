@@ -52,7 +52,6 @@ namespace libagf {
 
     //for use in initializing class structures (others will be phased out):
     int type;			//type of result in non-hierarchical multi-class
-    real_a cw;			//constraint weight
     int Mflag;			//LIBSVM format
     int Kflag;			//keep temporary files
     int Zflag;			//use "in house" SVM codes

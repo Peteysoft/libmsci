@@ -7,7 +7,7 @@ namespace libagf {
     protected:
       real *y0;		//abscissa
     public:
-      multiclass_c(const char *file, int tp, real wt);
+      multiclass_c(const char *file, int tp);
       virtual ~multiclass_c();
 
       //continuum retrieval:

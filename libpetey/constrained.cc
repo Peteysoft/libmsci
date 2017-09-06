@@ -23,11 +23,12 @@ namespace libpetey {
       fprintf(stderr, "SV_solve_transpose: dimension mismatch\n");
       throw DIMENSION_MISMATCH;
     }
-    for (int i=0; i<u->size2; i++) {
-      double xi=0;
-      gsl_vector_set(x, i, 0);
+    double xi;
+    double vtb;
+    for (int i=0; i<u->size1; i++) {
+      xi=0;
       for (int j=0; j<s->size; j++) {
-        double vtb=0;
+        vtb=0;
         for (int k=0; k<vt->size2; k++) {
           vtb+=gsl_matrix_get(vt, j, k)*gsl_vector_get(b, k);
 	}

@@ -5,7 +5,7 @@
 namespace libagf {
   //multi-class classification adapted for continuum retrievals:
   template <typename real, typename cls_t>
-  multiclass_c<real, cls_t>::multiclass_c(const char *file, int tp, real cwt) {
+  multiclass_c<real, cls_t>::multiclass_c(const char *file, int tp) {
     cls_t *clist;
     FILE *fs;
     int lineno=0;
@@ -19,7 +19,6 @@ namespace libagf {
     }
     param.infs=fs;
     param.lineno=0;
-    param.cw=cwt;
     this->init(param);
     this->set_id(&cnt);
 

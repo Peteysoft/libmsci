@@ -23,47 +23,15 @@ namespace libagf {
       gsl_matrix *vt;
       gsl_vector *s;
 
-      //pre-compute constraint coefficients:
-      gsl_matrix *cnorm;
-      gsl_vector *cthresh;
-
       //internal routines:
       //run each of the binary classifiers and collect result into vector:
       void raw_classify(real *x, gsl_vector *b);
 
-      //old methods:
-      cls_t solve_class_old(gsl_vector *b, real *p1);
-
-      //basic least squares solution:
-      cls_t classify_basic(gsl_vector *b, real *p);
-      cls_t vote_label(gsl_vector *b, real *tly);
-      cls_t vote_pdf(gsl_vector *b, real *tly);
-
-      //special 1 versus rest solution:
-      cls_t classify_1vR(gsl_vector *b, real *p);
-      //1 versus 1 solution:
-      cls_t classify_1v1(gsl_vector *b, real *p);
-
-      //more experimental versions:
-      //least squares including "non-strict" coding matrices:
-      cls_t classify_scratch(gsl_vector *b, real *p);
-      //constrained least squares (not brute force but can return sub-optimal
-      //sol'n):
-      cls_t classify_special(gsl_vector *b, real *p);
-      //assumes orthogonal coding matrix (multiple re-normalization steps):
-      cls_t vote_pdf2(gsl_vector *b, real *tly);
-
       //prepare SVD of coding matrix:
       int code_svd();
 
-      //initialize constraints:
-      void init_constraint();
-
       //type of classification:
       int type;
-
-      //weight for normalization constraint:
-      real constraint_weight;
 
       //"polarity" of each binary classifier:
       int *pol;
@@ -84,19 +52,8 @@ namespace libagf {
       //initialized from a control file:
       multiclass(const char *file, 	//control file
 		int clstyp=0,		//type of classification result
-					//  0=constrained inverse;
-					//  1=raw inverse;
-					//  2=voting from probabilities; 
-					//  3=voting from classes
-					//  4=inverse/voting from probabilities
-					//  5=inverse/voting from classes
-					//  6=inverse weighted by raw prob.
-					//  7=constrained inverse (may be inefficient)
-					//  8=voting from pdf, corrected and normalized
-					//    (designed for orthogonal coding matrix)
-					// 10=special for 1 v rest
-					// 11=special for 1 v. 1
-					// 12=special for adjacent
+					//  see init method for codes
+					//  and multiclass_methods.h
 		const char *com=NULL,	//command for binary classifier
 		int Mflag=0,		//LIBSVM format for external classifiers
 		int Kflag=0,		//keep temporary files
