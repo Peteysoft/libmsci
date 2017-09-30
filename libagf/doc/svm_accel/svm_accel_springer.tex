@@ -15,26 +15,26 @@
 % First comes an example EPS file -- just ignore it and
 % proceed on the \documentclass line
 % your LaTeX will extract the file if required
-\begin{filecontents*}{example.eps}
+%\begin{filecontents*}{example.eps}
 %!PS-Adobe-3.0 EPSF-3.0
 %%BoundingBox: 19 19 221 221
 %%CreationDate: Mon Sep 29 1997
 %%Creator: programmed by hand (JK)
 %%EndComments
-gsave
-newpath
-  20 20 moveto
-  20 220 lineto
-  220 220 lineto
-  220 20 lineto
-closepath
-2 setlinewidth
-gsave
-  .4 setgray fill
-grestore
-stroke
-grestore
-\end{filecontents*}
+%gsave
+%newpath
+%  20 20 moveto
+%  20 220 lineto
+%  220 220 lineto
+%  220 20 lineto
+%closepath
+%2 setlinewidth
+%gsave
+%  .4 setgray fill
+%grestore
+%stroke
+%grestore
+%\end{filecontents*}
 %
 \RequirePackage{fix-cm}
 %
@@ -80,16 +80,16 @@ grestore
 
 \titlerunning{Kernel acceleration}        % if too long for running head
 
-\author{""}
-%\author{Peter Mills}
+%\author{""}
+\author{Peter Mills}
 
 %\authorrunning{Short form of author list} % if too long for running head
 
-%\institute{Peter Mills \at
-%	1159 Meadowlane, Cumberland ON, K4C 1C3 Canada
-%              Tel.: 1-613-833-3022\\
-%              \email{peteymills@hotmail.com}           %  \\
-%}
+\institute{Peter Mills \at
+	1159 Meadowlane, Cumberland ON, K4C 1C3 Canada
+              Tel.: 1-613-833-3022\\
+              \email{peteymills@hotmail.com}           %  \\
+}
 
 \date{Received: date / Accepted: date}
 % The correct dates will be entered by the editor
@@ -99,8 +99,7 @@ grestore
 
 \begin{abstract}
 	\input{svm_accel_abstract.txt}
-\keywords{class borders \and multi-dimensional root-finding \and adaptive Gaussian filtering
-\and binary classifier \and multi-class classifier \and non-parametric statistics 
+\keywords{class borders \and multi-dimensional root-finding \and adaptive Gaussian filtering \and non-parametric statistics 
 \and variable kernel density estimation}
 \end{abstract}
 

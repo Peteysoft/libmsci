@@ -56,6 +56,9 @@ namespace libagf {
     int Kflag;			//keep temporary files
     int Zflag;			//use "in house" SVM codes
     int sigcode;	//code for sigmoid func. to transform decision values
+
+    //mother of all hacks:
+    //binaryclassifier<real, cls_t> * (* bininit) (char *name, void *options);
   };
 
   //initializes internal values and concatinates bottom-level options;
@@ -76,8 +79,8 @@ namespace libagf {
 		cls_t **partition, 		//classes in each partition
 		int maxn);			//parse at most maxn partitions (array size)
 
-  //test for "strict" partitioning: same number of classes in each partition, labels cannot
-  //exceed size of partitions
+  //test for "strict" partitioning: same number of classes in each partition, 
+  //labels cannot exceed size of partitions
   template <class cls_t>
   int multi_partition_strict(
 		char **model, 			//list of binary partition models

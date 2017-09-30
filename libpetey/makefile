@@ -91,6 +91,7 @@ INCLUDE = peteys_tmpl_lib.h \
 
 #list of object files/modules:
 OBJECT =	symbol_table$(OPT).o \
+		intersection$(OPT).o \
 		peteys_tmpl_lib$(OPT).o \
 		tree_tmp$(OPT).o \
 		time_class$(OPT).o \
@@ -115,8 +116,7 @@ OBJECT =	symbol_table$(OPT).o \
 		gsl_util$(OPT).o \
 		rk_dumb_ts$(OPT).o \
 		peteys_no_templates$(OPT).o \
-		interpol_coeff$(OPT).o \
-		intersection$(OPT).o
+		interpol_coeff$(OPT).o
 
 #list of executables:
 EXE = ignore_code
@@ -126,7 +126,6 @@ EXE2=$(addsuffix $(EXE_EXT), $(EXE))
 TEST = sorter \
 		random \
 		test_parse_opts \
-		lp_test_suite \
 		test_libpetey
 		
 TEST2=$(addsuffix $(EXE_EXT), $(TEST))
@@ -169,7 +168,6 @@ install_allopt: libpetey-g.a libpetey-O2.a libpetey-pg.a
 
 test: $(TEST2)
 	./test_libpetey
-	./lp_test_suite
 
 # build the static library:
 libpetey$(OPT).a:	$(OBJECT)

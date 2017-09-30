@@ -1,3 +1,5 @@
+#ifndef LIBPETEY_INTERSECTION_H
+#define LIBPETEY_INTERSECTION_H
 
 namespace libpetey {
 
@@ -5,7 +7,7 @@ namespace libpetey {
   int compare_vectors(scalar *v1, scalar *v2, int n);
 
   template <typename scalar>
-  int intersect_vectors(scalar ***v, 		//list of lists of vectors
+  int unify_vectors(scalar ***v, 		//list of lists of vectors
 		  int *n, 			//number of elements in each list
 		  int n0, 			//number of lists
 		  int D,			//dimension of each vector
@@ -17,9 +19,12 @@ namespace libpetey {
 
   //returns 0 for success:
   template <typename scalar>
-  int test_intersect_vectors(int nv, 		//total number of vectors(union)
+  int test_unify_vectors(int nv, 		//total number of vectors(union)
 		  int D, 			//dimension of each vector
 		  int nss, 			//number of sub sets
 		  float frac);			//fraction for each ss
 
 }
+
+#endif
+

@@ -1,0 +1,25 @@
+LIBSVM | BORDERS
+[Control file]
+{
+<nsv>
+<name1>
+<indices1>
+<name2>
+<indices2>
+<name3>
+<indices3>
+... [*ncls]
+<nsv> <D>
+[Support vectors] 
+|
+<name1>
+<nb1> <D>
+[Border vectors 1]
+<name2>
+<nb2> <D>
+[Border vectors 2]
+<name3>
+<nb3> <D>
+[Border vectors 3]
+... [*ncls]
+}

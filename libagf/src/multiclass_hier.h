@@ -12,7 +12,8 @@
 namespace libagf {
 
   //hierarchical multi-class classification:
-  template <class real, class cls_t>
+  template <typename real, typename cls_t, 
+	   typename binclass=borders_calibrated<real, cls_t> >
   class multiclass_hier:public classifier_obj<real, cls_t> {
     protected:
       //decides which branch to ascend:

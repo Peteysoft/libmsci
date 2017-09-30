@@ -26,6 +26,8 @@ namespace libagf {
 		  int toprow1=0);		//top row is all ones
   template <typename scalar>
   scalar ** ortho_coding_matrix_brute_force(int ncls, int toprow1=0);
+  template <typename scalar>
+  scalar ** hierarchical_nonhierarchical(int ncls);
 
   //generate common control files:
   //(complete control file)

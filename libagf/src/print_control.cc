@@ -31,6 +31,7 @@ int main(int argc, char **argv) {
     fprintf(docfs, "           6 one against one\n");
     fprintf(docfs, "           7 design hierarchical scheme based on training data\n");
     fprintf(docfs, "           8 orthogonal coding matrix (completely brute force: n<25; n%%4==0)\n");
+    fprintf(docfs, "           9 hierarchical non-hierarchical\n");
     fprintf(docfs, "  n      = number of classes\n");
     fprintf(docfs, "  train  = base name of training data files (if applicable):\n");
     fprintf(docfs, "             .vec for vector data\n");
@@ -128,6 +129,10 @@ int main(int argc, char **argv) {
     case(8):
       coding_matrix=ortho_coding_matrix_brute_force<int>(n, opt_args.Yflag);
       nrow=n;
+      break;
+    case(9):
+      coding_matrix=hierarchical_nonhierarchical<int>(n);
+      nrow=n-1;
       break;
     default:
       print_control_hier(stdout, n);

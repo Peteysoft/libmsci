@@ -20,16 +20,16 @@ using namespace libpetey;
 
 namespace libagf {
 
-  template <class real, class cls_t>
-  multiclass_hier<real, cls_t>::multiclass_hier() {
+  template <typename real, typename cls_t, typename binclass>
+  multiclass_hier<real, cls_t, binclass>::multiclass_hier() {
     classifier=NULL;
     children=NULL;
     this->ncls=0;
   }
 
   //high level initialization for classification:
-  template <class real, class cls_t>
-  multiclass_hier<real, cls_t>::multiclass_hier(const char *file, int type, char *prefix, const char *com, int mf, int kf, int sigcode, int Zflag) {
+  template <typename real, typename cls_t, typename binclass>
+  multiclass_hier<real, cls_t, binclass>::multiclass_hier(const char *file, int type, char *prefix, const char *com, int mf, int kf, int sigcode, int Zflag) {
     FILE *fs;
     int err;
 
@@ -42,15 +42,15 @@ namespace libagf {
     if (err!=0) throw err;
   }
 
-  template <class real, class cls_t>
-  multiclass_hier<real, cls_t>::multiclass_hier(FILE *fs, int type, char *prefix, const char *com, int mf, int kf, int sigcode, int Zflag) {
+  template <typename real, typename cls_t, typename binclass>
+  multiclass_hier<real, cls_t, binclass>::multiclass_hier(FILE *fs, int type, char *prefix, const char *com, int mf, int kf, int sigcode, int Zflag) {
     int err=init(fs, type, prefix, com, mf, kf, sigcode, Zflag);
     if (err!=0) throw err;
   }
 
   //high level initializion for training purposes:
-  template <class real, class cls_t>
-  multiclass_hier<real, cls_t>::multiclass_hier(const char *file, int argc, char **argv, int maxstacksize) {
+  template <typename real, typename cls_t, typename binclass>
+  multiclass_hier<real, cls_t, binclass>::multiclass_hier(const char *file, int argc, char **argv, int maxstacksize) {
     FILE *fs;
     int err;
     fs=fopen(file, "r");
@@ -62,15 +62,15 @@ namespace libagf {
     if (err!=0) throw err;
   }
     
-  template <class real, class cls_t>
-  multiclass_hier<real, cls_t>::multiclass_hier(FILE *fs, int argc, char **argv, int maxstacksize) {
+  template <typename real, typename cls_t, typename binclass>
+  multiclass_hier<real, cls_t, binclass>::multiclass_hier(FILE *fs, int argc, char **argv, int maxstacksize) {
     int err;
     err=init(fs, argc, argv, maxstacksize);
     if (err!=0) throw err;
   }
     
-  template <class real, class cls_t>
-  int multiclass_hier<real, cls_t>::init(FILE *fs, int type, char *prefix, const char *com, int mf, int kf, int sigcode, int Zflag) {
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass_hier<real, cls_t, binclass>::init(FILE *fs, int type, char *prefix, const char *com, int mf, int kf, int sigcode, int Zflag) {
     multi_parse_param param;
     int err;
 
@@ -99,8 +99,8 @@ namespace libagf {
   }
 
   //initialize for training purposes:
-  template <class real, class cls_t>
-  int multiclass_hier<real, cls_t>::init(FILE *fs, int argc, char **argv, int maxstacksize) {
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass_hier<real, cls_t, binclass>::init(FILE *fs, int argc, char **argv, int maxstacksize) {
     multi_parse_param param;
     int optlen;
     int err=0;
@@ -141,8 +141,8 @@ namespace libagf {
   }
 
   //low-level initialization (from a control structure):  
-  template <class real, class cls_t>
-  int multiclass_hier<real, cls_t>::init(multi_parse_param &param) {
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass_hier<real, cls_t, binclass>::init(multi_parse_param &param) {
     int err=0;
     char *fname0;			//name of file containing model
     char *fname;			//name of file containing model
@@ -193,8 +193,8 @@ namespace libagf {
     assert(flag!=2);
     if (flag==1) {
       //multi-class classifier (non-hierarchical):
-      classifier=new multiclass<real, cls_t>();
-      ((multiclass<real, cls_t> *) classifier)->init(param);
+      classifier=new multiclass<real, cls_t, binclass>();
+      ((multiclass<real, cls_t, binclass> *) classifier)->init(param);
 
       //we have to scan for the opening brackets:
       do {
@@ -275,7 +275,7 @@ namespace libagf {
 	} else if (param.commandname==NULL) {
           //default borders classifier:
           //classifier=new borders_classifier<real, cls_t>(fname, param.sigcode);
-          classifier=new borders_calibrated<real, cls_t>(fname);
+          classifier=new binclass(fname);
         } else {
           //external binary classifier:
           classifier=new general2class<real, cls_t>(fname, 
@@ -300,8 +300,8 @@ namespace libagf {
       fseek(param.infs, -1, SEEK_CUR);
       fname2=scan_class_label(param.infs, param.lineno);
       if (fname2==NULL) {
-        multiclass_hier<real, cls_t> *ch;
-        ch=new multiclass_hier<real, cls_t>();
+        multiclass_hier<real, cls_t, binclass> *ch;
+        ch=new multiclass_hier<real, cls_t, binclass>();
         ch->init(param);
         brood.add(ch);
       } else {
@@ -369,8 +369,8 @@ namespace libagf {
     return err;
   }
 
-  template <class real, class cls_t>
-  multiclass_hier<real, cls_t>::~multiclass_hier() {
+  template <typename real, typename cls_t, typename binclass>
+  multiclass_hier<real, cls_t, binclass>::~multiclass_hier() {
     if (children!=NULL) {
       for (int i=0; i<classifier->n_class(); i++) delete children[i];
       delete [] children;
@@ -378,8 +378,8 @@ namespace libagf {
     if (classifier!=NULL) delete classifier;
   }
 
-  template <class real, class cls_t>
-  cls_t multiclass_hier<real, cls_t>::classify(real *x, real &p, real *praw) {
+  template <typename real, typename cls_t, typename binclass>
+  cls_t multiclass_hier<real, cls_t, binclass>::classify(real *x, real &p, real *praw) {
     cls_t cls1, cls2;
     real pdum;
 
@@ -391,8 +391,8 @@ namespace libagf {
     return cls2;
   }
 
-  template <class real, class cls_t>
-  cls_t multiclass_hier<real, cls_t>::classify(real *x, real *p, real *praw) {
+  template <typename real, typename cls_t, typename binclass>
+  cls_t multiclass_hier<real, cls_t, binclass>::classify(real *x, real *p, real *praw) {
     cls_t cls1, cls2;
 
     if (nonh_flag) {
@@ -406,8 +406,8 @@ namespace libagf {
     return cls2;
   }
 
-  template <class real, class cls_t>
-  int multiclass_hier<real, cls_t>::ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2) {
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass_hier<real, cls_t, binclass>::ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2) {
     int err=0;
 
     err=classifier->ltran_model(mat, b, d1, d2);
@@ -431,8 +431,8 @@ namespace libagf {
     return err;
   }
 
-  template <class real, class cls_t>
-  cls_t multiclass_hier<real, cls_t>::n_class() {
+  template <typename real, typename cls_t, typename binclass>
+  cls_t multiclass_hier<real, cls_t, binclass>::n_class() {
     cls_t nchild;
 
     if (this->ncls<=0) {
@@ -444,8 +444,8 @@ namespace libagf {
     return this->ncls;
   }
 
-  template <class real, class cls_t>
-  dim_ta multiclass_hier<real, cls_t>::n_feat() {
+  template <typename real, typename cls_t, typename binclass>
+  dim_ta multiclass_hier<real, cls_t, binclass>::n_feat() {
     cls_t nchild;
     cls_t D2;
 
@@ -467,8 +467,8 @@ namespace libagf {
     return this->D1;
   }
 
-  template <class real, class cls_t>
-  int multiclass_hier<real, cls_t>::max_depth(int cur) {
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass_hier<real, cls_t, binclass>::max_depth(int cur) {
     int maxdepth;
     int depth;
     int npart;
@@ -485,8 +485,8 @@ namespace libagf {
 
   }
 
-  template <class real, class cls_t>
-  cls_t multiclass_hier<real, cls_t>::class_list(cls_t *cls) {
+  template <typename real, typename cls_t, typename binclass>
+  cls_t multiclass_hier<real, cls_t, binclass>::class_list(cls_t *cls) {
     cls_t nchild;
     cls_t nc_child;
     cls_t ncls1=0;
@@ -503,8 +503,8 @@ namespace libagf {
     return this->ncls;
   }
 
-  template <class real, class cls_t>
-  void multiclass_hier<real, cls_t>::batch_classify(real **x, cls_t *cls, real *p, nel_ta n, dim_ta nvar) {
+  template <typename real, typename cls_t, typename binclass>
+  void multiclass_hier<real, cls_t, binclass>::batch_classify(real **x, cls_t *cls, real *p, nel_ta n, dim_ta nvar) {
     cls_t cls1[n];
     cls_t ncls1;		//number of children
     cls_t *nlab;		//number of instances of each class
@@ -585,8 +585,8 @@ namespace libagf {
     delete [] p2;
   }
 
-  template <class real, class cls_t>
-  void multiclass_hier<real, cls_t>::batch_classify(real **x, cls_t *cls, real **p, nel_ta n, dim_ta nvar) {
+  template <typename real, typename cls_t, typename binclass>
+  void multiclass_hier<real, cls_t, binclass>::batch_classify(real **x, cls_t *cls, real **p, nel_ta n, dim_ta nvar) {
     if (nonh_flag) {
       cls_t list[this->ncls];
       class_list(list);
@@ -597,8 +597,8 @@ namespace libagf {
     }
   }
 
-  template <class real, class cls_t>
-  void multiclass_hier<real, cls_t>::print(FILE *fs, char *fbase, int depth) {
+  template <typename real, typename cls_t, typename binclass>
+  void multiclass_hier<real, cls_t, binclass>::print(FILE *fs, char *fbase, int depth) {
     cls_t npart;
     char *fbase2=NULL;
     if (fbase!=NULL) fbase2=new char[strlen(fbase)+4];
@@ -618,8 +618,8 @@ namespace libagf {
     if (fbase2!=NULL) delete [] fbase2;
   }
 
-  template <class real, class cls_t>
-  int multiclass_hier<real, cls_t>::generate_commands(FILE *fs,
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass_hier<real, cls_t, binclass>::generate_commands(FILE *fs,
 		char *train, char *fbase, char *command, char *partcom,
 		char *concom, int Kflag, unsigned long session_id) {
     multi_train_param param;
@@ -665,8 +665,8 @@ namespace libagf {
     delete [] clist;
   }
 
-  template <class real, class cls_t>
-  int multiclass_hier<real, cls_t>::commands(multi_train_param &param, cls_t **clist, char *fbase) {
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass_hier<real, cls_t, binclass>::commands(multi_train_param &param, cls_t **clist, char *fbase) {
     cls_t **clist2;		//list of class labels for each child
     cls_t nchild=classifier->n_class();
     char *fbase2;
@@ -690,8 +690,8 @@ namespace libagf {
   }
 
   //set id's of binary classifiers for collating raw probabilities:
-  template <class real, class cls_t>
-  void multiclass_hier<real, cls_t>::set_id(cls_t *id) {
+  template <typename real, typename cls_t, typename binclass>
+  void multiclass_hier<real, cls_t, binclass>::set_id(cls_t *id) {
     cls_ta nchild=classifier->n_class();
     if (nchild>2) {
       cls_t *idlist=new cls_t[nchild-1];
@@ -711,8 +711,8 @@ namespace libagf {
     }
   }
 
-  template <typename real, typename cls_t>
-  int multiclass_hier<real, cls_t>::load(FILE *fs, int ct) {
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass_hier<real, cls_t, binclass>::load(FILE *fs, int ct) {
     char **sub;
     int nsub;
     char *type;
@@ -734,7 +734,7 @@ namespace libagf {
     }
     delete [] line;
     delete [] sub;
-    classifier=new multiclass<real, cls_t>(ct);
+    classifier=new multiclass<real, cls_t, binclass>(ct);
     rewind(fs);
     classifier->load(fs);
     nonh_flag=1;
@@ -742,13 +742,13 @@ namespace libagf {
     return 0;
   }
 
-  template <typename real, typename cls_t>
-  int multiclass_hier<real, cls_t>::load(FILE *fs) {
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass_hier<real, cls_t, binclass>::load(FILE *fs) {
     return load(fs, -1);
   }
 
-  template <typename real, typename cls_t>
-  int multiclass_hier<real, cls_t>::save(FILE *fs) {
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass_hier<real, cls_t, binclass>::save(FILE *fs) {
     if (nonh_flag==0) {
       fprintf(stderr, "multiclass_hier::save: cannot save; not the right type\n");
       throw PARAMETER_OUT_OF_RANGE;
@@ -760,8 +760,8 @@ namespace libagf {
     return 0;
   }
 
-  template <typename real, typename cls_t>
-  void multiclass_hier<real, cls_t>::train(real **train, cls_t *cls, nel_ta ntrain, int type, real *param) {
+  template <typename real, typename cls_t, typename binclass>
+  void multiclass_hier<real, cls_t, binclass>::train(real **train, cls_t *cls, nel_ta ntrain, int type, real *param) {
     cls_t *map;				//for partitioning the classes
     cls_t maxcls=0;			//largest value for class label
     cls_t label[this->ncls];

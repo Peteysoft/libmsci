@@ -24,9 +24,10 @@ using namespace libpetey;
 
 namespace libagf {
 
-  template <class real, class cls_t>
-  multiclass<real, cls_t>::multiclass(int ct) {
+  template <typename real, typename cls_t, typename binclass>
+  multiclass<real, cls_t, binclass>::multiclass(int ct) {
     type=ct;
+    set_solve_type(type);
 
     //set model variables to NULL:
     twoclass=NULL;
@@ -44,8 +45,8 @@ namespace libagf {
 
   }
 
-  template <class real, class cls_t>
-  multiclass<real, cls_t>::multiclass(const char *file, int clstyp, const char *com, int mf, int kf, int sigcode, int Zflag) {
+  template <typename real, typename cls_t, typename binclass>
+  multiclass<real, cls_t, binclass>::multiclass(const char *file, int clstyp, const char *com, int mf, int kf, int sigcode, int Zflag) {
     int err;
     multi_parse_param param;
 
@@ -77,13 +78,14 @@ namespace libagf {
 
     //classification method:
     type=clstyp;
+    set_solve_type(type);
 
     //"polarity":
     pol=NULL;
   }
 
-  template <class real, class cls_t>
-  int multiclass<real, cls_t>::init(multi_parse_param &param) {
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass<real, cls_t, binclass>::init(multi_parse_param &param) {
     char *name[MAXNPART];
     cls_t *part[MAXNPART*2];
     int c1;
@@ -97,6 +99,7 @@ namespace libagf {
 
     //classification type and constraint weight:
     type=param.type;
+    set_solve_type(type);
 
     //pass to another initialization routine (duh...):
     init(name, part, nmodel, param.prefix, param.trainflag, param.commandname, 
@@ -115,47 +118,10 @@ namespace libagf {
 
   }
 
-  template <class real, class cls_t>
-  int multiclass<real, cls_t>::init(char **fname, cls_t **part, int npart, char *prefix, 
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass<real, cls_t, binclass>::init(char **fname, cls_t **part, int npart, char *prefix, 
 		int tflag, char *com, int Mflag, int Kflag, int sigcode, int Zflag) {
     nmodel=npart;
-
-    switch (type) {
-      case (0):
-        solve_class=&solve_class_constrained2<real>;
-	break;
-      case (1):
-	solve_class=&solve_class_scratch<real>;
-        break;
-      case (2):
-	solve_class=&solve_class_vote_pdf<real>;
-        break;
-      case (3):
-	solve_class=&solve_class_vote<real>;
-        break;
-      case (4):
-	solve_class=&solve_class_norm1<real>;
-        break;
-      case (5):
-	solve_class=&solve_class_norm2<real>;
-        break;
-      case (6):
-	solve_class=&solve_class_renorm<real>;
-        break;
-      case (7):
-        solve_class=&solve_class_constrained1<real>;
-	break;
-      case (8):
-	solve_class=&solve_class_vote_pdf2<real>;
-	break;
-      case (9):
-	solve_class=&solve_class_1vR<real>;
-	break;
-	break;
-      default:
-        solve_class=&solve_class_constrained2<real>;
-        break;
-    }
 
     //figure out how many classes:
     this->ncls=0;
@@ -189,7 +155,7 @@ namespace libagf {
           twoclass[i]=new svm2class<real, cls_t>(fname[i]);
 	} else if (com==NULL) {
           //twoclass[i]=new borders_classifier<real, cls_t>(fname[i], sigcode);
-          twoclass[i]=new borders_calibrated<real, cls_t>(fname[i]);
+          twoclass[i]=new binclass(fname[i]);
         } else {
           twoclass[i]=new general2class<real, cls_t>(fname[i], 
 			com, Mflag, Kflag);
@@ -224,8 +190,8 @@ namespace libagf {
 
   }
 
-  template <class real, class cls_t>
-  multiclass<real, cls_t>::~multiclass() {
+  template <typename real, typename cls_t, typename binclass>
+  multiclass<real, cls_t, binclass>::~multiclass() {
     //delete the binary classifiers and the decision matrix:
     for (int i=0; i<nmodel; i++) delete twoclass[i];
     delete [] twoclass;
@@ -241,9 +207,48 @@ namespace libagf {
     delete_matrix(code);
   }
 
+  template <typename real, typename cls_t, typename binclass>
+  void multiclass<real, cls_t, binclass>::set_solve_type(int ct) {
+    switch (ct) {
+      case (0):
+        solve_class=&solve_class_constrained2<real>;
+	break;
+      case (1):
+	solve_class=&solve_class_scratch<real>;
+        break;
+      case (2):
+	solve_class=&solve_class_vote_pdf<real>;
+        break;
+      case (3):
+	solve_class=&solve_class_vote<real>;
+        break;
+      case (4):
+	solve_class=&solve_class_norm1<real>;
+        break;
+      case (5):
+	solve_class=&solve_class_norm2<real>;
+        break;
+      case (6):
+	solve_class=&solve_class_renorm<real>;
+        break;
+      case (7):
+        solve_class=&solve_class_constrained1<real>;
+	break;
+      case (8):
+	solve_class=&solve_class_vote_pdf2<real>;
+	break;
+      case (9):
+	solve_class=&solve_class_1vR<real>;
+	break;
+      default:
+        solve_class=&solve_class_constrained2<real>;
+        break;
+    }
+  }
+
   //find the singular value decomposition of the coding matrix:
-  template <class real, class cls_t>
-  int multiclass<real, cls_t>::code_svd() {
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass<real, cls_t, binclass>::code_svd() {
     gsl_vector *work;
     int err;
 
@@ -276,8 +281,8 @@ namespace libagf {
   }
 
   //load a linear transformation to apply to the test points:
-  template <class real, class cls_t>
-  int multiclass<real, cls_t>::ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2) {
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass<real, cls_t, binclass>::ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2) {
     int err=0;
     //just pass it to the binary classifiers:
     for (int i=0; i<nmodel; i++) {
@@ -296,8 +301,8 @@ namespace libagf {
     return err;
   }
 
-  template <class real, class cls_t>
-  cls_t multiclass<real, cls_t>::classify(real *x, real *p, real *praw) {
+  template <typename real, typename cls_t, typename binclass>
+  cls_t multiclass<real, cls_t, binclass>::classify(real *x, real *p, real *praw) {
     real r[nmodel];
     real pt=0;
 
@@ -315,8 +320,8 @@ namespace libagf {
     return choose_class(p, this->ncls);
   }
 
-  template <class real, class cls_t>
-  dim_ta multiclass<real, cls_t>::n_feat() {
+  template <typename real, typename cls_t, typename binclass>
+  dim_ta multiclass<real, cls_t, binclass>::n_feat() {
     cls_t D2;
 
     if (this->D1<=0) {
@@ -335,8 +340,8 @@ namespace libagf {
     return this->D1;
   }
 
-  template <class real, class cls_t>
-  void multiclass<real, cls_t>::batch_classify(real **x, cls_t *cls, real **p1, nel_ta n, dim_ta nvar) {
+  template <typename real, typename cls_t, typename binclass>
+  void multiclass<real, cls_t, binclass>::batch_classify(real **x, cls_t *cls, real **p1, nel_ta n, dim_ta nvar) {
     real **r;
 
     //printf("multiclass: performing classifications with %d test vectors on %d models\n", n, nmodel);
@@ -358,8 +363,8 @@ namespace libagf {
   }
 
   //for accessing "raw probabilities" for use in continuum predictions:
-  template <class real, class cls_t>
-  void multiclass<real, cls_t>::set_id(cls_t *id) {
+  template <typename real, typename cls_t, typename binclass>
+  void multiclass<real, cls_t, binclass>::set_id(cls_t *id) {
     if (nmodel != this->ncls-1) {
       fprintf(stderr, "id model only valid if # binary classifiers = ncls-1\n");
       exit(PARAMETER_OUT_OF_RANGE);
@@ -371,8 +376,8 @@ namespace libagf {
     }
   }
 
-  template <class real, class cls_t>
-  void multiclass<real, cls_t>::print(FILE *fs, char *fbase, int depth) {
+  template <typename real, typename cls_t, typename binclass>
+  void multiclass<real, cls_t, binclass>::print(FILE *fs, char *fbase, int depth) {
     char *fbase2=NULL;
     if (fbase!=NULL) fbase2=new char[strlen(fbase)+5];
 
@@ -393,8 +398,8 @@ namespace libagf {
     if (fbase2!=NULL) delete [] fbase2;
   }
 
-  template <class real, class cls_t>
-  int multiclass<real, cls_t>::commands(multi_train_param &param,
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass<real, cls_t, binclass>::commands(multi_train_param &param,
                 cls_t **clist, char *fbase) {
     double coef;
     char *fbase2;
@@ -477,8 +482,8 @@ namespace libagf {
     for (int i=0; i<m; i++) sd[i]=sd2[i];
   }
 
-  template <typename real, typename cls_t>
-  int multiclass<real, cls_t>::detect_type() {
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass<real, cls_t, binclass>::detect_type() {
     int spec_type;		//0=1 v. rest; 1=1 v. 1; 2=adj.
     int **proto;			//prototype to compare against
     int ind[nmodel];
@@ -578,8 +583,8 @@ namespace libagf {
     return spec_type;
   }
 
-  template <typename real, typename cls_t>
-  int multiclass<real, cls_t>::load(FILE *fs) {
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass<real, cls_t, binclass>::load(FILE *fs) {
     int err=0;
     char **sub;
     int nsub;
@@ -591,17 +596,26 @@ namespace libagf {
     if (strcmp(typestr, "1vR")==0) {
       nmodel=this->ncls;
       code=one_against_all<real>(this->ncls);
-      if (type<0) type=10;
+      if (type<0) {
+        type=10;		//deprecated, really...
+        solve_class=&solve_class_1vR<real>;
+      }
       strictflag=1;
     } else if (strcmp(typestr, "1v1")==0) {
       nmodel=this->ncls*(this->ncls-1)/2;
       code=one_against_one<real>(this->ncls);
-      if (type<0) type=11;
+      if (type<0) {
+        type=11;
+        solve_class=&solve_class_norm2<real>;
+      }
       strictflag=0;
     } else if (strcmp(typestr, "ADJ")==0) {
       nmodel=this->ncls-1;
       code=partition_adjacent<real>(this->ncls);
-      if (type<0) type=12;
+      if (type<0) {
+        type=12;
+	solve_class=&solve_class_constrained2<real>;
+      }
       strictflag=1;
     } else {
       fprintf(stderr, "multiclass::load: type, %s, not recognized\n", typestr);
@@ -629,7 +643,7 @@ namespace libagf {
     //read in binary classifiers:
     twoclass=new binaryclassifier<real, cls_t>*[nmodel];
     for (int i=0; i<nmodel; i++) {
-      twoclass[i]=new borders_calibrated<real, cls_t>();
+      twoclass[i]=new binclass();
       err=twoclass[i]->load(fs);
       if (err!=0) {
         fprintf(stderr, "multiclass::load: error loading border vectors\n");
@@ -647,8 +661,8 @@ namespace libagf {
     return err;
   }
 
-  template <typename real, typename cls_t>
-  int multiclass<real, cls_t>::save(FILE *fs) {
+  template <typename real, typename cls_t, typename binclass>
+  int multiclass<real, cls_t, binclass>::save(FILE *fs) {
     int err=0;
     detect_type();
     switch (type) {
@@ -678,8 +692,8 @@ namespace libagf {
     return err;
   }
 
-  template <typename real, typename cls_t>
-  void multiclass<real, cls_t>::train(real **train, cls_t *cls, nel_ta ntrain, int type, real *param) {
+  template <typename real, typename cls_t, typename binclass>
+  void multiclass<real, cls_t, binclass>::train(real **train, cls_t *cls, nel_ta ntrain, int type, real *param) {
     cls_t *map2;			//for partitioning the classes
     cls_t cls2[ntrain];
 

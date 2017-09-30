@@ -1,6 +1,13 @@
 #include <stdio.h>
 
 #include "erfinv.h"
+#include "peteys_tmpl_lib.h"
+#include "kselect.h"
+#include "randomize.h"
+#include "bit_array.h"
+#include "solve_lode.h"
+#include "rk_dumb_ts.h"
+#include "intersection.h"
 
 using namespace libpetey;
 
@@ -98,6 +105,10 @@ int main (int argc, char *argv[]) {
   err=test_bit_array(10, 10);
   if (err!=0) exit_code=err;
   err=test_bit_array(100, 10);
+  if (err!=0) exit_code=err;
+
+  fprintf(logfs, "Testing unify_vectors command:\n");
+  err=test_unify_vectors<float>(100, 3, 3, 0.1);
   if (err!=0) exit_code=err;
 
   ran_end();

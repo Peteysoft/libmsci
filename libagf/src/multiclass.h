@@ -11,11 +11,15 @@
 namespace libagf {
 
   //non-hierarchical multi-class classification:
-  template <class real, class cls_t>
+  template <typename real, typename cls_t, 
+	   typename binclass=borders_calibrated<real, cls_t> >
   class multiclass:public classifier_obj<real, cls_t> {
     private:
       //use this function to solve for the conditional probabilities:
       void (* solve_class) (real **, int, int, real *, real *);
+
+      //set the function based on a code:
+      void set_solve_type(int ct);
 
       //maps the actual results to the conditional probabilities:
       //(singular value decomposition of matrix mapping of final cond. prob. to raw cond. prob.)

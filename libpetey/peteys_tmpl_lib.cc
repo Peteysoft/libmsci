@@ -18,12 +18,21 @@ using namespace std;
 namespace libpetey {
 
 //binary search:
+template long bin_search<float>(float *, long, float, long);
+template long bin_search<int32_t>(int32_t *, long, int32_t, long);
+template long bin_search<int64_t>(int64_t *, long, int64_t, long);
+template long bin_search<long>(long *, long, long, long);
+template long bin_search<double>(double *, long, double, long);
+template long bin_search<time_class>(time_class *, long, time_class, long);
+template long bin_search<string_petey>(string_petey *, long, string_petey, long);
+
 template long bin_search_g<float>(float *, long, float, long);
 template long bin_search_g<int32_t>(int32_t *, long, int32_t, long);
 template long bin_search_g<int64_t>(int64_t *, long, int64_t, long);
 template long bin_search_g<double>(double *, long, double, long);
 template long bin_search_g<time_class>(time_class *, long, time_class, long);
 template long bin_search_g<string_petey>(string_petey *, long, string_petey, long);
+
 template long bin_search<vector<int> >(vector<int> *, long, vector<int>,
 long);
 //template long bin_search<int>(int *, long, int, long);

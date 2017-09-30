@@ -9,7 +9,7 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
 
-//#include "full_util.h"
+#include "full_util.h"
 //#include "bit_array.h"
 #include <bitset>
 #include "gsl_util.h"
@@ -487,6 +487,38 @@ namespace libagf {
     printf("\n");
   }
 
+  template <typename scalar>
+  scalar ** hierarchical_nonhierarchical(int n) {
+    scalar **result;
+    if (n==1) return NULL;
+    result=allocate_matrix<scalar>(n-1, n);
+    if (n==2) {
+      result[0][0]=-1;
+      result[0][1]=1;
+    } else {
+      scalar **sub;
+      for (int i=0; i<n/2; i++) {
+        result[0][i]=-1;
+      }
+      for (int i=n/2; i<n; i++) {
+        result[0][i]=1;
+      }
+      sub=hierarchical_nonhierarchical<scalar>(n/2);
+      for (int i=0; i<n/2-1; i++) {
+        for (int j=0; j<n/2; j++) result[i+1][j]=sub[i][j];
+        for (int j=0; j<n-n/2; j++) result[i+1][j+n/2]=0;
+      }
+      if (sub!=NULL) delete_matrix(sub);
+      sub=hierarchical_nonhierarchical<scalar>(n-n/2);
+      for (int i=0; i<n-n/2-1; i++) {
+        for (int j=0; j<n/2; j++) result[i+n/2][j]=0;
+        for (int j=0; j<n-n/2; j++) result[i+n/2][j+n/2]=sub[i][j];
+      }
+      if (sub!=NULL) delete_matrix(sub);
+    }
+    return result;
+  }
+
   void print_control_hier(FILE *fs, int ncls, int c0, int depth) {
     for (int i=0; i<depth; i++) fprintf(fs, "  ");
     if (ncls==1) {
@@ -548,6 +580,10 @@ namespace libagf {
   template int ** ortho_coding_matrix_brute_force<int>(int, int);
   template float ** ortho_coding_matrix_brute_force<float>(int, int);
   template double ** ortho_coding_matrix_brute_force<double>(int, int);
+
+  template int ** hierarchical_nonhierarchical<int>(int);
+  template float ** hierarchical_nonhierarchical<float>(int);
+  template double ** hierarchical_nonhierarchical<double>(int);
 
   template void print_control_nonhier<int>(FILE *fs, int **, int, int, const char *);
   template void print_control_nonhier<float>(FILE *fs, float **, int, int, const char *);
