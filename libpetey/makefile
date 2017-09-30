@@ -86,7 +86,8 @@ INCLUDE = peteys_tmpl_lib.h \
 		gsl_util.h \
 		rk_dumb_ts.h \
 		peteys_no_templates.h \
-		interpol_coeff.h
+		interpol_coeff.h \
+		intersection.h
 
 #list of object files/modules:
 OBJECT =	symbol_table$(OPT).o \
@@ -114,7 +115,8 @@ OBJECT =	symbol_table$(OPT).o \
 		gsl_util$(OPT).o \
 		rk_dumb_ts$(OPT).o \
 		peteys_no_templates$(OPT).o \
-		interpol_coeff$(OPT).o
+		interpol_coeff$(OPT).o \
+		intersection$(OPT).o
 
 #list of executables:
 EXE = ignore_code
