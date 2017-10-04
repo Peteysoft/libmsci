@@ -120,7 +120,7 @@ namespace libagf {
 
   template <typename real, typename cls_t, typename binclass>
   int multiclass<real, cls_t, binclass>::init(char **fname, cls_t **part, int npart, char *prefix, 
-		int tflag, char *com, int Mflag, int Kflag, int sigcode, int Zflag) {
+		int tflag, char *com, int Mflag, int Kflag, int sigcode, int Zflag, void *binparam) {
     nmodel=npart;
 
     //figure out how many classes:
@@ -155,7 +155,8 @@ namespace libagf {
           twoclass[i]=new svm2class<real, cls_t>(fname[i]);
 	} else if (com==NULL) {
           //twoclass[i]=new borders_classifier<real, cls_t>(fname[i], sigcode);
-          twoclass[i]=new binclass(fname[i]);
+          if (binparam==NULL) twoclass[i]=new binclass(fname[i]);
+	  		else twoclass[i]=new binclass(fname[i], binparam);
         } else {
           twoclass[i]=new general2class<real, cls_t>(fname[i], 
 			com, Mflag, Kflag);

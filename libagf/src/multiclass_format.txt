@@ -3,11 +3,15 @@ LIBSVM | BORDERS
 {
 <nsv>
 <name1>
+<bunch of other book-keeping stuff...>
 <indices1>
+<coefs1>
 <name2>
 <indices2>
+<coefs2>
 <name3>
 <indices3>
+<coefs3>
 ... [*ncls]
 <nsv> <D>
 [Support vectors] 

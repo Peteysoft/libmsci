@@ -82,7 +82,8 @@ namespace libagf {
 		int Mflag=0,		//external command uses LIBSVM format
  		int Kflag=0,		//keep temporary files
 		int sigcode=0,		//code for sigmoid trans. func.
-		int Zflag=0);		//use in house SVM codes
+		int Zflag=0,		//use in house SVM codes
+		void *binparam=NULL);	//parameters passed to binary classifier
 
       //transformation matrix is not copied, only the pointer is stored
       //--do not delete original before classifier class instance:

@@ -6,6 +6,55 @@
 
 namespace libagf {
 
+  //new paradigm:
+  template <typename real>
+  template svm_helper {
+    protected:
+      nel_ta nsv;		//total support
+      real **sv;		//support vectors
+      dim_ta D;			//dimension of features data
+      real **kval;		//kernel values
+      real *test;		//current test point
+
+      //in order for this optimization to work, all the binary classifiers
+      //must have been trained with the same parameters:
+      real *param;			//parameters for kernel function
+      //kernel function:
+      real (* kernel) (real *, real *, dim_ta, void *);
+      real (* kernel_deriv) (real *, real *, dim_ta, void *, real *);
+    public:
+      svm_helper(FILE *fs);
+      ~svm_helper();
+
+      void register_point(real *x);
+      real get_kernel(nel_ta index);
+      int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
+  };
+
+  template <typename real, typename cls_t>
+  class svm2class2:public binaryclassifier<real, cls_t> {
+    protected:
+      svm_helper *helper;		//contains support vectors
+      nel_ta *ind;			//indexes into the support vectors
+      real *coef;			//coefficients
+      real probA;			//for calculating probabilities
+      real probB;
+
+      //kernel function:
+      real (* kernel) (real *, real *, dim_ta, void *);
+      real (* kernel_deriv) (real *, real *, dim_ta, void *, real *);
+    public:
+      svm2class2(char *name, void *param);
+      ~svm2class2();
+
+      virtual R(real *x, real *praw=NULL);
+
+      virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
+
+      real R_deriv(real *x, 			//test point
+		      real *drdx);		//gradient of R
+  };
+
   template <class real, class cls_t>
   class svm2class:public binaryclassifier<real, cls_t> {
     protected:

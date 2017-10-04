@@ -103,7 +103,7 @@ namespace libpetey {
     int **ind;			//list of indices
     scalar **result;		//intersection
     int nres;
-    int foundflag;
+    int *ff;
 
     //ran_init();
 
@@ -149,30 +149,42 @@ namespace libpetey {
     nres=unify_vectors(ss, n, nss, D, result, ind);
 
     //indices must be found in the sub-sets:
+    //and must cover the whole set (make sure there are no vectors in the
+    //union that aren't in at least one of the original subsets)
+    ff=new int[nres];
+    for (int i=0; i<nres; i++) ff[i]=0;
     //printf("Testing indices:\n");
     for (int i=0; i<nss; i++) {
       for (int j=0; j<n[i]; j++) {
-        foundflag=0;
 	//printf("ind[%d][%d]=%d\n", i, j, ind[i][j]);
         if (compare_vectors(result[ind[i][j]], ss[i][j], D)!=0) {
           fprintf(stderr, "test_intersect_vectors: incorrect index, ind[%d][%d]=%d\n", i, j, ind[i][j]);
           goto fail;
 	}
+	ff[ind[i][j]]=1;
       }
     }
 
     //result must be sorted:
     //printf("Checking ordering of results\n");
+    if (ff[0]==0) {
+      fprintf(stderr, "test_intersect_vectors: result vector at %d not indexed\n", 0);
+      goto fail;
+    }
     for (int i=1; i<nres; i++) {
       if (compare_vectors(result[i-1], result[i], D)>=0) {
         fprintf(stderr, "test_intersect_vectors: result vector at %d duplicated/not sorted\n", i);
         goto fail;
       }
+      if (ff[i]==0) {
+        fprintf(stderr, "test_intersect_vectors: result vector at %d not indexed\n", i);
+        goto fail;
+      }
     }
 
-    return 0;
     delete_matrix(ind);
     delete [] result;
+    delete [] ff;
     for (int i=0; i<nss; i++) delete_matrix(ss[i]);
 
     return 0;
@@ -193,6 +205,7 @@ namespace libpetey {
 
       delete_matrix(ind);
       delete [] result;
+      delete [] ff;
       for (int i=0; i<nss; i++) delete_matrix(ss[i]);
 
     return -1;
