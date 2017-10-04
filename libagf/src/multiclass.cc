@@ -155,8 +155,11 @@ namespace libagf {
           twoclass[i]=new svm2class<real, cls_t>(fname[i]);
 	} else if (com==NULL) {
           //twoclass[i]=new borders_classifier<real, cls_t>(fname[i], sigcode);
-          if (binparam==NULL) twoclass[i]=new binclass(fname[i]);
-	  		else twoclass[i]=new binclass(fname[i], binparam);
+          //if (binparam==NULL) 
+	  //just bite the bullet and use a couple of global variables??
+	  // -- don't think the algorithm's thread save anyways ...
+          twoclass[i]=new binclass(fname[i]);
+	  //		else twoclass[i]=new binclass(fname[i], binparam);
         } else {
           twoclass[i]=new general2class<real, cls_t>(fname[i], 
 			com, Mflag, Kflag);

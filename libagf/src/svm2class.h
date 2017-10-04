@@ -8,7 +8,7 @@ namespace libagf {
 
   //new paradigm:
   template <typename real>
-  template svm_helper {
+  class svm_helper {
     protected:
       nel_ta nsv;		//total support
       real **sv;		//support vectors
@@ -34,7 +34,7 @@ namespace libagf {
   template <typename real, typename cls_t>
   class svm2class2:public binaryclassifier<real, cls_t> {
     protected:
-      svm_helper *helper;		//contains support vectors
+      svm_helper<real> *helper;		//contains support vectors
       nel_ta *ind;			//indexes into the support vectors
       real *coef;			//coefficients
       real probA;			//for calculating probabilities
@@ -47,7 +47,7 @@ namespace libagf {
       svm2class2(char *name, void *param);
       ~svm2class2();
 
-      virtual R(real *x, real *praw=NULL);
+      virtual real R(real *x, real *praw=NULL);
 
       virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
 
