@@ -1,9 +1,13 @@
 SHELL=/bin/bash
 TIME=/bin/time
 
-DATAPATH=../statlog/data/
+DATAPATH=../datasets
 
 VER=shuttle
+
+#which method are we using?
+METHOD=svm
+#METHOD=agf
 
 #fraction of data to use for training:
 FRAC=0.3
@@ -25,6 +29,23 @@ NCLS_humidity=8
 
 NCLS=$(NCLS_$(VER))
 
+#options for AGF-borders:
+AGFOPT_shuttle=-W 1.5 -k 200 -s 250
+AGFOPT_covtype=
+AGFOPT_segment=-W 3 -s 100 -k 150
+AGFOPT_sat=-W 5 -s 200 -k 100
+AGFOPT_poker=-k 200 -W 2
+AGFOPT_mnist=-k 400 -W 25
+AGFOPT_vehicle=-W 5 -s 100 -k 100
+AGFOPT_letter=-W 3 -k 200 -s 1000
+AGFOPT_pendigits=-k 200 -W 2 -s 200
+AGFOPT_usps=-k 100 -W 1 -s 250
+AGFOPT_ijcnn1=-W 10 -k 400 -s 500
+AGFOPT_humidity=-k 400 -W 10 -s 200
+AGFOPT_mnist=-k 200 -W 1 -s 500
+
+OPTIONS_agf=$(AGFOPT_$(VER))
+
 #options for different datasets:
 SVMOPT_sat=-c 50 -g 0.1
 SVMOPT_segment=-c 100 -g 0.1 
@@ -32,55 +53,108 @@ SVMOPT_pendigits=-c 50 -g 0.01
 SVMOPT_letter=-c 50 -h 0
 SVMOPT_humidity=-h 0 -c 50
 
-OPTIONS=$(SVMOPT_$(VER))
+OPTIONS_svm=$(SVMOPT_$(VER))
 
+OPTIONS=$(OPTIONS_$(METHOD))
+
+WORKDIR=$(VER)_$(METHOD)
 BASE=$(WORKDIR)/$(VER)
 
 TRAIN=$(BASE).trn
 TEST=$(BASE).tst
+RESULT=$(BASE).$(TYPE)
 
-BASEORTHO=$(BASE).ortho
-BASE1V1=$(BASE).1v1
+#file extensions for results:
+EXT_agf=.vec
+EXT_svm=.svmout
+EXT=$(EXT_$(METHOD))
 
 #control files:
 #training:
-CONTROL1V1 = $(WORKDIR)/onevsone.mbt
-CONTROLORTHO=$(WORKDIR)/orthogonal.mbt
+CONTROL = $(BASE).$(TYPE).mbt
+
 #classification:
-MODELORTHO=$(BASEORTHO).mbc
-MODEL1V1=$(BASE1V1).mbc
+MODEL=$(BASE).$(TYPE).mbc
+
+#control file option:
+CODE1v1=5
+CODEortho=8
+CODE=$(CODE$(TYPE))
+
+#preprocessing options:
+PRE=-n
+
+#need this to normalize test data same as training data, if applicable:
+ifneq ($(strip $(PRE)),)
+  NORMFILE=$(TRAIN).std
+  NORMCLAUSE=-a $(NORMFILE)
+endif
+
+
+#command for training:
+TRAINCOMMAND_svm=multi_borders -M -- svm-train -+ "-b 1 $(OPTIONS)" \
+		$(CONTROL) $(TRAIN).svm $(BASE).$(TYPE) $(MODEL)
+TRAINCOMMAND_agf=multi_borders $(OPTIONS) $(CONTROL) $(TRAIN) $(BASE).$(TYPE) $(MODEL)
+TRAINCOMMAND=$(TRAINCOMMAND_$(METHOD))
+
+TESTCOMMAND_svm=classify_m -Q $(CODE) -M -O "svm-predict -b 1" \
+		$(MODEL) $(TEST).svm $(RESULT).svmout
+TESTCOMMAND_agf=classify_m -Q $(CODE) $(MODEL) $(TEST).vec $(RESULT) > $(RESULT).txt
+TESTCOMMAND=$(TESTCOMMAND_$(METHOD))
+
+FCONV_svm=svmout2agf $(RESULT).svmout $(RESULT) > $(RESULT).txt
+FCONV=$(FCONV_$(METHOD))
 
 #timing:
 #training time:
-#for orthogonal model:
-TM_TRAIN_ORTHO=$(WORKDIR)/tm_train_ortho.txt
-#for 1 v 1 model:
-TM_TRAIN_1V1=$(WORKDIR)/tm_train_1v1.txt
+TM_TRAIN=$(BASE).$(TYPE).tm
 #classification time:
-#for orthogonal model:
-TM_CLASS_ORTHO=$(WORKDIR)/tm_class_ortho.txt
-#for 1 v 1 model:
-TM_CLASS_1V1=$(WORKDIR)/tm_class_1v1.txt
+TM_CLASS=$(BASE).$(TYPE).tm
 
-#training 1 vs. 1 model:
-$(MODEL1V1): $(TRAIN).cls $(TRAIN).vec $(CONTROL1V1)
-	$(TIME) -o $(TM_TRAIN_1V1) \
-		multi_borders -M -- svm-train -+ "-b 1 $(SVMOPT)" \
-		$(CONTROL1V1) $(TRAIN) $(MODEL1V1) $(BASE1V1) $(MODEL1V1)
 
-#training orthogonal model:
-$(MODELORTHO): $(TRAIN).cls $(TRAIN).vec $(CONTROLORTHO)
-	$(TIME) -o $(TM_TRAIN_ORTHO) \
-		multi_borders -M -- svm-train -+ "-b 1 $(SVMOPT)" \
-		$(CONTROLORTHO) $(TRAIN) $(CONTROLORTHO) $(BASEORTHO) $(MODELORTHO)
+all:
+	make TYPE=1v1 $(BASE).1v1.txt
+	make TYPE=ortho $(BASE).ortho.txt
+	echo "1 vs. 1 results:"
+	more $(BASE).1v1.tm
+	cls_comp_stats $(TEST).cls $(BASE).1v1
+	echo "orthogonal results:"
+	more $(BASE).ortho.tm
+	cls_comp_stats $(TEST).cls $(BASE).ortho
+
+clean:
+	rm -f $(WORKDIR)/*
+
+#performing classifications:
+$(RESULT).txt: $(MODEL) $(TEST).svm
+	$(TIME) -o $(TM_CLASS) $(TESTCOMMAND)
+	$(FCONV)
+
+#training the model:
+$(MODEL): $(TRAIN).svm $(CONTROL)
+	$(TIME) -o $(TM_TRAIN) $(TRAINCOMMAND)
 
 #create control files:
-$(CONTROL1V1):
-	print_control -Q 6 $(NCLS) > $(CONTROL1V1)
+$(CONTROL):
+	print_control -Q $(CODE) $(NCLS) > $(CONTROL)
 
-$(CONTROLORTHO):
-	print_control -Q 10 $(NCLS) > $(CONTROLORTHO)
+#normalize:
+$(TRAIN).svm: $(TRAIN).0.vec
+	agf_preprocess $(PRE) $(TRAIN).0 $(TRAIN)
+	agf2ascii -M $(TRAIN) > $(TRAIN).svm
+
+$(TEST).svm: $(TEST).0.vec
+	agf_preprocess $(NORMCLAUSE) $(TEST).0 $(TEST)
+	agf2ascii -M $(TEST) > $(TEST).svm
 
 #divide into test and training:
-$(TRAIN).svm $(TEST).svm: $(BASE).svm
-	agf_preprocess -f $(FRAC) $(BASE) $(TRAIN) $(TEST)
+$(TRAIN).0.vec $(TEST).0.vec: $(DATAPATH)/$(VER).vec $(WORKDIR)/timestamp
+	agf_preprocess -zf $(FRAC) $(DATAPATH)/$(VER) $(TRAIN).0 $(TEST).0
+
+#make the working directory:
+$(WORKDIR)/timestamp:
+	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi
+	date > $(WORKDIR)/timestamp
+
+$(DATAPATH)/$(VER).vec:
+	make -C $(DATAPATH)

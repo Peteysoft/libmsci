@@ -1,5 +1,6 @@
 #include <string.h>
 
+#include "full_util.h"
 #include "randomize.h"
 #include "agf_lib.h"
 
@@ -27,11 +28,10 @@ int main(int argc, char **argv) {
     fprintf(docfs, "           2 partition adjacent classes\n");
     fprintf(docfs, "           3 random coding matrix (n<65)\n");
     fprintf(docfs, "           4 \"exhaustive\" coding matrix (n<34)\n");
-    fprintf(docfs, "           5 orthogonal coding matrix (n%%4==0)\n");
-    fprintf(docfs, "           6 one against one\n");
-    fprintf(docfs, "           7 design hierarchical scheme based on training data\n");
+    fprintf(docfs, "           5 one against one\n");
+    fprintf(docfs, "           6 design hierarchical scheme based on training data\n");
+    fprintf(docfs, "           7 hierarchical non-hierarchical\n");
     fprintf(docfs, "           8 orthogonal coding matrix (completely brute force: n<25; n%%4==0)\n");
-    fprintf(docfs, "           9 hierarchical non-hierarchical\n");
     fprintf(docfs, "  n      = number of classes\n");
     fprintf(docfs, "  train  = base name of training data files (if applicable):\n");
     fprintf(docfs, "             .vec for vector data\n");
@@ -73,14 +73,10 @@ int main(int argc, char **argv) {
       nrow=pow(2, n-1)-1;
       break;
     case(5):
-      coding_matrix=ortho_coding_matrix_nqbf<int>(n, opt_args.Gflag, opt_args.Yflag);
-      nrow=n;
-      break;
-    case(6):
       coding_matrix=one_against_one<int>(n);
       nrow=(n-1)*n/2;
       break;
-    case(7): {
+    case(6): {
         char *fname;		//filename
         dim_ta D;		//dimensionality of problem
         nel_ta ntrain;		//number of training samples
@@ -126,20 +122,30 @@ int main(int argc, char **argv) {
 	if (rmflag) remove(opt_args.normfile);
       }
       break;
-    case(8):
-      coding_matrix=ortho_coding_matrix_brute_force<int>(n, opt_args.Yflag);
-      nrow=n;
-      break;
-    case(9):
+    case(7):
       coding_matrix=hierarchical_nonhierarchical<int>(n);
       nrow=n-1;
+      break;
+    case(8):
+      int **cm;
+      nrow=4*(n/4+1);
+      cm=ortho_coding_matrix_brute_force<int>(nrow, opt_args.Yflag);
+      //only necessary if number of rows falls short:
+      coding_matrix=matrix_transpose(cm, n, nrow);
+      //coding_matrix=cm;
+      delete_matrix(cm);
+      break;
+    case(9):
+      coding_matrix=ortho_coding_matrix_brute_force<int>(n, opt_args.Yflag);
+      nrow=n;
       break;
     default:
       print_control_hier(stdout, n);
   }
 
-  if (opt_args.Qtype > 0 && opt_args.Qtype!=7) {
-    if (opt_args.Qtype==5 || (opt_args.Qtype==8 && opt_args.Yflag)) {
+  if (opt_args.Qtype > 0 && opt_args.Qtype!=6) {
+    //if (opt_args.Qtype==5 || (opt_args.Qtype==8 && opt_args.Yflag)) {
+    if (opt_args.Qtype==9 && opt_args.Yflag) {
       print_control_nonhier(stdout, coding_matrix+1, nrow-1, n);
     } else {
       print_control_nonhier(stdout, coding_matrix, nrow, n);

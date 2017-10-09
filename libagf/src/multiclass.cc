@@ -346,23 +346,22 @@ namespace libagf {
 
   template <typename real, typename cls_t, typename binclass>
   void multiclass<real, cls_t, binclass>::batch_classify(real **x, cls_t *cls, real **p1, nel_ta n, dim_ta nvar) {
-    real **r;
+    real **r1;
+    real r2[nmodel];
 
     //printf("multiclass: performing classifications with %d test vectors on %d models\n", n, nmodel);
-    r=new real*[nmodel];
-    r[0]=new real[nmodel*n];
+    r1=allocate_matrix<real>(nmodel, n);
     for (cls_t i=0; i<nmodel; i++) {
-      r[i]=r[0]+i*n;
       //printf("multiclass: batchR model %d\n", i);
-      twoclass[i]->batchR(x, r[i], n, nvar);
+      twoclass[i]->batchR(x, r1[i], n, nvar);
     }
     for (nel_ta i=0; i<n; i++) {
-      (*solve_class)(code, nmodel, this->ncls, r[i], p1[i]);
+      for (int j=0; j<nmodel; j++) r2[j]=r1[j][i];
+      (*solve_class)(code, nmodel, this->ncls, r2, p1[i]);
       cls[i]=choose_class(p1[i], this->ncls);
     }
 
-    delete [] r[0];
-    delete [] r;
+    delete_matrix(r1);
 
   }
 

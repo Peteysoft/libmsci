@@ -551,6 +551,8 @@ template void matrix_transpose<double, int16_t>(double **, int16_t);
 template void matrix_transpose<double, int32_t>(double **, int32_t);
 template void matrix_transpose<double, int64_t>(double **, int64_t);
 
+template int ** matrix_transpose<int, int32_t>(int **, int32_t, int32_t);
+
 template float ** matrix_transpose<float, int16_t>(float **, int16_t, int16_t);
 template float ** matrix_transpose<float, int32_t>(float **, int32_t, int32_t);
 template float ** matrix_transpose<float, int64_t>(float **, int64_t, int64_t);

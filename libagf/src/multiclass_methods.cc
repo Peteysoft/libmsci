@@ -110,6 +110,36 @@ namespace libagf {
     } while (done==0);
   }
 
+  //do it recursively:
+  template <class real>
+  void p_constrain_renorm1b(real **p, int n) {
+    real pt=0;
+    int nbad=0;
+    //re-normalize:
+    for (int i=0; i<n; i++) {
+      pt+=*p[i];
+    }
+    for (int i=0; i<n; i++) {
+      *p[i]+=(1-pt)/n;
+    }
+    //check for out-of-range (<0) values:
+    for (int i=0; i<n; i++) {
+      p[i-nbad]=p[i];
+      if (*p[i]<0) {
+        *p[i]=0;
+        nbad++;
+      }
+    }
+    if (nbad>0) p_constrain_renorm1b(p, n-nbad);
+  }
+
+  template <class real>
+  void p_constrain_renorm1b(real *p, int n) {
+    real *p2[n];
+    for (int i=0; i<n; i++) p2[i]=p+i;
+    p_constrain_renorm1b(p2, n);
+  }
+
   template <class real>
   void solve_class_scratch(real **a0, int m, int n, real *r, real *p) {
     gsl_matrix *u1;
@@ -370,7 +400,7 @@ namespace libagf {
   template <class real>
   void solve_class_vote_pdf2(real **a, int m, int n, real *r, real *p) {
     solve_class_vote_pdf(a, m, n, r, p);
-    p_constrain_renorm1a(p, n);
+    p_constrain_renorm1b(p, n);
   }
       
   template <class real>
