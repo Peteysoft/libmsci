@@ -65,6 +65,8 @@ template <class real, class integer>
 real ** scan_matrix(FILE *fptr, integer &m, integer &n, int flag=0);
 
 template <class integer>
+void print_matrix(FILE *fptr, int **mat, integer m, integer n);
+template <class integer>
 void print_matrix(FILE *fptr, float **mat, integer m, integer n);
 template <class integer>
 void print_matrix(FILE *fptr, double **mat, integer m, integer n);

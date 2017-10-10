@@ -36,11 +36,9 @@ AGFOPT_segment=-W 3 -s 100 -k 150
 AGFOPT_sat=-W 5 -s 200 -k 100
 AGFOPT_poker=-k 200 -W 2
 AGFOPT_mnist=-k 400 -W 25
-AGFOPT_vehicle=-W 5 -s 100 -k 100
 AGFOPT_letter=-W 3 -k 200 -s 1000
 AGFOPT_pendigits=-k 200 -W 2 -s 200
 AGFOPT_usps=-k 100 -W 1 -s 250
-AGFOPT_ijcnn1=-W 10 -k 400 -s 500
 AGFOPT_humidity=-k 400 -W 10 -s 200
 AGFOPT_mnist=-k 200 -W 1 -s 500
 

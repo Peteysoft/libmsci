@@ -127,13 +127,23 @@ int main(int argc, char **argv) {
       nrow=n-1;
       break;
     case(8):
-      int **cm;
-      nrow=4*(n/4+1);
-      cm=ortho_coding_matrix_brute_force<int>(nrow, opt_args.Yflag);
-      //only necessary if number of rows falls short:
-      coding_matrix=matrix_transpose(cm, n, nrow);
-      //coding_matrix=cm;
-      delete_matrix(cm);
+      int sum;
+      //int **cm;
+      //int **product;
+      nrow=4*((n-1)/4+1);
+      coding_matrix=NULL;
+      do {
+        if (coding_matrix!=NULL) delete_matrix(coding_matrix);
+        coding_matrix=ortho_coding_matrix_brute_force<int>(nrow, opt_args.Yflag);
+	//pile brute force upon brute force:
+	//(making sure there are classes on both sides of the fence...)
+	//print_matrix(stdout, coding_matrix, nrow, n);
+	for (int i=0; i<nrow; i++) {
+	  sum=0;
+          for (int j=0; j<n; j++) sum+=coding_matrix[i][j];
+	  if (abs(sum)==n) break;
+	}
+      } while (abs(sum)==n);
       break;
     case(9):
       coding_matrix=ortho_coding_matrix_brute_force<int>(n, opt_args.Yflag);

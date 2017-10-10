@@ -336,6 +336,17 @@ real ** scan_matrix(FILE *fptr, integer &m, integer &n) {
 }
 
 template <class integer>
+void print_matrix(FILE *fptr, int **mat, integer m, integer n) {
+  fprintf(fptr, "%d %d\n", (int32_t) m, (int32_t) n);
+  for (integer i=0; i<m; i++) {
+    for (integer j=0; j<n; j++) {
+      fprintf(fptr, "%d ", mat[i][j]);
+    }
+    fprintf(fptr, "\n");
+  }
+}
+
+template <class integer>
 void print_matrix(FILE *fptr, float **mat, integer m, integer n) {
   fprintf(fptr, "%d %d\n", (int32_t) m, (int32_t) n);
   for (integer i=0; i<m; i++) {
@@ -356,6 +367,7 @@ void print_matrix(FILE *fptr, double **mat, integer m, integer n) {
     fprintf(fptr, "\n");
   }
 }
+
 //getting too long to be inlined...
 template <class real, class integer>
 real ** read_matrix(FILE *fptr, integer &m, integer &n) {
@@ -482,6 +494,8 @@ template void matrix_mult<double, int16_t>(double **, double **, double **, int1
 template void matrix_mult<double, int32_t>(double **, double **, double **, int32_t, int32_t, int32_t);
 template void matrix_mult<double, int64_t>(double **, double **, double **, int64_t, int64_t, int64_t);
 
+template int32_t ** matrix_mult<int32_t, int32_t>(int32_t **, int32_t **, int32_t, int32_t, int32_t);
+
 template float ** matrix_mult<float, int16_t>(float **, float **, int16_t, int16_t, int16_t);
 template float ** matrix_mult<float, int32_t>(float **, float **, int32_t, int32_t, int32_t);
 template float ** matrix_mult<float, int64_t>(float **, float **, int64_t, int64_t, int64_t);
@@ -576,6 +590,10 @@ template float ** read_matrix<float, int64_t>(FILE *, int64_t &, int64_t &);
 template double ** read_matrix<double, int16_t>(FILE *, int16_t &, int16_t &);
 template double ** read_matrix<double, int32_t>(FILE *, int32_t &, int32_t &);
 template double ** read_matrix<double, int64_t>(FILE *, int64_t &, int64_t &);
+
+template void print_matrix<int16_t>(FILE *, int **, int16_t, int16_t);
+template void print_matrix<int32_t>(FILE *, int **, int32_t, int32_t);
+template void print_matrix<int64_t>(FILE *, int **, int64_t, int64_t);
 
 template void print_matrix<int16_t>(FILE *, float **, int16_t, int16_t);
 template void print_matrix<int32_t>(FILE *, float **, int32_t, int32_t);

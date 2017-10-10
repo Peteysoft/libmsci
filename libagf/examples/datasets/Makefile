@@ -141,8 +141,8 @@ $(WORKDIR)/splice.0.cls: $(DATADIR)/splice $(DATADIR)/splice.t
 $(WORKDIR)/mnist.0.cls: $(DATADIR)/mnist $(DATADIR)/mnist.t 
 	#$(WORKDIR)/$(VER).timestamp
 	cat $(DATADIR)/$(VER) $(DATADIR)/$(VER).t > $(BASE).0.svm
-	svm2agf -E 0 $(BASE).0.svm $(TRAIN).0
-	agf_preprocess -F $(TRAIN).0 $(TRAIN).0 $(MNIST_INDICES)
+	svm2agf -E 0 $(BASE).0.svm $(BASE).0
+	agf_preprocess -F $(BASE).0 $(BASE).0 $(MNIST_INDICES)
 
 #my own dataset:
 $(WORKDIR)/humidity.0.cls: ../humidity_data/train_SQ36s.dat ../humidity_data/est_bt_cld_land_z0.00.vec

@@ -425,44 +425,45 @@ namespace libagf {
       throw(PARAMETER_OUT_OF_RANGE);
     }
 
-    trial=randomize(nperm);
-
-    if (toprow1) {
-      for (int i=0; i<n; i++) coding_matrix[0][i]=1;
-      nfilled=1;
-    } else {
-      nfilled=0;
-    }
-    for (int i=0; i<nperm; i++) {
-      int dprod;
-      //printf("%d\n", trial[i]);
-      //tobits=new bit_array((word *) (trial+i), (sizeof(long)+1)/sizeof(word), n);
-      //all zeros or all ones not allowed:
-      if (trial[i]==0 || trial[i]==nperm-1) continue;
-      tobits=new bitset<sizeof(i)*8>(trial[i]);
-      for (long j=0; j<n; j++) {
-        coding_matrix[nfilled][j]=2*(long) (*tobits)[j]-1;
-        //printf("%d ", (int32_t) (*tobits)[j]);
+    do {
+      if (toprow1) {
+        for (int i=0; i<n; i++) coding_matrix[0][i]=1;
+        nfilled=1;
+      } else {
+        nfilled=0;
       }
-      //printf("\n");
-      //for (int j=0; j<n; j++) printf("%3d", coding_matrix[nfilled][j]);
-      //printf("\n");
-      dprod=0;
-      for (int j=0; j<nfilled; j++) {
-        dprod=0;
-        for (int k=0; k<n; k++) {
-          dprod+=coding_matrix[nfilled][k]*coding_matrix[j][k];
+      trial=randomize(nperm);
+      for (int i=0; i<nperm; i++) {
+        int dprod;
+        //printf("%d\n", trial[i]);
+        //tobits=new bit_array((word *) (trial+i), (sizeof(long)+1)/sizeof(word), n);
+        //all zeros or all ones not allowed:
+        if (trial[i]==0 || trial[i]==nperm-1) continue;
+        tobits=new bitset<sizeof(i)*8>(trial[i]);
+        for (long j=0; j<n; j++) {
+          coding_matrix[nfilled][j]=2*(long) (*tobits)[j]-1;
+          //printf("%d ", (int32_t) (*tobits)[j]);
         }
-        if (dprod!=0) break;
-      }
-      if (dprod==0) {
+        //printf("\n");
         //for (int j=0; j<n; j++) printf("%3d", coding_matrix[nfilled][j]);
         //printf("\n");
-        nfilled++;
+        dprod=0;
+        for (int j=0; j<nfilled; j++) {
+          dprod=0;
+          for (int k=0; k<n; k++) {
+            dprod+=coding_matrix[nfilled][k]*coding_matrix[j][k];
+          }
+          if (dprod!=0) break;
+        }
+        if (dprod==0) {
+          //for (int j=0; j<n; j++) printf("%3d", coding_matrix[nfilled][j]);
+          //printf("\n");
+          nfilled++;
+        }
+        delete tobits;
+        if (nfilled>=n) break;
       }
-      if (nfilled>=n) break;
-      delete tobits;
-    }
+    } while (nfilled<n);
 
     if (nfilled<n) coding_matrix[nfilled]=NULL;
 
@@ -485,6 +486,7 @@ namespace libagf {
       printf("\n");
     }
     printf("\n");
+
   }
 
   template <typename scalar>

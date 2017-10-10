@@ -400,6 +400,8 @@ namespace libagf {
   template <class real>
   void solve_class_vote_pdf2(real **a, int m, int n, real *r, real *p) {
     solve_class_vote_pdf(a, m, n, r, p);
+    //can't forget to divide by the number of rows:
+    for (int i=0; i<n; i++) p[i]/=m;
     p_constrain_renorm1b(p, n);
   }
       
