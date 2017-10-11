@@ -82,7 +82,8 @@ EXECUTABLES =	class_borders \
 		optimize_r0 \
 		calibrate_borders \
 		subsample_special \
-		subsample_sv
+		subsample_sv \
+		validate_probabilities
 # more experimental stuff:
 #		optimize_r0 calibrate_p2 calc_joint_entropy \
 #		calibrate_p3 class_triangle 

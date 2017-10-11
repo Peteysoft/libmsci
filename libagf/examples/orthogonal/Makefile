@@ -123,20 +123,24 @@ FCONV=$(FCONV_$(METHOD))
 
 #timing:
 #training time:
-TM_TRAIN=$(BASE).$(TYPE).tm
+TM_TRAIN=$(BASE).trn.$(TYPE).tm
 #classification time:
-TM_CLASS=$(BASE).$(TYPE).tm
+TM_CLASS=$(BASE).tst.$(TYPE).tm
 
 
 all:
 	make TYPE=1v1 $(BASE).1v1.txt
 	make TYPE=ortho $(BASE).ortho.txt
 	echo "1 vs. 1 results:"
-	more $(BASE).1v1.tm
+	more $(BASE).trn.1v1.tm
+	more $(BASE).tst.1v1.tm
 	cls_comp_stats $(TEST).cls $(BASE).1v1
+	validate_probabilities -H $(TEST).cls $(BASE).1v1.txt 
 	echo "orthogonal results:"
-	more $(BASE).ortho.tm
+	more $(BASE).trn.ortho.tm
+	more $(BASE).tst.ortho.tm
 	cls_comp_stats $(TEST).cls $(BASE).ortho
+	validate_probabilities -H $(TEST).cls $(BASE).ortho.txt
 
 clean:
 	rm -f $(WORKDIR)/*

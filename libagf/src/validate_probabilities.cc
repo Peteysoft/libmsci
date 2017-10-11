@@ -3,8 +3,10 @@
 #include <string.h>
 #include <getopt.h>
 
+#include <gsl/gsl_statistics_double.h>
+#include <gsl/gsl_fit.h>
+
 #include "peteys_tmpl_lib.h"
-#include "randomize.h"
 #include "agf_lib.h"
 
 using namespace std;
@@ -13,6 +15,7 @@ using namespace libpetey;
 
 //compares two sets of class and outputs statistics on them:
 int main(int argc, char ** argv) {
+  FILE *fs;
   char *tfile;
   char *pfile;
   char *ofile;
@@ -21,10 +24,23 @@ int main(int argc, char ** argv) {
   cls_ta *class1;
   cls_ta *class2;
   nel_ta n1, n2;
+  dim_ta ncls;
 
-  real_a **p;
+  real_a **p;			//probabilities
+  real_a *ps;			//sorted probabilities
+  long *sind;			//sort indices
 
-  flag_a bflag=0;
+  long midind;			//index of probability closest to 0.5
+
+  double *sum;
+  double *rank;
+
+  //slope and regression:
+  double r, m;
+  //stuff I don't need:
+  double cov, sumsqr;
+
+  flag_a Cflag=0;
   flag_a Hflag=0;
   int exit_code=0;
 
@@ -66,8 +82,6 @@ int main(int argc, char ** argv) {
     return INSUFFICIENT_COMMAND_ARGS;
   }
 
-  ran_init();
-
   tfile=argv[0];
   pfile=argv[1];
   if (argc > 2) ofile=argv[2]; else ofile=NULL;
@@ -88,47 +102,74 @@ int main(int argc, char ** argv) {
     return ALLOCATION_FAILURE;
   }
   if (p == NULL) {
-    fprintf(stderr, "Unable to open file for reading: %s\n", clsfile);
+    fprintf(stderr, "Unable to open file for reading: %s\n", pfile);
     return UNABLE_TO_OPEN_FILE_FOR_READING;
   }
   if (n1 != n2) {
     fprintf(stderr, "Data elements in files, %s and %s, do not agree: %d vs. %d\n", 
-		    tfile, clsfile, n1, n2);
+		    tfile, pfile, n1, n2);
     return SAMPLE_COUNT_MISMATCH;
   }
 
-/*
-  for (nel_ta i=0; i<n1; i++) {
-    printf("%d %d\n", class1[i], class2[i]);
-  }
-*/
+  sind=heapsort(p[0], n1*ncls);
+  ps=map_vector(p[0], sind, n1*ncls);
 
-  if (bflag == 1) {
-    class_eval_basic(class1, class2, n1, stdout, Hflag);
-    //printf("%f %f\n", uc, (real_a) nt/(real_a) n1);
-  } else {
-    class_eval(class1, class2, n1);
+  //for (int i=0; i<n1*ncls; i++) printf("%g\n", ps[i]);
+  
+  //to save memory:
+  delete [] p[0];
+  delete [] p;
 
-    //check accuracy of confidence ratings:
-    con=read_datfile<real_a>(confile, n2);
-    if (con!=NULL && nhist > 0) {
-      if (n1!=n2) {
-        fprintf(stderr, "cls_comp_stats: number of confidence ratings (%d) does not match the number of classes (%d)\n", n2, n1);
-        exit(SAMPLE_COUNT_MISMATCH);
-      }
-      check_confidence(class1, class2, con, n1, nhist);
-
-      delete [] con;
+  midind=bin_search(ps, n1*ncls, (float) 0.5);
+  sum=new double[n1*ncls];
+  sum[midind]=0;
+  for (int i=midind-1; i>=0; i--) {
+    long k=sind[i]/ncls;
+    cls_ta cls=sind[i]%ncls;
+    if (cls!=class1[k]) {
+      sum[i]=sum[i+1]-1/(1-ps[i]);
+    } else {
+      sum[i]=sum[i+1];
     }
   }
 
+  for (int i=midind+1; i<n1*ncls; i++) {
+    long k=sind[i]/ncls;
+    cls_ta cls=sind[i]%ncls;
+    if (cls==class1[k]) {
+      sum[i]=sum[i-1]+1/ps[i];
+    } else {
+      sum[i]=sum[i-1];
+    }
+  }
+
+  //save more memory:
+  delete [] sind;
+
+  rank=new double[n1*ncls];
+  if (ofile!=NULL) {
+    fs=fopen(ofile, "w");
+  }
+  for (int i=0; i<n1*ncls; i++) {
+    rank[i]=i-midind;
+    if (ofile!=NULL) {
+      fprintf(fs, "%d %g\n", i-midind, sum[i]);
+    }
+  }
+  if (ofile!=NULL) fclose(fs);
+
+  //find correlation and slope:
+  //lets waste some compute cycles by calculating them independently...
+  r=gsl_stats_correlation(rank, 1, sum, 1, n1*ncls);
+  exit_code=gsl_fit_mul(rank, 1, sum, 1, n1*ncls, &m, &cov, &sumsqr);
+
+  printf("r = %lg\n", r);
+  printf("m = %lg\n", m);
+
   delete [] class1;
   delete [] class2;
-
-  delete [] clsfile;
-  delete [] confile;
-
-  ran_end();
+  delete [] ps;
+  delete [] sum;
 
   return exit_code;
 
