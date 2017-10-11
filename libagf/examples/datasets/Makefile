@@ -39,7 +39,7 @@ BASE=$(WORKDIR)/$(VER)
 #TEST=$(BASE).tst
 
 #process training data:
-$(BASE).vec $(BASE).cls $(NORMFILE): $(BASE).0.cls $(BASE).0.vec
+$(BASE).vec $(BASE).cls: $(BASE).0.cls $(BASE).0.vec
 	agf_preprocess $(PRE) -U $(BASE).0 $(BASE)
 
 #convert to LIBSVM format:
@@ -56,8 +56,6 @@ $(BASE).svm: $(BASE).cls $(BASE).vec
 #     - make class labels go from 0 to Nc-1
 #4. convert to LIBSVM format (if needed) above
 
-
-#list of datasets from LIBSVM website with test and training:
 
 #list of datasets from LIBSVM website with test and training:
 SVMTTDATA=madelon \
@@ -91,9 +89,9 @@ $(WORKDIR)/heart.0.cls: $(WORKDIR)/%.cls: $(DATADIR)/%.dat.txt
 
 $(WORKDIR)/segment.0.cls: $(DATADIR)/segment.dat.txt 
 	#$(WORKDIR)/$(VER).timestamp
-	lvq2agf -H $< $(WORKDIR)/$(VER)
+	lvq2agf -H $< $(WORKDIR)/$(VER).0
 	#3rd feature must be removed since it only takes on one value:
-	agf_preprocess -F $(BASE).0 $(WORKDIR).0 0 1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
+	agf_preprocess -F $(BASE).0 $(BASE).0 0 1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
 
 $(WORKDIR)/letter.0.cls: $(DATADIR)/letter-recognition.data.txt 
 	#$(WORKDIR)/$(VER).timestamp
@@ -149,6 +147,9 @@ $(WORKDIR)/humidity.0.cls: ../humidity_data/train_SQ36s.dat ../humidity_data/est
 	cp ../humidity_data/est_bt_cld_land_z0.00.vec $(WORKDIR)/humidity.0.vec
 	float_to_class -q $(NCLS_humidity) -g ../humidity_data/train_SQ36s.dat $(WORKDIR)/humidity.0.cls 0.00007 0.001
 
+$(WORKDIR)/vehicle.0.cls: $(DATADIR)/xa?.dat.txt
+	cat $(DATADIR)/xa?.dat.txt | sed 's/opel/0/;s/saab/1/;s/bus/2/;s/van/3/' > $(BASE).0.txt
+	lvq2agf -H $(BASE).0.txt $(BASE).0
 
 #we like the mnist dataset because it takes 3 days to train in LIBSVM:
 MNIST_INDICES = 33 \

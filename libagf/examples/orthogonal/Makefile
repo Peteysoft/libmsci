@@ -26,6 +26,7 @@ NCLS_pendigits=10
 NCLS_usps=10
 #this one actually sets the number of classes:
 NCLS_humidity=8
+NCLS_vehicle=4
 
 NCLS=$(NCLS_$(VER))
 
@@ -41,6 +42,7 @@ AGFOPT_pendigits=-k 200 -W 2 -s 200
 AGFOPT_usps=-k 100 -W 1 -s 250
 AGFOPT_humidity=-k 400 -W 10 -s 200
 AGFOPT_mnist=-k 200 -W 1 -s 500
+AGFOPT_vehicle=-W 1 -s 200
 
 OPTIONS_agf=$(AGFOPT_$(VER))
 
@@ -87,6 +89,22 @@ ifneq ($(strip $(PRE)),)
   NORMFILE=$(TRAIN).std
   NORMCLAUSE=-a $(NORMFILE)
 endif
+
+#subsampling option:
+CFLAG_shuttle=correction
+#keep class sizes constant:
+SAMPLING_METHOD_= -C
+#correct for smaller classes:
+SAMPLING_METHOD_correction=
+#there must be a way of doing it without using three levels of indirection
+#(and without resorting to 'if'):
+SAMPLING_METHOD=$(SAMPLING_METHOD_$(CFLAG_$(VER)))
+
+#command for subsampling:
+#takes into account relative class sizes:
+SUBSAMPLE=subsample_special
+#doesn't:
+#SUBSAMPLE=agf_preprocess
 
 
 #command for training:
@@ -147,7 +165,7 @@ $(TEST).svm: $(TEST).0.vec
 
 #divide into test and training:
 $(TRAIN).0.vec $(TEST).0.vec: $(DATAPATH)/$(VER).vec $(WORKDIR)/timestamp
-	agf_preprocess -zf $(FRAC) $(DATAPATH)/$(VER) $(TRAIN).0 $(TEST).0
+	$(SUBSAMPLE) $(SAMPLING_METHOD) -zf $(FRAC) $(DATAPATH)/$(VER) $(TRAIN).0 $(TEST).0
 
 #make the working directory:
 $(WORKDIR)/timestamp:

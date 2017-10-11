@@ -115,6 +115,7 @@ namespace libagf {
   void p_constrain_renorm1b(real **p, int n) {
     real pt=0;
     int nbad=0;
+    //printf("%d\n", n);
     //re-normalize:
     for (int i=0; i<n; i++) {
       pt+=*p[i];
@@ -138,6 +139,7 @@ namespace libagf {
     real *p2[n];
     for (int i=0; i<n; i++) p2[i]=p+i;
     p_constrain_renorm1b(p2, n);
+    //printf("\n");
   }
 
   template <class real>
