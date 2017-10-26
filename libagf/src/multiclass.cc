@@ -215,37 +215,37 @@ namespace libagf {
   void multiclass<real, cls_t, binclass>::set_solve_type(int ct) {
     switch (ct) {
       case (0):
-        solve_class=&solve_class_constrained2<real>;
+        solve_class=&solve_class_constrained2<real, real>;
 	break;
       case (1):
-	solve_class=&solve_class_scratch<real>;
+	solve_class=&solve_class_scratch<real, real>;
         break;
       case (2):
-	solve_class=&solve_class_vote_pdf<real>;
+	solve_class=&solve_class_vote_pdf<real, real>;
         break;
       case (3):
-	solve_class=&solve_class_vote<real>;
+	solve_class=&solve_class_vote<real, real>;
         break;
       case (4):
-	solve_class=&solve_class_norm1<real>;
+	solve_class=&solve_class_norm1<real, real>;
         break;
       case (5):
-	solve_class=&solve_class_norm2<real>;
+	solve_class=&solve_class_norm2<real, real>;
         break;
       case (6):
-	solve_class=&solve_class_renorm<real>;
+	solve_class=&solve_class_renorm<real, real>;
         break;
       case (7):
-        solve_class=&solve_class_constrained1<real>;
+        solve_class=&solve_class_constrained1<real, real>;
 	break;
       case (8):
-	solve_class=&solve_class_vote_pdf2<real>;
+	solve_class=&solve_class_vote_pdf2<real, real>;
 	break;
       case (9):
-	solve_class=&solve_class_1vR<real>;
+	solve_class=&solve_class_1vR<real, real>;
 	break;
       default:
-        solve_class=&solve_class_constrained2<real>;
+        solve_class=&solve_class_constrained2<real, real>;
         break;
     }
   }
@@ -377,6 +377,17 @@ namespace libagf {
       //remove side-effect:
       id[i]--;
     }
+  }
+
+  //since they do about the same thing, we put them next to each other...
+  template <typename real, typename cls_t, typename binclass>
+  cls_t multiclass<real, cls_t, binclass>::collect_binary_classifiers(binaryclassifier<real, cls_t> **list) {
+    for (cls_t i=0; i<nmodel; i++) {
+      //this makes no sense:
+      twoclass[i]->collect_binary_classifiers(list+i);
+      //list[i]=twoclass[i];
+    }
+    return nmodel;
   }
 
   template <typename real, typename cls_t, typename binclass>

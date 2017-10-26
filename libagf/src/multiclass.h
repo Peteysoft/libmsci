@@ -51,6 +51,7 @@ namespace libagf {
 
       //is the mapping "strict"--i.e. each row includes all classes?
       int strictflag;
+
     public:
       multiclass(int ct=0);
       //initialized from a control file:
@@ -71,6 +72,13 @@ namespace libagf {
 
       //initialize using giant structure used by all the other parsing routines:
       int init(multi_parse_param &param);
+
+      int init(char **fname,
+		      int **code,
+		      int npart,
+		      cls_t ncls,
+		      binaryclassifier<real, cls_t> * (* binit) (char *, void *),
+		      void *param);
 
       //if we want to initialize with a list of files and partitions:
       int init(char **fname, 		//name of each of the binary models
@@ -100,7 +108,10 @@ namespace libagf {
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
 
+      //these two do almost the same thing:
+      //(design tree data structure, implement as generalized operator...)
       virtual void set_id(cls_t *id); 		//set id's of each binary classifier
+      virtual cls_t collect_binary_classifiers(binaryclassifier<real, cls_t> **list);
 
       int detect_type();	//detects if it is one of the special cases:
       				//0 = 1v1

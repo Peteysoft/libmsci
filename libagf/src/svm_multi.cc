@@ -513,7 +513,6 @@ namespace libagf {
     real t1, t2;
     real deriv[this->D1];
     real drdx1[this->D1];
-    real drdx2[this->D1];
 
     if (i==j) throw PARAMETER_OUT_OF_RANGE;
 

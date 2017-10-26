@@ -22,6 +22,7 @@ namespace libagf {
       classifier_obj<real, cls_t> **children;
 
       int nonh_flag;		//only one level: not hierarchical
+
     public:
       multiclass_hier();
       //initialize from a control file for classification:
@@ -91,6 +92,8 @@ namespace libagf {
 		char *fbase);
 
       virtual void set_id(cls_t *id);
+      //collect the binary classifiers into a single list:
+      virtual cls_t collect_binary_classifiers(binaryclassifier<real, cls_t> **list);
 
       //load and save to single ASCII file:
       int load(FILE *fs, int ct);

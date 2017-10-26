@@ -236,6 +236,11 @@ namespace libagf {
     fprintf(stderr, "classifier_obj: calibrate method not defined for this sub-class!\n");
   }
 
+  template <class real, class cls_t>
+  cls_t classifier_obj<real, cls_t>::collect_binary_classifiers(binaryclassifier<real, cls_t> **list) {
+    return 0;
+  }
+
   //a whole bunch of nothing:
   template <class real, class cls_t>
   oneclass<real, cls_t>::oneclass(cls_t cl) {

@@ -18,8 +18,8 @@ using namespace libpetey;
 
 //methods for solving for multi-class
 namespace libagf {
-  template <class real>
-  void prep_nonstrict(real **a, int m, int n, real *r,
+  template <typename code_t, typename real>
+  void prep_nonstrict(code_t **a, int m, int n, real *r,
 		  gsl_matrix *q, gsl_vector *b) {
     //transform coding matrix to a linear system: 
     for (int i=0; i<m; i++) {
@@ -142,8 +142,8 @@ namespace libagf {
     //printf("\n");
   }
 
-  template <class real>
-  void solve_class_scratch(real **a0, int m, int n, real *r, real *p) {
+  template <typename code_t, typename real>
+  void solve_class_scratch(code_t **a0, int m, int n, real *r, real *p) {
     gsl_matrix *u1;
     gsl_vector *b1;
     gsl_vector *p1;
@@ -176,8 +176,8 @@ namespace libagf {
 
   }
 
-  template <class real>
-  void solve_class_vote(real **a, int m, int n, real *r, real *p) {
+  template <typename code_t, typename real>
+  void solve_class_vote(code_t **a, int m, int n, real *r, real *p) {
     for (int i=0; i<n; i++) p[i]=0;
     for (int i=0; i<m; i++) {
       for (int j=0; j<n; j++) {
@@ -186,8 +186,8 @@ namespace libagf {
     }
   }
 
-  template <class real>
-  void solve_class_vote_pdf(real **a, int m, int n, real *r, real *p) {
+  template <typename code_t, typename real>
+  void solve_class_vote_pdf(code_t **a, int m, int n, real *r, real *p) {
     for (int i=0; i<n; i++) p[i]=0;
     for (int i=0; i<m; i++) {
       for (int j=0; j<n; j++) {
@@ -198,8 +198,8 @@ namespace libagf {
 
   //here we add the constraint in the form of a "slack" variable after first
   //forming the normal equations:
-  template <class real>
-  void solve_class_norm2(real **a0, int m, int n, real *r, real *p) {
+  template <typename code_t, typename real>
+  void solve_class_norm2(code_t **a0, int m, int n, real *r, real *p) {
     real **a;
     real **at;
     real **ata;
@@ -246,8 +246,8 @@ namespace libagf {
 
   //here we add the constraint in the form of a "slack" variable before
   //solving the least-squares problem:
-  template <class real>
-  void solve_class_norm1(real **a, int m, int n, real *r, real *p) {
+  template <typename code_t, typename real>
+  void solve_class_norm1(code_t **a, int m, int n, real *r, real *p) {
     gsl_matrix *q;
     gsl_vector *b;
     //solution:
@@ -288,8 +288,8 @@ namespace libagf {
   }
 
   //old method:
-  template <class real>
-  void solve_class_constrained1(real **a, int m, int n, real *r, real *p) {
+  template <typename code_t, typename real>
+  void solve_class_constrained1(code_t **a, int m, int n, real *r, real *p) {
     gsl_matrix *q;
     gsl_vector *b;
     gsl_vector *p1;
@@ -318,8 +318,8 @@ namespace libagf {
   }
 
   //new method:
-  template <class real>
-  void solve_class_constrained2(real **a, int m, int n, real *r, real *p) {
+  template <typename code_t, typename real>
+  void solve_class_constrained2(code_t **a, int m, int n, real *r, real *p) {
     gsl_vector *bt=gsl_vector_alloc(m);
     gsl_vector *p2=gsl_vector_alloc(n-1);
     gsl_matrix *at=gsl_matrix_alloc(m, n-1);
@@ -393,22 +393,22 @@ namespace libagf {
   
   }
 
-  template <class real>
-  void solve_class_renorm(real **a, int m, int n, real *r, real *p) {
+  template <typename code_t, typename real>
+  void solve_class_renorm(code_t **a, int m, int n, real *r, real *p) {
     solve_class_scratch(a, m, n, r, p);
     p_constrain_renorm1(p, n);
   }
       
-  template <class real>
-  void solve_class_vote_pdf2(real **a, int m, int n, real *r, real *p) {
+  template <typename code_t, typename real>
+  void solve_class_vote_pdf2(code_t **a, int m, int n, real *r, real *p) {
     solve_class_vote_pdf(a, m, n, r, p);
     //can't forget to divide by the number of rows:
     for (int i=0; i<n; i++) p[i]/=m;
     p_constrain_renorm1b(p, n);
   }
       
-  template <class real>
-  void solve_class_1vR(real **a, int m, int n, real *r, real *p) {
+  template <typename code_t, typename real>
+  void solve_class_1vR(code_t **a, int m, int n, real *r, real *p) {
     printf("%d %d\n", m, n);
     assert(m<=n);
     for (int i=0; i<m; i++) p[i]=(1+r[i])/2;
@@ -417,41 +417,41 @@ namespace libagf {
   template void p_renorm<float>(float *, int);
   template void p_renorm<double>(double *, int);
 
-  template void p_constrain_renorm1<float>(float *, int);
-  template void p_constrain_renorm1<double>(double *, int);
+  //template void p_constrain_renorm1<float>(float *, int);
+  //template void p_constrain_renorm1<double>(double *, int);
 
-  template void p_constrain_renorm1a<float>(float *, int);
-  template void p_constrain_renorm1a<double>(double *, int);
+  //template void p_constrain_renorm1a<float>(float *, int);
+  //template void p_constrain_renorm1a<double>(double *, int);
 
-  template void solve_class_scratch<float>(float **, int, int, float *, float *);
-  template void solve_class_scratch<double>(double **, int, int, double *, double *);
+  template void solve_class_scratch<float, float>(float **, int, int, float *, float *);
+  template void solve_class_scratch<double, double>(double **, int, int, double *, double *);
 
-  template void solve_class_vote<float>(float **, int, int, float *, float *);
-  template void solve_class_vote<double>(double **, int, int, double *, double *);
+  template void solve_class_vote<float, float>(float **, int, int, float *, float *);
+  template void solve_class_vote<double, double>(double **, int, int, double *, double *);
 
-  template void solve_class_vote_pdf<float>(float **, int, int, float *, float *);
-  template void solve_class_vote_pdf<double>(double **, int, int, double *, double *);
+  template void solve_class_vote_pdf<float, float>(float **, int, int, float *, float *);
+  template void solve_class_vote_pdf<double, double>(double **, int, int, double *, double *);
 
-  template void solve_class_norm1<float>(float **, int, int, float *, float *);
-  template void solve_class_norm1<double>(double **, int, int, double *, double *);
+  template void solve_class_norm1<float, float>(float **, int, int, float *, float *);
+  template void solve_class_norm1<double, double>(double **, int, int, double *, double *);
 
-  template void solve_class_norm2<float>(float **, int, int, float *, float *);
-  template void solve_class_norm2<double>(double **, int, int, double *, double *);
+  template void solve_class_norm2<float, float>(float **, int, int, float *, float *);
+  template void solve_class_norm2<double, double>(double **, int, int, double *, double *);
 
-  template void solve_class_constrained1<float>(float **, int, int, float *, float *);
-  template void solve_class_constrained1<double>(double **, int, int, double *, double *);
+  template void solve_class_constrained1<float, float>(float **, int, int, float *, float *);
+  template void solve_class_constrained1<double, double>(double **, int, int, double *, double *);
 
-  template void solve_class_constrained2<float>(float **, int, int, float *, float *);
-  template void solve_class_constrained2<double>(double **, int, int, double *, double *);
+  template void solve_class_constrained2<float, float>(float **, int, int, float *, float *);
+  template void solve_class_constrained2<double, double>(double **, int, int, double *, double *);
 
-  template void solve_class_renorm<float>(float **, int, int, float *, float *);
-  template void solve_class_renorm<double>(double **, int, int, double *, double *);
+  template void solve_class_renorm<float, float>(float **, int, int, float *, float *);
+  template void solve_class_renorm<double, double>(double **, int, int, double *, double *);
 
-  template void solve_class_vote_pdf2<float>(float **, int, int, float *, float *);
-  template void solve_class_vote_pdf2<double>(double **, int, int, double *, double *);
+  template void solve_class_vote_pdf2<float, float>(float **, int, int, float *, float *);
+  template void solve_class_vote_pdf2<double, double>(double **, int, int, double *, double *);
 
-  template void solve_class_1vR<float>(float **, int, int, float *, float *);
-  template void solve_class_1vR<double>(double **, int, int, double *, double *);
+  template void solve_class_1vR<float, float>(float **, int, int, float *, float *);
+  template void solve_class_1vR<double, double>(double **, int, int, double *, double *);
 
 }
 

@@ -77,6 +77,16 @@ ALLINONE=	heart \
 		letter \
 		humidity
 
+#large datasets that we want to subsample (because we haven't got all year...):
+$(WORKDIR)/mnist_s.0.cls:
+	make VER=mnist
+	agf_preprocess -zf 0.1 $(WORKDIR)/mnist.0 dum $(WORKDIR)/mnist_s.0
+
+#shitty way of doing it...
+$(WORKDIR)/covtype_s.0.cls:
+	make VER=covtype
+	agf_preprocess -zf 0.01 $(WORKDIR)/covtype.0 dum $(WORKDIR)/covtype_s.0
+
 #make the working directory:
 #$(WORKDIR)/$(VER).timestamp:
 #	if [ ! -d $(WORKDIR) ]; then mkdir $(WORKDIR); fi

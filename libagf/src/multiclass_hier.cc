@@ -747,16 +747,45 @@ namespace libagf {
     return load(fs, -1);
   }
 
+  extern void * global_svm_helper;
+  extern FILE * global_svm_allinone;
+
+  /*
+  //template <typename real, typename cls_t, >
+  template <typename real, typename cls_t >
+  int multiclass_hier<real, cls_t, svm2class2<real, cls_t> >::load(FILE *fs) {
+    multiclass_hier<real, cls_t, general2class> dummy();
+    global_svm_allinone = fdopen (dup (fileno (fp)), "r");
+    dummy.init(global_svm_allinone, 0, NULL, NULL, 0);
+    init(fs, 0, NULL, NULL, 0);
+  }
+  */
+
   template <typename real, typename cls_t, typename binclass>
   int multiclass_hier<real, cls_t, binclass>::save(FILE *fs) {
-    if (nonh_flag==0) {
-      fprintf(stderr, "multiclass_hier::save: cannot save; not the right type\n");
-      throw PARAMETER_OUT_OF_RANGE;
-    }
-    classifier->save(fs);
-    fseek(fs, 9, SEEK_SET);		//***ugly hack
+    if (typeid(children[0])==typeid(svm2class<real, cls_t>)) {
+      binaryclassifier<real, cls_t> ** blist;	//all the binary SVMs
+      cls_t nb;					//number of binary SVMs
+      svm_helper<real> *helper;			//contains all the SVs
+      //collect the binary classifiers into a single list:
+      blist=new binaryclassifier<real, cls_t> *[this->ncls*this->ncls];
+      nb=collect_binary_classifiers(blist);
+      //unify the support vectors and convert to optimzed binary SVMs
+      //(shared support vectors):
+      helper=unite_support_vectors(blist, nb);
+      print(fs);
+      helper->save(fs);
+      for (cls_t i=0; i<nb; i++) blist[i]->save(fs);
+    } else {
+      if (nonh_flag==0) {
+        fprintf(stderr, "multiclass_hier::save: cannot save; not the right type\n");
+        throw PARAMETER_OUT_OF_RANGE;
+      }
+      classifier->save(fs);
+      fseek(fs, 9, SEEK_SET);		//***ugly hack
     					//(could stick labels at very end...)
-    for (int i=0; i<this->ncls; i++) children[i]->save(fs);
+      for (int i=0; i<this->ncls; i++) children[i]->save(fs);
+    }
     return 0;
   }
 
@@ -794,6 +823,24 @@ namespace libagf {
       children[i]->train(train, cls, ntrain, type, param);
     }
     delete [] map;
+  }
+
+  template <typename real, typename cls_t, typename binclass>
+  cls_t multiclass_hier<real, cls_t, binclass>::collect_binary_classifiers(binaryclassifier<real, cls_t> **list) {
+    cls_t nbin1;
+    cls_t nbin_child;
+    cls_t nbin_total=0;
+
+    nbin1=classifier->collect_binary_classifiers(list);
+    nbin_total=nbin1;
+    //printf("_hier::class_list: %d children\n", nchild);
+    for (cls_t i=0; i<nbin1; i++) {
+      nbin_child=children[i]->collect_binary_classifiers(list+nbin1+i);
+      //printf("_hier::class_list: child %d has %d classes\n", i, nc_child);
+      nbin_total+=nbin_child;
+    }
+
+    return nbin_total;
   }
 
   template class multiclass_hier<real_a, cls_ta>;

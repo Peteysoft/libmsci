@@ -72,6 +72,13 @@ namespace libagf {
 
   void multi_train_end(multi_parse_param *param);
 
+  template <typename cls_t, typename code_t>
+  void parse_multi_partitions(multi_parse_param *param, 	//parameters
+		  char** &model, 		//name of each binary classifier
+		  code_t ** &code, 		//coding matrix
+		  int &nmodel, 			//number of models found
+		  int &ncls);			//number of classes
+
   //parse the partitions for non-hierarchical multi-class:
   template <class cls_t>
   int parse_multi_partitions(multi_parse_param *param, 	//parameters--see above

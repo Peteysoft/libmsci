@@ -1,18 +1,11 @@
-\documentclass{article}
-
-\usepackage{natbib}
-
-\begin{document}
-
-\title{Solving for multi-class with orthogonal coding matrices}
-
-\author{Peter Mills}
-
-\maketitle
 
 \section{Introduction}
 
-There are many different ways of generalizing binary classification to 
+Many methods of statistical classication can only discriminate between two classes. 
+Examples include lineear classifiers such as perceptrons and logistic regression \citep{Michie_etal1994}, 
+piecewise linear classifiers \cite{Herman_Yeung1992},
+as well as support vector machines \citep{kernel_intro}.
+There are many ways of generalizing binary classification to 
 multi-class.
 Three of the most common are one versus one, one versus the rest and 
 error-correcting coding matrices \citep{Hsu_Lin2002}.
@@ -68,8 +61,8 @@ In vector notation:
 	A \vec p = \vec r \label{inverse}
 \end{equation}
 The more general case where a class can be excluded, that is each element of 
-the coding matrix is $a_{ij} \in \lbrace -1, 0, +1\rbrace$, 
-will not be covered here.
+the coding matrix is, $a_{ij} \in \lbrace -1, 0, +1\rbrace$, 
+will not be addressed here.
 
 Note that this assumes that the binary decision functions, $\vec r$,
 estimate the conditional probabilities perfectly.
@@ -83,20 +76,19 @@ Thus, we wish to solve the following minimization problem:
 	p_j & \ge & 0 \label{nonnegative}
 \end{eqnarray}
 
-Ignoring both sets of constraints,
-the minimization problem is trivially easy to solve
+The unconstrained minimization problem is trivially easy to solve
 if $A$ is orthogonal:
 \begin{equation}
 	A^T A = n I
 \end{equation}
 where $I$ is the $n \times n$ identity matrix.
-First, note that the voting solution in (\ref{voting}) is now equivalent to
+Note that the voting solution in (\ref{voting}) is now equivalent to
 the inverse solution in (\ref{inverse}).
 This allows us to determine the class easily, but we also wish to solve for
 the probabilities, $\vec p$, so that none of the constraints in 
 (\ref{normalization}) or (\ref{nonnegative}) are violated.
 
-First, the orthogonality property allows us to reduce the minimization problem 
+The orthogonality property allows us to reduce the minimization problem 
 in (\ref{minimization}) to something much simpler:
 \begin{equation}
 	\vec p = \arg \min_{\vec p} | \vec p - \vec p_0 |
@@ -118,7 +110,7 @@ constraint; 3. repeat step 2.
 More specifically, let $\vec 1$ be a vector of all $1$'s:
 \begin{itemize}
 	\item $n_0=n$
-	\item while $\exists k \, p_k \le 0 \lor \vec p_i \cdot \vec 1 \ne 1$:
+	\item while $\exists k \, p_{ik} \le 0 \lor \vec p_i \cdot \vec 1 \ne 1$:
 	\begin{itemize}
 		\item if $\vec p_i \cdot \vec 1 \ne 1$ then 
 		$\vec p_{i+1} = \vec p_i + (\vec p_i \cdot \vec 1 - 1)/n_i$
@@ -129,7 +121,7 @@ More specifically, let $\vec 1$ be a vector of all $1$'s:
 			\item Remove $k$ from the problem
 		\end{itemize}
 		\item $n_{i+1}=n_i-|K|$
-		\item i=i+1
+		\item $i=i+1$
 	\end{itemize}
 \end{itemize}
 
@@ -166,8 +158,8 @@ five classes ($n=5$):
 			-1 & 1 & -1 & 1 & -1 & 1 & -1 & 1
 	\end{array} \right ]
 \end{equation}
-This will limit the size of $n$ relative to $m$; more precisely:
-$n=2 \log_2 m - 1$.
+This will limit the size of $m$ relative to $n$; more precisely:
+$m=2 \log_2 n - 1$.
 
 Finding an $A$ such that $A^T A = n I$ and $a_{ij} \in \lbrace -1, 1, \rbrace$
 is quite a difficult combinatorial problem.
@@ -210,9 +202,51 @@ of $n=m$ columns to match the $m$ rows, it appears that $m$ should be
 (at minimum) divisible by $4$: $m \mathrm{mod} 4 = 0$.
 Note that we can have more rows than columns but not the other way around.
 
-\bibliographystyle{apa}
+\section{Validating the probabilities}
 
-\bibliography{../agf_bib}
+Since the main goal of the method 
+is to solve for the conditional probabilities, 
+we need a good way to validate them. 
+Here we use a technique based on the
+following theorem, which can be derived from Bayes theorem and the 
+definition of probability:
+\begin{equation}
+	\lim_{n \rightarrow \infty} \sum_{i=0}^n \left [
+	p(c | \vec x) - \delta_{cy_i} \right ] = 0
+	\label{theorem}
+\end{equation}
+where $\delta$ is the Kronecker delta.
+To make this useful for real problems we need to do several things.
+First, the probability estimates are sorted with regard to the class
+label, as follows:
+\begin{equation}
+	p(c_{i+1} | \vec x_{i+1}) \ge p(c_i | \vec x_i)
+\end{equation}
+Second, we rearrange Equation (\ref{theorem}) as follows:
+\begin{equation}
+	n - i_0 \approx \sum_{i|p \ge 1/m}^{n} \frac{\delta_{c_i y_i}}{p(c_i | \vec x_i)}
+\end{equation}
+In other words, if the probabilities are well estimated, the RHS should
+follow, on average, single step intervals at each step in the trace.
+Finally, to prevent singularities at the bottom end, 
+we divide it into two parts:
+one for all the probabilities greater than $1/m$, above, and one for all those 
+less than $1/m$, below:
+\begin{equation}
+	n - i_0  \approx \sum_{i=n}^{p < 1/m} \frac{\delta_{c_i y_i} - 1}{1 - p(c_i | \vec x_i)}
+\end{equation}
+where $i_0$ is defined such that:
+\begin{equation}
+	\left \lbrace
+	\begin{matrix}
+		p(c_i | \vec x_i) & \ge & 1/m &| i \ge i_0 \\
+		p(c_i | \vec x_i) & < & 1/m & | i < i_0
+	\end{matrix}
+	\right .
+\end{equation}
+We use the correlation coefficient to gauge the accuracy and the slope to
+measure the bias.
+This method of validating conditional probabilities was used in
+\citet{Mills2009} for a binary classification problem.
 
-\end{document}
 

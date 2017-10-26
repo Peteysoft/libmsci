@@ -20,6 +20,7 @@ namespace libagf {
     protected:
       int id;			//unique index simply them  
 				//in the order in which they divide the classes
+
     public:
       binaryclassifier();
       binaryclassifier(char *nm);	//have to give it a name!
@@ -47,7 +48,7 @@ namespace libagf {
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
       virtual void set_id(cls_t *id1);
-
+      virtual cls_t collect_binary_classifiers(binaryclassifier<real, cls_t> **list);
   };
 
   //if we want to use an external binary classifier:
@@ -78,7 +79,6 @@ namespace libagf {
       virtual void batchR(real **x, real *R, nel_ta n, dim_ta nvar);
       virtual void batch_classify(real **x, cls_t *cls, real *p, nel_ta n, dim_ta nvar);
       virtual void batch_classify(real **x, cls_t *cls, real **p, nel_ta n, dim_ta nvar);
-      virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
       virtual dim_ta n_feat();		//always -1 since classifications are
       					//done by calling an external executable

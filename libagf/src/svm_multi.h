@@ -7,6 +7,12 @@ namespace libagf {
   //forward declaration to resolve large circular dependency:
   //template <class real, class cls_t>
   //class borders_classifier;
+  
+  template <typename real>
+  class svm_helper;
+
+  template <typename real, typename cls_t>
+  svm_helper<real> * unite_support_vectors(binaryclassifier<real, cls_t> **, cls_ta);
 
   template <class real>
   int solve_cond_prob_1v1(real **r, int ncls, real *p);
@@ -28,6 +34,7 @@ namespace libagf {
   //we can unify this at some later time with "svm2class" binary classifier (*done*)
   template <class real, class cls_t>
   class svm_multi:public onevone<real, cls_t> {
+    friend svm_helper<real> * unite_support_vectors<real, cls_t>(binaryclassifier<real, cls_t> **, cls_ta);
     protected:
       real **sv;		//support vectors
       real **coef;		//coefficients

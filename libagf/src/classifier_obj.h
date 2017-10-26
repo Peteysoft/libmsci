@@ -8,6 +8,9 @@
 #include "multi_parse.h"
 
 namespace libagf {
+  template <typename real, typename cls_t>
+  class binaryclassifier;
+
   //"abstract" base class (now supplying default behaviour, so i guess it's
   //not so abstract after all):
   template <class real, class cls_t>
@@ -117,6 +120,7 @@ namespace libagf {
 
       //for extension to continuum retrievals (setting raw prob.):
       virtual void set_id(cls_t *id);
+      virtual cls_t collect_binary_classifiers(binaryclassifier<real, cls_t> **list);
 
       //load and save files all in one as ASCII:
       virtual int load(FILE *fs);

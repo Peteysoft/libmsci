@@ -120,7 +120,8 @@ int main(int argc, char ** argv) {
   delete [] p[0];
   delete [] p;
 
-  midind=bin_search(ps, n1*ncls, (float) 0.5);
+  midind=bin_search(ps, n1*ncls, (float) 1./ncls);
+  printf("%g\n", ps[n1*ncls/2]);
   sum=new double[n1*ncls];
   sum[midind]=0;
   for (int i=midind-1; i>=0; i--) {

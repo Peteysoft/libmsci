@@ -17,10 +17,11 @@ NTRIAL=20
 #number of classes in each dataset:
 NCLS_shuttle=7
 NCLS_covtype=7
+NCLS_covtype_s=7
 NCLS_segment=7
 NCLS_sat=6
 NCLS_poker=10
-NCLS_mnist=10
+NCLS_mnist_s=10
 NCLS_letter=26
 NCLS_pendigits=10
 NCLS_usps=10
@@ -113,12 +114,13 @@ TRAINCOMMAND_svm=multi_borders -M -- svm-train -+ "-b 1 $(OPTIONS)" \
 TRAINCOMMAND_agf=multi_borders $(OPTIONS) $(CONTROL) $(TRAIN) $(BASE).$(TYPE) $(MODEL)
 TRAINCOMMAND=$(TRAINCOMMAND_$(METHOD))
 
-TESTCOMMAND_svm=classify_m -Q $(CODE) -M -O "svm-predict -b 1" \
-		$(MODEL) $(TEST).svm $(RESULT).svmout
+#TESTCOMMAND_svm=classify_m -Q $(CODE) -M -O "svm-predict -b 1" \
+#		$(MODEL) $(TEST).svm $(RESULT).svmout
+TESTCOMMAND_svm=classify_m -Z -Q $(CODE) $(MODEL) $(TEST).vec $(RESULT) > $(RESULT).txt
 TESTCOMMAND_agf=classify_m -Q $(CODE) $(MODEL) $(TEST).vec $(RESULT) > $(RESULT).txt
 TESTCOMMAND=$(TESTCOMMAND_$(METHOD))
 
-FCONV_svm=svmout2agf $(RESULT).svmout $(RESULT) > $(RESULT).txt
+#FCONV_svm=svmout2agf $(RESULT).svmout $(RESULT) > $(RESULT).txt
 FCONV=$(FCONV_$(METHOD))
 
 #timing:
@@ -178,3 +180,4 @@ $(WORKDIR)/timestamp:
 
 $(DATAPATH)/$(VER).vec:
 	make -C $(DATAPATH)
+

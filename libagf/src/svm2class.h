@@ -9,11 +9,13 @@ namespace libagf {
   //new paradigm:
   template <typename real>
   class svm_helper {
+    friend svm_helper<real> * unite_support_vectors<real, int32_t>(binaryclassifier<real, int32_t> **, cls_ta);
     protected:
       nel_ta nsv;		//total support
       real **sv;		//support vectors
       dim_ta D;			//dimension of features data
-      real **kval;		//kernel values
+      int *flag;		//which kernel values have been calculated already...
+      real *kval;		//kernel values
       real *test;		//current test point
 
       //in order for this optimization to work, all the binary classifiers
@@ -23,28 +25,35 @@ namespace libagf {
       real (* kernel) (real *, real *, dim_ta, void *);
       real (* kernel_deriv) (real *, real *, dim_ta, void *, real *);
     public:
+      svm_helper();
       svm_helper(FILE *fs);
       ~svm_helper();
 
       void register_point(real *x);
       real get_kernel(nel_ta index);
+      real get_kernel_deriv(nel_ta index, real *deriv);
       int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
+      int save(FILE *fs);
   };
+
+  //converts svm2class to svm2class2:
+  template <typename real, typename cls_t>
+  svm_helper<real> * unite_support_vectors(binaryclassifier<real, cls_t> **list, cls_ta n);
 
   template <typename real, typename cls_t>
   class svm2class2:public binaryclassifier<real, cls_t> {
+    friend svm_helper<real> * unite_support_vectors<real>(binaryclassifier<real, cls_t> **, cls_ta);
     protected:
       svm_helper<real> *helper;		//contains support vectors
-      nel_ta *ind;			//indexes into the support vectors
+      int *ind;				//indexes into the support vectors
+      nel_ta nsv;			//number of support vectors
       real *coef;			//coefficients
       real probA;			//for calculating probabilities
       real probB;
 
-      //kernel function:
-      real (* kernel) (real *, real *, dim_ta, void *);
-      real (* kernel_deriv) (real *, real *, dim_ta, void *, real *);
     public:
-      svm2class2(char *name, void *param);
+      svm2class2(dim_ta ndim);
+      svm2class2(char *name);
       ~svm2class2();
 
       virtual real R(real *x, real *praw=NULL);
@@ -53,10 +62,13 @@ namespace libagf {
 
       real R_deriv(real *x, 			//test point
 		      real *drdx);		//gradient of R
+
+      virtual int save(FILE *fs);
   };
 
   template <class real, class cls_t>
   class svm2class:public binaryclassifier<real, cls_t> {
+    friend svm_helper<real> * unite_support_vectors<real>(binaryclassifier<real, cls_t> **, cls_ta);
     protected:
       svm_multi<real, cls_t> *classifier;
       int dflag;		//whether or not to delete the classifier when done

@@ -102,7 +102,7 @@ namespace libagf {
   void binaryclassifier<real, cls_t>::print(FILE *fs, char *fbase, int depth) {
     for (int i=0; i<depth; i++) fprintf(fs, "  ");
     if (fbase==NULL) {
-      fprintf(fs, "\"%s\"", this->name);
+      fprintf(fs, "%s", this->name);
     } else {
       fprintf(fs, "%s", fbase);
     }
@@ -187,6 +187,13 @@ namespace libagf {
   void binaryclassifier<real, cls_t>::set_id(cls_t *id1) {
     id=*id1;
     (*id1)++;
+  }
+
+  //does almost the same as the previous function...
+  template <class real, class cls_t>
+  cls_t binaryclassifier<real, cls_t>::collect_binary_classifiers(binaryclassifier<real, cls_t> **list) {
+    list[0]=this;
+    return 1;
   }
 
   template <class real, class cls_t>
@@ -388,16 +395,6 @@ namespace libagf {
       throw FILE_READ_ERROR;
     }
       
-  }
-
-  template <class real, class cls_t>
-  void general2class<real, cls_t>::print(FILE *fs, char *fbase, int depth) {
-    for (int i=0; i<depth; i++) fprintf(fs, "  ");
-    if (fbase==NULL) {
-      fprintf(fs, "%s", this->name);
-    } else {
-      fprintf(fs, "%s", fbase);
-    }
   }
 
   template <class real, class cls_t>

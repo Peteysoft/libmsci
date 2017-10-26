@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <assert.h>
 
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
@@ -13,6 +14,8 @@
 
 #include "agf_lib.h"
 #include "multi_parse.h"
+
+#include "linked.h"
 
 using namespace std;
 using namespace libpetey;
@@ -212,6 +215,187 @@ namespace libagf {
     return fname;
   }
 
+
+  template <typename cls_t, typename code_t>
+  void parse_multi_partitions(multi_parse_param *param, char** &model, code_t ** &code, int &npart, int &ncls_total) {
+    int nread;
+    int c1;
+    char c2;
+    char cold;
+    cls_t ncls;
+    long place;		//file place holder
+    long nmodel;
+    char *scanned_model;
+    cls_t label;
+    int *partition;
+    linked_list<char *> model_list;
+    linked_list<int *> partition_list;
+
+    npart=0;
+    ncls_total=0;
+    do {
+      if (param->trainflag) {
+        scanned_model=scan_class_model2(param->infs, param->lineno);
+      } else {
+        scanned_model=scan_class_model1(param->infs, param->lineno);
+      }
+      if (scanned_model==NULL) {
+        fseek(param->infs, -1, SEEK_CUR);
+        break;
+      }
+
+      if (isdigit(scanned_model[0])) {
+        fprintf(stderr, "parse_multi_partitions: syntax error, line %d at %s\n", param->lineno, model[npart]);
+        throw FILE_READ_ERROR;
+      }
+
+      //previous or default options, if applicable:
+      if (param->trainflag) {
+        //if options are a special case, pull them from the stack
+        //add new options to the stack
+        if (param->optstack[param->stackptr]!=NULL &&
+			strcmp(model[npart], ".")==0) {
+          delete [] scanned_model;
+          scanned_model=new char [strlen(param->optstack[param->stackptr])+1];
+          strcpy(scanned_model, param->optstack[param->stackptr]);
+        } else {
+          if (strlen(scanned_model)==0) {
+            delete [] scanned_model;
+            scanned_model=new char[strlen(param->optstack[0])+1];
+            strcpy(scanned_model, param->optstack[0]);
+          } else if (strcmp(scanned_model, ".")==0) {
+            delete [] scanned_model;
+            scanned_model=new char[strlen(param->optstack[param->stackptr-1])+1];
+            strcpy(scanned_model, param->optstack[param->stackptr-1]);
+          }
+          if (param->optstack[param->stackptr]!=NULL) {
+            delete [] param->optstack[param->stackptr];
+          }
+          param->optstack[param->stackptr]=new char [strlen(scanned_model)+1];
+          strcpy(param->optstack[param->stackptr], scanned_model);
+        }
+      }
+
+      //add model name to linked list:
+      model_list.add(scanned_model);
+
+      nread=0;
+      cold=' ';
+      ncls=0;
+      do {
+        c1=fgetc(param->infs);
+        nread++;
+        if (c1==EOF) {
+          fprintf(stderr, "parse_multi_partitions: %d, unexpected end of file(1).\n", param->lineno);
+          throw FILE_READ_ERROR;
+        }
+        c2=(char) c1;
+        //printf("3.(%c)\n", c2);
+        if (isdigit(c2)) {
+          if (isdigit(cold)==0) ncls++;
+        } else if (c2==PARTITION_SYMBOL) {
+          place=ftell(param->infs);
+          break;
+        } else if (c2=='\n') {
+          param->lineno++;
+        } else if (c2!=' ' && c2!='\t') {
+          fprintf(stderr, "parse_multi_partitions: %d, syntax error in control file(2).\n", param->lineno);
+          throw FILE_READ_ERROR;
+        }
+        cold=c2;
+      } while (1);
+
+      //printf("ncls=%d\n", ncls);
+      fseek(param->infs, -nread, SEEK_CUR);
+      partition=new cls_t[ncls+1];
+      for (int i=0; i<ncls; i++) {
+        fscanf(param->infs, "%d", partition+i);
+	if (partition[i]>=ncls_total) ncls_total=partition[i]+1;
+        //printf("%d\n", partition[2*npart][i]);
+      }
+      partition[ncls]=-1;
+
+      partition_list.push(partition);
+
+      fseek(param->infs, place, SEEK_SET);
+
+      nread=0;
+      cold=' ';
+      ncls=0;
+      do {
+        c1=fgetc(param->infs);
+        nread++;
+        if (c1==EOF) {
+          fprintf(stderr, "parse_multi_partitions: %d, unexpected end of file(2).\n", param->lineno);
+          throw FILE_READ_ERROR;
+        }
+        c2=(char) c1;
+        //printf("4.(%c)\n", c2);
+        //if (c2<='9' && c2>='0') {
+        if (isdigit(c2)) {
+          if (isdigit(cold)==0) ncls++;
+        } else if (c2==';') {
+          place=ftell(param->infs);
+          break;
+        } else if (c2=='\n') {
+          param->lineno++;
+        } else if (c2!=' ' && c2!='\t') {
+          fprintf(stderr, "parse_multi_partitions: %d, syntax error in control file(3).\n", param->lineno);
+          throw FILE_READ_ERROR;
+        }
+        cold=c2;
+      } while (1);
+      //printf("ncls=%d\n", ncls);
+
+      fseek(param->infs, -nread, SEEK_CUR);
+      partition=new cls_t[ncls+1];
+      partition[ncls]=-1;
+      for (cls_t i=0; i<ncls; i++) {
+        fscanf(param->infs, "%d", partition+i);
+	if (partition[i]>=ncls_total) ncls_total=partition[i]+1;
+        //printf("%d\n", partition[2*npart+1][i]);
+      }
+
+      partition_list.push(partition);
+
+      fseek(param->infs, place, SEEK_SET);
+    
+      npart++; 
+    } while (1);
+
+    if (npart==0) {
+      fprintf(stderr, "parse_multi_partitions: %d, no partitions found\n", param->lineno);
+      throw FILE_READ_ERROR;
+    }
+
+    //augment stack pointer:
+    if (param->trainflag) {
+      if (param->stackptr<param->maxnstack) {
+        param->stackptr++;
+      } else {
+        fprintf(stderr, "parse_multi_partitions: option stack exausted (%d levels)\n", param->stackptr);
+        throw PARAMETER_OUT_OF_RANGE;
+      }
+    }
+
+    model=model_list.make_array(nmodel);
+    assert(nmodel==npart);
+
+    //rearrange list of partitions into a "coding matrix":
+    code=new code_t*[npart];
+    code[0]=new code_t[npart*ncls_total];
+    for (int i=0; i<npart; i++) {
+      code[i]=code[0]+i*ncls_total;
+      partition_list.pop(partition);
+      for (cls_t j=0; j<ncls_total; j++) code[i][j]=0;		//default
+      for (cls_t j=0; partition[j]>=0; j++) code[i][partition[j]]=-1;
+      delete [] partition;
+      partition_list.pop(partition);
+      for (cls_t j=0; partition[j]>=0; j++) code[i][partition[j]]=1;
+      delete [] partition;
+    }
+
+  }
 
   template <class cls_t>
   int parse_multi_partitions(multi_parse_param *param, char **model, cls_t **partition, int maxn) {
