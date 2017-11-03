@@ -1,4 +1,6 @@
-#include "sample_class_borders.h"
+#include "randomize.h"
+
+#include "agf_lib.h"
 
 using namespace libagf;
 
@@ -10,6 +12,8 @@ int main(int argc, char **argv) {
   int n[ntest2]={2, 3, 5, 10, 20, 100};
   int err;
   int exit_code=0;
+
+  ran_init();
 
   for (int i=0; i<ntest1; i++) {
     err=test_oppositesample<real_a>(n1[i], n2[i]);
@@ -26,6 +30,21 @@ int main(int argc, char **argv) {
       exit_code=-1;
     }
   }
+
+  for (int i=0; i<10; i++) {
+    err=test_parse_multi_partitions<int>(5, 5);
+    if (err!=0) {
+      fprintf(stderr, "test_parse_multi_partitions failed\n");
+      exit_code=err;
+    }
+    err=test_parse_multi_partitions<int>(100, 100);
+    if (err!=0) {
+      fprintf(stderr, "test_parse_multi_partitions failed\n");
+      exit_code=err;
+    }
+  }
+
+  ran_end();
 
   return exit_code;
 }

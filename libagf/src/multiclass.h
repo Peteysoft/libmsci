@@ -82,8 +82,9 @@ namespace libagf {
 
       //if we want to initialize with a list of files and partitions:
       int init(char **fname, 		//name of each of the binary models
-		cls_t **part, 		//partitions
+		int **coding_matrix,	//coding matrix
 		int npart, 		//number of partitions
+		cls_t ncls,		//number of classes
       		char *prefix=NULL,	//path to data files
  		int tflag=0,		//for training purposes
 		char *com=NULL,		//external binary classification command

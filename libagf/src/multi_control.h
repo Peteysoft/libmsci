@@ -33,7 +33,11 @@ namespace libagf {
   //(complete control file)
   void print_control_hier(FILE *fs, int ncls, int c0=0, int depth=0);
   template <typename scalar>
-  void print_control_nonhier(FILE *fs, scalar **coding_matrix, int n, int ncls, const char *opt=NULL);
+  void print_control_nonhier(FILE *fs, 		//output file stream
+		  scalar **coding_matrix, 	//coding matrix
+		  int n, 			//number of rows (models)
+		  int ncls, 			//number of columns (classes)
+		  const char *opt=NULL);
 
 }
 

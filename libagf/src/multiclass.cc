@@ -86,53 +86,46 @@ namespace libagf {
 
   template <typename real, typename cls_t, typename binclass>
   int multiclass<real, cls_t, binclass>::init(multi_parse_param &param) {
-    char *name[MAXNPART];
-    cls_t *part[MAXNPART*2];
+    //char *name[MAXNPART];
+    int npart;
+    char **name;
+    //cls_t *part[MAXNPART*2];
+    cls_t **coding_matrix;
+    int ncls;
     int c1;
     char c2;
     int err=0;
 
-    nmodel=parse_multi_partitions(&param, name, part, MAXNPART);
-    err=multi_partition_strict(name, part, nmodel);
-    if (err<0) throw PARAMETER_OUT_OF_RANGE;
-    if (err>0) strictflag=0; else strictflag=1;
+    //nmodel=parse_multi_partitions(&param, name, part, MAXNPART);
+    parse_multi_partitions(&param, name, coding_matrix, npart, ncls);
+    fseek(param.infs, -1, SEEK_CUR);
 
     //classification type and constraint weight:
     type=param.type;
     set_solve_type(type);
 
     //pass to another initialization routine (duh...):
-    init(name, part, nmodel, param.prefix, param.trainflag, param.commandname, 
+    init(name, coding_matrix, npart, ncls, param.prefix, param.trainflag, param.commandname, 
 		    param.Mflag, param.Kflag, param.sigcode, param.Zflag);
 
     //clean up:
     for (int i=0; i<nmodel; i++) {
       delete [] name[i];
-      delete [] part[2*i];
-      delete [] part[2*i+1];
     }
-
-    fseek(param.infs, -1, SEEK_CUR);
+    delete [] name;
+    delete [] coding_matrix[0];
+    delete [] coding_matrix;
 
     return err;
-
   }
 
   template <typename real, typename cls_t, typename binclass>
-  int multiclass<real, cls_t, binclass>::init(char **fname, cls_t **part, int npart, char *prefix, 
+  int multiclass<real, cls_t, binclass>::init(char **fname, int **coding_matrix, int npart, cls_t ncls, char *prefix, 
 		int tflag, char *com, int Mflag, int Kflag, int sigcode, int Zflag, void *binparam) {
     nmodel=npart;
 
-    //figure out how many classes:
-    this->ncls=0;
-    for (int i=0; i<nmodel; i++) {
-      for (int j=0; part[i*2][j]>=0; j++) {
-        if (part[i*2][j]>=this->ncls) this->ncls=part[i*2][j]+1;
-      }
-      for (int j=0; part[i*2+1][j]>=0; j++) {
-        if (part[i*2+1][j]>=this->ncls) this->ncls=part[i*2+1][j]+1;
-      }
-    }
+    //pass in the number of classes:
+    this->ncls=ncls;
 
     //add file name prefix if applicable:
     if (prefix!=NULL) {
@@ -157,7 +150,7 @@ namespace libagf {
           //twoclass[i]=new borders_classifier<real, cls_t>(fname[i], sigcode);
           //if (binparam==NULL) 
 	  //just bite the bullet and use a couple of global variables??
-	  // -- don't think the algorithm's thread save anyways ...
+	  // -- don't think the algorithm's thread safe anyways ...
           twoclass[i]=new binclass(fname[i]);
 	  //		else twoclass[i]=new binclass(fname[i], binparam);
         } else {
@@ -174,15 +167,22 @@ namespace libagf {
     //the sum of the conditional probabilities should always equal 1:
     for (int i=0; i<this->ncls; i++) gsl_matrix_set(map, nmodel, i, 1);
 
-    //sum of the conditional probabilities on one side of the partition
-    //is equal to the conditional probability returned from the 2-class
-    //classification result:
-    for (int i=0; i<nmodel*2; i++) {
-      double sgn=2*(i%2)-1;
-      for (int j=0; part[i][j]>=0; j++) {
-        gsl_matrix_set(map, i/2, part[i][j], sgn);
-	code[i/2][part[i][j]]=sgn;
+    for (int i=0; i<nmodel; i++) {
+      for (cls_t j=0; j<this->ncls; j++) {
+        code[i][j]=coding_matrix[i][j];
+	gsl_matrix_set(map, i, j, code[i][j]);
       }
+    }
+
+    strictflag=0;
+    for (int i=0; i<npart; i++) {
+      for (cls_t j=0; j<ncls; j++) {
+        if (code[i][j]==0) {
+          strictflag=1;
+	  break;
+	}
+      }
+      if (strictflag) break;
     }
 
     //find the inverse of this matrix when we need it (we don't yet):
@@ -191,7 +191,6 @@ namespace libagf {
     s=NULL;
 
     return 0;
-
   }
 
   template <typename real, typename cls_t, typename binclass>
@@ -310,14 +309,8 @@ namespace libagf {
     real r[nmodel];
     real pt=0;
 
-    if (praw!=NULL) {
-      //printf("multiclass raw pdfs: ");
-      for (int i=0; i<nmodel; i++) {
-        r[i]=twoclass[i]->R(x, praw);
-      }
-    } else {
-      for (int i=0; i<nmodel; i++) r[i]=twoclass[i]->R(x);
-    }
+    for (int i=0; i<nmodel; i++) r[i]=twoclass[i]->R(x, praw);
+
     (*solve_class)(code, nmodel, this->ncls, r, p);
     //for (cls_t i=0; i<this->ncls; i++) pt+=p[i];
     //printf("pt=%g\n", pt);

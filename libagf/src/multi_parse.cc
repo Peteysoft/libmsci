@@ -216,17 +216,16 @@ namespace libagf {
   }
 
 
-  template <typename cls_t, typename code_t>
+  template <typename code_t>
   void parse_multi_partitions(multi_parse_param *param, char** &model, code_t ** &code, int &npart, int &ncls_total) {
     int nread;
     int c1;
     char c2;
     char cold;
-    cls_t ncls;
+    int ncls;
     long place;		//file place holder
     long nmodel;
     char *scanned_model;
-    cls_t label;
     int *partition;
     linked_list<char *> model_list;
     linked_list<int *> partition_list;
@@ -254,7 +253,7 @@ namespace libagf {
         //if options are a special case, pull them from the stack
         //add new options to the stack
         if (param->optstack[param->stackptr]!=NULL &&
-			strcmp(model[npart], ".")==0) {
+			strcmp(scanned_model, ".")==0) {
           delete [] scanned_model;
           scanned_model=new char [strlen(param->optstack[param->stackptr])+1];
           strcpy(scanned_model, param->optstack[param->stackptr]);
@@ -307,15 +306,15 @@ namespace libagf {
 
       //printf("ncls=%d\n", ncls);
       fseek(param->infs, -nread, SEEK_CUR);
-      partition=new cls_t[ncls+1];
+      partition=new int[ncls+1];
       for (int i=0; i<ncls; i++) {
         fscanf(param->infs, "%d", partition+i);
 	if (partition[i]>=ncls_total) ncls_total=partition[i]+1;
-        //printf("%d\n", partition[2*npart][i]);
+        //printf("%d\n", partition[i]);
       }
       partition[ncls]=-1;
 
-      partition_list.push(partition);
+      partition_list.add(partition);
 
       fseek(param->infs, place, SEEK_SET);
 
@@ -348,15 +347,15 @@ namespace libagf {
       //printf("ncls=%d\n", ncls);
 
       fseek(param->infs, -nread, SEEK_CUR);
-      partition=new cls_t[ncls+1];
+      partition=new int[ncls+1];
       partition[ncls]=-1;
-      for (cls_t i=0; i<ncls; i++) {
+      for (int i=0; i<ncls; i++) {
         fscanf(param->infs, "%d", partition+i);
 	if (partition[i]>=ncls_total) ncls_total=partition[i]+1;
-        //printf("%d\n", partition[2*npart+1][i]);
+        //printf("%d\n", partition[i]);
       }
 
-      partition_list.push(partition);
+      partition_list.add(partition);
 
       fseek(param->infs, place, SEEK_SET);
     
@@ -387,15 +386,83 @@ namespace libagf {
     for (int i=0; i<npart; i++) {
       code[i]=code[0]+i*ncls_total;
       partition_list.pop(partition);
-      for (cls_t j=0; j<ncls_total; j++) code[i][j]=0;		//default
-      for (cls_t j=0; partition[j]>=0; j++) code[i][partition[j]]=-1;
+      for (int j=0; j<ncls_total; j++) code[i][j]=0;		//default
+      for (int j=0; partition[j]>=0; j++) code[i][partition[j]]=-1;
       delete [] partition;
       partition_list.pop(partition);
-      for (cls_t j=0; partition[j]>=0; j++) code[i][partition[j]]=1;
+      for (int j=0; partition[j]>=0; j++) code[i][partition[j]]=1;
       delete [] partition;
     }
 
   }
+
+  template void parse_multi_partitions<int>(multi_parse_param *, char **&, 
+		  int **&, int &, int &);
+
+  //doesn't test the options facility:
+  template <typename code_t>
+  int test_parse_multi_partitions(int nmodel, int ncls) {
+    code_t **code1;
+    code_t **code2;
+    char *options;
+    char **name;
+    multi_parse_param param;
+    int err=0;
+
+    options=tmpnam(NULL);
+    code1=random_coding_matrix<code_t>(ncls, nmodel);
+    param.infs=tmpfile();
+    //param.infs=fopen("temp.mbc", "w+");
+    print_control_nonhier(param.infs, code1, nmodel, ncls, options);
+    //initialize parse parameters:
+    param.trainflag=1;
+    param.prefix=NULL;
+    param.lineno=0;
+    param.maxnstack=100;
+    param.optstack=new char *[param.maxnstack];
+    for (int i=0; i<param.maxnstack; i++) param.optstack[i]=NULL;
+    param.stackptr=0;
+    param.type=0;
+    param.Mflag=0;
+    rewind(param.infs);
+    parse_multi_partitions(&param, name, code2, nmodel, ncls);
+
+    fclose(param.infs);
+
+    for (int i=0; i<nmodel; i++) {
+      if (strcmp(name[i], options)!=0) {
+        fprintf(stderr, "test_parse_multi_partitions: error in names\n");
+	printf("%s\n\n", options);
+	for (int j=0; j<nmodel; j++) {
+          printf("%s\n", name[i]);
+	}
+	err=INTERNAL_ERROR;
+	goto finish;
+      }
+      for (int j=0; j<ncls; j++) {
+        if (code1[i][j]!=code2[i][j]) {
+          fprintf(stderr, "test_parse_multi_partitions: error in coding matrix\n");
+	  print_matrix(stdout, code1, nmodel, ncls);
+	  printf("\n");
+	  print_matrix(stdout, code2, nmodel, ncls);
+	  err=INTERNAL_ERROR;
+	  goto finish;
+	}
+      }
+    }
+
+    finish:
+      delete [] code1[0];
+      delete [] code1;
+      delete [] code2[0];
+      delete [] code2;
+      for (int i=0; i<nmodel; i++) delete [] name[i];
+      delete name;
+
+    return err;
+  }
+
+  template int test_parse_multi_partitions<int>(int nmodel, int ncls);
 
   template <class cls_t>
   int parse_multi_partitions(multi_parse_param *param, char **model, cls_t **partition, int maxn) {
