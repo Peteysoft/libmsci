@@ -18,39 +18,16 @@ using namespace libpetey;
 //#include "/home/Petey/software_projects/include/class_lib.h"
 
 int main(int argc, char ** argv) {
-
+  agf_command_opts opts;
   multiclass_hier<real_a, cls_ta> *classifier;
 
   FILE *fs;
 
   int errcode=0;
 
-/*
-  int normflag=0;
-  int svmflag=0;
-  int hflag=0;
-  int cflag=0;
-*/
+  errcode=agf_parse_command_opts(argc, argv, "y:Z", &opts);
 
-  //keep it stand-alone:
-/*
-  void *optarg[10];
-  int flag[10];
-
-  parse_command_opts(argc, argv, "nMhc", "%%%%", optarg, flag);
-  normflag=flag[0];
-  svmflag=flag[1];
-  hflag=flag[2];
-  cflag=flag[3];
-*/
-
-  //agf_parse_command_opts(argc, argv, "CHLMn", &opts);
-
-//  long *clind;
-//  long ncl;
-//
-  
-  if (argc < 3) {
+  if (argc < 2) {
     printf("Converts multi-borders hierarchical (recursive control file) to\n");
     printf("multi-borders modes (single ASCII file) using one of three modes:\n");
     printf("one-vs-one, one-vs-the-rest, partitioning of adjacent classes.\n");
@@ -62,8 +39,8 @@ int main(int argc, char ** argv) {
     exit(1);
   }
 
-  classifier=new multiclass_hier<real_a, cls_ta>(argv[1]);
-  fs=fopen(argv[2], "w");
+  classifier=new multiclass_hier<real_a, cls_ta>(argv[0], 0, opts.path, NULL, 0, 0, 0, opts.Zflag);
+  fs=fopen(argv[1], "w");
   classifier->save(fs);
 
   delete classifier;

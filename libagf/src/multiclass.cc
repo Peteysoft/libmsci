@@ -243,6 +243,9 @@ namespace libagf {
       case (9):
 	solve_class=&solve_class_1vR<real, real>;
 	break;
+      case (10):
+	solve_class=&solve_class_interior<real, real>;
+	break;
       default:
         solve_class=&solve_class_constrained2<real, real>;
         break;

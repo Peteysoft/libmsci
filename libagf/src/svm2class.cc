@@ -56,6 +56,7 @@ namespace libagf {
 
     k=0;
     for (int i=0; i<n; i++) {
+      printf("%d\n", i);
       //cast to binary support vector machine (old type):
       classifier=(svm2class<real, cls_t> *) list[i];
       if (helper->kernel==classifier->classifier->kernel) {
@@ -71,9 +72,11 @@ namespace libagf {
       }
       nsv[i]=classifier->classifier->nsv_total;		//number of support vectors
       //pointer to all the support vectors in this machine:
+      printf("Copying support vectors\n");
       sv[i]=classifier->classifier->sv;
       //allocate new binary support vector machine (new type) and start passing coefficients:
       classnew[i]=new svm2class2<real, cls_t>(D);
+      classnew[i]->nsv=nsv[i];
       //indexes into unified list of support vectors:
       classnew[i]->ind=new int[nsv[i]];
       //union function will fill these:
@@ -82,27 +85,42 @@ namespace libagf {
       classnew[i]->probA=classifier->classifier->probA[0];
       classnew[i]->probB=classifier->classifier->probB[0];
       classnew[i]->coef=new real[nsv[i]+1];
-      for (int j=0; j<nsv[i]; j++) classnew[i]->coef[j]=classifier->classifier->coef[j][0];
+      printf("Copying coefficients\n");
+      for (int j=0; j<nsv[i]; j++) classnew[i]->coef[j]=classifier->classifier->coef[0][j];
       classnew[i]->coef[nsv[i]]=classifier->classifier->rho[0];
       classnew[i]->helper=helper;
       //copy the name:
-      classnew[i]->name=new char[strlen(classifier->classifier->name)+1];
-      strcpy(classnew[i]->name, classifier->classifier->name);
+      printf("Copying name, %s\n", classifier->name);
+      if (classifier->name!=NULL) {
+        classnew[i]->name=new char[strlen(classifier->name)+1];
+        strcpy(classnew[i]->name, classifier->name);
+      } else {
+        classnew[i]->name=new char[13];
+        sprintf(classnew[i]->name, "classifier%3.3", i);
+      }
+      nsv_total+=nsv[i];
     }
 
     //function to find union of vectors:
+    printf("Unifying support vectors:\n");
+    unn=new real *[nsv_total];
     nsv_total=unify_vectors(sv, nsv, n, D, unn, ind);
 
     //copy union since results from above are copied by pointer only:
+    printf("Copying support vectors to helper\n");
     helper->sv=copy_matrix<real>(unn, nsv_total, D);
+    helper->nsv=nsv_total;
+    helper->D=D;
 
     //delete old binary SVMs and replace them with new ones:
+    printf("Replacing binary classifiers\n");
     for (int i=0; i<n; i++) {
       delete list[i];
       list[i]=classnew[i];
     }
 
     //allocate space for kernel values, etc:
+    printf("Allocating space in helper\n");
     helper->kval=new real[nsv_total];
     helper->flag=new int[nsv_total];
     helper->test=new real[D];
@@ -322,11 +340,11 @@ namespace libagf {
     fprintf(fs, "%d\n", nsv);
     fprintf(fs, "%g %g\n", probA, probB);
     for (nel_ta i=0; i<nsv; i++) {
-      fprintf(fs, " %g", coef+i);
+      fprintf(fs, " %g", coef[i]);
     }
     fprintf(fs, "\n");
     for (nel_ta i=0; i<nsv; i++) {
-      fscanf(fs, " %d", ind+i);
+      fprintf(fs, " %d", ind[i]);
     }
     fprintf(fs, "\n");
     return 0;

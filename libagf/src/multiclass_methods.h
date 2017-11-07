@@ -72,6 +72,10 @@ namespace libagf {
   template <typename code_t, typename real>
   void solve_class_1vR(code_t **a, int m, int n, real *r, real *p);
 
+  //convert to logarithms, solve by Newton's method:
+  template <typename code_t, typename real>
+  void solve_class_interior(code_t **a, int m, int n, real *r, real *p);
+
 }
 
 #endif

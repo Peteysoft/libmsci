@@ -763,19 +763,24 @@ namespace libagf {
 
   template <typename real, typename cls_t, typename binclass>
   int multiclass_hier<real, cls_t, binclass>::save(FILE *fs) {
-    if (typeid(children[0])==typeid(svm2class<real, cls_t>)) {
-      binaryclassifier<real, cls_t> ** blist;	//all the binary SVMs
-      cls_t nb;					//number of binary SVMs
+    cls_t nb;					//number of binary SVMs
+    binaryclassifier<real, cls_t> ** blist;	//all the binary SVMs
+    blist=new binaryclassifier<real, cls_t> *[this->ncls*this->ncls];
+    nb=collect_binary_classifiers(blist);
+    for (int i=0; i<nb; i++) blist[i]->print(stdout);
+    if (typeid(*blist[0])==typeid(svm2class<real, cls_t>)) {
       svm_helper<real> *helper;			//contains all the SVs
       //collect the binary classifiers into a single list:
-      blist=new binaryclassifier<real, cls_t> *[this->ncls*this->ncls];
-      nb=collect_binary_classifiers(blist);
       //unify the support vectors and convert to optimzed binary SVMs
       //(shared support vectors):
-      helper=unite_support_vectors(blist, nb);
+      printf("Printing out control structure\n");
       print(fs);
+      helper=unite_support_vectors(blist, nb);
+      printf("Printing out helper\n");
       helper->save(fs);
+      printf("Printing out binary classifiers\n");
       for (cls_t i=0; i<nb; i++) blist[i]->save(fs);
+      fflush(fs);
     } else {
       if (nonh_flag==0) {
         fprintf(stderr, "multiclass_hier::save: cannot save; not the right type\n");
@@ -827,15 +832,15 @@ namespace libagf {
 
   template <typename real, typename cls_t, typename binclass>
   cls_t multiclass_hier<real, cls_t, binclass>::collect_binary_classifiers(binaryclassifier<real, cls_t> **list) {
-    cls_t nbin1;
-    cls_t nbin_child;
-    cls_t nbin_total=0;
+    cls_t nchild;
+    int nbin_child;
+    int nbin_total=0;
 
-    nbin1=classifier->collect_binary_classifiers(list);
-    nbin_total=nbin1;
+    nbin_total=classifier->collect_binary_classifiers(list);
+    nchild=classifier->n_class();
     //printf("_hier::class_list: %d children\n", nchild);
-    for (cls_t i=0; i<nbin1; i++) {
-      nbin_child=children[i]->collect_binary_classifiers(list+nbin1+i);
+    for (cls_t i=0; i<nchild; i++) {
+      nbin_child=children[i]->collect_binary_classifiers(list+nbin_total);
       //printf("_hier::class_list: child %d has %d classes\n", i, nc_child);
       nbin_total+=nbin_child;
     }

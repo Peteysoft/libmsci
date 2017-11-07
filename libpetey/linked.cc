@@ -194,6 +194,7 @@ ds linked_list<ds>::operator [] (long n) {
 template class linked_list<float>;
 template class linked_list<long>;
 template class linked_list<int>;
+template class linked_list<int *>;
 template class linked_list<double>;
 template class linked_list<time_class>;
 template class linked_list<string_petey>;

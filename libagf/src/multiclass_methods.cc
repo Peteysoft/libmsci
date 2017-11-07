@@ -414,6 +414,124 @@ namespace libagf {
     for (int i=0; i<m; i++) p[i]=(1+r[i])/2;
   }
 
+  template <typename code_t, typename real>
+  void solve_class_interior(code_t **a, int m, int n, real *r, real *p) {
+    real tol=1e-8;		//tolerance
+    int maxiter=100;		//maximum number of iterations
+    real z[n+1];		//current estimate
+    real expz[n];		//probabilities
+    real dz[n+1];		//revision to estimate
+    real **qt;			//transposed matrix
+    real **qtq;			//square of matrix
+    real b[m];			//solution vector
+    real dfdz[m];		//change in cost function
+    real f;			//cost function
+    real el;			//temporary for calculating cost function
+    real pt;			//total of probabilities
+    real err=1;			//convergence error
+
+    //we need GSL to solve the Newton step:
+    gsl_matrix *Hess;		//Hessian
+    gsl_vector *grad;		//gradient
+    gsl_vector *sol;		//solution
+
+    Hess=gsl_matrix_alloc(n+1, n+1);
+    grad=gsl_vector_alloc(n+1);
+    sol=gsl_vector_alloc(n+1);
+
+    qt=allocate_matrix<real>(n, m);
+    for (int i=0; i<n; i++) {
+      for (int j=0; j<m; j++) {
+        qt[i][j]=a[j][i]-r[j]*fabs(a[j][i]);
+      }
+    }
+    qtq=allocate_matrix<real>(n, n);
+    matrix_mult_t(qt, qt, qtq, n, m, n);
+
+    print_matrix(stdout, qt, n, m);
+    printf("\n");
+    print_matrix(stdout, qtq, n, n);
+    printf("\n");
+
+    for (int i=0; i<m; i++) b[i]=0;
+    b[n]=1;
+
+    for (int i=0; i<n; i++) z[i]=log(1./n);
+    z[n]=0;
+
+    for (int iter=0; iter<=maxiter; iter++) {
+      for (int i=0; i<n; i++) {
+        p[i]=exp(z[i]);
+	printf("%g ", p[i]);
+      }
+      printf("\n");
+
+      if (err < tol) break;
+      //calculate cost function:
+      f=0;
+      for (int i=0; i<m; i++) {
+        el=0;
+        for (int j=0; j<n; j++) {
+          el+=qt[j][i]*p[j];
+	}
+	f+=(el+b[i])*(el+b[i]);
+      }
+      //constraint times Lagrange multiplier:
+      pt=0;
+      for (int i=0; i<m; i++) {
+        pt+=p[i];
+      }
+      f+=z[n]*(pt-1);
+      //gradient of cost function:
+      dfdz[n]=0;
+      for (int i=0; i<n; i++) {
+        dfdz[i]=0;
+        for (int j=0; j<n; j++) {
+          //dfdz[i]+=qtq[i][j]*p[j]+qt[i][j]*b[j];
+          dfdz[i]+=qtq[i][j]*p[j];
+	}
+	dfdz[i]+=dfdz[n];
+	dfdz[i]*=p[i];
+	dfdz[n]+=p[i];
+      }
+      dfdz[n]-=b[n];
+
+      //calculate Hessian and put inside GSL matrix:
+      for (int i=0; i<n; i++) {
+        for (int j=0; j<n; j++) {
+          gsl_matrix_set(Hess, i, j, qtq[i][j]*p[i]*p[j]);
+	}
+	gsl_matrix_set(Hess, i, i, gsl_matrix_get(Hess, i, i)+p[i]*dfdz[i]);
+	gsl_matrix_set(Hess, i, n, p[i]);
+	gsl_matrix_set(Hess, n, i, p[i]);
+	gsl_vector_set(grad, i, dfdz[i]);
+      }
+      gsl_matrix_set(Hess, n, n, 0);
+      gsl_vector_set(grad, n, dfdz[n]);
+
+      print_gsl_matrix(stdout, Hess);
+      gsl_vector_fprintf(stdout, grad, "%lg");
+
+      //Newton step:
+      err=gsl_lsq_solver(Hess, grad, sol);
+      if (err!=0) {
+        fprintf(stderr, "Error in GSL solver\n");
+	throw err;
+      }
+      for (int i=0; i<n; i++) dz[i]=gsl_vector_get(sol, i);
+      dz[n]=gsl_vector_get(sol, n);
+
+      for (int i=0; i<n; i++) {
+	err+=dz[i]*dz[i];
+	z[i]-=dz[i];
+      }
+    }
+
+    gsl_matrix_free(Hess);
+    gsl_vector_free(grad);
+    gsl_vector_free(sol);
+  }
+
   template void p_renorm<float>(float *, int);
   template void p_renorm<double>(double *, int);
 
@@ -453,6 +571,8 @@ namespace libagf {
   template void solve_class_1vR<float, float>(float **, int, int, float *, float *);
   template void solve_class_1vR<double, double>(double **, int, int, double *, double *);
 
+  template void solve_class_interior<float, float>(float **, int, int, float *, float *);
+  template void solve_class_interior<double, double>(double **, int, int, double *, double *);
 }
 
 #endif
