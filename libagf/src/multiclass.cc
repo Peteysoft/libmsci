@@ -729,6 +729,8 @@ namespace libagf {
   }
 
   template class multiclass<real_a, cls_ta>;
+  template class multiclass<real_a, cls_ta, binaryclassifier<real_a, cls_ta> >;
+  template class multiclass<real_a, cls_ta, svm2class2<real_a, cls_ta> >;
 
 }
 

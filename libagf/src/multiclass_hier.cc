@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <getopt.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <ctype.h>
 #include <string.h>
 #include <assert.h>
@@ -750,16 +751,14 @@ namespace libagf {
   extern void * global_svm_helper;
   extern FILE * global_svm_allinone;
 
-  /*
-  //template <typename real, typename cls_t, >
-  template <typename real, typename cls_t >
-  int multiclass_hier<real, cls_t, svm2class2<real, cls_t> >::load(FILE *fs) {
-    multiclass_hier<real, cls_t, general2class> dummy();
-    global_svm_allinone = fdopen (dup (fileno (fp)), "r");
+  //template <typename real, typename cls_t>
+  template <>
+  int multiclass_hier<real_a, cls_ta, svm2class2<real_a, cls_ta> >::load(FILE *fs) {
+    multiclass_hier<real_a, cls_ta, binaryclassifier<real_a, cls_ta> > dummy;
+    global_svm_allinone = fdopen (dup (fileno (fs)), "r");
     dummy.init(global_svm_allinone, 0, NULL, NULL, 0);
     init(fs, 0, NULL, NULL, 0);
   }
-  */
 
   template <typename real, typename cls_t, typename binclass>
   int multiclass_hier<real, cls_t, binclass>::save(FILE *fs) {
@@ -779,8 +778,11 @@ namespace libagf {
       printf("Printing out helper\n");
       helper->save(fs);
       printf("Printing out binary classifiers\n");
-      for (cls_t i=0; i<nb; i++) blist[i]->save(fs);
-      fflush(fs);
+      for (cls_t i=0; i<nb; i++) {
+        blist[i]->save(fs);
+	delete blist[i];
+      }
+      //fflush(fs);
     } else {
       if (nonh_flag==0) {
         fprintf(stderr, "multiclass_hier::save: cannot save; not the right type\n");
@@ -849,6 +851,8 @@ namespace libagf {
   }
 
   template class multiclass_hier<real_a, cls_ta>;
+  template class multiclass_hier<real_a, cls_ta, binaryclassifier<real_a, cls_ta> >;
+  template class multiclass_hier<real_a, cls_ta, svm2class2<real_a, cls_ta> >;
 
 }
 

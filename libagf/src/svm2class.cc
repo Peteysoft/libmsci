@@ -112,10 +112,12 @@ namespace libagf {
     helper->nsv=nsv_total;
     helper->D=D;
 
-    //delete old binary SVMs and replace them with new ones:
+    //replace old binary SVMs with new ones:
     printf("Replacing binary classifiers\n");
     for (int i=0; i<n; i++) {
-      delete list[i];
+      //can't slot these in in the original structure since there's not
+      //enough indirection:
+      //delete list[i];
       list[i]=classnew[i];
     }
 
@@ -287,6 +289,16 @@ namespace libagf {
   template class svm_helper<double>;
 
   template <typename real, typename cls_t>
+  svm2class2<real, cls_t>::svm2class2() {
+    this->D=0;
+    this->D1=0;
+    helper=NULL;
+    ind=NULL;
+    nsv=0;
+    coef=NULL;
+  }
+
+  template <typename real, typename cls_t>
   svm2class2<real, cls_t>::svm2class2(dim_ta ndim) {
     this->D=ndim;
     this->D1=ndim;
@@ -314,6 +326,19 @@ namespace libagf {
     fs=global_svm_allinone;
     helper=(svm_helper<real> *) global_svm_helper;
 
+    load(fs);
+  }
+
+  template <typename real, typename cls_t>
+  svm2class2<real, cls_t>::~svm2class2() {
+    if (coef!=NULL) {
+      delete [] coef;
+      delete [] ind;
+    }
+  }
+
+  template <typename real, typename cls_t>
+  int svm2class2<real, cls_t>::load(FILE *fs) {
     fscanf(fs, "%d", &nsv);
     fscanf(fs, "%g %g", &probA, &probB);
     ind=new int[nsv];
@@ -323,14 +348,6 @@ namespace libagf {
     }
     for (nel_ta i=0; i<nsv; i++) {
       fscanf(fs, "%d", ind+i);
-    }
-  }
-
-  template <typename real, typename cls_t>
-  svm2class2<real, cls_t>::~svm2class2() {
-    if (coef!=NULL) {
-      delete [] coef;
-      delete [] ind;
     }
   }
 

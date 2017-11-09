@@ -52,6 +52,7 @@ namespace libagf {
       real probB;
 
     public:
+      svm2class2();
       svm2class2(dim_ta ndim);
       svm2class2(char *name);
       ~svm2class2();
@@ -63,6 +64,7 @@ namespace libagf {
       real R_deriv(real *x, 			//test point
 		      real *drdx);		//gradient of R
 
+      virtual int load(FILE *fs);
       virtual int save(FILE *fs);
   };
 
