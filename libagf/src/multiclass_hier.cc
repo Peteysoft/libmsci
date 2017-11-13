@@ -21,16 +21,16 @@ using namespace libpetey;
 
 namespace libagf {
 
-  template <typename real, typename cls_t, typename binclass>
-  multiclass_hier<real, cls_t, binclass>::multiclass_hier() {
+  template <typename real, typename cls_t>
+  multiclass_hier<real, cls_t>::multiclass_hier() {
     classifier=NULL;
     children=NULL;
     this->ncls=0;
   }
 
   //high level initialization for classification:
-  template <typename real, typename cls_t, typename binclass>
-  multiclass_hier<real, cls_t, binclass>::multiclass_hier(const char *file, int type, char *prefix, const char *com, int mf, int kf, int sigcode, int Zflag) {
+  template <typename real, typename cls_t>
+  multiclass_hier<real, cls_t>::multiclass_hier(const char *file, int type, char *prefix, const char *com, int mf, int kf, int Zflag) {
     FILE *fs;
     int err;
 
@@ -39,19 +39,19 @@ namespace libagf {
       fprintf(stderr, "multiclass_hier: Unable to open control file, %s\n", file);
       throw UNABLE_TO_OPEN_FILE_FOR_READING;
     }
-    err=init(fs, type, prefix, com, mf, kf, sigcode, Zflag);
+    err=init(fs, type, prefix, com, mf, kf, Zflag);
     if (err!=0) throw err;
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  multiclass_hier<real, cls_t, binclass>::multiclass_hier(FILE *fs, int type, char *prefix, const char *com, int mf, int kf, int sigcode, int Zflag) {
-    int err=init(fs, type, prefix, com, mf, kf, sigcode, Zflag);
+  template <typename real, typename cls_t>
+  multiclass_hier<real, cls_t>::multiclass_hier(FILE *fs, int type, char *prefix, const char *com, int mf, int kf, int Zflag) {
+    int err=init(fs, type, prefix, com, mf, kf, Zflag);
     if (err!=0) throw err;
   }
 
   //high level initializion for training purposes:
-  template <typename real, typename cls_t, typename binclass>
-  multiclass_hier<real, cls_t, binclass>::multiclass_hier(const char *file, int argc, char **argv, int maxstacksize) {
+  template <typename real, typename cls_t>
+  multiclass_hier<real, cls_t>::multiclass_hier(const char *file, int argc, char **argv, int maxstacksize) {
     FILE *fs;
     int err;
     fs=fopen(file, "r");
@@ -63,15 +63,15 @@ namespace libagf {
     if (err!=0) throw err;
   }
     
-  template <typename real, typename cls_t, typename binclass>
-  multiclass_hier<real, cls_t, binclass>::multiclass_hier(FILE *fs, int argc, char **argv, int maxstacksize) {
+  template <typename real, typename cls_t>
+  multiclass_hier<real, cls_t>::multiclass_hier(FILE *fs, int argc, char **argv, int maxstacksize) {
     int err;
     err=init(fs, argc, argv, maxstacksize);
     if (err!=0) throw err;
   }
     
-  template <typename real, typename cls_t, typename binclass>
-  int multiclass_hier<real, cls_t, binclass>::init(FILE *fs, int type, char *prefix, const char *com, int mf, int kf, int sigcode, int Zflag) {
+  template <typename real, typename cls_t>
+  int multiclass_hier<real, cls_t>::init(FILE *fs, int type, char *prefix, const char *com, int mf, int kf, int Zflag) {
     multi_parse_param param;
     int err;
 
@@ -85,7 +85,7 @@ namespace libagf {
     param.Mflag=mf;		//LIBSVM file format
     param.Kflag=kf;		//keep temporary files
     param.type=type;		//how to solve for the conditional prob.
-    param.sigcode=sigcode;	//sigmoid function
+    //param.sigcode=sigcode;	//sigmoid function
     //need to set this with parameter later:
     param.prefix=prefix;	//path to data files
     param.Zflag=Zflag;		//use in house SVM codes
@@ -100,8 +100,8 @@ namespace libagf {
   }
 
   //initialize for training purposes:
-  template <typename real, typename cls_t, typename binclass>
-  int multiclass_hier<real, cls_t, binclass>::init(FILE *fs, int argc, char **argv, int maxstacksize) {
+  template <typename real, typename cls_t>
+  int multiclass_hier<real, cls_t>::init(FILE *fs, int argc, char **argv, int maxstacksize) {
     multi_parse_param param;
     int optlen;
     int err=0;
@@ -142,8 +142,8 @@ namespace libagf {
   }
 
   //low-level initialization (from a control structure):  
-  template <typename real, typename cls_t, typename binclass>
-  int multiclass_hier<real, cls_t, binclass>::init(multi_parse_param &param) {
+  template <typename real, typename cls_t>
+  int multiclass_hier<real, cls_t>::init(multi_parse_param &param) {
     int err=0;
     char *fname0;			//name of file containing model
     char *fname;			//name of file containing model
@@ -194,8 +194,8 @@ namespace libagf {
     assert(flag!=2);
     if (flag==1) {
       //multi-class classifier (non-hierarchical):
-      classifier=new multiclass<real, cls_t, binclass>();
-      ((multiclass<real, cls_t, binclass> *) classifier)->init(param);
+      classifier=new multiclass<real, cls_t>();
+      ((multiclass<real, cls_t> *) classifier)->init(param);
 
       //we have to scan for the opening brackets:
       do {
@@ -270,13 +270,12 @@ namespace libagf {
 	} else if (flag=='G') {
           //external classifier (need to count number of classes first):
           classifier=NULL;
-	} else if (param.Zflag) {
-          //"in-house" SVM codes:
-          classifier=new svm2class<real, cls_t>(fname);
 	} else if (param.commandname==NULL) {
           //default borders classifier:
           //classifier=new borders_classifier<real, cls_t>(fname, param.sigcode);
-          classifier=new binclass(fname);
+	  //stupidly simple way of adding in new types:
+	  //(don't even have to clean up the disastrous intialization routines)
+          classifier=binclass_init<real, cls_t>(fname, param.Zflag);
         } else {
           //external binary classifier:
           classifier=new general2class<real, cls_t>(fname, 
@@ -301,8 +300,8 @@ namespace libagf {
       fseek(param.infs, -1, SEEK_CUR);
       fname2=scan_class_label(param.infs, param.lineno);
       if (fname2==NULL) {
-        multiclass_hier<real, cls_t, binclass> *ch;
-        ch=new multiclass_hier<real, cls_t, binclass>();
+        multiclass_hier<real, cls_t> *ch;
+        ch=new multiclass_hier<real, cls_t>();
         ch->init(param);
         brood.add(ch);
       } else {
@@ -370,8 +369,8 @@ namespace libagf {
     return err;
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  multiclass_hier<real, cls_t, binclass>::~multiclass_hier() {
+  template <typename real, typename cls_t>
+  multiclass_hier<real, cls_t>::~multiclass_hier() {
     if (children!=NULL) {
       for (int i=0; i<classifier->n_class(); i++) delete children[i];
       delete [] children;
@@ -379,8 +378,8 @@ namespace libagf {
     if (classifier!=NULL) delete classifier;
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  cls_t multiclass_hier<real, cls_t, binclass>::classify(real *x, real &p, real *praw) {
+  template <typename real, typename cls_t>
+  cls_t multiclass_hier<real, cls_t>::classify(real *x, real &p, real *praw) {
     cls_t cls1, cls2;
     real pdum;
 
@@ -392,8 +391,8 @@ namespace libagf {
     return cls2;
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  cls_t multiclass_hier<real, cls_t, binclass>::classify(real *x, real *p, real *praw) {
+  template <typename real, typename cls_t>
+  cls_t multiclass_hier<real, cls_t>::classify(real *x, real *p, real *praw) {
     cls_t cls1, cls2;
 
     if (nonh_flag) {
@@ -407,8 +406,8 @@ namespace libagf {
     return cls2;
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  int multiclass_hier<real, cls_t, binclass>::ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2) {
+  template <typename real, typename cls_t>
+  int multiclass_hier<real, cls_t>::ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2) {
     int err=0;
 
     err=classifier->ltran_model(mat, b, d1, d2);
@@ -432,8 +431,8 @@ namespace libagf {
     return err;
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  cls_t multiclass_hier<real, cls_t, binclass>::n_class() {
+  template <typename real, typename cls_t>
+  cls_t multiclass_hier<real, cls_t>::n_class() {
     cls_t nchild;
 
     if (this->ncls<=0) {
@@ -445,8 +444,8 @@ namespace libagf {
     return this->ncls;
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  dim_ta multiclass_hier<real, cls_t, binclass>::n_feat() {
+  template <typename real, typename cls_t>
+  dim_ta multiclass_hier<real, cls_t>::n_feat() {
     cls_t nchild;
     cls_t D2;
 
@@ -468,8 +467,8 @@ namespace libagf {
     return this->D1;
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  int multiclass_hier<real, cls_t, binclass>::max_depth(int cur) {
+  template <typename real, typename cls_t>
+  int multiclass_hier<real, cls_t>::max_depth(int cur) {
     int maxdepth;
     int depth;
     int npart;
@@ -486,8 +485,8 @@ namespace libagf {
 
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  cls_t multiclass_hier<real, cls_t, binclass>::class_list(cls_t *cls) {
+  template <typename real, typename cls_t>
+  cls_t multiclass_hier<real, cls_t>::class_list(cls_t *cls) {
     cls_t nchild;
     cls_t nc_child;
     cls_t ncls1=0;
@@ -504,8 +503,8 @@ namespace libagf {
     return this->ncls;
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  void multiclass_hier<real, cls_t, binclass>::batch_classify(real **x, cls_t *cls, real *p, nel_ta n, dim_ta nvar) {
+  template <typename real, typename cls_t>
+  void multiclass_hier<real, cls_t>::batch_classify(real **x, cls_t *cls, real *p, nel_ta n, dim_ta nvar) {
     cls_t cls1[n];
     cls_t ncls1;		//number of children
     cls_t *nlab;		//number of instances of each class
@@ -586,8 +585,8 @@ namespace libagf {
     delete [] p2;
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  void multiclass_hier<real, cls_t, binclass>::batch_classify(real **x, cls_t *cls, real **p, nel_ta n, dim_ta nvar) {
+  template <typename real, typename cls_t>
+  void multiclass_hier<real, cls_t>::batch_classify(real **x, cls_t *cls, real **p, nel_ta n, dim_ta nvar) {
     if (nonh_flag) {
       cls_t list[this->ncls];
       class_list(list);
@@ -598,8 +597,8 @@ namespace libagf {
     }
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  void multiclass_hier<real, cls_t, binclass>::print(FILE *fs, char *fbase, int depth) {
+  template <typename real, typename cls_t>
+  void multiclass_hier<real, cls_t>::print(FILE *fs, char *fbase, int depth) {
     cls_t npart;
     char *fbase2=NULL;
     if (fbase!=NULL) fbase2=new char[strlen(fbase)+4];
@@ -619,8 +618,8 @@ namespace libagf {
     if (fbase2!=NULL) delete [] fbase2;
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  int multiclass_hier<real, cls_t, binclass>::generate_commands(FILE *fs,
+  template <typename real, typename cls_t>
+  int multiclass_hier<real, cls_t>::generate_commands(FILE *fs,
 		char *train, char *fbase, char *command, char *partcom,
 		char *concom, int Kflag, unsigned long session_id) {
     multi_train_param param;
@@ -666,8 +665,8 @@ namespace libagf {
     delete [] clist;
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  int multiclass_hier<real, cls_t, binclass>::commands(multi_train_param &param, cls_t **clist, char *fbase) {
+  template <typename real, typename cls_t>
+  int multiclass_hier<real, cls_t>::commands(multi_train_param &param, cls_t **clist, char *fbase) {
     cls_t **clist2;		//list of class labels for each child
     cls_t nchild=classifier->n_class();
     char *fbase2;
@@ -691,8 +690,8 @@ namespace libagf {
   }
 
   //set id's of binary classifiers for collating raw probabilities:
-  template <typename real, typename cls_t, typename binclass>
-  void multiclass_hier<real, cls_t, binclass>::set_id(cls_t *id) {
+  template <typename real, typename cls_t>
+  void multiclass_hier<real, cls_t>::set_id(cls_t *id) {
     cls_ta nchild=classifier->n_class();
     if (nchild>2) {
       cls_t *idlist=new cls_t[nchild-1];
@@ -712,56 +711,68 @@ namespace libagf {
     }
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  int multiclass_hier<real, cls_t, binclass>::load(FILE *fs, int ct) {
+  extern void * global_svm_helper;
+  extern FILE * global_svm_allinone;
+
+  template <typename real, typename cls_t>
+  int multiclass_hier<real, cls_t>::load(FILE *fs, int ct) {
     char **sub;
     int nsub;
     char *type;
     type=fget_line(fs, 1);	//first line describes type
-    if (strcmp(type, "1v1")!=0 && strcmp(type, "1vR")!=0 && strcmp(type, "ADJ")!=0) {
+    if (strcmp(type, "SVM")==0) {
+      svm_helper<real> *helper;
+      multiclass_hier<real_a, cls_ta> dummy;
+      global_svm_allinone = fdopen (dup (fileno (fs)), "r");
+      rewind(global_svm_allinone);
       delete [] type;
-      return PARAMETER_OUT_OF_RANGE;
+      type=fget_line(global_svm_allinone, 1);	//first line describes type
+      printf("%s\n", type);
+      printf("Scanning control structure\n");
+      dummy.init(global_svm_allinone, 0, NULL, NULL, 0, 0, 4);
+      printf("Reading in helper\n");
+      helper=new svm_helper<real>(global_svm_allinone);
+      global_svm_helper=helper;
+      printf("Reading in SVMs\n");
+      rewind(fs);
+      delete [] type;
+      type=fget_line(fs, 1);	//first line describes type
+      printf("%s\n", type);
+      init(fs, ct, NULL, NULL, 0, 0, 3);
+    } else {
+      if (strcmp(type, "1v1")!=0 && strcmp(type, "1vR")!=0 && strcmp(type, "ADJ")!=0) {
+        delete [] type;
+        return PARAMETER_OUT_OF_RANGE;
+      }
+      char *line=fget_line(fs);		//second line has number of classes
+      sscanf(line, "%d", &this->ncls);
+      delete [] line;
+      //third line contains class labels:
+      line=fget_line(fs, 1);
+      sub=split_string_destructive(line, nsub);
+      if (nsub!=this->ncls) throw DIMENSION_MISMATCH;
+      children=new classifier_obj<real, cls_t> *[this->ncls];
+      for (int i=0; i<this->ncls; i++) {
+        children[i]=new oneclass<real, cls_t>(atoi(sub[i]));
+      }
+      delete [] line;
+      delete [] sub;
+      classifier=new multiclass<real, cls_t>(ct);
+      rewind(fs);
+      classifier->load(fs);
+      nonh_flag=1;
+      delete [] type;
     }
-    char *line=fget_line(fs);		//second line has number of classes
-    sscanf(line, "%d", &this->ncls);
-    delete [] line;
-    //third line contains class labels:
-    line=fget_line(fs, 1);
-    sub=split_string_destructive(line, nsub);
-    if (nsub!=this->ncls) throw DIMENSION_MISMATCH;
-    children=new classifier_obj<real, cls_t> *[this->ncls];
-    for (int i=0; i<this->ncls; i++) {
-      children[i]=new oneclass<real, cls_t>(atoi(sub[i]));
-    }
-    delete [] line;
-    delete [] sub;
-    classifier=new multiclass<real, cls_t, binclass>(ct);
-    rewind(fs);
-    classifier->load(fs);
-    nonh_flag=1;
-    delete [] type;
     return 0;
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  int multiclass_hier<real, cls_t, binclass>::load(FILE *fs) {
+  template <typename real, typename cls_t>
+  int multiclass_hier<real, cls_t>::load(FILE *fs) {
     return load(fs, -1);
   }
 
-  extern void * global_svm_helper;
-  extern FILE * global_svm_allinone;
-
-  //template <typename real, typename cls_t>
-  template <>
-  int multiclass_hier<real_a, cls_ta, svm2class2<real_a, cls_ta> >::load(FILE *fs) {
-    multiclass_hier<real_a, cls_ta, binaryclassifier<real_a, cls_ta> > dummy;
-    global_svm_allinone = fdopen (dup (fileno (fs)), "r");
-    dummy.init(global_svm_allinone, 0, NULL, NULL, 0);
-    init(fs, 0, NULL, NULL, 0);
-  }
-
-  template <typename real, typename cls_t, typename binclass>
-  int multiclass_hier<real, cls_t, binclass>::save(FILE *fs) {
+  template <typename real, typename cls_t>
+  int multiclass_hier<real, cls_t>::save(FILE *fs) {
     cls_t nb;					//number of binary SVMs
     binaryclassifier<real, cls_t> ** blist;	//all the binary SVMs
     blist=new binaryclassifier<real, cls_t> *[this->ncls*this->ncls];
@@ -772,6 +783,7 @@ namespace libagf {
       //collect the binary classifiers into a single list:
       //unify the support vectors and convert to optimzed binary SVMs
       //(shared support vectors):
+      fprintf(fs, "SVM\n");
       printf("Printing out control structure\n");
       print(fs);
       helper=unite_support_vectors(blist, nb);
@@ -796,8 +808,8 @@ namespace libagf {
     return 0;
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  void multiclass_hier<real, cls_t, binclass>::train(real **train, cls_t *cls, nel_ta ntrain, int type, real *param) {
+  template <typename real, typename cls_t>
+  void multiclass_hier<real, cls_t>::train(real **train, cls_t *cls, nel_ta ntrain, int type, real *param) {
     cls_t *map;				//for partitioning the classes
     cls_t maxcls=0;			//largest value for class label
     cls_t label[this->ncls];
@@ -832,8 +844,8 @@ namespace libagf {
     delete [] map;
   }
 
-  template <typename real, typename cls_t, typename binclass>
-  cls_t multiclass_hier<real, cls_t, binclass>::collect_binary_classifiers(binaryclassifier<real, cls_t> **list) {
+  template <typename real, typename cls_t>
+  cls_t multiclass_hier<real, cls_t>::collect_binary_classifiers(binaryclassifier<real, cls_t> **list) {
     cls_t nchild;
     int nbin_child;
     int nbin_total=0;
@@ -851,8 +863,6 @@ namespace libagf {
   }
 
   template class multiclass_hier<real_a, cls_ta>;
-  template class multiclass_hier<real_a, cls_ta, binaryclassifier<real_a, cls_ta> >;
-  template class multiclass_hier<real_a, cls_ta, svm2class2<real_a, cls_ta> >;
 
 }
 

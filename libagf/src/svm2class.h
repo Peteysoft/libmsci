@@ -34,6 +34,7 @@ namespace libagf {
       real get_kernel_deriv(nel_ta index, real *deriv);
       int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
       int save(FILE *fs);
+      dim_ta n_feat();
   };
 
   //converts svm2class to svm2class2:

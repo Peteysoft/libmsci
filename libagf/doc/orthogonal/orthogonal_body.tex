@@ -3,25 +3,26 @@
 
 Many methods of statistical classication can only discriminate between two classes. 
 Examples include lineear classifiers such as perceptrons and logistic regression \citep{Michie_etal1994}, 
-piecewise linear classifiers \cite{Herman_Yeung1992},
+piecewise linear classifiers \citep{Herman_Yeung1992},
 as well as support vector machines \citep{kernel_intro}.
 There are many ways of generalizing binary classification to 
 multi-class.
 Three of the most common are one versus one, one versus the rest and 
 error-correcting coding matrices \citep{Hsu_Lin2002}.
 Here we are interested in the error-correcting coding matrices
-\citep{Dietterich_Bakiri1995, Windeatt_Ghaderi2002}.
-Rather than use a random coding matrix here we are interested in one that is
+\citep{Dietterich_Bakiri1995, Windeatt_Ghaderi2002} and
+rather than use a random coding matrix we are interested in one that is
 more carefully designed.
 
 In error-correcting coding, there is a coding matrix, $A$, that specifies
 how the set of multiple classes is partitioned.
 Typically, the class of the test point is determined by the distance between
-a column in the matrix and a vector of binary decision functions:
+a column in the matrix and a vector of binary {\it decision functions}:
 \begin{equation}
 	c(\vec x) = \arg \min_j | \vec a^{(j)} - \vec r(\vec x) |
 \end{equation}
-where $\vec a^{(j)}$ is the $j$th column of the coding matrix.
+where $\vec a^{(j)}$ is the $j$th column of the coding matrix and $\vec r$
+is a vector of decision functions at {\it test point}, $\vec x$.
 If we take the upright brackets as a Euclidean distance, and assume that
 each partition partitions all of the classes, that is, there are no zeroes
 in $A$, then this reduces to a {\it voting} solution:
@@ -48,7 +49,7 @@ r_j(\vec x) = P_i(-1 | \vec x) - P_i(+1 | \vec x)
 \end{equation}
 where $P_i(c | \vec x)$ is the conditional probability of the $c$th class of
 the $i$th classifier.
-Each binary classifier partitions a set of i$n$ classes such that for a
+Each binary classifier partitions a set of $n$ classes such that for a
 given test point, $\vec x$:
 \begin{equation}
 \sum_j a_{ij} p_j = r_j
@@ -76,12 +77,11 @@ Thus, we wish to solve the following minimization problem:
 	p_j & \ge & 0 \label{nonnegative}
 \end{eqnarray}
 
-The unconstrained minimization problem is trivially easy to solve
-if $A$ is orthogonal:
+The unconstrained minimization problem is easy to solve if $A$ is orthogonal:
 \begin{equation}
-	A^T A = n I
+	A^T A = m I
 \end{equation}
-where $I$ is the $n \times n$ identity matrix.
+where $I$ is the $n \times n$ identity matrix and $n$ the number of classes.
 Note that the voting solution in (\ref{voting}) is now equivalent to
 the inverse solution in (\ref{inverse}).
 This allows us to determine the class easily, but we also wish to solve for
@@ -93,7 +93,7 @@ in (\ref{minimization}) to something much simpler:
 \begin{equation}
 	\vec p = \arg \min_{\vec p} | \vec p - \vec p_0 |
 \end{equation}
-where $p_0 = A^T \vec r/n$ with the constraints in (\ref{normalization}) and
+where $p_0 = A^T \vec r/m$ with the constraints in (\ref{normalization}) and
 (\ref{nonnegative}) remaining the same.
 Because the system has been rotated and expanded, the non-negativity 
 constraints in (\ref{nonnegative}) remain orthogonal, meaning they are 
@@ -161,7 +161,7 @@ five classes ($n=5$):
 This will limit the size of $m$ relative to $n$; more precisely:
 $m=2 \log_2 n - 1$.
 
-Finding an $A$ such that $A^T A = n I$ and $a_{ij} \in \lbrace -1, 1, \rbrace$
+Finding an $A$ such that $A^T A = m I$ and $a_{ij} \in \lbrace -1, 1, \rbrace$
 is quite a difficult combinatorial problem.
 Noting which versions of $A$ are degenerate (equivalent) can help us whittle
 away at the problem:
@@ -211,39 +211,42 @@ Here we use a technique based on the
 following theorem, which can be derived from Bayes theorem and the 
 definition of probability:
 \begin{equation}
-	\lim_{n \rightarrow \infty} \sum_{i=0}^n \left [
-	p(c | \vec x) - \delta_{cy_i} \right ] = 0
+	\lim_{n \rightarrow \infty} \sum_{i=0}^{n} \left [
+	p(c | \vec x_i) - \delta_{cy_i} \right ] = 0
 	\label{theorem}
 \end{equation}
 where $\delta$ is the Kronecker delta.
 To make this useful for real problems we need to do several things.
-First, the probability estimates are sorted with regard to the class
-label, as follows:
+First, the probability estimates are lumped together and sorted without regard
+to the class label, as follows:
 \begin{equation}
 	p(c_{i+1} | \vec x_{i+1}) \ge p(c_i | \vec x_i)
 \end{equation}
+Note that in this ordering, there will be $n$ $i$s indexing the same $\vec x$ 
+and the same $y$.
 Second, we rearrange Equation (\ref{theorem}) as follows:
 \begin{equation}
-	n - i_0 \approx \sum_{i|p \ge 1/m}^{n} \frac{\delta_{c_i y_i}}{p(c_i | \vec x_i)}
+	N^\prime \approx \sum_{i=i_0}^{N^\prime+i_0} \frac{\delta_{c_i y_i}}{p(c_i | \vec x_i)}
+	\label{prob_val1}
 \end{equation}
 In other words, if the probabilities are well estimated, the RHS should
 follow, on average, single step intervals at each step in the trace.
 Finally, to prevent singularities at the bottom end, 
 we divide it into two parts:
-one for all the probabilities greater than $1/m$, above, and one for all those 
-less than $1/m$, below:
+one for all the probabilities greater than a certain threshold, above, 
+and one for all those less than this threshold, below:
 \begin{equation}
-	n - i_0  \approx \sum_{i=n}^{p < 1/m} \frac{\delta_{c_i y_i} - 1}{1 - p(c_i | \vec x_i)}
+	N^\prime  \approx \sum_{i=N^\prime+i_0}^{i_0} \frac{\delta_{c_i y_i} - 1}{1 - p(c_i | \vec x_i)}
+	\label{prob_val2}
 \end{equation}
-where $i_0$ is defined such that:
+where $i_0$ is the index of the threshold which we choose as the
+point between ``winning'' and ``losing'' probabilities:
 \begin{equation}
-	\left \lbrace
-	\begin{matrix}
-		p(c_i | \vec x_i) & \ge & 1/m &| i \ge i_0 \\
-		p(c_i | \vec x_i) & < & 1/m & | i < i_0
-	\end{matrix}
-	\right .
+	p(c_i | \vec x_i) \ge 1/n \iff i \ge i_0
 \end{equation}
+Thus, terms in both Equation (\ref{prob_val1}) and (\ref{prob_val2}) are more
+often non-zero than zero.
+
 We use the correlation coefficient to gauge the accuracy and the slope to
 measure the bias.
 This method of validating conditional probabilities was used in

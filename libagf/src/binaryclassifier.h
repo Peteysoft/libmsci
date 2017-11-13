@@ -11,6 +11,11 @@
 #include "classifier_obj.h"
 
 namespace libagf {
+  //much simpler and more sensible way of doing things:
+  template <typename real, typename cls_t>
+  binaryclassifier<real, cls_t> * binclass_init(char *name, int typecode);
+
+  //forward declaration:
   template <class real, class cls_t>
   class svm2class;
 

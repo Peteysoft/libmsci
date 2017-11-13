@@ -146,33 +146,37 @@ namespace libagf {
   template <typename real>
   svm_helper<real>::svm_helper(FILE *fs) {
     int nparam;
-    char *line;
+    char *line=NULL;
     char **sub;			//sub-strings
     int nsub;
 
     //read in basis function type:
-    line=fget_line(fs, 1);
-    if (strcmp(line, "linear")==0) {
-      kernel=&linear_basis<real>;
-      kernel_deriv=&linear_basis_deriv<real>;
-      nparam=0;
-    } else if (strcmp(line, "polynomial")==0) {
-      kernel=&polynomial_basis<real>;
-      kernel_deriv=&polynomial_basis_deriv<real>;
-      nparam=3;
-    } else if (strcmp(line, "radial")==0) {
-      kernel=&radial_basis<real>;
-      kernel_deriv=&radial_basis_deriv<real>;
-      nparam=1;
-    } else if (strcmp(line, "sigmoid")==0) {
-      kernel=&sigmoid_basis<real>;
-      kernel_deriv=&sigmoid_basis_deriv<real>;
-      nparam=2;
-    } else {
-      fprintf(stderr, "svm_helper: kernel type, %s, not recognized\n");
-      throw FILE_READ_ERROR;
-    }
-    delete [] line;
+    do {
+      if (line!=NULL) delete [] line;
+      line=fget_line(fs, 1);
+      if (strcmp(line, "linear")==0) {
+        kernel=&linear_basis<real>;
+        kernel_deriv=&linear_basis_deriv<real>;
+        nparam=0;
+      } else if (strcmp(line, "polynomial")==0) {
+        kernel=&polynomial_basis<real>;
+        kernel_deriv=&polynomial_basis_deriv<real>;
+        nparam=3;
+      } else if (strcmp(line, "radial")==0) {
+        kernel=&radial_basis<real>;
+        kernel_deriv=&radial_basis_deriv<real>;
+        nparam=1;
+      } else if (strcmp(line, "sigmoid")==0) {
+        kernel=&sigmoid_basis<real>;
+        kernel_deriv=&sigmoid_basis_deriv<real>;
+        nparam=2;
+      } else if (strcmp(line, "")==0) {
+        continue;
+      } else {
+        fprintf(stderr, "svm_helper: kernel type, %s, not recognized\n", line);
+        throw FILE_READ_ERROR;
+      }
+    } while (strcmp(line, "")==0);
 
     //read in basis function parameters:
     line=fget_line(fs, 1);
@@ -285,6 +289,11 @@ namespace libagf {
     return 0;
   }
 
+  template <class real>
+  dim_ta svm_helper<real>::n_feat() {
+    return D;
+  }
+
   template class svm_helper<float>;
   template class svm_helper<double>;
 
@@ -315,7 +324,7 @@ namespace libagf {
     this->name=new char[strlen(name)+1];
     strcpy(this->name, name);
     do {
-      line=fget_line(global_svm_allinone);
+      line=fget_line(global_svm_allinone, 1);
       if (line==NULL) {
         fprintf(stderr, "svm2class2: error in input file\n");
 	throw FILE_READ_ERROR;
@@ -325,8 +334,11 @@ namespace libagf {
     //the sin:
     fs=global_svm_allinone;
     helper=(svm_helper<real> *) global_svm_helper;
+    this->D=helper->n_feat();
+    this->D1=helper->n_feat();
 
     load(fs);
+    fprintf(stderr, "svm2class2: read in %d coefficients from section, %s\n", nsv, name);
   }
 
   template <typename real, typename cls_t>
@@ -342,8 +354,8 @@ namespace libagf {
     fscanf(fs, "%d", &nsv);
     fscanf(fs, "%g %g", &probA, &probB);
     ind=new int[nsv];
-    coef=new real[nsv];
-    for (nel_ta i=0; i<nsv; i++) {
+    coef=new real[nsv+1];
+    for (nel_ta i=0; i<=nsv; i++) {
       fscanf(fs, "%g", coef+i);
     }
     for (nel_ta i=0; i<nsv; i++) {
@@ -356,7 +368,7 @@ namespace libagf {
     fprintf(fs, "%s\n", this->name);
     fprintf(fs, "%d\n", nsv);
     fprintf(fs, "%g %g\n", probA, probB);
-    for (nel_ta i=0; i<nsv; i++) {
+    for (nel_ta i=0; i<=nsv; i++) {
       fprintf(fs, " %g", coef[i]);
     }
     fprintf(fs, "\n");
@@ -373,7 +385,6 @@ namespace libagf {
     real kv;
     cls_t swp;
     int sgn=1;		//sign is not reversed relative to LIBSVM implementation
-    int p=0;
 
     result=coef[nsv];
     helper->register_point(x);

@@ -16,6 +16,31 @@ using namespace std;
 using namespace libpetey;
 
 namespace libagf {
+  template <class real, class cls_t>
+  binaryclassifier<real, cls_t> * binclass_init(char *name, int typecode) {
+    binaryclassifier<real, cls_t> *result;
+    switch (typecode) {
+      case(0):
+        result=new borders_classifier<real, cls_t>(name);
+	break;
+      case(1):
+        result=new svm2class<real, cls_t>(name);
+	break;
+      case(2):
+        result=new borders_calibrated<real, cls_t>(name);
+	break;
+      case(3):
+        result=new svm2class2<real, cls_t>(name);
+	break;
+      case(4):
+        result=new binaryclassifier<real, cls_t>(name);
+	break;
+      default:
+        result=new borders_classifier<real, cls_t>(name);
+	break;
+    }
+    return result;
+  }
 
   template <class real, class cls_t>
   binaryclassifier<real, cls_t>::binaryclassifier() {
@@ -444,6 +469,9 @@ namespace libagf {
 
   template class binaryclassifier<double, cls_ta>;
   template class general2class<double, cls_ta>;
+
+  template binaryclassifier<float, cls_ta> *binclass_init<float, cls_ta>(char *, int);
+  template binaryclassifier<double, cls_ta> *binclass_init<double, cls_ta>(char *, int);
 
 }
 

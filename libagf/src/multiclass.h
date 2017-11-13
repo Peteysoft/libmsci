@@ -11,8 +11,7 @@
 namespace libagf {
 
   //non-hierarchical multi-class classification:
-  template <typename real, typename cls_t, 
-	   typename binclass=borders_calibrated<real, cls_t> >
+  template <typename real, typename cls_t>
   class multiclass:public classifier_obj<real, cls_t> {
     private:
       //use this function to solve for the conditional probabilities:
@@ -86,13 +85,12 @@ namespace libagf {
 		int npart, 		//number of partitions
 		cls_t ncls,		//number of classes
       		char *prefix=NULL,	//path to data files
+		int method=0,		//solution method
  		int tflag=0,		//for training purposes
 		char *com=NULL,		//external binary classification command
 		int Mflag=0,		//external command uses LIBSVM format
  		int Kflag=0,		//keep temporary files
-		int sigcode=0,		//code for sigmoid trans. func.
-		int Zflag=0,		//use in house SVM codes
-		void *binparam=NULL);	//parameters passed to binary classifier
+		int Zflag=0);		//use in house SVM codes
 
       //transformation matrix is not copied, only the pointer is stored
       //--do not delete original before classifier class instance:

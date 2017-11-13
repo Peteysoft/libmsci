@@ -142,7 +142,6 @@ int main(int argc, char *argv[]) {
 		opt_args.multicommand, 		//external binary classifier
 		opt_args.Mflag,			//external uses LIBSVM format
 		opt_args.Kflag, 		//keep temporary files
-		opt_args.algtype, 		//sig. fn extrap. bin prob
 		opt_args.Zflag);		//in-house SVM codes
   }
   fclose(fs);

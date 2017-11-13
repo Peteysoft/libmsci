@@ -39,7 +39,7 @@ int main(int argc, char ** argv) {
     exit(1);
   }
 
-  classifier=new multiclass_hier<real_a, cls_ta>(argv[0], 0, opts.path, NULL, 0, 0, 0, opts.Zflag);
+  classifier=new multiclass_hier<real_a, cls_ta>(argv[0], 0, opts.path, NULL, 0, 0, opts.Zflag);
   fs=fopen(argv[1], "w");
   classifier->save(fs);
 
