@@ -739,6 +739,9 @@ namespace libagf {
       type=fget_line(fs, 1);	//first line describes type
       printf("%s\n", type);
       init(fs, ct, NULL, NULL, 0, 0, 3);
+      fclose(global_svm_allinone);
+      //check to make sure everything's working OK:
+      save(stdout);
     } else {
       if (strcmp(type, "1v1")!=0 && strcmp(type, "1vR")!=0 && strcmp(type, "ADJ")!=0) {
         delete [] type;
@@ -778,7 +781,8 @@ namespace libagf {
     blist=new binaryclassifier<real, cls_t> *[this->ncls*this->ncls];
     nb=collect_binary_classifiers(blist);
     for (int i=0; i<nb; i++) blist[i]->print(stdout);
-    if (typeid(*blist[0])==typeid(svm2class<real, cls_t>)) {
+    if (typeid(*blist[0])==typeid(svm2class<real, cls_t>) ||
+		    typeid(*blist[0])==typeid(svm2class2<real, cls_t>)) {
       svm_helper<real> *helper;			//contains all the SVs
       //collect the binary classifiers into a single list:
       //unify the support vectors and convert to optimzed binary SVMs

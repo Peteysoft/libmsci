@@ -1,6 +1,7 @@
 #include <math.h>
 #include <string.h>
 #include <assert.h>
+#include <typeinfo>
 
 #include "read_ascii_all.h"
 #include "error_codes.h"
@@ -30,6 +31,11 @@ namespace libagf {
     int nparam;				//how many kernel paramters are there?
     dim_ta D;
     nel_ta k;		//counter
+
+    if (typeid(*list[0])==typeid(svm2class2<real, cls_t>)) {
+      classnew[0]=(svm2class2<real, cls_t> *) list[0];
+      return classnew[0]->helper;
+    }
 
     helper=new svm_helper<real>();
     D=list[0]->n_feat_t();
@@ -85,6 +91,7 @@ namespace libagf {
       classnew[i]->probA=classifier->classifier->probA[0];
       classnew[i]->probB=classifier->classifier->probB[0];
       classnew[i]->coef=new real[nsv[i]+1];
+      if (classifier->classifier->label[0]==1) classnew[i]->polarity=1; else classnew[i]->polarity=-1;
       printf("Copying coefficients\n");
       for (int j=0; j<nsv[i]; j++) classnew[i]->coef[j]=classifier->classifier->coef[0][j];
       classnew[i]->coef[nsv[i]]=classifier->classifier->rho[0];
@@ -124,8 +131,8 @@ namespace libagf {
     //allocate space for kernel values, etc:
     printf("Allocating space in helper\n");
     helper->kval=new real[nsv_total];
-    helper->flag=new int[nsv_total];
     helper->test=new real[D];
+    helper->flag=new int[nsv_total];
 
     return helper;
   }
@@ -201,8 +208,9 @@ namespace libagf {
 
     //allocate space for kernel values:
     kval=new real[nsv];
-    flag=new int[nsv];
     test=new real[D];
+    flag=new int[nsv];
+    for (nel_ta i=0; i<nsv; i++) flag[i]=0;
   }
 
   template <typename real>
@@ -290,6 +298,12 @@ namespace libagf {
   }
 
   template <class real>
+  void svm_helper<real>::print_row(FILE *fs, nel_ta index) {
+    for (nel_ta i=0; i<D; i++) fprintf(fs, "%14.6g", sv[index][i]);
+    fprintf(fs, "\n");
+  }
+
+  template <class real>
   dim_ta svm_helper<real>::n_feat() {
     return D;
   }
@@ -353,14 +367,19 @@ namespace libagf {
   int svm2class2<real, cls_t>::load(FILE *fs) {
     fscanf(fs, "%d", &nsv);
     fscanf(fs, "%g %g", &probA, &probB);
+    fscanf(fs, "%d", &polarity);
     ind=new int[nsv];
     coef=new real[nsv+1];
     for (nel_ta i=0; i<=nsv; i++) {
       fscanf(fs, "%g", coef+i);
+      printf("%g ", coef[i]);
     }
+    printf("\n");
     for (nel_ta i=0; i<nsv; i++) {
       fscanf(fs, "%d", ind+i);
+      printf("%d ", ind[i]);
     }
+    printf("\n");
   }
 
   template <typename real, typename cls_t>
@@ -368,8 +387,13 @@ namespace libagf {
     fprintf(fs, "%s\n", this->name);
     fprintf(fs, "%d\n", nsv);
     fprintf(fs, "%g %g\n", probA, probB);
+    fprintf(fs, "%d\n", polarity);
     for (nel_ta i=0; i<=nsv; i++) {
       fprintf(fs, " %g", coef[i]);
+      if (i<nsv) {
+        fprintf(fs, " %d: ", ind[i]);
+        helper->print_row(fs, ind[i]);
+      }
     }
     fprintf(fs, "\n");
     for (nel_ta i=0; i<nsv; i++) {
@@ -384,18 +408,19 @@ namespace libagf {
     real result;
     real kv;
     cls_t swp;
-    int sgn=1;		//sign is not reversed relative to LIBSVM implementation
 
-    result=coef[nsv];
+    result=-coef[nsv];
     helper->register_point(x);
     for (int k=0; k<nsv; k++) {
       kv=helper->get_kernel(ind[k]);
       result+=coef[k]*kv;
+      //printf("kernel(%d)=%g\n", ind[k], kv);
     }
+    //printf("\n");
     if (praw!=NULL) praw[0]=result;
     result=1./(1+exp(probA*result+probB));
 
-    return sgn*(2*result-1);
+    return polarity*(2*result-1);
   } 
 
   template <typename real, typename cls_t>
@@ -409,7 +434,7 @@ namespace libagf {
     real deriv[this->D1];
     real drdx1[this->D1];
 
-    result=coef[nsv];
+    result=-coef[nsv];
     helper->register_point(x);
     for (int k=0; k<nsv; k++) {
       kv=helper->get_kernel_deriv(ind[k], deriv);

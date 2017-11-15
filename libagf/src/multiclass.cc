@@ -310,7 +310,11 @@ namespace libagf {
     real r[nmodel];
     real pt=0;
 
-    for (int i=0; i<nmodel; i++) r[i]=twoclass[i]->R(x, praw);
+    for (int i=0; i<nmodel; i++) {
+      r[i]=twoclass[i]->R(x, praw);
+      printf("%12.6g", r[i]);
+    }
+    printf("\n");
 
     (*solve_class)(code, nmodel, this->ncls, r, p);
     //for (cls_t i=0; i<this->ncls; i++) pt+=p[i];

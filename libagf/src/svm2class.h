@@ -34,6 +34,7 @@ namespace libagf {
       real get_kernel_deriv(nel_ta index, real *deriv);
       int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
       int save(FILE *fs);
+      void print_row(FILE *fs, nel_ta index);
       dim_ta n_feat();
   };
 
@@ -51,6 +52,7 @@ namespace libagf {
       real *coef;			//coefficients
       real probA;			//for calculating probabilities
       real probB;
+      int polarity;
 
     public:
       svm2class2();

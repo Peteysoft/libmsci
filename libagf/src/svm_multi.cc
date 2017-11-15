@@ -486,10 +486,12 @@ namespace libagf {
     for (int k=0; k<nsv[i]; k++) {
       kv=(*kernel)(x, sv[si+k], this->D1, param);
       result+=coef[j-1][si+k]*kv;
+      //printf("kernel(%d)=%g\n", si+k, kv);
     }
     for (int k=0; k<nsv[j]; k++) {
       kv=(*kernel)(x, sv[sj+k], this->D1, param);
       result+=coef[i][sj+k]*kv;
+      //printf("kernel(%d)=%g\n", sj+k, kv);
     }
     //p=this->ncls*(this->ncls-1)/2-(this->ncls-i)*(this->ncls-i-1)/2+j;
     p=i*(2*this->ncls-i-1)/2+j-i-1;
