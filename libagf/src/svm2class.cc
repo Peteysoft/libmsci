@@ -184,6 +184,7 @@ namespace libagf {
         throw FILE_READ_ERROR;
       }
     } while (strcmp(line, "")==0);
+    delete [] line;
 
     //read in basis function parameters:
     line=fget_line(fs, 1);
@@ -267,6 +268,7 @@ namespace libagf {
     return kval[index];
   }
 
+  //not optimized:
   template <typename real>
   real svm_helper<real>::get_kernel_deriv(nel_ta index, real *deriv) {
     return (* kernel_deriv) (test, sv[index], D, param, deriv);
@@ -372,14 +374,14 @@ namespace libagf {
     coef=new real[nsv+1];
     for (nel_ta i=0; i<=nsv; i++) {
       fscanf(fs, "%g", coef+i);
-      printf("%g ", coef[i]);
+      //printf("%g ", coef[i]);
     }
     printf("\n");
     for (nel_ta i=0; i<nsv; i++) {
       fscanf(fs, "%d", ind+i);
-      printf("%d ", ind[i]);
+      //printf("%d ", ind[i]);
     }
-    printf("\n");
+    //printf("\n");
   }
 
   template <typename real, typename cls_t>
@@ -390,7 +392,8 @@ namespace libagf {
     fprintf(fs, "%d\n", polarity);
     for (nel_ta i=0; i<=nsv; i++) {
       fprintf(fs, " %g", coef[i]);
-      if (i<nsv) {
+      //if (i<nsv) {
+      if (0) {
         fprintf(fs, " %d: ", ind[i]);
         helper->print_row(fs, ind[i]);
       }
@@ -429,7 +432,6 @@ namespace libagf {
     real kv;
     cls_t swp;
     real t1, t2;
-    int sgn=1;		//sign is not reversed relative to LIBSVM implementation
 
     real deriv[this->D1];
     real drdx1[this->D1];
@@ -449,12 +451,12 @@ namespace libagf {
 
     //printf("drdx=");
     for (dim_ta k=0; k<this->D1; k++) {
-      drdx[k]=sgn*drdx1[k];
+      drdx[k]=polarity*drdx1[k];
       //printf("%g ", drdx[k]);
     }
     //printf("\nr=%g\n", result);
 
-    return sgn*result;
+    return polarity*result;
 
   }
 

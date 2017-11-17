@@ -31,10 +31,6 @@ namespace libagf {
 
     //set model variables to NULL:
     twoclass=NULL;
-    u=NULL;
-    vt=NULL;
-    s=NULL;
-    map=NULL;
 
     //set number parameters to 0:
     nmodel=0;
@@ -101,7 +97,8 @@ namespace libagf {
     fseek(param.infs, -1, SEEK_CUR);
 
     //pass to another initialization routine (duh...):
-    init(name, coding_matrix, npart, ncls, param.prefix, param.type, param.trainflag, param.commandname, 
+    init(name, coding_matrix, npart, ncls, param.prefix, param.type, 
+		    param.trainflag, param.commandname, 
 		    param.Mflag, param.Kflag, param.Zflag);
 
     //clean up:
@@ -159,34 +156,24 @@ namespace libagf {
     }
 
     //create the mapping:
-    map=gsl_matrix_alloc(nmodel+1, this->ncls);
-    code=zero_matrix<real>(nmodel, this->ncls);	//two formats
-    gsl_matrix_set_zero(map);
-    //the sum of the conditional probabilities should always equal 1:
-    for (int i=0; i<this->ncls; i++) gsl_matrix_set(map, nmodel, i, 1);
+    code=zero_matrix<real>(nmodel, this->ncls);	//only one format
 
     for (int i=0; i<nmodel; i++) {
       for (cls_t j=0; j<this->ncls; j++) {
         code[i][j]=coding_matrix[i][j];
-	gsl_matrix_set(map, i, j, code[i][j]);
       }
     }
 
-    strictflag=0;
+    strictflag=1;
     for (int i=0; i<npart; i++) {
       for (cls_t j=0; j<ncls; j++) {
         if (code[i][j]==0) {
-          strictflag=1;
+          strictflag=0;
 	  break;
 	}
       }
-      if (strictflag) break;
+      if (strictflag==0) break;
     }
-
-    //find the inverse of this matrix when we need it (we don't yet):
-    u=NULL;
-    vt=NULL;
-    s=NULL;
 
     return 0;
   }
@@ -196,12 +183,6 @@ namespace libagf {
     //delete the binary classifiers and the decision matrix:
     for (int i=0; i<nmodel; i++) delete twoclass[i];
     delete [] twoclass;
-    gsl_matrix_free(map);
-
-    //delete the decomposition of the decision matrix:
-    gsl_vector_free(s);
-    gsl_matrix_free(vt);
-    gsl_matrix_free(u);
 
     if (pol!=NULL) delete [] pol;
 
@@ -250,40 +231,6 @@ namespace libagf {
     }
   }
 
-  //find the singular value decomposition of the coding matrix:
-  template <typename real, typename cls_t>
-  int multiclass<real, cls_t>::code_svd() {
-    gsl_vector *work;
-    int err;
-
-    if (u!=NULL) return 0;
-
-    //now we find the inverse of this matrix:
-    u=gsl_matrix_alloc(nmodel+1, this->ncls);
-    gsl_matrix_memcpy(u, map);
-
-    //print_gsl_matrix(stdout, u);
-    vt=gsl_matrix_alloc(this->ncls, this->ncls);
-    s=gsl_vector_alloc(this->ncls);
-    work=gsl_vector_alloc(this->ncls);
-    err=gsl_linalg_SV_decomp(u, vt, s, work);
-    //gsl_linalg_SV_decomp_jacobi(u, vt, s);
-
-    /*
-    printf("U:\n");
-    print_gsl_matrix(stdout, u);
-    printf("S:\n");
-    for (int i=0; i<s->size; i++) printf("%10.5g ", gsl_vector_get(s, i));
-    printf("\nV^T:\n");
-    print_gsl_matrix(stdout, vt);
-    */
-
-    gsl_vector_free(work);
-
-    return err;
-
-  }
-
   //load a linear transformation to apply to the test points:
   template <typename real, typename cls_t>
   int multiclass<real, cls_t>::ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2) {
@@ -312,7 +259,7 @@ namespace libagf {
 
     for (int i=0; i<nmodel; i++) {
       r[i]=twoclass[i]->R(x, praw);
-      printf("%12.6g", r[i]);
+      //printf("%12.6g", r[i]);
     }
     printf("\n");
 
@@ -397,11 +344,11 @@ namespace libagf {
       if (fbase!=NULL) sprintf(fbase2, "%s-%2.2d", fbase, i);
       twoclass[i]->print(fs, fbase2, depth);
       for (int j=0; j<this->ncls; j++) {
-        if (gsl_matrix_get(map, i, j)<0) fprintf(fs, " %d", j);
+        if (code[i][j]<0) fprintf(fs, " %d", j);
       }
       fprintf(fs, " /");
       for (int j=0; j<this->ncls; j++) {
-        if (gsl_matrix_get(map, i, j)>0) fprintf(fs, " %d", j);
+        if (code[i][j]>0) fprintf(fs, " %d", j);
       }
       fprintf(fs, ";");
       if (i!=nmodel-1) fprintf(fs, "\n");
@@ -413,7 +360,6 @@ namespace libagf {
   template <typename real, typename cls_t>
   int multiclass<real, cls_t>::commands(multi_train_param &param,
                 cls_t **clist, char *fbase) {
-    double coef;
     char *fbase2;
     cls_t *clist2;
     cls_t *clist3[3];
@@ -439,8 +385,7 @@ namespace libagf {
       nc1=0;
       clist3[0]=clist2;
       for (cls_t j=0; j<this->ncls; j++) {
-        coef=gsl_matrix_get(map, i, j);
-        if (coef<0) {
+        if (code[i][j]<0) {
           for (cls_t k=0; clist[j]+k!=clist[j+1]; k++) {
             clist2[nc1]=clist[j][k];
             nc1++;
@@ -452,8 +397,7 @@ namespace libagf {
       //fprintf(param.commandfs, " /");
       nc2=0;
       for (cls_t j=0; j<this->ncls; j++) {
-        coef=gsl_matrix_get(map, i, j);
-        if (coef>0) {
+        if (code[i][j]>0) {
           for (cls_t k=0; clist[j]+k!=clist[j+1]; k++) {
             clist2[nc1+nc2]=clist[j][k];
             nc2++;
@@ -473,27 +417,6 @@ namespace libagf {
     return this->ncls;
   }
 
-  //converts matrix to a sorted array of STL vectors:
-  template <typename scalar>
-  void matrix2sorted(scalar **mat,		//original matrix
-			int m,
-			int n, 
-			vector<scalar> *sd,	//vector of sorted arrays
-			long *sind) {		//sorting indices
-    vector<scalar> sd2[m];
-
-    for (int i=0; i<m; i++) {
-      sd[i].resize(n);		//I thought these fucking things were supposed
-      sd2[i].resize(n);		//to resize themselves??
-      for (int j=0; j<n; j++) sd[i][j]=mat[i][j];
-    }
-
-    heapsort(sd, sind, m);
-
-    for (int i=0; i<m; i++) sd2[i]=sd[sind[i]];
-    for (int i=0; i<m; i++) sd[i]=sd2[i];
-  }
-
   template <typename real, typename cls_t>
   int multiclass<real, cls_t>::detect_type() {
     int spec_type;		//0=1 v. rest; 1=1 v. 1; 2=adj.
@@ -505,7 +428,7 @@ namespace libagf {
 
     for (int i=0; i<nmodel; i++) {
       sd[i].resize(this->ncls);
-      for (int j=0; j<this->ncls; j++) sd[i][j]=gsl_matrix_get(map, i, j);
+      for (int j=0; j<this->ncls; j++) sd[i][j]=code[i][j];
     }
 
     spec_type=-1;			//which type is it?
@@ -574,20 +497,19 @@ namespace libagf {
     } else {
       //rearrange the coding matrix and binary classifiers so they're in
       //the "right" order:
-      gsl_matrix *newmap=gsl_matrix_alloc(nmodel+1, this->ncls);
+      real ** newcode=allocate_matrix<real, int>(nmodel, this->ncls);
       binaryclassifier<real, cls_t> **twoclass2=new binaryclassifier<real, cls_t>*[nmodel];
       for (int i=0; i<nmodel; i++) {
         for (int j=0; j<this->ncls; j++) {
-          gsl_matrix_set(newmap, i, j, gsl_matrix_get(map, ind[i], j));
+          newcode[i][j]=code[ind[i]][j];
         }
 	twoclass2[i]=twoclass[ind[i]];
       }
-      for (int j=0; j<this->ncls; j++) {
-        gsl_matrix_set(newmap, nmodel, j, gsl_matrix_get(map, nmodel, j));
-      }
-      gsl_matrix_free(map);
+      delete [] code[0];
+      delete [] code;
+      code=newcode;
+
       delete [] twoclass;
-      map=newmap;
       twoclass=twoclass2;
       type=10+spec_type;
     }
@@ -663,13 +585,6 @@ namespace libagf {
       }
     }
 
-    //convert integer coding matrix to floating point, GSL compatible one:
-    map=gsl_matrix_alloc(nmodel+1, this->ncls);
-    for (int i=0; i<nmodel; i++) {
-      for (int j=0; j<this->ncls; j++) gsl_matrix_set(map, i, j, code[i][j]);
-    }
-    for (int j=0; j<this->ncls; j++) gsl_matrix_set(map, nmodel, j, 1);
-
     return err;
   }
 
@@ -706,7 +621,6 @@ namespace libagf {
 
   template <typename real, typename cls_t>
   void multiclass<real, cls_t>::train(real **train, cls_t *cls, nel_ta ntrain, int type, real *param) {
-    cls_t *map2;			//for partitioning the classes
     cls_t cls2[ntrain];
 
     cls_t k=0;
@@ -716,7 +630,7 @@ namespace libagf {
         if (cls[j]<0 || cls[j]>=nmodel) {
           cls2[j]=-1;
 	} else {
-          mapel=gsl_matrix_get(map, i, cls[j]);
+          mapel=code[i][cls[j]];
 	  if (mapel>0) {
             cls2[j]=1;
           } else if (mapel<0) {

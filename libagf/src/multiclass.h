@@ -20,18 +20,12 @@ namespace libagf {
       //set the function based on a code:
       void set_solve_type(int ct);
 
-      //maps the actual results to the conditional probabilities:
-      //(singular value decomposition of matrix mapping of final cond. prob. to raw cond. prob.)
-      gsl_matrix *u;
-      gsl_matrix *vt;
-      gsl_vector *s;
-
       //internal routines:
       //run each of the binary classifiers and collect result into vector:
       void raw_classify(real *x, gsl_vector *b);
 
       //prepare SVD of coding matrix:
-      int code_svd();
+      //int code_svd();
 
       //type of classification:
       int type;
@@ -44,8 +38,6 @@ namespace libagf {
       int nmodel;		//number of partitions
 
       //raw mapping:
-      gsl_matrix *map;
-      //in two formats:
       real ** code;		//(want to keep only this format...)
 
       //is the mapping "strict"--i.e. each row includes all classes?

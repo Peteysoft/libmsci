@@ -722,26 +722,43 @@ namespace libagf {
     type=fget_line(fs, 1);	//first line describes type
     if (strcmp(type, "SVM")==0) {
       svm_helper<real> *helper;
+      char *buffer;
+      int loc1, loc2;
       multiclass_hier<real_a, cls_ta> dummy;
-      global_svm_allinone = fdopen (dup (fileno (fs)), "r");
-      rewind(global_svm_allinone);
-      delete [] type;
-      type=fget_line(global_svm_allinone, 1);	//first line describes type
-      printf("%s\n", type);
+
+      loc1=ftell(fs);
+      fseek(fs, 0, SEEK_END);
+      loc2=ftell(fs);
+      buffer=new char [loc2-loc1+1];
+      fseek(fs, loc1, SEEK_SET);
+      fread(buffer, sizeof(char), loc2-loc1+1, fs);
+      global_svm_allinone = fmemopen(buffer, loc2-loc1+1, "r");
+      fseek(fs, loc1, SEEK_SET);
+
+      //global_svm_allinone = fdopen (dup (fileno (fs)), "r");
+      //rewind(global_svm_allinone);
+      //delete [] type;
+      //type=fget_line(global_svm_allinone, 1);	//first line describes type
+      //printf("%s\n", type);
+
       printf("Scanning control structure\n");
       dummy.init(global_svm_allinone, 0, NULL, NULL, 0, 0, 4);
       printf("Reading in helper\n");
       helper=new svm_helper<real>(global_svm_allinone);
       global_svm_helper=helper;
       printf("Reading in SVMs\n");
-      rewind(fs);
-      delete [] type;
-      type=fget_line(fs, 1);	//first line describes type
-      printf("%s\n", type);
+      fseek(fs, loc1, SEEK_SET);
+
+      //rewind(fs);
+      //delete [] type;
+      //type=fget_line(fs, 1);	//first line describes type
+      //printf("type=%s\n", type);
+
       init(fs, ct, NULL, NULL, 0, 0, 3);
       fclose(global_svm_allinone);
+      delete [] buffer;
       //check to make sure everything's working OK:
-      save(stdout);
+      //save(stdout);
     } else {
       if (strcmp(type, "1v1")!=0 && strcmp(type, "1vR")!=0 && strcmp(type, "ADJ")!=0) {
         delete [] type;
@@ -764,8 +781,8 @@ namespace libagf {
       rewind(fs);
       classifier->load(fs);
       nonh_flag=1;
-      delete [] type;
     }
+    delete [] type;
     return 0;
   }
 
