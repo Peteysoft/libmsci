@@ -124,6 +124,9 @@ namespace libagf {
       *p[i]+=(1-pt)/n;
     }
     //check for out-of-range (<0) values:
+    //(would be faster if we sorted the probabilities first--rank ordering
+    //won't change--but should only make a difference once we are dealing
+    //with hundreds of classes or more)
     for (int i=0; i<n; i++) {
       p[i-nbad]=p[i];
       if (*p[i]<0) {

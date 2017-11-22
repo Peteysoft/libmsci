@@ -98,7 +98,7 @@ int main(int argc, char ** argv) {
  
   n2=read_lvq(pfile, p, class2, ncls, Hflag+2*Cflag); 
   if (n2 < 0) {
-    fprintf(stderr, "Error reading input file: %s\n", tfile);
+    fprintf(stderr, "Error reading input file: %s\n", pfile);
     return ALLOCATION_FAILURE;
   }
   if (p == NULL) {
@@ -121,7 +121,7 @@ int main(int argc, char ** argv) {
   delete [] p;
 
   midind=bin_search(ps, n1*ncls, (float) 1./ncls);
-  printf("%g\n", ps[n1*ncls/2]);
+  //printf("%g\n", ps[n1*ncls/2]);
   sum=new double[n1*ncls];
   sum[midind]=0;
   for (int i=midind-1; i>=0; i--) {
@@ -164,8 +164,8 @@ int main(int argc, char ** argv) {
   r=gsl_stats_correlation(rank, 1, sum, 1, n1*ncls);
   exit_code=gsl_fit_mul(rank, 1, sum, 1, n1*ncls, &m, &cov, &sumsqr);
 
-  printf("r = %lg\n", r);
-  printf("m = %lg\n", m);
+  printf("r = %15.8lg\n", r);
+  printf("m = %15.8lg\n", m);
 
   delete [] class1;
   delete [] class2;

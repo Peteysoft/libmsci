@@ -3,7 +3,7 @@
 
 Many methods of statistical classication can only discriminate between two classes. 
 Examples include lineear classifiers such as perceptrons and logistic regression \citep{Michie_etal1994}, 
-piecewise linear classifiers \citep{Herman_Yeung1992},
+piecewise linear classifiers \citep{Herman_Yeung1992,Mills2011},
 as well as support vector machines \citep{kernel_intro}.
 There are many ways of generalizing binary classification to 
 multi-class.
@@ -87,6 +87,9 @@ the inverse solution in (\ref{inverse}).
 This allows us to determine the class easily, but we also wish to solve for
 the probabilities, $\vec p$, so that none of the constraints in 
 (\ref{normalization}) or (\ref{nonnegative}) are violated.
+Probabilities are useful for gauging the accuracy of a classification result
+when its true value is unknown and for recalibrating an image derived from
+statistical classification \citep{Fawcett2006,Mills2009,Mills2011}.
 
 The orthogonality property allows us to reduce the minimization problem 
 in (\ref{minimization}) to something much simpler:
@@ -105,9 +108,11 @@ the problem, now strictly geometrical, is comprised of finding the point nearest
 Briefly, we can summarize the algorithm as follows:
 1. move to the nearest point that satisfies the normalization constraint,
 (\ref{normalization}); 2. if one or more of the probabilities is negative,
-move to the nearest point that satisfies both these and the normalization
-constraint; 3. repeat step 2.
-More specifically, let $\vec 1$ be a vector of all $1$'s:
+move to the nearest point that satisfies both 
+the normalization constraint
+and the non-negativity constraints, (\ref{nonnegative}), for the negative probabilities;
+3. repeat step 2.
+More formally, let $\vec 1$ be a vector of all $1$'s:
 \begin{itemize}
 	\item $n_0=n$
 	\item while $\exists k \, p_{ik} \le 0 \lor \vec p_i \cdot \vec 1 \ne 1$:
@@ -133,7 +138,7 @@ then the direction vectors for the two motions are:
 	\frac{1}{2}[1, 1, 1, 1] \cdot \frac{1}{2\sqrt{3}} [-3, 1, 1, 1] = 0
 \end{equation}
 
-More formally, consider the following sequence of vectors:
+More generally, consider the following sequence of vectors:
 \begin{equation}
 	v_{ij} = \frac{1}{\sqrt{(n-i)^2-n+i}} \left \lbrace \begin{array}{rl}
 			0; & j < i \\
@@ -170,8 +175,9 @@ away at the problem:
 	\item re-arranging either the rows or columns of $A$ makes an equivalent $A$: $T_{ij} A$ or $A T_{ij}^T$ are both equivalent to $A$ where $T_{ij}$ is the elementary matrix which exchanges rows $i$ and $j$
 \end{itemize}
 
-The most efficient method I've discovered so far of constructing an orthogonal
-coding matrix is based on a generalization of the cross-product:
+The most efficient method the author has discovered so far 
+%for constructing an orthogonal coding matrix 
+is based on a generalization of the cross-product:
 each time a new vector is added to the set of mutually orthogonal vectors, 
 the sub-space of possible new members is decreased by one.
 Thus, if there are $k$ vectors of length $m$ already, then we need only specify $m-k$
@@ -182,27 +188,49 @@ We can solve for the rest of the elements using sub-matrices:
 \end{equation}
 where $\vec v$ is the candidate new vector of which we have specified the last
 $m-k$ elements: there will of course be $2^{m-k}$ possibilities.
-If $v_i \in \lbrace -1, +1 \rbrace;~i=[1..k]$ then we have found a new 
-column of the matrix.
+If $v_i \in \lbrace -1, +1 \rbrace;~i=[1..k]$ and $\vec v$ contains both positive and
+negative elements, then we have found a new column of the matrix.
 
-With this algorithm, you will have to examine $2^{m(m+1)/2}$ combinations
-maximum.
-With a pure, brute force algorithm, this would be $2^{m^2-1}$ to examine all
-permutations while for a similarly brute force but combinatorial algorithm 
+With this algorithm, you reduce the number of combinations by roughly a square
+root versus a pure, brute force algorithm which requires examining $2^{n(m-1)}$
+combinations maximum.
+%you will have to examine $2^{m(m-1)/2}$ combinations
+%maximum.
+%With a pure, brute force algorithm, this would be $2^{n(m-1)}$ to examine all
+%permutations while for 
+For a similarly brute force but combinatorial algorithm 
 in which all possible vectors are treated as elements to be chosen for the 
-final matrix this would be $2^{m-1}$ choose $m$ or:
+final matrix this would be $2^{m-1}$ choose $n$ or:
 \begin{equation}
-	\frac{2^{m-1}!}{m!(2^{m-1}-m)!}
+	\frac{2^{m-1}!}{n!(2^{m-1}-n)!}
 \end{equation}
 By taking advantage of the negative degeneracy (first point, above) 
-we reduce both these algorithms by half, hence the use of $m-1$ instead of $m$.
+we reduce both these by half, hence the use of $m-1$ instead of $m$.
 
 The final point concerns the size of $m$. In order to find on the order
 of $n=m$ columns to match the $m$ rows, it appears that $m$ should be 
 (at minimum) divisible by $4$: $m \mathrm{mod} 4 = 0$.
 Note that we can have more rows than columns but not the other way around.
 
+To compute the results in this note, orthogonal coding matrices were generated
+by simple, brute force.
+Each row is randomly chosen from a list of all
+possible rows represented as binary numbers and then multiplied with 
+each of the previous rows.
+Obviously, this will only work for relatively few classes.
+More work will need to be done to find an efficient method for generating 
+orthogonal coding matrices
+if the method is to be applied to problems with a large number of classes.
+
 \section{Validating the probabilities}
+
+\begin{figure}
+	\includegraphics[width=0.9\textwidth]{val_prob.eps}
+	\caption{Validating probabilities for the vehicle dataset
+		using equations	(\ref{prob_val1}) and (\ref{prob_val2}).
+		Probabilities are generated by solving one-versus-one 
+		partitioning.}\label{val_prob}
+\end{figure}
 
 Since the main goal of the method 
 is to solve for the conditional probabilities, 
@@ -251,5 +279,84 @@ We use the correlation coefficient to gauge the accuracy and the slope to
 measure the bias.
 This method of validating conditional probabilities was used in
 \citet{Mills2009} for a binary classification problem.
+A demonstration is shown in Figure \ref{val_prob}
+for the vehicle dataset using the one-versus-one method--see next section.
 
+\section{Results}
+
+\begin{table}
+\caption{Speed and skill of multi-class classification results.}\label{class_results}
+\input{orthogonal_class_results.tex}
+\caption{Precision and bias of solved conditional probabilities.}\label{prob_results}
+\input{orthogonal_prob_results.tex}
+\end{table}
+
+The method was tested on six different datasets:
+two for digit recognition--``pendigits'' \citep{Alimoglu1996} and
+``usps'' \citep{Hull1994}, the space shuttle control dataset--``shuttle''
+\citep{King_etal1995}, a satellite land recognition
+dataset--``sat'' \citep{King_etal1995}, 
+a similar dataset for image recognition--``segment'' \citep{King_etal1995},
+and a dataset for vehicle recognition--``vehicle'' \citep{Siebert1987}.
+It was compared with a technique that solves the ``one versus one'' 
+partitioning using matrix inversion \citep{Wu_etal2004}.
+Both techniques were applied to support vector machines (SVMs) trained using
+LIBSVM \citep{Chang_Lin2011}.
+Partitions were trained separately then combined by finding the union of
+sets of support vectors for each partition.
+By indexing into the combined list of support vectors, the algorithms are
+optimized in both space and time.
+
+Results are shown in Tables \ref{class_results} and \ref{prob_results}.
+Each dataset was randomly separated into 60\% training and 40\%
+test data.
+Confidence limits represent standard deviations over 20 trials.
+``U.C'' stands for uncertainty
+coefficient, a skill score based on Shannon's channel capacity
+\citep{Shannon,Press_etal1992,Mills2011}.
+Probabilities are validated in Table \ref{prob_results} with Pearson correlation and slope
+applied to a trace generated by 
+Equations (\ref{prob_val1}) and (\ref{prob_val2})--see Figure \ref{val_prob}.
+
+The results suggest that there is very little difference between the two
+methods, whether in classification accuracy, accuracy of probabily estimates
+or classification time.
+On the whole, the one-versus-one method appears to have a slight edge in
+classification accuracy as well as both precision and bias in probabilty
+estimates.
+Differences are small but nonetheless statistically significant.
+Probability estimates for both methods appear to be highly accurate.
+
+There is the potential for speed increases for binary classification methods
+that don't depend on the number of samples in the training data when using
+orthogonal coding matrices.
+In this case, time efficiency will depend on the number of classes,
+$O(n)$, rather than the number of classes squared, $O(n^2)$.
+The obvious example is logistic regression, however there will likely be
+a concordant decrease in accuracy for the orthogonal coding matrices since
+boundaries between classes will be more complex.
+
+On the other hand, the speed of a SVM is directly proportional to the number 
+of support vectors which in turn is proportional to the number of training samples: 
+$O(N)$, where $N$ is the number of training samples.
+Since each partition with an orthogonal coding matrix includes all of the
+training data, time efficiency per partition is proportional to the number
+of training samples, whereas in one-versus-one, it's proportional, on average,
+to the number of training samples divided by the number of classes: $O(N/n)$.
+Hence, both methods will have time efficiency roughly $O(Nn)$.
+
+As the results suggest, the number of returned support vectors will vary 
+between the two methods and this difference will depend heavily upon the 
+dataset.
+The applied optimization complicates things further as the number of merged
+support vectors will also vary a great deal between the two methods and
+for different datasets.
+
+Solving for the multi-class probabilities given the binary probabilities should
+be more efficient with an orthogonal coding matrix. 
+Unfortunately the time
+spent on this part of the calculation is insignificant for a SVM.
+While there don't appear to be significant performance advantages to the method,
+at least as applied to SVMs, 
+it is very simple and has a certain elegance to it.
 

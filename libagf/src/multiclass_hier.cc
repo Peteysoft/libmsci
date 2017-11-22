@@ -741,12 +741,12 @@ namespace libagf {
       //type=fget_line(global_svm_allinone, 1);	//first line describes type
       //printf("%s\n", type);
 
-      printf("Scanning control structure\n");
+      //printf("Scanning control structure\n");
       dummy.init(global_svm_allinone, 0, NULL, NULL, 0, 0, 4);
-      printf("Reading in helper\n");
+      //printf("Reading in helper\n");
       helper=new svm_helper<real>(global_svm_allinone);
       global_svm_helper=helper;
-      printf("Reading in SVMs\n");
+      //printf("Reading in SVMs\n");
       fseek(fs, loc1, SEEK_SET);
 
       //rewind(fs);
@@ -797,7 +797,7 @@ namespace libagf {
     binaryclassifier<real, cls_t> ** blist;	//all the binary SVMs
     blist=new binaryclassifier<real, cls_t> *[this->ncls*this->ncls];
     nb=collect_binary_classifiers(blist);
-    for (int i=0; i<nb; i++) blist[i]->print(stdout);
+    //for (int i=0; i<nb; i++) blist[i]->print(stdout);
     if (typeid(*blist[0])==typeid(svm2class<real, cls_t>) ||
 		    typeid(*blist[0])==typeid(svm2class2<real, cls_t>)) {
       svm_helper<real> *helper;			//contains all the SVs

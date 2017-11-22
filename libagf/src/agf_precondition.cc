@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
     calc_norm(train, nvar2, ntrain, ave, std);
     //want to remove variables with standard-deviation of zero:
     for (dim_ta i=0; i<nvar2; i++) {
-      ind[i-nzerostd]=ind[i];
+      //ind[i-nzerostd]=ind[i];
       if (std[i]==0) {
         nzerostd++;
       }
@@ -195,6 +195,9 @@ int main(int argc, char *argv[]) {
         for (nel_ta i=0; i<ntrain; i++) {
           result2[i][m]=train[i][j];
         }
+	ind[m]=ind[j];
+	std[m]=std[j];
+	ave[m]=ave[j];
         if (std[j]!=0) m++;
       }
       delete_matrix(train);

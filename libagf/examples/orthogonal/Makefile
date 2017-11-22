@@ -110,7 +110,8 @@ SUBSAMPLE=subsample_special
 
 #command for training:
 TRAINCOMMAND_svm=multi_borders -M -- svm-train -+ "-b 1 $(OPTIONS)" \
-		$(CONTROL) $(TRAIN).svm $(BASE).$(TYPE) $(MODEL)
+		$(CONTROL) $(TRAIN).svm $(BASE).$(TYPE) $(MODEL).0; \
+		mbh2mbm -Z $(MODEL).0 $(MODEL)
 TRAINCOMMAND_agf=multi_borders $(OPTIONS) $(CONTROL) $(TRAIN) $(BASE).$(TYPE) $(MODEL)
 TRAINCOMMAND=$(TRAINCOMMAND_$(METHOD))
 
@@ -129,10 +130,11 @@ TM_TRAIN=$(BASE).trn.$(TYPE).tm
 #classification time:
 TM_CLASS=$(BASE).tst.$(TYPE).tm
 
+#collect statistics:
+STATFILE = $(VER).txt
 
-all:
-	make TYPE=1v1 $(BASE).1v1.txt
-	make TYPE=ortho $(BASE).ortho.txt
+
+all: $(BASE).1v1.txt $(BASE).ortho.txt
 	echo "1 vs. 1 results:"
 	more $(BASE).trn.1v1.tm
 	more $(BASE).tst.1v1.tm
@@ -146,6 +148,39 @@ all:
 
 clean:
 	rm -f $(WORKDIR)/*
+
+$(BASE).1v1.txt:
+	make TYPE=1v1 $(BASE).1v1.txt
+
+$(BASE).ortho.txt:
+	make TYPE=ortho $(BASE).ortho.txt
+
+
+#how many lines does results file contain so far?
+NLINE!=cat $(STATFILE) | wc -l
+stats:
+	for ((I=$(NLINE); I<$(NTRIAL); I++)); do \
+		make clean; \
+		make $(STATFILE); \
+	done
+
+$(STATFILE): $(BASE).1v1.txt $(BASE).ortho.txt
+	grep -o "[0-9]*\.[0-9]*" $(BASE).tst.1v1.tm | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE).tst.1v1.tm | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE).tst.ortho.tm | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE).tst.ortho.tm | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	cls_comp_stats -Hb $(TEST).cls $(BASE).1v1 | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	cls_comp_stats -Hb $(TEST).cls $(BASE).ortho | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	validate_probabilities -H $(TEST).cls $(BASE).1v1.txt | grep -o "[0-9]*\.[0-9]*" | tr '\n' ' ' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	validate_probabilities -H $(TEST).cls $(BASE).ortho.txt | grep -o "[0-9]*\.[0-9]*" | tr '\n' ' ' >> $(STATFILE)
+	echo >> $(STATFILE)
 
 #performing classifications:
 $(RESULT).txt: $(MODEL) $(TEST).svm
@@ -180,4 +215,8 @@ $(WORKDIR)/timestamp:
 
 $(DATAPATH)/$(VER).vec:
 	make -C $(DATAPATH)
+
+#$(DATAPATH)/mnist_s.vec:
+#	make -C $(DATAPATH) VER=mnist
+#	$(SUBSAMPLE) -zf 0.1 $(DATAPATH)/mnist dum $(DATAPATH)/mnist_s
 

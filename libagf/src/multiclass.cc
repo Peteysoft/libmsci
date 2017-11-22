@@ -261,7 +261,7 @@ namespace libagf {
       r[i]=twoclass[i]->R(x, praw);
       //printf("%12.6g", r[i]);
     }
-    printf("\n");
+    //printf("\n");
 
     (*solve_class)(code, nmodel, this->ncls, r, p);
     //for (cls_t i=0; i<this->ncls; i++) pt+=p[i];

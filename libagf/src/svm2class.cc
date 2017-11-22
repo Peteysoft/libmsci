@@ -376,7 +376,7 @@ namespace libagf {
       fscanf(fs, "%g", coef+i);
       //printf("%g ", coef[i]);
     }
-    printf("\n");
+    //printf("\n");
     for (nel_ta i=0; i<nsv; i++) {
       fscanf(fs, "%d", ind+i);
       //printf("%d ", ind[i]);
