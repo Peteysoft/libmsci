@@ -25,7 +25,9 @@ namespace libagf {
 		  int strictflag=1, 		//zeroes not allowed
 		  int toprow1=0);		//top row is all ones
   template <typename scalar>
-  scalar ** ortho_coding_matrix_brute_force(int ncls, int toprow1=0);
+  scalar ** ortho_coding_matrix_greedy(int ncls, int toprow1=0);
+  template <typename scalar>
+  scalar ** ortho_coding_matrix_brute_force(int ncls);
   template <typename scalar>
   scalar ** hierarchical_nonhierarchical(int ncls);
 

@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
       coding_matrix=NULL;
       do {
         if (coding_matrix!=NULL) delete_matrix(coding_matrix);
-        coding_matrix=ortho_coding_matrix_brute_force<int>(nrow, opt_args.Yflag);
+        coding_matrix=ortho_coding_matrix_greedy<int>(nrow, opt_args.Yflag);
 	//pile brute force upon brute force:
 	//(making sure there are classes on both sides of the fence...)
 	//print_matrix(stdout, coding_matrix, nrow, n);
@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
       } while (abs(sum)==n);
       break;
     case(9):
-      coding_matrix=ortho_coding_matrix_brute_force<int>(n, opt_args.Yflag);
+      coding_matrix=ortho_coding_matrix_brute_force<int>(n);
       nrow=n;
       break;
     default:

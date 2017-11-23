@@ -175,50 +175,18 @@ away at the problem:
 	\item re-arranging either the rows or columns of $A$ makes an equivalent $A$: $T_{ij} A$ or $A T_{ij}^T$ are both equivalent to $A$ where $T_{ij}$ is the elementary matrix which exchanges rows $i$ and $j$
 \end{itemize}
 
-The most efficient method the author has discovered so far 
-%for constructing an orthogonal coding matrix 
-is based on a generalization of the cross-product:
-each time a new vector is added to the set of mutually orthogonal vectors, 
-the sub-space of possible new members is decreased by one.
-Thus, if there are $k$ vectors of length $m$ already, then we need only specify $m-k$
-of the elements of any new vector.
-We can solve for the rest of the elements using sub-matrices:
-\begin{equation}
-	\sum_{i=1}^{k} a_{ij} v_i = - \sum_{i=k+1}^m a_{ij} v_i
-\end{equation}
-where $\vec v$ is the candidate new vector of which we have specified the last
-$m-k$ elements: there will of course be $2^{m-k}$ possibilities.
-If $v_i \in \lbrace -1, +1 \rbrace;~i=[1..k]$ and $\vec v$ contains both positive and
-negative elements, then we have found a new column of the matrix.
-
-With this algorithm, you reduce the number of combinations by roughly a square
-root versus a pure, brute force algorithm which requires examining $2^{n(m-1)}$
-combinations maximum.
-%you will have to examine $2^{m(m-1)/2}$ combinations
-%maximum.
-%With a pure, brute force algorithm, this would be $2^{n(m-1)}$ to examine all
-%permutations while for 
-For a similarly brute force but combinatorial algorithm 
-in which all possible vectors are treated as elements to be chosen for the 
-final matrix this would be $2^{m-1}$ choose $n$ or:
-\begin{equation}
-	\frac{2^{m-1}!}{n!(2^{m-1}-n)!}
-\end{equation}
-By taking advantage of the negative degeneracy (first point, above) 
-we reduce both these by half, hence the use of $m-1$ instead of $m$.
-
-The final point concerns the size of $m$. In order to find on the order
-of $n=m$ columns to match the $m$ rows, it appears that $m$ should be 
-(at minimum) divisible by $4$: $m \mathrm{mod} 4 = 0$.
-Note that we can have more rows than columns but not the other way around.
-
 To compute the results in this note, orthogonal coding matrices were generated
-by simple, brute force.
-Each row is randomly chosen from a list of all
-possible rows represented as binary numbers and then multiplied with 
-each of the previous rows.
+using a greedy algorithm.
+We start with an empty matrix but
+maintain a list of all possible columns represented as binary numbers.
+This list will contain $2^{m-1}$ elements, keeping in mind the degeneracy in
+point 1, above.
+A vector is randomly chosen from the list and struck from it.
+If the vector is orthogonal to the columns already inside the matrix
+and contains both positive and  negative values, it too is added to the matrix
+and the process repeated until the matrix is filled.
 Obviously, this will only work for relatively few classes.
-More work will need to be done to find an efficient method for generating 
+More work will need to be done to find a efficient methods for generating 
 orthogonal coding matrices
 if the method is to be applied to problems with a large number of classes.
 
