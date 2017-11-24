@@ -7,10 +7,11 @@ The method is tested on six different datasets using support
 vector machines and shown
 to be roughly as accurate as another method based on the one-versus-one
 multi-class method.
-Probabilities are evaluated using a technique based on Bayes theorem and the
-definition of probability.
+Probabilities are validated based on the cumulative sum of a boolean evaluation
+of the correctness of each classification result divided by the estimated
+probability.
 Classification using orthogonal coding is simple and efficient and has the 
 potential for faster classification results than the one-versus-one method.
-Research is needed to find efficient methods of generating orthogonal coding
-matrices for problems with a large number of classes.
+%Research is needed to find efficient methods of generating orthogonal coding
+%matrices for problems with a large number of classes.
 

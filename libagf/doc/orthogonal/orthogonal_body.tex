@@ -77,11 +77,12 @@ Thus, we wish to solve the following minimization problem:
 	p_j & \ge & 0 \label{nonnegative}
 \end{eqnarray}
 
-The unconstrained minimization problem is easy to solve if $A$ is orthogonal:
+If $A$ is orthogonal,
 \begin{equation}
 	A^T A = m I
 \end{equation}
-where $I$ is the $n \times n$ identity matrix and $n$ the number of classes.
+where $I$ is the $n \times n$ identity matrix and $n$ the number of classes,
+then the unconstrained minimization problem is easy to solve. 
 Note that the voting solution in (\ref{voting}) is now equivalent to
 the inverse solution in (\ref{inverse}).
 This allows us to determine the class easily, but we also wish to solve for
@@ -114,7 +115,7 @@ and the non-negativity constraints, (\ref{nonnegative}), for the negative probab
 3. repeat step 2.
 More formally, let $\vec 1$ be a vector of all $1$'s:
 \begin{itemize}
-	\item $n_0=n$
+	\item $i=1$; $n_1=n$
 	\item while $\exists k \, p_{ik} \le 0 \lor \vec p_i \cdot \vec 1 \ne 1$:
 	\begin{itemize}
 		\item if $\vec p_i \cdot \vec 1 \ne 1$ then 
@@ -146,18 +147,26 @@ More generally, consider the following sequence of vectors:
 			1; & j > i
 		\end{array} \right .
 \end{equation}
-where $j \in [1, n]$.
+where $j \in [1, n]$. \citep{Boyd_Vandenberghe2004}
 
 
 \section{Constructing the coding matrix}
 
-An obvious method of designing an orthogonal $A$ is using harmonic series.
+Finding an $A$ such that $A^T A = m I$ and $a_{ij} \in \lbrace -1, 1, \rbrace$
+is quite a difficult combinatorial problem.
+Work in signal processing may be of limited applicability because coding
+matrices are typically comprised of $0$'s and $1$'s rather than $-1$'s and $+1$'s
+as here \citep{Hedayat_etal1999,Panse_etal2014}.
+In addition, there are certain restrictions required here such as
+having both positive and negative elements in each row and in each column.
+
+A simple method of designing an orthogonal $A$ is using harmonic series.
 Consider the following matrix for eight binary classifiers ($m=8$) and
 five classes ($n=5$):
 \begin{equation}
 	A^T = \left [ \begin{array}{rrrrrrrr}
 			-1 & -1 & -1 & -1 & 1 & 1 & 1 & 1 \\
-			-1 & -1 & 1 & 1 & 1 & 1 & -1 & -1 \\
+			 1 &  1 & -1 & -1 & -1 & -1 & 1 & 1 \\
 			-1 & -1 & 1 & 1 & -1 & -1 & 1 & 1 \\
 			-1 & 1 & 1 & -1 & -1 & 1 & 1 & -1 \\
 			-1 & 1 & -1 & 1 & -1 & 1 & -1 & 1
@@ -166,29 +175,30 @@ five classes ($n=5$):
 This will limit the size of $m$ relative to $n$; more precisely:
 $m=2 \log_2 n - 1$.
 
-Finding an $A$ such that $A^T A = m I$ and $a_{ij} \in \lbrace -1, 1, \rbrace$
-is quite a difficult combinatorial problem.
-Noting which versions of $A$ are degenerate (equivalent) can help us whittle
-away at the problem:
-\begin{itemize}
-	\item $-A$ is equivalent to $A$
-	\item re-arranging either the rows or columns of $A$ makes an equivalent $A$: $T_{ij} A$ or $A T_{ij}^T$ are both equivalent to $A$ where $T_{ij}$ is the elementary matrix which exchanges rows $i$ and $j$
-\end{itemize}
+%Noting which versions of $A$ are degenerate (equivalent) can help us whittle
+%away at the problem:
+%\begin{itemize}
+%	\item $-A$ is equivalent to $A$
+%	\item re-arranging either the rows or columns of $A$ makes an equivalent $A$: $T_{ij} A$ or $A T_{ij}^T$ are both equivalent to $A$ where $T_{ij}$ is the elementary matrix which exchanges rows $i$ and $j$
+%\end{itemize}
 
 To compute the results in this note, orthogonal coding matrices were generated
 using a greedy algorithm.
-We start with an empty matrix but
-maintain a list of all possible columns represented as binary numbers.
-This list will contain $2^{m-1}$ elements, keeping in mind the degeneracy in
-point 1, above.
-A vector is randomly chosen from the list and struck from it.
-If the vector is orthogonal to the columns already inside the matrix
-and contains both positive and  negative values, it too is added to the matrix
-and the process repeated until the matrix is filled.
-Obviously, this will only work for relatively few classes.
-More work will need to be done to find a efficient methods for generating 
-orthogonal coding matrices
-if the method is to be applied to problems with a large number of classes.
+We start with an empty matrix.
+Candidate vectors are chosen at random to comprise a column of the matrix
+but never repeated.
+If the candidate vector is orthogonal to existing columns, then it is added to the matrix.
+The process is repeated until the matrix is filled.
+The matrix is then checked to ensure that each row contains both positive and
+negative elements.
+A full matrix of $m$ rows is almost always returned but only when $m$
+is a multiple of $4$.
+
+Obviously, this method of finding orthogonal coding matrices
+will only work for relatively few classes.
+More work will need to be done to find efficient methods
+of generating these matrices
+if they are to be applied to problems with a large number of classes.
 
 \section{Validating the probabilities}
 
@@ -327,4 +337,10 @@ spent on this part of the calculation is insignificant for a SVM.
 While there don't appear to be significant performance advantages to the method,
 at least as applied to SVMs, 
 it is very simple and has a certain elegance to it.
+It may also suggest new directions in the search for more efficient and
+accurate methods in multi-class classification.
+
+%fuck it, I'm going to submit this to JMLR... should be good for a laugh
+%I bet they return it after about two days
+%I'm calling it here to have a public record...
 
