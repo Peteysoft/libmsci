@@ -61,8 +61,8 @@ In vector notation:
 \begin{equation}
 	A \vec p = \vec r \label{inverse}
 \end{equation}
-The more general case where a class can be excluded, that is each element of 
-the coding matrix is, $a_{ij} \in \lbrace -1, 0, +1\rbrace$, 
+The more general case where a class can be excluded, that is the coding 
+may include zeroes, $a_{ij} \in \lbrace -1, 0, +1\rbrace$,
 will not be addressed here.
 
 Note that this assumes that the binary decision functions, $\vec r$,
@@ -116,14 +116,14 @@ and the non-negativity constraints, (\ref{nonnegative}), for the negative probab
 More formally, let $\vec 1$ be a vector of all $1$'s:
 \begin{itemize}
 	\item $i=1$; $n_1=n$
-	\item while $\exists k \, p_{ik} \le 0 \lor \vec p_i \cdot \vec 1 \ne 1$:
+	\item while $\exists k \, p_{ik} < 0 \lor \vec p_i \cdot \vec 1 \ne 1$:
 	\begin{itemize}
 		\item if $\vec p_i \cdot \vec 1 \ne 1$ then 
 		$\vec p_{i+1} = \vec p_i + (\vec p_i \cdot \vec 1 - 1)/n_i$
 		\item let $K$ be the set of $k$ such that $p_{i+1,k} < 0$
 		\item for each $k$ in $K$:
 		\begin{itemize}
-			\item $p_{i+1,k}=0$
+			\item $p_k=0$
 			\item Remove $k$ from the problem
 		\end{itemize}
 		\item $n_{i+1}=n_i-|K|$
@@ -131,8 +131,8 @@ More formally, let $\vec 1$ be a vector of all $1$'s:
 	\end{itemize}
 \end{itemize}
 
-Note that the direction vectors form an orthogonal set.
-For instance, suppose $n_0=4$ and after enforcing the normalization constraint,
+Note that resultant direction vectors for each step form an orthogonal set.
+For instance, suppose $n_1=4$ and after enforcing the normalization constraint,
 the first probability is less than zero, $p_{1,1} < 0$,
 then the direction vectors for the two motions are:
 \begin{equation}
@@ -141,7 +141,7 @@ then the direction vectors for the two motions are:
 
 More generally, consider the following sequence of vectors:
 \begin{equation}
-	v_{ij} = \frac{1}{\sqrt{(n-i)^2-n+i}} \left \lbrace \begin{array}{rl}
+	v_{ij} = \frac{1}{\sqrt{(n-i)^2-2(n-i-1)}} \left \lbrace \begin{array}{rl}
 			0; & j < i \\
 			-n+i+1; & j=i \\
 			1; & j > i
@@ -158,7 +158,8 @@ Work in signal processing may be of limited applicability because coding
 matrices are typically comprised of $0$'s and $1$'s rather than $-1$'s and $+1$'s
 as here \citep{Hedayat_etal1999,Panse_etal2014}.
 In addition, there are certain restrictions required here such as
-having both positive and negative elements in each row and in each column.
+having both positive and negative elements in each row 
+as well as in each column.
 
 A simple method of designing an orthogonal $A$ is using harmonic series.
 Consider the following matrix for eight binary classifiers ($m=8$) and
@@ -183,7 +184,7 @@ $m=2 \log_2 n - 1$.
 %\end{itemize}
 
 To compute the results in this note, orthogonal coding matrices were generated
-using a greedy algorithm.
+using a ``greedy'' algorithm.
 We start with an empty matrix.
 Candidate vectors are chosen at random to comprise a column of the matrix
 but never repeated.
@@ -228,7 +229,7 @@ to the class label, as follows:
 \begin{equation}
 	p(c_{i+1} | \vec x_{i+1}) \ge p(c_i | \vec x_i)
 \end{equation}
-Note that in this ordering, there will be $n$ $i$s indexing the same $\vec x$ 
+Note that in this ordering, there will be $n$ $i$'s indexing the same $\vec x$ 
 and the same $y$.
 Second, we rearrange Equation (\ref{theorem}) as follows:
 \begin{equation}
@@ -253,12 +254,14 @@ point between ``winning'' and ``losing'' probabilities:
 Thus, terms in both Equation (\ref{prob_val1}) and (\ref{prob_val2}) are more
 often non-zero than zero.
 
-We use the correlation coefficient to gauge the accuracy and the slope to
+We use the correlation coefficient to gauge precision and the slope to
 measure the bias.
 This method of validating conditional probabilities was used in
 \citet{Mills2009} for a binary classification problem.
 A demonstration is shown in Figure \ref{val_prob}
 for the vehicle dataset using the one-versus-one method--see next section.
+One weakness of this validation technique is that scores will improve with 
+sample size, but for comparative purposes it should be quite adequate.
 
 \section{Results}
 
@@ -269,14 +272,14 @@ for the vehicle dataset using the one-versus-one method--see next section.
 \input{orthogonal_prob_results.tex}
 \end{table}
 
-The method was tested on six different datasets:
+Orthogonal error correcting codes were tested on six different datasets:
 two for digit recognition--``pendigits'' \citep{Alimoglu1996} and
 ``usps'' \citep{Hull1994}, the space shuttle control dataset--``shuttle''
 \citep{King_etal1995}, a satellite land recognition
-dataset--``sat'' \citep{King_etal1995}, 
-a similar dataset for image recognition--``segment'' \citep{King_etal1995},
+dataset--``sat'', a similar dataset for image recognition--``segment'',
 and a dataset for vehicle recognition--``vehicle'' \citep{Siebert1987}.
-It was compared with a technique that solves the ``one versus one'' 
+The last four are borrowed from the ``statlog'' project \citep{King_etal1995,Michie_etal1994}.
+The method was compared with a technique that solves the ``one versus one'' 
 partitioning using matrix inversion \citep{Wu_etal2004}.
 Both techniques were applied to support vector machines (SVMs) trained using
 LIBSVM \citep{Chang_Lin2011}.
@@ -286,12 +289,13 @@ By indexing into the combined list of support vectors, the algorithms are
 optimized in both space and time.
 
 Results are shown in Tables \ref{class_results} and \ref{prob_results}.
-Each dataset was randomly separated into 60\% training and 40\%
+Each dataset was randomly separated into 70\% training and 30\%
 test data.
 Confidence limits represent standard deviations over 20 trials.
 ``U.C'' stands for uncertainty
 coefficient, a skill score based on Shannon's channel capacity
-\citep{Shannon,Press_etal1992,Mills2011}.
+\citep{Shannon,Press_etal1992,Mills2011} that has many advantage over simple
+fraction of correct guesses or ``accuracy''.
 Probabilities are validated in Table \ref{prob_results} with Pearson correlation and slope
 applied to a trace generated by 
 Equations (\ref{prob_val1}) and (\ref{prob_val2})--see Figure \ref{val_prob}.
@@ -306,16 +310,17 @@ Differences are small but nonetheless statistically significant.
 Probability estimates for both methods appear to be highly accurate.
 
 There is the potential for speed increases for binary classification methods
-that don't depend on the number of samples in the training data when using
-orthogonal coding matrices.
+that don't depend on the number of samples in the training data by using
+orthogonal coding matrices rather than one-versus-one.
 In this case, time efficiency will depend on the number of classes,
 $O(n)$, rather than the number of classes squared, $O(n^2)$.
 The obvious example is logistic regression, however there will likely be
 a concordant decrease in accuracy for the orthogonal coding matrices since
-boundaries between classes will be more complex.
+boundaries within partitions will be more complex.
 
 On the other hand, the speed of a SVM is directly proportional to the number 
-of support vectors which in turn is proportional to the number of training samples: 
+of support vectors which in turn is proportional, on average,
+to the number of training samples: 
 $O(N)$, where $N$ is the number of training samples.
 Since each partition with an orthogonal coding matrix includes all of the
 training data, time efficiency per partition is proportional to the number
@@ -334,13 +339,14 @@ Solving for the multi-class probabilities given the binary probabilities should
 be more efficient with an orthogonal coding matrix. 
 Unfortunately the time
 spent on this part of the calculation is insignificant for a SVM.
-While there don't appear to be significant performance advantages to the method,
-at least as applied to SVMs, 
+While there don't appear to be significant performance advantages to the method
+when compared to one-versus-one, at least as applied to SVMs, 
 it is very simple and has a certain elegance to it.
-It may also suggest new directions in the search for more efficient and
+It may suggest new directions in the search for more efficient and
 accurate methods in multi-class classification.
 
 %fuck it, I'm going to submit this to JMLR... should be good for a laugh
+%(since I can't get the stupid PR Letters format to compile...)
 %I bet they return it after about two days
 %I'm calling it here to have a public record...
 

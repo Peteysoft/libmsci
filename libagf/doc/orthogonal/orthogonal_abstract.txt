@@ -1,16 +1,16 @@
-We describe a method of solving for the conditional probabilities
-in multi-class classification
-using orthogonal error correcting codes.
-Probabilities are useful both for gauging the accuracy of a classification
-result when its true value is unknown and for recalibration.
+Probability estimates are desirable in statistical classification
+both for gauging the accuracy of 
+a classification result and for calibration.
+Here we describe a method of solving for the conditional probabilities
+in multi-class classification using orthogonal error correcting codes.
 The method is tested on six different datasets using support
-vector machines and shown
-to be roughly as accurate as another method based on the one-versus-one
+vector machines and compares favorably
+with an existing technique based on the one-versus-one
 multi-class method.
 Probabilities are validated based on the cumulative sum of a boolean evaluation
 of the correctness of each classification result divided by the estimated
 probability.
-Classification using orthogonal coding is simple and efficient and has the 
+Probability estimation using orthogonal coding is simple and efficient and has the 
 potential for faster classification results than the one-versus-one method.
 %Research is needed to find efficient methods of generating orthogonal coding
 %matrices for problems with a large number of classes.
