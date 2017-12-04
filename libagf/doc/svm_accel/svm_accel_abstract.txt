@@ -11,7 +11,7 @@ The method works by finding the root of the difference in conditional
 probabilities between pairs of opposite classes to build up a representation
 of the decision boundary.
 When tested on 17 different datasets, it succeeded in improving the
-classification speed of a SVM for 9 of them by factors as high as 88 times or more.
+classification speed of a SVM for 8 of them by factors as high as 88 times or more.
 The method is best suited to problems with continuum features
 data and smooth probability functions.
 Because the component linear classifiers are built up individually from an

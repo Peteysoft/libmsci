@@ -6,6 +6,8 @@
 \usepackage{natbib}
 \usepackage{url}
 
+\newenvironment{eqnnon}{\begin{equation}}{\end{equation}}
+
 \bibliographystyle{apa}
 
 \title{Solving for multi-class using orthogonal coding matrices}
@@ -20,8 +22,21 @@
 
 \input{orthogonal_abstract.txt}
 
+\section*{Keywords}
+\textbf{multi-class classifier, 
+	statistical classification conditional probabilities,
+	support vector machines,
+error correcting codes}
+
+\tableofcontents
+
+\section*{List of symbols}
+\addcontentsline{toc}{section}{List of symbols}
+
+\input{orthogonal_symbol_list.tex}
+
 \input{orthogonal_body}
 
-\bibliography{../agf_bib.bib,../pwl.bib,../svm_accel/svm_accel.bib}
+\bibliography{../agf_bib,../pwl,../svm_accel/svm_accel,orthogonal}
 
 \end{document}

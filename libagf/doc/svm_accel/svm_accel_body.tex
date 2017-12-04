@@ -498,13 +498,13 @@ the binary classifier that discriminates between the $i$th and $j$th classes.
 \citet{Wu_etal2004} transform this problem into the following linear system:
 \begin{eqnarray}
 	%\frac{1}{4} \sum_i \left [ \sum_{j|j \ne i} (\diffcondprob_{ij} + 1)^2 - \diffcondprob_{ij}^2 - \diffcondprob_{ij} - 2 \right ] \multiprob_i + \lmult & = & 0 \\ \nonumber -- where the fuck does this come from???
-	\multiprob_i \sum_{k|k \ne i} (r_{ki} + 1)^2 +
-	\frac{1}{2} \sum_{j|j \ne i} \multiprob_j (1 - r_{ij}^2) & = & 0 \\ \nonumber
+	\multiprob_i \sum_{k|k \ne i} (\diffcondprob_{ki} + 1)^2 +
+	\sum_{j|j \ne i} \multiprob_j (1 - r_{ij}^2) + \lmult & = & 0 \\ \nonumber
 	\sum_j \multiprob_j & = & 1
 	\label{multiclass}
 \end{eqnarray}
 where $\multiprob_i = \condprob(i | \point)$ is the $i$th multi-class 
-conditional probability and $\lmult$ is a ``slack'' variable.
+conditional probability and $\lmult$ is a Lagrange multiplier.
 They also show that the constraints not included in the problem, that
 the probabilities are all positive, are always satisfied
 and describe an algorithm for solving it iteratively, although a
@@ -960,9 +960,8 @@ supply of the true class value? \citep{Press_etal1992,Mills2011}.
 \end{table}
 
 \begin{table}
-  \caption{Results from SVM trials after sub-sampling to match SVM-borders:
-	  either the skill or classification time, whichever requires the most
-  training samples.}
+  \caption{Results from SVM trials after sub-sampling to match SVM-borders
+	  speed if possible, otherwise skill is matched.}
   \label{subsampling_table}
   {\small
     \input{subsample.1.tex}
@@ -1086,7 +1085,7 @@ Other problems were better calibrated, even for the borders classifiers.
 The primary goal of this work was to improve the classification time of a SVM
 using a simple, piecewise linear classifier which we call the borders classifier.
 The outcome for each of the 17 datasets is summarized in Table \ref{verdict}.
-When trained from the SVM, the method succeeded for nine of the datasets and
+When trained from the SVM, the method succeeded for eight of the datasets and
 by the same criteria, when trained from the simpler pointwise estimator (``AGF''),
 as compared with SVM, it succeeded for six of the datasets
 if we include the calibrated \dataset{splice} results.

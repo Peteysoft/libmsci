@@ -8,7 +8,7 @@ vector machines and compares favorably
 with an existing technique based on the one-versus-one
 multi-class method.
 Probabilities are validated based on the cumulative sum of a boolean evaluation
-of the correctness of each classification result divided by the estimated
+of the correctness of the class label divided by the estimated
 probability.
 Probability estimation using orthogonal coding is simple and efficient and has the 
 potential for faster classification results than the one-versus-one method.
