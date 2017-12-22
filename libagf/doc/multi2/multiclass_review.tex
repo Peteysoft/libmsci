@@ -123,6 +123,7 @@ We can rewrite Equation (\ref{decision_function}) using the decision
 matrix as follows:
 \begin{equation}
 	\frac{\sum_j a_{ij} p_j}{\sum_j |a_{ij}| p_j} = r_i
+	\label{non_hier}
 \end{equation}
 where $\vec p$, is a vector of multi-class conditional probabilities, $p_i=P(i|\vec x)$.
 
@@ -166,46 +167,6 @@ The class of the test point is determined through maximum likelihood:
 \begin{equation}
 	c = \arg \max_i p_i
 \end{equation}
-
-\subsection{Common coding matrices}
-
-Common coding matrices include ``one-versus-the-rest'' in which
-we take each class and train it against the rest of the
-classes.
-For $n_c=4$ it works out to:
-\begin{equation}
-A = 
-\begin{bmatrix}
-1 & -1 & -1 & -1 \\
--1 & 1 & -1 & -1 \\
--1 & -1 & 1 & -1 \\
--1 & -1 & -1 & 1
-\end{bmatrix}
-\end{equation}
-In a ``one-versus-one'' solution, we train each class against
-every other class. For $n_c=4$:
-\begin{equation}
-A = 
-\begin{bmatrix}
--1 & 1 & 0 & 0 \\
--1 & 0 & 1 & 0 \\
--1 & 0 & 0 & 1 \\
-0 & -1 & 1 & 0 \\
-0 & -1 & 0 & 1 \\
-0 & 0 & -1 & 1
-\end{bmatrix}
-\end{equation}
-The one-versus-one solution is used in LIBSVM \citep{Chang_Lin2011}.
-
-Another common coding matrix is simply a random one: this is commonly
-known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}. 
-There are of course some guidelines
-as to how to construct such a coding matrix. More on this in the later 
-sections.
-
-\citet{Hsu_Lin2002} find that the one-vs.-one method is more accurate
-for support vector machines (SVM) than either
-error-correcting codes or one-vs.-the-rest.
 
 \subsection{Basic inverse solution}
 
@@ -313,6 +274,86 @@ solution if probabilities are not required \citep{Chang_Lin2011}.
 The disadvantage of a voting solution is
 that it does not return estimates of the probabilities.
 
+\subsection{Common coding matrices}
+
+There are number of standard, symmetric coding matrices that are commonly used
+to solve for multi-class.
+These include ``one-versus-the-rest'', ``one-versus-one'',
+as well as error-correcting coding matrices including orthogonal and
+random matrices.
+We discuss each of these in turn.
+
+\subsubsection{One-versus-the-rest}
+
+Common coding matrices include ``one-versus-the-rest'' in which
+we take each class and train it against the rest of the
+classes.
+For $n_c=4$ it works out to:
+\begin{equation}
+A = 
+\begin{bmatrix}
+1 & -1 & -1 & -1 \\
+-1 & 1 & -1 & -1 \\
+-1 & -1 & 1 & -1 \\
+-1 & -1 & -1 & 1
+\end{bmatrix}
+\end{equation}
+or in the general case:
+\begin{equation}
+	a_{ij}=2 \delta_{ij}-1
+\end{equation}
+where $\delta$ is the Kronecker delta.
+
+Probabilities for the one-versus-the-rest can be solved for directly by
+simply writing out one side of the equation:
+\begin{equation}
+	p_i = (r_i + 1)/2
+\end{equation}
+The normalization constraint, (\ref{first_constraint}), can be enforced 
+through the use of a Lagrange multiplier. See next section.
+
+\subsubsection{One-versus-one}
+
+In a ``one-versus-one'' solution, we train each class against
+every other class. For $n_c=4$:
+\begin{equation}
+A = 
+\begin{bmatrix}
+-1 & 1 & 0 & 0 \\
+-1 & 0 & 1 & 0 \\
+-1 & 0 & 0 & 1 \\
+0 & -1 & 1 & 0 \\
+0 & -1 & 0 & 1 \\
+0 & 0 & -1 & 1
+\end{bmatrix}
+\end{equation}
+The one-versus-one solution is used in LIBSVM \citep{Chang_Lin2011}.
+
+Consider the following rearrangement of (\ref{non_hier}):
+\begin{eqnarray}
+	Q \vec p & = & \vec 0 \\
+	q_{ij} & = & a_{ij} - r_i |a_{ij}|
+\end{eqnarray}
+We can include the normalization constraint, (\ref{first_constraint}), via
+a Lagrange multiplier:
+\begin{equation}
+	\min_{\vec p, \lambda} | Q \vec p + \lambda(\vec 1 \cdot \vec p - 1)|
+\end{equation}
+which produces the following linear system:
+\begin{eqnarray}
+	\sum_k q_{ki} q_{kj} p_j + \lambda & = & 0 \\
+	\sum_j p_j & = & 1
+\end{eqnarray}
+With this solution for a 1-vs-1 coding matrix, it can be shown that the
+inequality constraints in (\ref{constraints}) are always satisfied
+\citep{Wu_etal2004}.
+
+\citet{Hsu_Lin2002} find that the one-vs.-one method is more accurate
+for support vector machines (SVM) than either
+error-correcting codes or one-vs.-the-rest.
+
+\subsubsection{Orthogonal coding matrix}
+
 To maximize the accuracy of an error-correcting coding matrix, 
 the distance between each of the columns, $| \vec a^{(i)} - \vec a^{(j)} |$, 
 should be as large as possible \citep{Allwein_etal2000, Windeatt_Ghaderi2002}, 
@@ -324,7 +365,9 @@ $|\vec a^{(i)} \cdot \vec a^{(j)}|$.
 The absolute value is used because a pair of columns that are the same except 
 for a factor of -1 are degenerate.
 
-In other words, if the number of rows is equal to the number of classes, the optimal coding matrix will be orthogonal, $A^T A = I$, where $I$ is
+In other words, 
+%if the number of rows is equal to the number of classes, 
+the optimal coding matrix will be orthogonal, $A^T A = n_p I$, where $I$ is
 the identity matrix. Thus the voting solution and the (unconstrained) matrix 
 inverse will be equivalent. Orthogonal, ``strict'' coding matrices 
 are not hard to construct for certain class sizes, for instance:
@@ -339,6 +382,51 @@ A =
 \end{equation}
 Orthogonal coding matrices for the non-strict case are even easier to
 construct, but the voting solution does not correspond to the inverse solution.
+
+\citet{Mills2017} shows how to solve for an orthogonal coding matrix.
+
+\subsubsection{Error correcting codes}
+
+Another common coding matrix is simply a random one: this is commonly
+known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
+To solve for the probabilities using an arbitary coding matrices
+we transform the problem to an equivalent problem with an orthogonal
+matrix.
+We wish to transform the problem as follows:
+\begin{equation}
+	V^\prime Q \vec p = V^\prime \vec r
+\end{equation}
+Consider the singular value decomposition of $Q$:
+\begin{equation}
+	Q Q^T U = S^2 U
+\end{equation}
+where $U$ is an $n_p \times n_c$ ortho-normal matrix and $S$ is a diagonal
+matrix of singular values.
+Hence:
+\begin{equation}
+	V^\prime = U^T S^{-1}
+\end{equation}
+and
+\begin{equation}
+	V^\prime Q = U^T S^{-1} Q = V
+\end{equation}
+where $V$ is other half of the singular value decomposition:
+\begin{eqnarray}
+	Q & = & U S V^T \\
+	Q^T Q V & = & V S^2
+\end{eqnarray}
+Hence, the problem generalizes to non-orthogonal, non-strict coding matrices
+by setting $p_0$ to the least-squares solution:
+\begin{equation}
+	\vec p_0 = V S^{-1} U^T \vec r
+\end{equation}
+or equivalently:
+\begin{equation}
+	Q^T Q \vec p_0 = Q^T \vec r
+\end{equation}
+
+[whut????]
+
 
 \section{Decision trees}
 
@@ -537,7 +625,7 @@ six-class example:
   }
 \end{verbatim}
 
-\bibliography{../agf_bib.bib}
+\bibliography{../agf_bib.bib,multi2}
 
 \end{document}
 
