@@ -88,10 +88,22 @@ namespace libagf {
       //union function will fill these:
       ind[i]=classnew[i]->ind;
       //copy all coefficients:
-      classnew[i]->probA=classifier->classifier->probA[0];
-      classnew[i]->probB=classifier->classifier->probB[0];
+      //classnew[i]->probA=classifier->classifier->probA[0];
+      classnew[i]->calcoef=new real[2];
+      classnew[i]->order=1;
+      classnew[i]->sigmoid_func=&tanh;
+      classnew[i]->calcoef[0]=classifier->classifier->probA[0]/2;
+      //classnew[i]->probB=classifier->classifier->probB[0];
+      classnew[i]->calcoef[1]=classifier->classifier->probB[0]/2;
       classnew[i]->coef=new real[nsv[i]+1];
-      if (classifier->classifier->label[0]==1) classnew[i]->polarity=1; else classnew[i]->polarity=-1;
+      if (classifier->classifier->label[0]==1) {
+        //classnew[i]->polarity=1; 
+	//rather than setting a flag, we negate both calibration coefficients:
+	classnew[i]->calcoef[0]=-classnew[i]->calcoef[0];
+	classnew[i]->calcoef[1]=-classnew[i]->calcoef[1];
+      } else {
+        //classnew[i]->polarity=-1;
+      }
       printf("Copying coefficients\n");
       for (int j=0; j<nsv[i]; j++) classnew[i]->coef[j]=classifier->classifier->coef[0][j];
       classnew[i]->coef[nsv[i]]=classifier->classifier->rho[0];
@@ -367,9 +379,18 @@ namespace libagf {
 
   template <typename real, typename cls_t>
   int svm2class2<real, cls_t>::load(FILE *fs) {
+    int polarity;
+    real probA, probB;
     fscanf(fs, "%d", &nsv);
     fscanf(fs, "%g %g", &probA, &probB);
-    fscanf(fs, "%d", &polarity);
+    this->calcoef=new real[2];
+    this->order=1;
+    this->sigmoid_func=&tanh;
+    this->calcoef[1]=probA;
+    this->calcoef[0]=probB;
+    //fscanf(fs, "%d", &polarity);
+    //this->calcoef[0]=-polarity*this->calcoef[0]/2;
+    //this->calcoef[1]=-polarity*this->calcoef[1]/2;
     ind=new int[nsv];
     coef=new real[nsv+1];
     for (nel_ta i=0; i<=nsv; i++) {
@@ -388,8 +409,9 @@ namespace libagf {
   int svm2class2<real, cls_t>::save(FILE *fs) {
     fprintf(fs, "%s\n", this->name);
     fprintf(fs, "%d\n", nsv);
-    fprintf(fs, "%g %g\n", probA, probB);
-    fprintf(fs, "%d\n", polarity);
+    //fprintf(fs, "%g %g\n", probA, probB);
+    fprintf(fs, "%g %g\n", this->calcoef[0], this->calcoef[1]);
+    //fprintf(fs, "%d\n", polarity);
     for (nel_ta i=0; i<=nsv; i++) {
       fprintf(fs, " %g", coef[i]);
       //if (i<nsv) {
@@ -407,8 +429,9 @@ namespace libagf {
   }
 
   template <typename real, typename cls_t>
-  real svm2class2<real, cls_t>::R(real *x, real *praw) {
+  real svm2class2<real, cls_t>::decision(real *x) {
     real result;
+    real result2;
     real kv;
     cls_t swp;
 
@@ -419,11 +442,11 @@ namespace libagf {
       result+=coef[k]*kv;
       //printf("kernel(%d)=%g\n", ind[k], kv);
     }
-    //printf("\n");
-    if (praw!=NULL) praw[0]=result;
-    result=1./(1+exp(probA*result+probB));
+    //printf("%g\n", result);
+    //result2=1./(1+exp(probA*result+probB));
+    //printf("%g\n", polarity*(2*result2-1));
 
-    return polarity*(2*result-1);
+    return result;
   } 
 
   template <typename real, typename cls_t>
@@ -444,19 +467,21 @@ namespace libagf {
       for (dim_ta m=0; m<this->D1; m++) drdx1[m]+=coef[k]*deriv[m];
     }
 
-    t1=exp(result*probA+probB);
-    t2=probA*t1/(1+t1)/(1+t1);			//derivative of sigmoid function
+    //t1=exp(result*probA+probB);
+    t1=exp(result*this->calcoef[0]+this->calcoef[1]);
+    //t2=probA*t1/(1+t1)/(1+t1);			//derivative of sigmoid function
+    t2=this->calcoef[0]*t1/(1+t1)/(1+t1);			//derivative of sigmoid function
     for (dim_ta k=0; k<this->D1; k++) drdx1[k]*=-2*t2;
     result=2/(1+t1)-1;
 
     //printf("drdx=");
     for (dim_ta k=0; k<this->D1; k++) {
-      drdx[k]=polarity*drdx1[k];
+      drdx[k]=drdx1[k];
       //printf("%g ", drdx[k]);
     }
     //printf("\nr=%g\n", result);
 
-    return polarity*result;
+    return result;
 
   }
 

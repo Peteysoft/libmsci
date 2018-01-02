@@ -83,6 +83,13 @@ namespace libagf {
 		  nel_ta k,			//size of box
 		  real r0=2);			//threshold
 
+  template <typename real, typename cls_t>
+  real * calibrate_decision(cls_t *cls,		//true classes
+		  real *f,			//decision values
+		  nel_ta n,			//number of samples
+		  int order);			//order of fit
+		
+
 } //end namespace libagf
 
 #endif

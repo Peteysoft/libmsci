@@ -35,6 +35,10 @@ namespace libagf {
     cls_t c1[n];
     nel_ta *clind;
 
+    this->order=0;
+    this->calcoef=NULL;
+    this->sigmoid_func=NULL;
+
     W=Wc;
     var0[0]=v[0];
     var0[1]=v[1];
@@ -66,6 +70,10 @@ namespace libagf {
     this->ncls=2;
     cls_t *cls;
     nel_ta *clind;
+
+    this->order=0;
+    this->calcoef=NULL;
+    this->sigmoid_func=NULL;
 
     W=other->W;
     var0[0]=other->var0[0];
@@ -263,7 +271,7 @@ namespace libagf {
     this->ncls=2;
     this->D=0;
     this->D1=0;
-    sigmoid_func=NULL;
+    this->sigmoid_func=NULL;
   }
 
   template <class real, class cls_t>
@@ -310,7 +318,7 @@ namespace libagf {
     this->mat=NULL;
     this->id=-1;
 
-    sigmoid_func=sigfun;
+    this->sigmoid_func=sigfun;
 
     this->name=new char[strlen(fbase)+1];
     strcpy(this->name, fbase);
@@ -326,6 +334,11 @@ namespace libagf {
     //use later on: (we'll get them when we need them...)
     gd=NULL;
 
+    this->calcoef=new real[2];
+    this->calcoef[0]=0;
+    this->calcoef[1]=1;
+    this->order=1;
+
     return err;
   }
 
@@ -340,7 +353,7 @@ namespace libagf {
     if (brd!=NULL) delete [] brd;
     if (gd!=NULL) delete [] gd;
 
-    sigmoid_func=&tanh;
+    this->sigmoid_func=&tanh;
     //transfer parameters from agf to this:
     this->ncls=agf->n_class();
     this->D1=agf->n_feat();
@@ -386,7 +399,7 @@ namespace libagf {
     if (brd!=NULL) delete [] brd;
     if (gd!=NULL) delete [] gd;
 
-    sigmoid_func=&tanh;
+    this->sigmoid_func=&tanh;
     //copy parameters:
     this->ncls=svm->n_class();
     this->D1=svm->n_feat();
@@ -560,19 +573,11 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
-  real borders_classifier<real, cls_t>::R(real *x, real *praw) {
-    real r;
-    nel_ta k;		//intermediate values in the calculation
-    real d;		//may be useful for continuum generalization
-
-    r=border_classify0(brd, grd, this->D1, n, x, k, d);
-    if (this->id>=0 && praw!=NULL) {
-      praw[this->id]=r;
-      //printf("r=%g\n" , praw[this->id]);
-    }
-    if (sigmoid_func != NULL) r=(*sigmoid_func) (r);
-
-    return r;
+  real borders_classifier<real, cls_t>::decision(real *x) {
+    nel_ta k;		//index of nearest border sample
+    real d;		//distance from border sample 
+    			//(may be useful for continuum generalization)
+    return border_classify0(brd, grd, this->D1, n, x, k, d);
   }
 
   template <class real, class cls_t>
@@ -597,7 +602,7 @@ namespace libagf {
     this->D1=nvar1;
     n=n1;
     this->D=this->D1;
-    if (vflag) sigmoid_func=NULL; else sigmoid_func=&tanh;
+    if (vflag) this->sigmoid_func=NULL; else this->sigmoid_func=&tanh;
     gd=NULL;
     return err;
   }
@@ -625,10 +630,10 @@ namespace libagf {
     this->D=0;
     this->D1=0;
     this->sigmoid_func=&tanh;
-    order=1;
-    coef=new real[2];
-    coef[0]=0;
-    coef[1]=1;
+    this->order=1;
+    this->calcoef=new real[2];
+    this->calcoef[0]=0;
+    this->calcoef[1]=1;
   }
 
   template <class real, class cls_t>
@@ -639,10 +644,10 @@ namespace libagf {
     char *fname=new char[strlen(fbase)+5];
     int err=this->init(fbase, &tanh);
     if (err!=0) throw err;
-    coef=new real[2];
-    coef[0]=0;
-    coef[1]=1;
-    order=1;
+    this->calcoef=new real[2];
+    this->calcoef[0]=0;
+    this->calcoef[1]=1;
+    this->order=1;
     sprintf(fname, "%s.clb", fbase);
     fs=fopen(fname, "r");
     if (fs==NULL) {
@@ -657,9 +662,9 @@ namespace libagf {
       fclose(fs);
       return;
     }
-    delete [] coef;
-    order=n-1;
-    coef=mat[0];
+    delete [] this->calcoef;
+    this->order=n-1;
+    this->calcoef=mat[0];
     delete [] mat;
     fclose(fs);
     delete [] fname;
@@ -667,7 +672,6 @@ namespace libagf {
 
   template <class real, class cls_t>
   borders_calibrated<real, cls_t>::~borders_calibrated() {
-    delete [] coef;
   }
 
   template <class real, class cls_t>
@@ -755,15 +759,15 @@ namespace libagf {
     //best fit for A x = b
     //where a_ij = atanh^j(r_i), tanh(b_i) is actual accuracy and x are the fitting coefficients
     printf("border_calibrated: preparing for fitting\n");
-    order=O;
-    A=gsl_matrix_alloc(nfit, order+1-cflag);
-    x=gsl_vector_alloc(order+1-cflag);
+    this->order=O;
+    A=gsl_matrix_alloc(nfit, this->order+1-cflag);
+    x=gsl_vector_alloc(this->order+1-cflag);
     b=gsl_vector_alloc(nfit);
 
     //fill vectors and matrices:
     for (int i=0; i<nfit; i++) {
       printf("%g %g\n", tab[0][i], tab[1][i]);
-      for (int j=cflag; j<=order; j++) {
+      for (int j=cflag; j<=this->order; j++) {
         //here we don't care so much about efficiency because we only do the
 	//fitting once and it's a small problem...
         gsl_matrix_set(A, i, j-cflag, pow(tab[0][i]+cterm, j));
@@ -772,8 +776,8 @@ namespace libagf {
     }
 
     //allocate extra stuff we need to perform the fitting:
-    work=gsl_multifit_linear_alloc(nfit, order+1-cflag);
-    cov=gsl_matrix_alloc(order+1-cflag, order+1-cflag);
+    work=gsl_multifit_linear_alloc(nfit, this->order+1-cflag);
+    cov=gsl_matrix_alloc(this->order+1-cflag, this->order+1-cflag);
 
     //perform fitting:
     printf("border_calibrated: performing fitting\n");
@@ -781,10 +785,10 @@ namespace libagf {
 
     //pull coefficients out from GSL vector type:
     printf("border_calibrated: storing coefficients\n");
-    delete [] coef;
-    coef=new real[order+1];
-    for (int i=cflag; i<=order; i++) coef[i]=gsl_vector_get(x, i-cflag);
-    if (cflag) coef[0]=cterm;
+    delete [] this->calcoef;
+    this->calcoef=new real[this->order+1];
+    for (int i=cflag; i<=this->order; i++) this->calcoef[i]=gsl_vector_get(x, i-cflag);
+    if (cflag) this->calcoef[0]=cterm;
 
     //clean up:
     printf("border_calibrated: cleaning up\n");
@@ -804,7 +808,7 @@ namespace libagf {
     real *rsort;
     nel_ta *nonecum;
 
-    order=O;
+    this->order=O;
     //classify each training sample using this classifier:
     printf("borders_calibrated: classifiying training data\n");
     for (int i=0; i<ntrain; i++) {
@@ -837,15 +841,16 @@ namespace libagf {
     }
 
     printf("borders_calibrated: calling calibrate_r\n");
-    delete [] coef;
-    coef=calibrate_r(cls, r, ntrain, order, nhist, r0);
+    delete [] this->calcoef;
+    this->calcoef=calibrate_r(cls, r, ntrain, this->order, nhist, r0);
   }
 
   template <class real, class cls_t>
   void borders_calibrated<real, cls_t>::print_calib(FILE *fs) {
-    print_matrix(fs, &coef, 1, order+1);
+    print_matrix(fs, &this->calcoef, 1, this->order+1);
   }
 
+  /*
   template <class real, class cls_t>
   real borders_calibrated<real, cls_t>::R(real *x, real *praw) {
     real r;
@@ -860,12 +865,13 @@ namespace libagf {
     }
 
     for (int i=0; i<=order; i++) {
-      tr+=coef[i]*rpi;
+      tr+=this->calcoef[i]*rpi;
       rpi*=r;
     }
       
     return (*this->sigmoid_func) (tr);
   }
+  */
 
   template float logistic_function<float>(float);
   template double logistic_function<double>(double);

@@ -333,6 +333,66 @@ namespace libagf {
     return coef;
   }
 
+  template <typename real, typename cls_t>
+  real * calibrate_decision(cls_t *cls, real *r, nel_ta n, int order) {
+    //for fitting:
+    gsl_matrix *A;		//A^T A x = A^T b		
+    gsl_vector *x;
+    gsl_vector *b;
+    //for the fitting:
+    gsl_matrix *cov;
+    gsl_multifit_linear_workspace *work;
+    double chisq;
+    nel_ta sum[n+1];		//sum of classes
+    real rs[n];			//sorted decision values
+    long zind;			//index of transition between positive and
+    				//negative values in sorted decision values
+    real *result;		//returned calibration coefficients
+
+    long *sind=heapsort(r, n);
+    map_vector(r, sind, rs, n);
+    zind=bin_search(rs, n, (real) 0.);
+
+    sum[zind]=0;
+    for (nel_ta i=zind-1; i>=0; i--) {
+      sum[i]=sum[i+1]+cls[i]-1;
+    }
+
+    for (nel_ta i=zind+1; i<=n; i++) {
+      sum[i]=sum[i-1]+cls[i];
+    }
+    
+    //fill the fitting matrices and stuff:
+    A=gsl_matrix_alloc(n, order+1);
+    x=gsl_vector_alloc(order+1);
+    b=gsl_vector_alloc(n);
+    for (nel_ta i=0; i<n; i++) {
+      gsl_matrix_set(A, i, 0, 1);
+      for (int j=1; j<=order; j++) {
+        gsl_matrix_set(A, i, j, gsl_matrix_get(A, i, j-1)*rs[i]);
+      }
+      //inverse of the derivative of tanh:
+      gsl_vector_set(b, i, acosh(exp(1.0*sum[i]/n)));
+    }
+
+    //perform the fitting:
+    cov=gsl_matrix_alloc(order+1, order+1);
+    work=gsl_multifit_linear_alloc(n, order+1);
+    gsl_multifit_linear(A, b, x, cov, &chisq, work);
+
+    //extract the results:
+    result=new real[order+1];
+    for (int i=0; i<=order; i++) result[i]=gsl_vector_get(x, i);
+    
+    //clean up:
+    gsl_matrix_free(A);
+    gsl_vector_free(x);
+    gsl_vector_free(b);
+    gsl_matrix_free(cov);
+    gsl_multifit_linear_free(work);
+
+    return result;
+  }
 
   template void sortr_cumulate_ones<float, cls_ta>(cls_ta *truth, float *r, nel_ta n, nel_ta *nonecum, float *rsort);
   template void sortr_cumulate_ones<double, cls_ta>(cls_ta *truth, double *r, nel_ta n, nel_ta *nonecum, double *rsort);
@@ -360,5 +420,9 @@ namespace libagf {
 
   template float * calibrate_r<float, cls_ta>(cls_ta *, float *, nel_ta, int, nel_ta, float);
   template double * calibrate_r<double, cls_ta>(cls_ta *, double *, nel_ta, int, nel_ta, double);
+
+  template float * calibrate_decision<float, cls_ta>(cls_ta *, float *, nel_ta, int);
+  template double * calibrate_decision<double, cls_ta>(cls_ta *, double *, nel_ta, int);
+
 } //end namespace libagf
 

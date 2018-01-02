@@ -1,0 +1,132 @@
+\documentclass{article}
+
+\usepackage{natbib}
+
+\bibliographystyle{apa}
+
+\newcommand{\probability}{P}
+\newcommand{\condprob}{P}
+\newcommand{\estimate}{\tilde p}
+\newcommand{\coord}{x}
+\newcommand{\features}{\vec \coord}
+
+\begin{document}
+
+\title{A simple method of validating classification conditional probabilities}
+
+\author{Peter Mills}
+
+\maketitle
+
+\section{Introduction}
+
+In regression and statistical classification, estimates may be validated
+through direct comparision with the training data.
+With density estimation, the existance of training data does not provide
+a means of direct validation.
+Here we are interested in validating conditional probability estimates from a
+statistical classification algorithm.
+\citet{Mills2009} describes a simple method of validation based on Bayes
+theorem and the definition of probability.
+The goal of this note is to validate this validation method.
+
+\section{Theory}
+
+From Bayes theorem and the definition of probability, we can write:
+\begin{equation}
+	\int P(\vec x) P(c | \vec x) \mathrm d \vec x = \lim_{N \rightarrow \infty} N_c/N
+\end{equation}
+where $N_c$ is the number of training samples of class $c$ and $N$ is the 
+total number of training samples.
+Transforming this into a Monte Carlo sum (with importance sampling):
+\begin{equation}
+	\lim_{N \rightarrow \infty} \left [ \sum_{i=1}^N P(c | \vec x_i) = N_c \right ]
+\end{equation}
+where $\vec x_i$ is the features data of $i$th training sample.
+We use the Kronecker delta 
+to move the equals sign outside the limit:
+\begin{equation}
+	\lim_{N \rightarrow \infty} \left [ \sum_{i=1}^N P(c | \vec x_i) - \delta_{cy_i} \right ] = 0 \label{theorem}
+\end{equation}
+where $y_i$ is the class of $i$th training sample.
+
+To make the theorem useful for validation purposes there are a few things 
+to be done.
+First, the estimated conditional probabilities, $\tilde p$, are sorted from
+low to high:
+\begin{equation}
+	\tilde p(c_{i+1}|\vec x_{i+1}) \ge \tilde p(c_i|\vec x_i)
+\end{equation}
+Note that there is no need to separate out each class, hence the subscript
+on the class label.
+Second, we define the index, $i_0$, as the rank of the first ``winning''
+probability estimate:
+\begin{equation}
+	\tilde p(c_i | \vec x_i) \ge 1/n \iff i \ge i_0
+\end{equation}
+where $n$ is the number of classes.
+With this in place, Equation (\ref{theorem}) is rearranged 
+and divided into twp parts.
+The first part counts up:
+\begin{equation}
+	N^\prime \approx 
+	\sum_{i=i_0}^{N^\prime+i_0} \frac{\delta_{c_iy_i}}{\tilde p(c_i | \vec x_i)} \\
+\end{equation}
+while the second part counts down:
+\begin{equation}
+	N^\prime \approx \sum_{i=N^\prime+i_0}^{i_0} \frac{\delta_{c_iy_i} - 1}{1 - \tilde p(c_i | \vec x_i)}
+\end{equation}
+
+With this arrangement, the trace should follow the diagonal on average and
+move at single step intervals.
+Dividing it up prevents singularities in the denominator while picking the
+threshold of $1/n$ means that most of the terms in both expressions should
+be non-zero.
+
+
+\section{Derivation}
+
+Suppose the probability event $c$ for a given trial is constant at $p_0$.
+There are $N$ trials each with value $y_i$. 
+If $y_i=c$ then the event has occured, otherwise not.
+The number of times the event occurs divided by the total number of
+measurements will approach the probability as more measurements are added:
+\begin{equation}
+p_0 = \lim_{N \rightarrow \infty} \frac{1}{N}\sum_{i=1}^N \delta_{cy_i}
+\end{equation}
+where $\delta$ is the Kronecker delta.
+
+The same principle will hold true for a classification condtional probability,
+$P(c|\vec x)$, except that the conditional probability will be able to take
+on multiple values, so we exclude all those for which $P(c|\vec x) \ne p_0$:
+\begin{equation}
+p_0 = \lim_{N_0 \rightarrow \infty} \frac{1}{N_0} \sum_{P(c|\vec x_i)=p_0} \delta_{cy_i}
+\end{equation}
+where $\lbrace \vec x_i : y_i | i \in [1, N] \rbrace$ is a set of classification
+training data 
+and $N_0$ is the number of training samples for which $P(c|\vec x)=p_0$,
+$|\lbrace i | P(c|\vec x_i) = p_0 \rbrace |$.
+We rearrange this as follows:
+\begin{eqnarray}
+\lim_{N_0 \rightarrow \infty} \left [\sum_{P(c|\vec x_i)=p_0} \delta_{cy_i} - N_0 p_0 \right ] & = & 0 \\
+\lim_{N_0 \rightarrow \infty} \sum_{P(c|\vec x_i)=p_0} \left [\delta_{cy_i} - p(c | \vec x_i) \right ] & = & 0 \label{constant_prob}
+\end{eqnarray}
+
+We could imagine summing a whole set of equations in the form of 
+(\ref{constant_prob}) with different constant probabilities, $p_0, p_1, p_2, ...$:
+\begin{equation}
+\sum_j \lim_{N_j \rightarrow \infty} \sum_{P(c|\vec x_i)=p_j} \left [\delta_{cy_i} - p(c | \vec x_i) \right ] = 0
+\end{equation}
+\begin{equation}
+\lim_{N_0 \rightarrow \infty} \lim_{N_1 \rightarrow \infty} \lim_{N_2 \rightarrow \infty} ... \sum_i \left [ P(c|\vec x_i) - \delta_{cy_i} \right ] = 0
+\end{equation}
+Some rearrangment produces the following theorem:
+\begin{equation}
+\lim_{N \rightarrow \infty} \sum_i \left [ P(c|\vec x_i) - \delta_{cy_i} \right ] = 0
+\end{equation}
+where $N=\sum_j N_j$.
+
+\bibliography{../agf_bib}
+
+\end{document}
+

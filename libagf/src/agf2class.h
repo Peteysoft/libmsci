@@ -78,8 +78,6 @@ namespace libagf {
       real **grd;		//gradients at the samples
       real *gd;			//lengths of all the gradient vectors
       nel_ta n;			//number of samples
-      //function to transform decision value to approximate probabilities:
-      SIGFUN_TYPE (*sigmoid_func) (SIGFUN_TYPE);
       void calc_grad_len();
     public:
       borders_classifier();
@@ -116,7 +114,10 @@ namespace libagf {
       //transformation matrix is not copied, only the pointer is stored
       //--do not delete original before classifier class instance:
       virtual int ltran_model(real **mat1, real *b1, dim_ta d1, dim_ta d2);
-      virtual real R(real *x, real *praw=NULL);
+
+      //re-inject some simplicity:
+      virtual real decision(real *x);
+
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
 
       //load and save all in one as ASCII:
@@ -125,12 +126,10 @@ namespace libagf {
       virtual int save(FILE *fs);
   };
 
+  //searches for calibration file and initializes calibration coefficients
+  //otherwise everything else is the same...
   template <class real, class cls_t>
   class borders_calibrated:public borders_classifier<real, cls_t> {
-    protected:
-      //calibration coefficients:
-      real *coef;
-      int order;
     public:
       borders_calibrated();
       borders_calibrated(const char *fbase);
@@ -167,8 +166,6 @@ namespace libagf {
 		      real r0=2);		//constant term
 
       void print_calib(FILE *fs);
-
-      virtual real R(real *x, real *praw=NULL);
   };
 }
 

@@ -50,9 +50,10 @@ namespace libagf {
       int *ind;				//indexes into the support vectors
       nel_ta nsv;			//number of support vectors
       real *coef;			//coefficients
-      real probA;			//for calculating probabilities
-      real probB;
-      int polarity;
+
+      //real probA;			//for calculating probabilities
+      //real probB;
+      //int polarity;
 
     public:
       svm2class2();
@@ -60,7 +61,7 @@ namespace libagf {
       svm2class2(char *name);
       ~svm2class2();
 
-      virtual real R(real *x, real *praw=NULL);
+      virtual real decision(real *x);
 
       virtual int ltran_model(real **mat, real *b, dim_ta d1, dim_ta d2);
 

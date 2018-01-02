@@ -59,12 +59,40 @@ namespace libagf {
 
   template <class real, class cls_t>
   binaryclassifier<real, cls_t>::~binaryclassifier() {
+    //memory error somewhere:
+    //delete [] calcoef;
+  }
+
+  template <class real, class cls_t>
+  real binaryclassifier<real, cls_t>::decision(real *x) {
+    fprintf(stderr, "binaryclassifier::decision: tried to call base class decision function\n");
+    throw PARAMETER_OUT_OF_RANGE;
   }
 
   template <class real, class cls_t>
   real binaryclassifier<real, cls_t>::R(real *x, real *praw) {
+    real result;
+    real rn;
+    real f;
+
+    f=decision(x);
+
+    if (this->id>=0 && praw!=NULL) praw[this->id]=f;
+
+    result=calcoef[0];
+    rn=1;
+    for (int i=1; i<=order; i++) {
+      rn*=f;
+      result+=calcoef[i]*rn;
+    }
     //want to make this do a direct classifications using the options listed
     //in name!
+    //printf("%g %g %g\n", calcoef[0], calcoef[1], result);
+    if (sigmoid_func != NULL) result=(*sigmoid_func) (result);
+
+    //printf("%g\n", result);
+
+    return result;
   }
 
   template <class real, class cls_t>

@@ -32,7 +32,9 @@ int main(int argc, char ** argv) {
 
   long midind;			//index of probability closest to 0.5
 
-  double *sum;
+  double *sum;			//cumulator for even point intervals
+  double *sump;			//sum of probabilities
+  double *nacc;			//number of correct guesses
   double *rank;
 
   //slope and regression:
@@ -122,25 +124,35 @@ int main(int argc, char ** argv) {
 
   midind=bin_search(ps, n1*ncls, (float) 1./ncls);
   //printf("%g\n", ps[n1*ncls/2]);
-  sum=new double[n1*ncls];
+  sum=new double[n1*ncls+1];
+  sump=new double[n1*ncls+1];		//sum of probabilities
+  nacc=new double[n1*ncls+1];		//number of correct guesses
   sum[midind]=0;
+  sump[midind]=0;
+  nacc[midind]=0;
   for (int i=midind-1; i>=0; i--) {
     long k=sind[i]/ncls;
     cls_ta cls=sind[i]%ncls;
+    sump[i]=sump[i+1]+ps[i]-1;
     if (cls!=class1[k]) {
       sum[i]=sum[i+1]-1/(1-ps[i]);
+      nacc[i]=nacc[i+1]-1;
     } else {
       sum[i]=sum[i+1];
+      nacc[i]=nacc[i+1];
     }
   }
 
-  for (int i=midind+1; i<n1*ncls; i++) {
-    long k=sind[i]/ncls;
+  for (int i=midind+1; i<=n1*ncls; i++) {
+    long k=sind[i-1]/ncls;
     cls_ta cls=sind[i]%ncls;
+    sump[i]=sump[i-1]+ps[i-1];
     if (cls==class1[k]) {
-      sum[i]=sum[i-1]+1/ps[i];
+      sum[i]=sum[i-1]+1/ps[i-1];
+      nacc[i]=nacc[i-1]+1;
     } else {
       sum[i]=sum[i-1];
+      nacc[i]=nacc[i-1];
     }
   }
 
@@ -154,18 +166,22 @@ int main(int argc, char ** argv) {
   for (int i=0; i<n1*ncls; i++) {
     rank[i]=i-midind;
     if (ofile!=NULL) {
-      fprintf(fs, "%d %g\n", i-midind, sum[i]);
+      fprintf(fs, "%d %g %g %g %g\n", i-midind, ps[i], sum[i], nacc[i], sump[i]);
     }
   }
   if (ofile!=NULL) fclose(fs);
 
   //find correlation and slope:
   //lets waste some compute cycles by calculating them independently...
-  r=gsl_stats_correlation(rank, 1, sum, 1, n1*ncls);
-  exit_code=gsl_fit_mul(rank, 1, sum, 1, n1*ncls, &m, &cov, &sumsqr);
+  //r=gsl_stats_correlation(rank, 1, sum, 1, n1*ncls);
+  //exit_code=gsl_fit_mul(rank, 1, sum, 1, n1*ncls, &m, &cov, &sumsqr);
+  r=gsl_stats_correlation(nacc, 1, sump, 1, n1*ncls);
+  exit_code=gsl_fit_mul(nacc, 1, sump, 1, n1*ncls, &m, &cov, &sumsqr);
 
-  printf("r = %15.8lg\n", r);
-  printf("m = %15.8lg\n", m);
+
+  printf("r   = %15.8lg\n", r);
+  printf("m   = %15.8lg\n", m);
+  printf("rms = %15.8lg\n", sqrt(sumsqr/(n1-1)));
 
   delete [] class1;
   delete [] class2;

@@ -436,7 +436,7 @@ namespace libagf {
       trial=randomize(nperm);
       for (int i=0; i<nperm; i++) {
         int dprod;
-	printf("%d\n", i);
+	//printf("%d\n", i);
         //printf("%d\n", trial[i]);
         //tobits=new bit_array((word *) (trial+i), (sizeof(long)+1)/sizeof(word), n);
         //all zeros or all ones not allowed:
