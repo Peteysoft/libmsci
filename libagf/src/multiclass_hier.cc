@@ -11,6 +11,7 @@
 #include "randomize.h"
 #include "peteys_tmpl_lib.h"
 #include "read_ascii_all.h"
+#include "full_util.h"
 
 #include "../../libpetey/linked.cc"
 
@@ -663,20 +664,22 @@ namespace libagf {
     delete [] param.partcom;
     delete [] param.concom;
     delete [] clist;
+    
+    return n_class();
   }
 
   template <typename real, typename cls_t>
   int multiclass_hier<real, cls_t>::commands(multi_train_param &param, cls_t **clist, char *fbase) {
     cls_t **clist2;		//list of class labels for each child
     cls_t nchild=classifier->n_class();
-    char *fbase2;
+    char *fbase2=NULL;
 
     clist2=new cls_t*[nchild+1];
     clist2[0]=*clist;
-    fbase2=new char[strlen(fbase)+4];
+    if (fbase!=NULL) fbase2=new char[strlen(fbase)+4];
 
     for (cls_t i=0; i<nchild; i++) {
-      sprintf(fbase2, "%s.%2.2d", fbase, i);
+      if (fbase!=NULL) sprintf(fbase2, "%s.%2.2d", fbase, i);
       children[i]->commands(param, clist2+i, fbase2);
       clist2[i+1]=clist2[i]+children[i]->n_class();
     }
@@ -686,7 +689,43 @@ namespace libagf {
     delete [] clist2;
     delete [] fbase2;
 
-    return this->ncls;
+    return n_class();
+  }
+
+  template <typename real, typename cls_t>
+  void multiclass_hier<real, cls_t>::get_code(int **&code, char **&model, int &nmodel, cls_t &ncls) {
+    cls_t *clist;
+    cls_t id=0;
+    set_id(&id);
+    code=allocate_matrix<int, int32_t>(id, this->ncls);
+    for (int i=0; i<id*this->ncls; i++) code[0][i]=0;
+    model=new char*[id];
+    clist=new cls_t[this->ncls+1];
+    for (cls_t i=0; i<this->ncls; i++) clist[i]=i;
+    nmodel=0;
+    ncls=get_code(&clist, code, model, nmodel);
+    assert(nmodel==id);
+    delete [] clist;
+  }
+
+  template <typename real, typename cls_t>
+  int multiclass_hier<real, cls_t>::get_code(cls_t **clist, int **code, char **model, int &nmodel) {
+    cls_t **clist2;		//list of class labels for each child
+    cls_t nchild=classifier->n_class();
+
+    clist2=new cls_t*[nchild+1];
+    clist2[0]=*clist;
+
+    for (cls_t i=0; i<nchild; i++) {
+      children[i]->get_code(clist2+i, code, model, nmodel);
+      clist2[i+1]=clist2[i]+children[i]->n_class();
+    }
+
+    classifier->get_code(clist2, code, model, nmodel);
+
+    delete [] clist2;
+
+    return n_class();
   }
 
   //set id's of binary classifiers for collating raw probabilities:

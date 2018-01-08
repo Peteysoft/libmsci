@@ -149,10 +149,10 @@ all: $(BASE).1v1.txt $(BASE).ortho.txt
 clean:
 	rm -f $(WORKDIR)/*
 
-$(BASE).1v1.txt:
+$(BASE)$(TYPE).1v1.txt:
 	make TYPE=1v1 $(BASE).1v1.txt
 
-$(BASE).ortho.txt:
+$(BASE)$(TYPE).ortho.txt:
 	make TYPE=ortho $(BASE).ortho.txt
 
 

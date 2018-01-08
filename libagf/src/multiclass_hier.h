@@ -88,6 +88,8 @@ namespace libagf {
 		unsigned long session_id=0);
       virtual int commands(multi_train_param &param, cls_t **clist,
 		char *fbase);
+      void get_code(int **&code, char **&model, int &nmodel, cls_t &ncls);
+      virtual int get_code(cls_t **clist, int **code, char **model, int &nmodel);
 
       virtual void set_id(cls_t *id);
       //collect the binary classifiers into a single list:

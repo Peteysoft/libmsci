@@ -98,6 +98,7 @@ namespace libagf {
       //for parsing:
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
+      virtual int get_code(cls_t **clist, int **code, char **model, int &nmodel);
 
       //these two do almost the same thing:
       //(design tree data structure, implement as generalized operator...)

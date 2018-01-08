@@ -230,6 +230,11 @@ namespace libagf {
     throw INTERNAL_ERROR;
   }
 
+  template <typename real, typename cls_t>
+  int classifier_obj<real, cls_t>::get_code(cls_t **clist, int **code, char **model, int &nmodel) {
+    return this->ncls;
+  }
+
   //an ugly hack (followed by a whole bunch of nothing...):
   template <typename real, typename cls_t>
   void classifier_obj<real, cls_t>::train(real **train, cls_t *cls, nel_ta ntrain, int type, real *param) {

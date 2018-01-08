@@ -360,7 +360,7 @@ namespace libagf {
   template <typename real, typename cls_t>
   int multiclass<real, cls_t>::commands(multi_train_param &param,
                 cls_t **clist, char *fbase) {
-    char *fbase2;
+    char *fbase2=NULL;
     cls_t *clist2;
     cls_t *clist3[3];
     cls_t nct=0;		//number of classes total
@@ -371,11 +371,11 @@ namespace libagf {
     clist2=new cls_t[nct+1];		//need that extra element hanging off
 					//the end as a flag for stopping iteration
 
-    fbase2=new char[strlen(fbase)+4];
+    if (fbase!=NULL) fbase2=new char[strlen(fbase)+4];
 
     for (int i=0; i<nmodel; i++) {
       //generate file name:
-      sprintf(fbase2, "%s-%2.2d", fbase, i);
+      if (fbase!=NULL) sprintf(fbase2, "%s-%2.2d", fbase, i);
       //print command name, options, training data, output model:
       //fprintf(param.commandfs, "%s %s %s %s", param.commandname, name[i],
 	//	param.train, fbase2);
@@ -416,6 +416,53 @@ namespace libagf {
 
     return this->ncls;
   }
+
+  template <typename real, typename cls_t>
+  int multiclass<real, cls_t>::get_code(cls_t **clist, int **code, char **model, int &nmodel) {
+    cls_t *clist2;
+    cls_t *clist3[3];
+    cls_t nct=0;		//number of classes total
+    cls_t nc1, nc2;		//number in first, second partition resp.
+
+    //how many classes total?
+    for (cls_t i=0; clist[0]+i != clist[this->ncls]; i++) nct++;
+    clist2=new cls_t[nct+1];		//need that extra element hanging off
+					//the end as a flag for stopping iteration
+
+    for (int i=0; i<nmodel; i++) {
+      //gather the class labels in each partition:
+      nc1=0;
+      clist3[0]=clist2;
+      for (cls_t j=0; j<this->ncls; j++) {
+        if (code[i][j]<0) {
+          for (cls_t k=0; clist[j]+k!=clist[j+1]; k++) {
+            clist2[nc1]=clist[j][k];
+            nc1++;
+            //fprintf(param.commandfs, " %d", clist[j][k]);
+          }
+        }
+      }
+      clist3[1]=clist3[0]+nc1;
+      nc2=0;
+      for (cls_t j=0; j<this->ncls; j++) {
+        if (code[i][j]>0) {
+          for (cls_t k=0; clist[j]+k!=clist[j+1]; k++) {
+            clist2[nc1+nc2]=clist[j][k];
+            nc2++;
+            //fprintf(param.commandfs, " %d", clist[j][k]);
+          }
+        }
+      }
+      clist3[2]=clist3[1]+nc2;
+
+      //pass the whole business one level up:
+      twoclass[i]->get_code(clist3, code, model, nmodel);
+    }
+    //clean up:
+    delete [] clist2;
+
+    return this->ncls;
+  } 
 
   template <typename real, typename cls_t>
   int multiclass<real, cls_t>::detect_type() {

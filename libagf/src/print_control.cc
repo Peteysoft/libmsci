@@ -15,9 +15,10 @@ int main(int argc, char **argv) {
   int nrow;
   int strictflag;
   int err;
+  char **name=NULL;
 
   opt_args.Qtype=0;
-  err=agf_parse_command_opts(argc, argv, "Q:GnS:Y", &opt_args);
+  err=agf_parse_command_opts(argc, argv, "Q:GnS:Yy:", &opt_args);
   if (err!=0) exit(err);
 
   if (argc<1) {
@@ -42,7 +43,7 @@ int main(int argc, char **argv) {
     exit(0);
   }
 
-  if (opt_args.Qtype!=7) {
+  if (opt_args.Qtype!=6 && opt_args.Qtype!=10) {
     err=sscanf(argv[0], "%d", &n);
     if (err!=1) {
       fprintf(stderr, "print_control: error parsing command line first argument\n");
@@ -94,7 +95,7 @@ int main(int argc, char **argv) {
 	  tmpnam(opt_args.normfile);
 	  rmflag=1;
         }
-	x=agf_get_features<real_a>(argv[0], &opt_args, D, ntrain, 1);
+	x=agf_get_features<real_a>(argv[0], &opt_args, ntrain, D, 0);
 	if (x==NULL || ntrain<=0) {
           fprintf(stderr, "Error reading input file, %s.vec\n", argv[0]);
 	  exit(FILE_READ_ERROR);
@@ -149,21 +150,42 @@ int main(int argc, char **argv) {
       coding_matrix=ortho_coding_matrix_brute_force<int>(n);
       nrow=n;
       break;
+    case(10):
+      multiclass_hier<real_a, cls_ta> *dum;
+      FILE *fs;
+      cls_ta *label;
+      cls_ta ncls;
+      fs=fopen(argv[0], "r");
+      dum=new multiclass_hier<real_a, cls_ta>(fs, 0, opt_args.path, "");
+      fclose(fs);
+      //first method:
+      ncls=dum->generate_commands(stdout, "", NULL, "");
+      label=new cls_ta[ncls];
+      dum->class_list(label);
+      printf("{");
+      for (cls_ta i=0; i<ncls; i++) if (label[i]>=ncls) ncls=label[i]+1;
+      for (cls_ta i=0; i<ncls; i++) printf(" %d", i);
+      printf("}\n");
+      //second method:
+      dum->get_code(coding_matrix, name, nrow, n);
+      break;
     default:
       print_control_hier(stdout, n);
   }
 
   if (opt_args.Qtype > 0 && opt_args.Qtype!=6) {
     //if (opt_args.Qtype==5 || (opt_args.Qtype==8 && opt_args.Yflag)) {
+    print_matrix(stdout, coding_matrix, nrow, n);
     if (opt_args.Qtype==9 && opt_args.Yflag) {
-      print_control_nonhier(stdout, coding_matrix+1, nrow-1, n);
+      print_control_nonhier(stdout, coding_matrix+1, nrow-1, n, name);
     } else {
-      print_control_nonhier(stdout, coding_matrix, nrow, n);
+      print_control_nonhier(stdout, coding_matrix, nrow, n, name);
     }
     delete [] coding_matrix[0];
     delete [] coding_matrix;
   }
 
+  if (name!=NULL) delete [] name;
   ran_end();
 
   exit(0);

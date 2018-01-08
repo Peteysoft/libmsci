@@ -404,16 +404,16 @@ namespace libagf {
   int test_parse_multi_partitions(int nmodel, int ncls) {
     code_t **code1;
     code_t **code2;
-    char *options;
+    char *options[nmodel];
     char **name;
     multi_parse_param param;
     int err=0;
 
-    options=tmpnam(NULL);
+    for (int i=0; i<nmodel; i++) options[i]=tmpnam(NULL);
     code1=random_coding_matrix<code_t>(ncls, nmodel);
     param.infs=tmpfile();
     //param.infs=fopen("temp.mbc", "w+");
-    print_control_nonhier(param.infs, code1, nmodel, ncls, options);
+    print_control_nonhier(param.infs, code1, nmodel, ncls, (char **) options);
     //initialize parse parameters:
     param.trainflag=1;
     param.prefix=NULL;
@@ -430,9 +430,9 @@ namespace libagf {
     fclose(param.infs);
 
     for (int i=0; i<nmodel; i++) {
-      if (strcmp(name[i], options)!=0) {
+      if (strcmp(name[i], options[i])!=0) {
         fprintf(stderr, "test_parse_multi_partitions: error in names\n");
-	printf("%s\n\n", options);
+	printf("%s\n\n", options[i]);
 	for (int j=0; j<nmodel; j++) {
           printf("%s\n", name[i]);
 	}

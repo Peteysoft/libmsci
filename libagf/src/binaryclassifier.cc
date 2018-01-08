@@ -192,6 +192,13 @@ namespace libagf {
   int binaryclassifier<real, cls_t>::commands(multi_train_param &param, 
 		cls_t **clist, char *fbase) {
     char *tmpname;
+    int dflag=0;
+
+    if (fbase==NULL) {
+      fbase=new char[1];
+      dflag=1;
+      fbase[0]='\0';
+    }
 
     if (param.partcom==NULL) {
       //print command name etc.:
@@ -233,8 +240,27 @@ namespace libagf {
       fprintf(param.commandfs, "\n");
     }
 
+    if (dflag) delete [] fbase;
+
     return 2;
   }
+
+  //convert multi-class classifier to a coding matrix:
+  template <typename real, typename cls_t>
+  int binaryclassifier<real, cls_t>::get_code(cls_t **clist,
+		  int **code, char **model, int &nmodel) {
+    //print class partitions:
+    for (cls_t i=0; clist[0]+i!=clist[1]; i++) {
+      code[nmodel][clist[0][i]]=-1;
+    }
+    for (cls_t i=0; clist[1]+i!=clist[2]; i++) {
+      code[nmodel][clist[1][i]]=1;
+    }
+    model[nmodel]=this->name;
+    nmodel++;
+    return 2;
+  }
+
 
   template <class real, class cls_t>
   void binaryclassifier<real, cls_t>::set_id(cls_t *id1) {
@@ -454,12 +480,18 @@ namespace libagf {
   int general2class<real, cls_t>::commands(multi_train_param &param, 
 		cls_t **clist, char *fbase) {
     char Kstr[3];
+    int dflag;
     if (Kflag) {
       Kstr[0]='-';
       Kstr[1]='K';
       Kstr[2]='\0';
     } else {
       Kstr[0]='\0';
+    }
+    if (fbase==NULL) {
+      fbase=new char[1];
+      dflag=1;
+      fbase[0]='\0';
     }
     //accelerator mode:
     if (strcmp(command, "")==0) {
@@ -479,7 +511,9 @@ namespace libagf {
     for (cls_t i=0; clist[1]+i!=clist[2]; i++) {
       fprintf(param.commandfs, " %d", clist[1][i]);
     }
-    fprintf(param.commandfs, "\n");
+    fprintf(param.commandfs, ";\n");
+
+    if (dflag) delete [] fbase;
 
     return 2;
   }

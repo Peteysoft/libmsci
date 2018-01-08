@@ -515,7 +515,7 @@ We could notate this as follows:
 	       & \approx & D\left (\lbrace \vec x_k|~y_k=i \rbrace,~\lbrace \vec x_k|~y_k=j\rbrace \right )
 \end{eqnarray}
 
-Consider the distance between the means of the two classes divided by their standard deviations. Let:
+Consider the square of the distance between the means of the two classes divided by their standard deviations. Let:
 \begin{equation}
 	\vec \mu_i = \frac{1}{n_i} \sum_{k|y_k=i} \vec x_k
 \end{equation}
@@ -525,10 +525,9 @@ be the mean of the $i$th class where $n_i$ is the number of instances of that cl
 \end{equation}
 then let the distance between the two classes be:
 \begin{equation}
-	D_{ij}=\frac{|\vec \mu_j - \vec \mu_i |}{\sqrt{\sigma_i \sigma_j}}
+	D_{ij}=\frac{|\vec \mu_j - \vec \mu_i |^2}{\sqrt{\sigma_i \sigma_j}}
 \end{equation}
 That is, the closer the centers of the two classes, the shorter the distance, while the wider each class is, the farther the distance.
-The square root in the denominator keeps the measure unitless.
 	
 This would work well if each of the classes is quite distinct and clustered around a strong center.
 But for more diffuse classes, especially those with multiple centers, it would make more sense to use a metric designed specifically for sets rather than this somewhat crude adaptation of a vector metric.
@@ -539,8 +538,6 @@ the Hausdorff distance works out to \citep{Ott1993, Gulick1992}:
 \begin{equation}
 D_{Hij} = \max \left \lbrace \min_k \max_l | \vec x_k - \vec x_l|~,~\min_l \max_k | \vec x_k - \vec x_l| ~ ;~y_k=i;~y_l=j \right \rbrace
 \end{equation}
-Obviously, this metric is not unitless and has the same dimensions as the
-vector metric from which it is composed.
 
 \section{Unifying framework}
 
@@ -580,12 +577,12 @@ For example, a one-versus-one specification for four classes would look like
 this:
 
 \begin{verbatim}
-  m01 0 / 1;
-  m02 0 / 2;
-  m03 0 / 3;
-  m12 1 / 2;
-  m13 1 / 3;
-  m23 2 / 3;
+  model01 0 / 1;
+  model02 0 / 2;
+  model03 0 / 3;
+  model12 1 / 2;
+  model13 1 / 3;
+  model23 2 / 3;
   {0 1 2 3}
 \end{verbatim}
 
@@ -593,37 +590,60 @@ while a one-versus-the-rest specifications, also for four class, would look
 like this:
 
 \begin{verbatim}
-  m0 1 2 3 / 0;
-  m1 0 2 3 / 1;
-  m2 0 1 3 / 2;
-  m3 0 1 2 / 3;
+  model0 1 2 3 / 0;
+  model1 0 2 3 / 1;
+  model2 0 1 3 / 2;
+  model3 0 1 2 / 3;
   {0 1 2 3}
 \end{verbatim}
 
 A hierarchical specification might look like this:
 
 \begin{verbatim}
-  m {
-    m0 {0 1}
-    m1 {2 3}
+  model0 {
+    model00 {0 1}
+    model01 {2 3}
   }
 \end{verbatim}
 
-The real beauty and power in the framework lies in being able to combine the
-two methods, hiearchical and non-hierarchical, as shown in the following,
-six-class example:
+The framework allows the two methods,
+ hiearchical and non-hierarchical, 
+to be combined
+as in the following, nine-class example:
 
 \begin{verbatim}
-  m {
-    m0 {0 1}
-    m1.0 0 1 / 2;
-    m1.1 0 / 1 2;
-    {
-      m10 {2 3}
-      4 5
-    }
+  TREESvsFIELD 0 / 1;
+  TREESvsWATER 0 / 2;
+  FIELDvsWATER3 1 / 2;
+  {
+    DECIDUOUSvsEVERGREEN 0 / 1;
+    DECIDUOUSvsSHRUB 0 / 2;
+    EVERGREENvsSHRUB 1 / 2;
+    {1 2 3}
+    CORNvsWHEAT 0 / 1;
+    CORNvsLEGUME 0 / 2;
+    WHEATvsLEGUME 1 / 2;
+    {4 5 6}
+    FRESHvsSALT 0 / 1;
+    FRESHvsMARSH 0 / 2;
+    SALTvsMARSH 1 / 2;
+    {7 8 9}
   }
 \end{verbatim}
+
+To demonstrate how this feature might be useful, this is another hypothetical 
+surface-classification problem with the key as follows:
+\begin{enumerate}
+	\item Deciduous forest
+	\item Evergreen forest
+	\item Shrubs
+	\item Corn field
+	\item Wheat field
+	\item Legume field
+	\item Freshwater
+	\item Saltwater
+	\item Marsh
+\end{enumerate}
 
 \bibliography{../agf_bib.bib,multi2}
 

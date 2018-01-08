@@ -54,7 +54,7 @@ ifeq ($(NCLS),2)
   AGFMODEL2=$(AGFMODEL).brd
 else
   AGF_TRAIN=multi_borders
-  AGF_PREFIX=print_control -Q 6 $(NCLS) |
+  AGF_PREFIX=print_control -Q 5 $(NCLS) |
   BORDERS_TEST=classify_m
   ACCELERATE_COMMAND=svm_accelerate
   AGFBASE=$(AGFMODEL)
@@ -479,7 +479,7 @@ $(AGFMODEL2): $(TRAIN).svm
 
 #only used for one script:
 $(MULTICONTROL):
-	print_control -Q 6 $(NCLS) > $(MULTICONTROL)
+	print_control -Q 5 $(NCLS) > $(MULTICONTROL)
 
 #convert to LIBSVM format:
 $(TRAIN).svm: $(TRAIN).cls $(TRAIN).vec

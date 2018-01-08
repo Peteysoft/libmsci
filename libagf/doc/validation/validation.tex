@@ -12,7 +12,7 @@
 
 \begin{document}
 
-\title{A simple method of validating classification conditional probabilities}
+\title{A theorem for calibrating and validating conditional probabilities}
 
 \author{Peter Mills}
 
@@ -49,8 +49,20 @@ to move the equals sign outside the limit:
 	\lim_{N \rightarrow \infty} \left [ \sum_{i=1}^N P(c | \vec x_i) - \delta_{cy_i} \right ] = 0 \label{theorem}
 \end{equation}
 where $y_i$ is the class of $i$th training sample.
+From this it's easy to derive a variant which follows, on average, 
+single step intervals in the trace:
+\begin{equation}
+	\lim_{N \rightarrow \infty} \left [N = \sum_{i=1}^N \frac{\delta_{cy_i}}{P(c|\vec x_i)} \right ]
+\end{equation}
+This equation will work only if all the conditional probabilities 
+are non-zero ($P(c|\vec x_i) \ne 0$).
+We can write a complementary equation that will work
+if the conditional probabilities are sometimes zero but never exactly one ($P(c|\vec x_i) \ne 1$):
+\begin{equation}
+	\lim_{N \rightarrow \infty} \left [N = \sum_{i=1}^N \frac{1-\delta_{cy_i}}{1-P(c|\vec x_i)} \right ]
+\end{equation}
 
-To make the theorem useful for validation purposes there are a few things 
+To make the theorem useful for validation purposes there are two things 
 to be done.
 First, the estimated conditional probabilities, $\tilde p$, are sorted from
 low to high:
@@ -65,23 +77,32 @@ probability estimate:
 	\tilde p(c_i | \vec x_i) \ge 1/n \iff i \ge i_0
 \end{equation}
 where $n$ is the number of classes.
-With this in place, Equation (\ref{theorem}) is rearranged 
-and divided into twp parts.
+With this in place, Equation (\ref{theorem}) is divided into twp parts.
 The first part counts up:
 \begin{equation}
-	N^\prime \approx 
-	\sum_{i=i_0}^{N^\prime+i_0} \frac{\delta_{c_iy_i}}{\tilde p(c_i | \vec x_i)} \\
+	\sum_{i=i_0}^{N^\prime+i_0} \delta_{c_iy_i} 
+		\approx \sum_{i=i_0}^{N^\prime+i_0} \tilde p(c_i | \vec x_i) \\
 \end{equation}
 while the second part counts down:
 \begin{equation}
-	N^\prime \approx \sum_{i=N^\prime+i_0}^{i_0} \frac{\delta_{c_iy_i} - 1}{1 - \tilde p(c_i | \vec x_i)}
+	\sum_{i=N^\prime+i_0}^{i_0} \left [\delta_{c_iy_i}-1 \right ] 
+	\approx \sum_{i=N^\prime+i_0}^{i_0} \left [\tilde p(c_i | \vec x_i) - 1 \right ]
+	\label{second_part}
 \end{equation}
 
-With this arrangement, the trace should follow the diagonal on average and
-move at single step intervals.
-Dividing it up prevents singularities in the denominator while picking the
-threshold of $1/n$ means that most of the terms in both expressions should
-be non-zero.
+Dividing means the the points don't bunch up towards the left-hand side of
+the trace while the
+threshold of $1/n$ means that most of the terms on the LHS should be non-zero.
+Note (\ref{second_part}) can be rewritten:
+\begin{equation}
+	\sum_{i=N^\prime+i_0}^{i_0} \delta_{c_iy_i} + N^\prime
+	\approx \sum_{i=N^\prime+i_0}^{i_0} \tilde p(c_i | \vec x_i) + N^\prime
+\end{equation}
+and that $N^\prime$ counts from $-i_0$ to $N-i_0$.
+
+To use this for validation purposes,
+the correlation coefficient can be used to measure the precision while the 
+slope returns the bias.
 
 
 \section{Derivation}
