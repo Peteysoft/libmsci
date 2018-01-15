@@ -117,12 +117,7 @@ namespace libagf {
       virtual int commands(multi_train_param &param, //see structure in multi_parse.h
 		cls_t **clist, 			//list of classes, partitioned if necessary
 		char *fbase);			//base name of model files
-      //generate coding matrix (should replace "commands" method):
-      virtual int get_code(cls_t **clist, 		//location in coding matrix
-		      int **code, 		//coding matrix
-		      char **model,		//name of each binary classifier
-		      int &nmodel,		//number of models
-		      char *fbase=NULL);	//if you want to train the models
+
       //do this properly:
       virtual int 			//returns number of models
 	      get_code (int **code,		//coding matrix

@@ -440,7 +440,6 @@ namespace libagf {
       this->ncls=0;
       nchild=classifier->n_class();
       for (cls_t i=0; i<nchild; i++) this->ncls+=children[i]->n_class();
-      printf("ncls=%d\n", this->ncls);
     }
 
     return this->ncls;
@@ -764,7 +763,7 @@ namespace libagf {
     cls_t id=0;
 
     set_id(&id);
-    code=allocate_matrix<int, int32_t>(id, this->ncls);
+    code=allocate_matrix<int, int32_t>(id, n_class());
     //for (int i=0; i<id*this->ncls; i++) code[0][i]=0;
     model=new char*[id];
     clist=new cls_t[this->ncls+1];
@@ -775,33 +774,6 @@ namespace libagf {
     assert(nmodel==id);
     ncls=this->n_class();
     delete [] clist;
-  }
-
-  template <typename real, typename cls_t>
-  int multiclass_hier<real, cls_t>::get_code(cls_t **clist, int **code, char **model, int &nmodel, char *fbase) {
-    cls_t **clist2;		//list of class labels for each child
-    cls_t nchild=classifier->n_class();
-    char *fbase2=NULL;
-
-    clist2=new cls_t*[nchild+1];
-    clist2[0]=*clist;
-    if (fbase!=NULL) fbase2=new char[strlen(fbase)+4];
-
-    clist2=new cls_t*[nchild+1];
-    clist2[0]=*clist;
-
-    for (cls_t i=0; i<nchild; i++) {
-      if (fbase!=NULL) sprintf(fbase2, "%s.%2.2d", fbase, i);
-      children[i]->get_code(clist2+i, code, model, nmodel, fbase2);
-      clist2[i+1]=clist2[i]+children[i]->n_class();
-    }
-
-    classifier->get_code(clist2, code, model, nmodel, fbase);
-
-    delete [] clist2;
-    delete [] fbase2;
-
-    return n_class();
   }
 
   template <typename real, typename cls_t>
@@ -846,16 +818,18 @@ namespace libagf {
     nmodel_total+=nmodel;
     cnt=ncls[0];
     for (cls_t i=1; i<nchild; i++) {
+      //get sub-matrix for each child:
       nmodel=children[i]->get_code(code, model);
-      //move to correct location (shift left) and
-      //fill elements to the left with zeroes:
+      //shift left to correct location
       for (int j=0; j<nmodel; j++) {
         for (cls_t k=ncls[i]-1; k>=0; k--) {
           code[j][cnt+k]=code[j][k];
 	  code[j][k]=0;
 	}
-        for (int j=cnt+ncls[i]; j<this->ncls; j++) code[i][j]=0;
+        //fill elements to the left with zeroes:
+        for (int k=cnt+ncls[i]; k<this->ncls; k++) code[j][k]=0;
       }
+      //advance to un-filled rows:
       code+=nmodel;
       model+=nmodel;
       cnt+=ncls[i];

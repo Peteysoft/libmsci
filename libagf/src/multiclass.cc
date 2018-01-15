@@ -424,63 +424,14 @@ namespace libagf {
   }
 
   template <typename real, typename cls_t>
-  int multiclass<real, cls_t>::get_code(cls_t **clist, int **code, char **model, int &nmodel, char *fbase) {
-    char *fbase2=NULL;
-    cls_t *clist2;
-    cls_t *clist3[3];
-    cls_t nct=0;		//number of classes total
-    cls_t nc1, nc2;		//number in first, second partition resp.
-
-    //how many classes total?
-    for (cls_t i=0; clist[0]+i != clist[this->ncls]; i++) nct++;
-    clist2=new cls_t[nct+1];		//need that extra element hanging off
-					//the end as a flag for stopping iteration
-
-    if (fbase!=NULL) fbase2=new char[strlen(fbase)+4];
-    for (int i=0; i<nmodel; i++) {
-      if (fbase!=NULL) sprintf(fbase2, "%s-%2.2d", fbase, i);
-      //gather the class labels in each partition:
-      nc1=0;
-      clist3[0]=clist2;
-      for (cls_t j=0; j<this->ncls; j++) {
-        if (code[i][j]<0) {
-          for (cls_t k=0; clist[j]+k!=clist[j+1]; k++) {
-            clist2[nc1]=clist[j][k];
-            nc1++;
-            //fprintf(param.commandfs, " %d", clist[j][k]);
-          }
-        }
-      }
-      clist3[1]=clist3[0]+nc1;
-      nc2=0;
-      for (cls_t j=0; j<this->ncls; j++) {
-        if (code[i][j]>0) {
-          for (cls_t k=0; clist[j]+k!=clist[j+1]; k++) {
-            clist2[nc1+nc2]=clist[j][k];
-            nc2++;
-            //fprintf(param.commandfs, " %d", clist[j][k]);
-          }
-        }
-      }
-      clist3[2]=clist3[1]+nc2;
-
-      //pass the whole business one level up:
-      twoclass[i]->get_code(clist3, code, model, nmodel, fbase2);
-    }
-    //clean up:
-    if (fbase2!=NULL) delete [] fbase2;
-    delete [] clist2;
-
-    return this->ncls;
-  } 
-
-  template <typename real, typename cls_t>
   int multiclass<real, cls_t>::get_code(int **code2, char **model) {
-    int dum[2];
+    //int dum[2];		//no idea why this doesn't work...
+    int *dum=new int[2];
     for (int i=0; i<nmodel; i++) {
       for (int j=0; j<this->ncls; j++) code2[i][j]=code[i][j];
-      twoclass[i]->get_code((int **) &dum, model+i);
+      twoclass[i]->get_code(&dum, model+i);
     }
+    delete [] dum;
     return nmodel;
   }
 		    

@@ -98,8 +98,6 @@ namespace libagf {
       //for parsing:
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
-      virtual int get_code(cls_t **clist, int **code, char **model, int &nmodel,
-		      char *fbase=NULL);
       virtual int get_code(int **c2, char **model);
 
       //these two do almost the same thing:

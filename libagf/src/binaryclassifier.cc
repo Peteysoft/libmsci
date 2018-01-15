@@ -246,26 +246,6 @@ namespace libagf {
 
   //convert multi-class classifier to a coding matrix:
   template <typename real, typename cls_t>
-  int binaryclassifier<real, cls_t>::get_code(cls_t **clist,
-		  int **code, char **model, int &nmodel, char *fbase) {
-    //print class partitions:
-    for (cls_t i=0; clist[0]+i!=clist[1]; i++) {
-      code[nmodel][clist[0][i]]=-1;
-    }
-    for (cls_t i=0; clist[1]+i!=clist[2]; i++) {
-      code[nmodel][clist[1][i]]=1;
-    }
-    if (fbase!=NULL) {
-      model[nmodel]=new char[strlen(this->name)+strlen(fbase)+2];
-      sprintf(model[nmodel], "%s %s", this->name, fbase);
-    } else {
-      model[nmodel]=this->name;
-    }
-    nmodel++;
-    return 2;
-  }
-
-  template <typename real, typename cls_t>
   int binaryclassifier<real, cls_t>::get_code(int **code, char **model) {
     code[0][0]=-1;
     code[0][1]=1;

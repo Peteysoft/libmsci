@@ -231,11 +231,6 @@ namespace libagf {
   }
 
   template <typename real, typename cls_t>
-  int classifier_obj<real, cls_t>::get_code(cls_t **clist, int **code, char **model, int &nmodel, char *fbase) {
-    return this->ncls;
-  }
-
-  template <typename real, typename cls_t>
   int classifier_obj<real, cls_t>::get_code(int **code, char **model) {
     return 0;
   }

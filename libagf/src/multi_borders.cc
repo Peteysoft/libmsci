@@ -439,8 +439,10 @@ int main (int argc, char **argv) {
         delete [] com;
       } else {
         printf("%s\n", commandbuf);
-        if (flag[1]==0) err=system(commandbuf);
-        printf("multi_borders: exit code=%d\n", err);
+        if (flag[1]==0) {
+          err=system(commandbuf);
+          printf("multi_borders: exit code=%d\n", err);
+	}
       }
       if (err!=0) exit(err);
       commandbuf=c+1;

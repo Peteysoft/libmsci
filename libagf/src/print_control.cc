@@ -155,15 +155,6 @@ int main(int argc, char **argv) {
       fs=fopen(argv[0], "r");
       dum=new multiclass_hier<real_a, cls_ta>(fs, 0, opt_args.path, "");
       fclose(fs);
-      //first method:
-      ncls=dum->generate_commands(stdout, "", NULL, "");
-      label=new cls_ta[ncls];
-      dum->class_list(label);
-      printf("{");
-      n=ncls;
-      for (cls_ta i=0; i<ncls; i++) if (label[i]>=n) n=label[i]+1;
-      for (cls_ta i=0; i<n; i++) printf(" %d", i);
-      printf("}\n");
       //second method:
       dum->get_code(coding_matrix, name, nrow, n);
       label=new cls_ta[n];
@@ -179,7 +170,7 @@ int main(int argc, char **argv) {
 
   if (opt_args.Qtype > 0 && opt_args.Qtype!=6) {
     //if (opt_args.Qtype==5 || (opt_args.Qtype==8 && opt_args.Yflag)) {
-    print_matrix(stdout, coding_matrix, nrow, n);
+    //print_matrix(stdout, coding_matrix, nrow, n);
     if (opt_args.Qtype==9 && opt_args.Yflag) {
       print_control_nonhier(stdout, coding_matrix+1, nrow-1, n, name, label);
     } else {

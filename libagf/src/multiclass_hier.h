@@ -97,8 +97,6 @@ namespace libagf {
       virtual int commands(multi_train_param &param, cls_t **clist,
 		char *fbase);
       void get_code(int **&code, char **&model, int &nmodel, cls_t &ncls);
-      virtual int get_code(cls_t **clist, int **code, char **model, int &nmodel,
-		      char *fbase=NULL);
       virtual int get_code(int **code, char **model);
 
       virtual void set_id(cls_t *id);
