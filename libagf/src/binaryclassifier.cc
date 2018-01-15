@@ -228,17 +228,16 @@ namespace libagf {
     if (param.partcom!=NULL) {
       //if there is a command for file conversion, pipe to that first, then to the temp. file:
       if (param.concom!=NULL) {
-        fprintf(param.commandfs, " | %s > %s\n", param.concom, tmpname);
+        fprintf(param.commandfs, " | %s > %s; ", param.concom, tmpname);
       } else {
-        fprintf(param.commandfs, "\n");
+        fprintf(param.commandfs, "; ");
       }
       //if applicable, run binary classifier on temporary and delete the temporary file;
-      fprintf(param.commandfs, "%s %s %s %s\n", param.commandname, this->name, tmpname, fbase);
-      if (param.Kflag==0) fprintf(param.commandfs, "rm -f %s\n", tmpname);
+      fprintf(param.commandfs, "%s %s %s %s; ", param.commandname, this->name, tmpname, fbase);
+      if (param.Kflag==0) fprintf(param.commandfs, "rm -f %s", tmpname);
       delete [] tmpname;
-    } else {
-      fprintf(param.commandfs, "\n");
     }
+    fprintf(param.commandfs, "\n");
 
     if (dflag) delete [] fbase;
 
@@ -248,7 +247,7 @@ namespace libagf {
   //convert multi-class classifier to a coding matrix:
   template <typename real, typename cls_t>
   int binaryclassifier<real, cls_t>::get_code(cls_t **clist,
-		  int **code, char **model, int &nmodel) {
+		  int **code, char **model, int &nmodel, char *fbase) {
     //print class partitions:
     for (cls_t i=0; clist[0]+i!=clist[1]; i++) {
       code[nmodel][clist[0][i]]=-1;
@@ -256,11 +255,23 @@ namespace libagf {
     for (cls_t i=0; clist[1]+i!=clist[2]; i++) {
       code[nmodel][clist[1][i]]=1;
     }
-    model[nmodel]=this->name;
+    if (fbase!=NULL) {
+      model[nmodel]=new char[strlen(this->name)+strlen(fbase)+2];
+      sprintf(model[nmodel], "%s %s", this->name, fbase);
+    } else {
+      model[nmodel]=this->name;
+    }
     nmodel++;
     return 2;
   }
 
+  template <typename real, typename cls_t>
+  int binaryclassifier<real, cls_t>::get_code(int **code, char **model) {
+    code[0][0]=-1;
+    code[0][1]=1;
+    model[0]=this->name;
+    return 1;
+  }
 
   template <class real, class cls_t>
   void binaryclassifier<real, cls_t>::set_id(cls_t *id1) {
@@ -480,7 +491,7 @@ namespace libagf {
   int general2class<real, cls_t>::commands(multi_train_param &param, 
 		cls_t **clist, char *fbase) {
     char Kstr[3];
-    int dflag;
+    int dflag=0;
     if (Kflag) {
       Kstr[0]='-';
       Kstr[1]='K';
@@ -496,11 +507,11 @@ namespace libagf {
     //accelerator mode:
     if (strcmp(command, "")==0) {
       //if command name is the empty string, we don't include it:
-      fprintf(param.commandfs, "%s %s %s %s %s", param.commandname, Kstr, this->name, 
-		      param.train, fbase);
+      fprintf(param.commandfs, "%s %s %s %s %s", param.commandname, Kstr, 
+		      this->name, param.train, fbase);
     } else {
-      fprintf(param.commandfs, "%s %s -O \"%s\" %s %s %s", param.commandname, Kstr, command, 
-		this->name, param.train, fbase);
+      fprintf(param.commandfs, "%s %s -O \"%s\" %s %s %s", param.commandname, 
+		      Kstr, command, this->name, param.train, fbase);
     }
 
     //still need to print the class partions:
@@ -515,6 +526,27 @@ namespace libagf {
 
     if (dflag) delete [] fbase;
 
+    return 2;
+  }
+
+  //convert multi-class classifier to a coding matrix:
+  template <typename real, typename cls_t>
+  int general2class<real, cls_t>::get_code(cls_t **clist,
+		  int **code, char **model, int &nmodel, char *fbase) {
+    //print class partitions:
+    for (cls_t i=0; clist[0]+i!=clist[1]; i++) {
+      code[nmodel][clist[0][i]]=-1;
+    }
+    for (cls_t i=0; clist[1]+i!=clist[2]; i++) {
+      code[nmodel][clist[1][i]]=1;
+    }
+    if (strcmp(command, "")==0) {
+      model[nmodel]=this->name;
+    } else {
+      model[nmodel]=new char[strlen(this->name)+strlen(command)+7];
+      sprintf(model[nmodel], "-O \"%s\" %s", command, this->name);
+    }
+    nmodel++;
     return 2;
   }
 

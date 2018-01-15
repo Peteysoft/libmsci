@@ -98,11 +98,13 @@ namespace libagf {
       //for parsing:
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
-      virtual int get_code(cls_t **clist, int **code, char **model, int &nmodel);
+      virtual int get_code(cls_t **clist, int **code, char **model, int &nmodel,
+		      char *fbase=NULL);
+      virtual int get_code(int **c2, char **model);
 
       //these two do almost the same thing:
       //(design tree data structure, implement as generalized operator...)
-      virtual void set_id(cls_t *id); 		//set id's of each binary classifier
+      virtual void set_id(cls_t *id); 	//set id's of each binary classifier
       virtual cls_t collect_binary_classifiers(binaryclassifier<real, cls_t> **list);
 
       int detect_type();	//detects if it is one of the special cases:

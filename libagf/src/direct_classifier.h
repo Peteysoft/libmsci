@@ -47,6 +47,9 @@ namespace libagf {
 		cls_t **clist, 			//list of classes, partioned if necessary
 		char *fbase);			//base name of model files
 
+      virtual void set_id(cls_t *id);
+      virtual int get_code(int **code, char **model);
+
   };
 
   template <class real, class cls_t>

@@ -440,6 +440,7 @@ namespace libagf {
       this->ncls=0;
       nchild=classifier->n_class();
       for (cls_t i=0; i<nchild; i++) this->ncls+=children[i]->n_class();
+      printf("ncls=%d\n", this->ncls);
     }
 
     return this->ncls;
@@ -669,6 +670,71 @@ namespace libagf {
   }
 
   template <typename real, typename cls_t>
+  void multiclass_hier<real, cls_t>::generate_commands2(FILE *fs,
+		char *train, char *fbase, char *command, char *partition,
+		char *fconv, int Kflag, unsigned long session_id) {
+    int m;			//total number of models
+    cls_t n;			//number of classes (redundant)
+    int **code;			//coding matrix
+    char **model;		//name of each binary model
+    cls_t *label;		//list of class labels
+    char tempname[L_tmpnam+1];	//name for temporary files
+
+    if (command==NULL) {
+      command=new char[strlen(AGF_COMMAND_PREFIX)+
+                strlen(AGF_BINARY_CLASSIFIER)+strlen(AGF_OPT_VER)+20];
+      sprintf(command, "%s%s%s", AGF_COMMAND_PREFIX,
+                AGF_BINARY_CLASSIFIER, AGF_OPT_VER);
+    }
+    if (session_id==0) session_id=seed_from_clock();
+
+    //get the coding matrix and list of class labels:
+    get_code(code, model, m, n);
+    label=new cls_t[n];
+    class_list(label);
+
+    for (int i=0; i<m; i++) {
+      if (partition==NULL) {
+        fprintf(fs, "%s %s %s %s", command, model[i], train);
+      } else {
+        tmpnam(tempname);
+	fprintf(fs, "%s %s", partition, train);
+	if (fconv==NULL) fprintf(fs, tempname);
+      }
+
+      for (int j=0; j<n; j++) {
+        if (code[i][j]<0) fprintf(fs, "%d ", label[j]);
+      }
+      fprintf(fs, "%c", PARTITION_SYMBOL);
+      for (int j=0; j<n; j++) {
+        if (code[i][j]>0) fprintf(fs, "%d ", label[j]);
+      }
+
+      if (partition!=NULL) {
+        //if there is a command for file conversion, pipe to that first, then
+	//to the temporary file:
+        if (fconv!=NULL) {
+          fprintf(fs, " | %s > %s\n", fconv, tempname);
+	} else {
+          fprintf(fs, "\n");
+	}
+
+	//if applicable, run binary classifier on temporary and delete the
+	//temporary file:
+	fprintf(fs, "%s %s %s %s\n", command, model[i], tempname, fbase);
+	if (Kflag==0) fprintf(fs, "rm -f %s\n", tempname);
+      } else {
+        fprintf(fs, "\n");
+      }
+
+    }
+
+    delete [] model;
+    delete [] label;
+    delete_matrix(code);
+  }
+
+  template <typename real, typename cls_t>
   int multiclass_hier<real, cls_t>::commands(multi_train_param &param, cls_t **clist, char *fbase) {
     cls_t **clist2;		//list of class labels for each child
     cls_t nchild=classifier->n_class();
@@ -696,51 +762,136 @@ namespace libagf {
   void multiclass_hier<real, cls_t>::get_code(int **&code, char **&model, int &nmodel, cls_t &ncls) {
     cls_t *clist;
     cls_t id=0;
+
     set_id(&id);
     code=allocate_matrix<int, int32_t>(id, this->ncls);
-    for (int i=0; i<id*this->ncls; i++) code[0][i]=0;
+    //for (int i=0; i<id*this->ncls; i++) code[0][i]=0;
     model=new char*[id];
     clist=new cls_t[this->ncls+1];
     for (cls_t i=0; i<this->ncls; i++) clist[i]=i;
     nmodel=0;
-    ncls=get_code(&clist, code, model, nmodel);
+    //ncls=get_code(&clist, code, model, nmodel);
+    nmodel=get_code(code, model);
     assert(nmodel==id);
+    ncls=this->n_class();
     delete [] clist;
   }
 
   template <typename real, typename cls_t>
-  int multiclass_hier<real, cls_t>::get_code(cls_t **clist, int **code, char **model, int &nmodel) {
+  int multiclass_hier<real, cls_t>::get_code(cls_t **clist, int **code, char **model, int &nmodel, char *fbase) {
     cls_t **clist2;		//list of class labels for each child
     cls_t nchild=classifier->n_class();
+    char *fbase2=NULL;
+
+    clist2=new cls_t*[nchild+1];
+    clist2[0]=*clist;
+    if (fbase!=NULL) fbase2=new char[strlen(fbase)+4];
 
     clist2=new cls_t*[nchild+1];
     clist2[0]=*clist;
 
     for (cls_t i=0; i<nchild; i++) {
-      children[i]->get_code(clist2+i, code, model, nmodel);
+      if (fbase!=NULL) sprintf(fbase2, "%s.%2.2d", fbase, i);
+      children[i]->get_code(clist2+i, code, model, nmodel, fbase2);
       clist2[i+1]=clist2[i]+children[i]->n_class();
     }
 
-    classifier->get_code(clist2, code, model, nmodel);
+    classifier->get_code(clist2, code, model, nmodel, fbase);
 
     delete [] clist2;
+    delete [] fbase2;
 
     return n_class();
+  }
+
+  template <typename real, typename cls_t>
+  int multiclass_hier<real, cls_t>::get_code(int **code, char **model) {
+    int nmodel;			//number of rows in a given sub-matrix
+    int nmodel_total=0;
+    cls_t nchild=classifier->n_class();
+    cls_t ncls[nchild];
+    cls_t cnt=0;
+    for (cls_t i=0; i<nchild; i++) {
+      ncls[i]=children[i]->n_class();
+      cnt+=ncls[i];
+    }
+    assert(cnt==this->ncls);
+    //get sub-matrix for switch:
+    nmodel=classifier->get_code(code, model);
+    //expand switch coding matrix to the width of the matrix for this
+    //classifier:
+    for (int i=0; i<nmodel; i++) {
+      cnt=this->ncls;
+      for (cls_t j=nchild-1; j>=0; j--) {
+        for (cls_t k=1; k<=ncls[j]; k++) {
+          code[i][cnt-k]=code[i][j];
+	}
+        cnt-=ncls[j];
+      }
+      assert(cnt==0);
+    }
+    //get sub-matrices for each child in turn and move them to the correct
+    //location in the matrix for this classifier:
+    code+=nmodel;
+    model+=nmodel;
+    nmodel_total+=nmodel;
+    //coding matrix for first child is in correct position:
+    nmodel=children[0]->get_code(code, model);
+    //fill all elements to the left with zeroes:
+    for (int i=0; i<nmodel; i++) {
+      for (int j=ncls[0]; j<this->ncls; j++) code[i][j]=0;
+    }
+    code+=nmodel;
+    model+=nmodel;
+    nmodel_total+=nmodel;
+    cnt=ncls[0];
+    for (cls_t i=1; i<nchild; i++) {
+      nmodel=children[i]->get_code(code, model);
+      //move to correct location (shift left) and
+      //fill elements to the left with zeroes:
+      for (int j=0; j<nmodel; j++) {
+        for (cls_t k=ncls[i]-1; k>=0; k--) {
+          code[j][cnt+k]=code[j][k];
+	  code[j][k]=0;
+	}
+        for (int j=cnt+ncls[i]; j<this->ncls; j++) code[i][j]=0;
+      }
+      code+=nmodel;
+      model+=nmodel;
+      cnt+=ncls[i];
+      nmodel_total+=nmodel;
+    }
+
+    return nmodel_total;
   }
 
   //set id's of binary classifiers for collating raw probabilities:
   template <typename real, typename cls_t>
   void multiclass_hier<real, cls_t>::set_id(cls_t *id) {
-    cls_ta nchild=classifier->n_class();
+    cls_t nchild=classifier->n_class();
+    cls_t nmodel;
+
     if (nchild>2) {
-      cls_t *idlist=new cls_t[nchild-1];
-      for (cls_t i=0; i<nchild-1; i++) {
+      //forces the ordering of id's so that if the non-hierarchical multi-class
+      //classifier uses adjacent partitioning, then two consecutive id's 
+      //correspond to binary classifiers that bracket the retrieval, e.g.:
+      //
+      //partitions:    .  i  .  |  .  i  .  |  .  i  .  |  .  i  .
+      //id's:          1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
+      //
+      //where:
+      // | denotes adjacent (non-hierarchical) partitions
+      // i is low-level binary partition, 
+      // . is a higher-level partition
+      //
+      cls_t *idlist=new cls_t[nchild];
+      for (cls_t i=0; i<nchild; i++) {
         children[i]->set_id(id);
         idlist[i]=*id;
         (*id)++;
       }
-      children[nchild-1]->set_id(id);
       classifier->set_id(idlist);
+      *id=idlist[nchild-1];
       delete [] idlist;
     } else {
       //just like traversing a binary tree:
@@ -748,6 +899,13 @@ namespace libagf {
       classifier->set_id(id);
       children[1]->set_id(id);
     }
+
+    //this ordering is the same as in a control file...
+    //nmodel=classifier->set_id(id);
+    //for (cls_t i=0; i<nchild; i++) {
+    //  nmodel+=children[i]->set_id(nmodel);
+    //}
+    //return nmodel;
   }
 
   extern void * global_svm_helper;

@@ -313,15 +313,21 @@ namespace libagf {
   //for accessing "raw probabilities" for use in continuum predictions:
   template <typename real, typename cls_t>
   void multiclass<real, cls_t>::set_id(cls_t *id) {
-    if (nmodel != this->ncls-1) {
-      fprintf(stderr, "id model only valid if # binary classifiers = ncls-1\n");
-      exit(PARAMETER_OUT_OF_RANGE);
-    }
-    for (cls_t i=0; i<nmodel; i++) {
+    cls_t niter1;
+    //this does actually makes sense: check multiclass_hier.cc for the
+    //explanation...
+    if (nmodel<this->ncls-1) niter1=nmodel; else niter1=this->ncls-1;
+    for (cls_t i=0; i<niter1; i++) {
       twoclass[i]->set_id(id+i);
       //remove side-effect:
       id[i]--;
     }
+    for (cls_t i=niter1; i<nmodel; i++) {
+      twoclass[i]->set_id(id+this->ncls-1);
+    }
+
+    //for (cls_t i=0; i<nmodel; i++) twoclass[i]->set_id(id+i);
+    //return nmodel;
   }
 
   //since they do about the same thing, we put them next to each other...
@@ -411,14 +417,15 @@ namespace libagf {
       twoclass[i]->commands(param, clist3, fbase2);
     }
     //clean up:
-    delete [] fbase2;
+    if (fbase2!=NULL) delete [] fbase2;
     delete [] clist2;
 
     return this->ncls;
   }
 
   template <typename real, typename cls_t>
-  int multiclass<real, cls_t>::get_code(cls_t **clist, int **code, char **model, int &nmodel) {
+  int multiclass<real, cls_t>::get_code(cls_t **clist, int **code, char **model, int &nmodel, char *fbase) {
+    char *fbase2=NULL;
     cls_t *clist2;
     cls_t *clist3[3];
     cls_t nct=0;		//number of classes total
@@ -429,7 +436,9 @@ namespace libagf {
     clist2=new cls_t[nct+1];		//need that extra element hanging off
 					//the end as a flag for stopping iteration
 
+    if (fbase!=NULL) fbase2=new char[strlen(fbase)+4];
     for (int i=0; i<nmodel; i++) {
+      if (fbase!=NULL) sprintf(fbase2, "%s-%2.2d", fbase, i);
       //gather the class labels in each partition:
       nc1=0;
       clist3[0]=clist2;
@@ -456,14 +465,25 @@ namespace libagf {
       clist3[2]=clist3[1]+nc2;
 
       //pass the whole business one level up:
-      twoclass[i]->get_code(clist3, code, model, nmodel);
+      twoclass[i]->get_code(clist3, code, model, nmodel, fbase2);
     }
     //clean up:
+    if (fbase2!=NULL) delete [] fbase2;
     delete [] clist2;
 
     return this->ncls;
   } 
 
+  template <typename real, typename cls_t>
+  int multiclass<real, cls_t>::get_code(int **code2, char **model) {
+    int dum[2];
+    for (int i=0; i<nmodel; i++) {
+      for (int j=0; j<this->ncls; j++) code2[i][j]=code[i][j];
+      twoclass[i]->get_code((int **) &dum, model+i);
+    }
+    return nmodel;
+  }
+		    
   template <typename real, typename cls_t>
   int multiclass<real, cls_t>::detect_type() {
     int spec_type;		//0=1 v. rest; 1=1 v. 1; 2=adj.

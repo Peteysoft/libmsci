@@ -61,7 +61,8 @@ namespace libagf {
 		      real *drdx);		//approximate gradient of R
       virtual void print(FILE *fs, char *fbase=NULL, int depth=0);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
-      virtual int get_code(cls_t **clist, int **code, char **model, int &nmodel);
+      virtual int get_code(cls_t **clist, int **code, char **model, int &nmodel, char *fbase);
+      virtual int get_code(int **code, char **model);
       virtual void set_id(cls_t *id1);
       virtual cls_t collect_binary_classifiers(binaryclassifier<real, cls_t> **list);
   };
@@ -95,6 +96,8 @@ namespace libagf {
       virtual void batch_classify(real **x, cls_t *cls, real *p, nel_ta n, dim_ta nvar);
       virtual void batch_classify(real **x, cls_t *cls, real **p, nel_ta n, dim_ta nvar);
       virtual int commands(multi_train_param &param, cls_t **clist, char *fbase);
+      virtual int get_code(cls_t **clist, int **code, char **model, int &nmodel,
+		      char *fbase=NULL);
       virtual dim_ta n_feat();		//always -1 since classifications are
       					//done by calling an external executable
   };

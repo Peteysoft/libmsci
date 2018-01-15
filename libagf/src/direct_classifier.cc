@@ -155,6 +155,22 @@ namespace libagf {
     return this->ncls;
   }
 
+  template <typename real, typename cls_t>
+  int direct_classifier<real, cls_t>::get_code(int **code, char **model) {
+    for (cls_t i=0; i<this->ncls; i++) {
+      code[i][i]=1;
+      model[i]=this->name;
+    }
+    return this->ncls;
+  }
+
+  //not needed for continuum retrievals but for counting number of rows in
+  //over-all coding matrix:
+  template <typename real, typename cls_t>
+  void direct_classifier<real, cls_t>::set_id(cls_t *id) {
+    (*id)+=this->ncls;
+  }
+
   template <class real, class cls_t>
   agf_classifier<real, cls_t>::agf_classifier(const char *fbase, const char *options) {
     linked_list<char *> args;

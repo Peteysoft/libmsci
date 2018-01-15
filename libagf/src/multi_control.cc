@@ -622,7 +622,7 @@ namespace libagf {
   }
 
   template <typename scalar>
-  void print_control_nonhier(FILE *fs, scalar **coding_matrix, int n, int ncls, char **options) {
+  void print_control_nonhier(FILE *fs, scalar **coding_matrix, int n, int ncls, char **options, cls_ta *label) {
     for (int i=0; i<n; i++) {
       if (coding_matrix[i]==NULL) break;
       if (options!=NULL) fprintf(fs, "%s ", options[i]); else fprintf(fs, "\"\" ");
@@ -636,7 +636,11 @@ namespace libagf {
       fprintf(fs, ";\n");
     }
     fprintf(fs, "{");
-    for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
+    if (label==NULL) {
+      for (int i=0; i<ncls; i++) fprintf(fs, " %d", i);
+    } else {
+      for (int i=0; i<ncls; i++) fprintf(fs, " %d", label[i]);
+    }
     fprintf(fs, "}\n");
   }
 
@@ -676,9 +680,12 @@ namespace libagf {
   template float ** hierarchical_nonhierarchical<float>(int);
   template double ** hierarchical_nonhierarchical<double>(int);
 
-  template void print_control_nonhier<int>(FILE *fs, int **, int, int, char **);
-  template void print_control_nonhier<float>(FILE *fs, float **, int, int, char **);
-  template void print_control_nonhier<double>(FILE *fs, double **, int, int, char **);
+  template void print_control_nonhier<int>(FILE *fs, int **, int, int, 
+		  char **, cls_ta *);
+  template void print_control_nonhier<float>(FILE *fs, float **, int, int, 
+		  char **, cls_ta *);
+  template void print_control_nonhier<double>(FILE *fs, double **, int, int, 
+		  char **, cls_ta *);
 
 }
 

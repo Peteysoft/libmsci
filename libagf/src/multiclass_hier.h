@@ -86,10 +86,20 @@ namespace libagf {
 		char *concom=NULL,	//command for file conversion
 		int Kflag=0,		//keep temporary files
 		unsigned long session_id=0);
+      void generate_commands2(FILE *fs, 	//write commands to file stream
+		char *train,			//file containing training data
+		char *fbase,			//base file name for model data
+		char *command=NULL,		//trains binary classifier
+		char *partition=NULL,	//command for partitioning classes
+		char *fconv=NULL,	//command for file conversion
+		int Kflag=0,		//keep temporary files
+		unsigned long session_id=0);
       virtual int commands(multi_train_param &param, cls_t **clist,
 		char *fbase);
       void get_code(int **&code, char **&model, int &nmodel, cls_t &ncls);
-      virtual int get_code(cls_t **clist, int **code, char **model, int &nmodel);
+      virtual int get_code(cls_t **clist, int **code, char **model, int &nmodel,
+		      char *fbase=NULL);
+      virtual int get_code(int **code, char **model);
 
       virtual void set_id(cls_t *id);
       //collect the binary classifiers into a single list:

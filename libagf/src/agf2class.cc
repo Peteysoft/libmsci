@@ -198,7 +198,9 @@ namespace libagf {
     total_W+=diag.W;
     ntrial++;
 
-    if (praw!=NULL) *praw=r;
+    if (praw!=NULL) {
+      *praw=r;
+    }
 
     return r;
   }

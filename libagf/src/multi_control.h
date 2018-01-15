@@ -40,7 +40,8 @@ namespace libagf {
 		  scalar **coding_matrix, 	//coding matrix
 		  int n, 			//number of rows (models)
 		  int ncls, 			//number of columns (classes)
-		  char **opt=NULL);		//list of options/models
+		  char **opt=NULL,		//list of options/models
+		  cls_ta *label=NULL);		//list of class labels
 
 }
 

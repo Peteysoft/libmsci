@@ -354,7 +354,7 @@ int main (int argc, char **argv) {
       exit(UNABLE_TO_OPEN_FILE_FOR_READING);
     }
   } else {
-    //because the parser has so much look-ahead, we need to buffer the input:
+    //because the parser has look-ahead, we need to buffer the input:
     linked_list<char> chars;
     int c1;
     c1=getchar();
@@ -440,8 +440,8 @@ int main (int argc, char **argv) {
       } else {
         printf("%s\n", commandbuf);
         if (flag[1]==0) err=system(commandbuf);
+        printf("multi_borders: exit code=%d\n", err);
       }
-      printf("multi_borders: exit code=%d\n", err);
       if (err!=0) exit(err);
       commandbuf=c+1;
     } while (*commandbuf!=END_INDICATOR);

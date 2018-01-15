@@ -121,7 +121,12 @@ namespace libagf {
       virtual int get_code(cls_t **clist, 		//location in coding matrix
 		      int **code, 		//coding matrix
 		      char **model,		//name of each binary classifier
-		      int &nmodel);		//number of models
+		      int &nmodel,		//number of models
+		      char *fbase=NULL);	//if you want to train the models
+      //do this properly:
+      virtual int 			//returns number of models
+	      get_code (int **code,		//coding matrix
+			char **model);		//list of binary models	
 
       //for extension to continuum retrievals (setting raw prob.):
       virtual void set_id(cls_t *id);
