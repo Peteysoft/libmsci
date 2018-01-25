@@ -1,0 +1,46 @@
+Thank you for submitting your article "Solving the multi-class using orthogonal coding matrices". After carefully reading your manuscript, I have decided to reject the article at this stage without seeking external reviewers. The main reasons are as follows:
+
+1/ The article considers the problem of multiclass classification, a mature problem that has generated a lot of literature, and many competing methods have been proposed. In this respect, the empirical evaluation appears below the standards of JMLR, with a comparison to a single, 13-year old, alternative method (Wu et al., 2014). Additionally, the experiments do not demonstrate any statistically significant improvement compared to this existing methods.
+
+- Except most methods solve for the class only, not the probabilities. As I
+  hope I've made clear, the major goal of the paper was to solve for the
+  probabilities in addition to the most likely class. Wu et al is the only
+  method I know of that solves for all of the probabilitiesi with all of the
+  constraints satisfied. Moreover, how is the age of the method relevant? 
+  Clearly it works and it works well  so the time it was invented seems to me 
+  immaterial.
+
+- The lack of "negative results" has been found to be a problem in the medical
+  literature for a number of reasons. I believe it is a problem in other
+  fields as well. For example, if someone invents a method, yet it has been 
+  tested before and found lacking, having the results published in the 
+  literature saves them from wasting their time. And as I point out in the 
+  paper, the ideas may be useful for creating methods 
+  that do generate significant improvements to those existing. The ideas may
+  be useful in other contexts as well.
+
+2/ The presentation and mathematical accuracy appear to be lacking. The discussion of background literature in the introduction is very limited (for example, Wu et al. is only 
+introduced in Section 4). Many notations are not defined. For example 
+* a without an arrow page 2
+* m below equation (5) page 2
+* p with arrow appears both as the solution of the optimization problem and in the objective function in Eq (3) page 2
+* N and N' page 4
+
+- Point 1: if you mean in Section 1, this is an error, but should be clear 
+  from the context. In Section 2, a is clearly defined as an element of the 
+  matrix A.
+- Point 2: "We wish to design a set of m binary classifiers, each of which
+  return a decision function." First sentence, Section 2.
+- Point 3: this is an error; thanks for spotting that.
+- Point 4: a definition is not necessary since the meaning is chiefly important
+  within the context of the equation, e.g. Equations (7) and (8) need to be 
+  tested for different values of N'.
+
+The correctness of Eq. (6) is questionable. It clearly cannot be true in general. It is also unclear what is meant by the title of section 4: "validating the probabilities".
+
+- "Validating the probabilities": how do we know if probability estimates are
+  accurate or not? Either we need prior estimates whose validity is known, or
+  we need some other relation that must be satisfied. Check the derivation in
+  Mills 2009, Section 4.2, Equations (21) and (22). You are correct, it's not 
+  true in general: the samples must be distributed according to the prior
+  probability, P(x), as the derivation should make clear.

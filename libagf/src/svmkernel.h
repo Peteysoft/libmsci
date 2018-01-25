@@ -32,6 +32,16 @@ namespace libagf {
   template <class real>
   real sigmoid_basis_deriv(real *x, real *y, dim_ta n, void *param, real *deriv);
 
+  //additive kernels:
+  template <typename real>
+  real Hellingers_kernel(real *x, real *y, dim_ta n, void *param);
+
+  template <typename real>
+  real Chi_squared_kernel(real *x, real *y, dim_ta n, void *param);
+
+  template <typename real>
+  real intersection_kernel(real *x, real *y, dim_ta n, void *param);
+
 }
 
 #endif

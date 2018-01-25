@@ -606,6 +606,11 @@ namespace libagf {
     this->D=this->D1;
     if (vflag) this->sigmoid_func=NULL; else this->sigmoid_func=&tanh;
     gd=NULL;
+    this->calcoef=new real[2];
+    this->calcoef[0]=0;
+    this->calcoef[1]=1;
+    this->order=1;
+
     return err;
   }
 

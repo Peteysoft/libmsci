@@ -36,7 +36,7 @@ between each column, $|\vec a^{(i)} - \vec a^{(j)}|_{i \ne j}$ should be as
 large as possible.
 Using the same assumptions, this reduces to:
 \begin{eqnnon}
-	\min |\vec a^{(i)} \cdot a^{(j)}|_{i \ne j}
+	\min |\vec a^{(i)} \cdot \vec a^{(j)}|_{i \ne j}
 \end{eqnnon}
 In other words, the coding matrix, $A$, should be orthogonal.
 This approach to the multi-class problem will be described in detail in this note.
@@ -74,8 +74,10 @@ In practice
 there are a set of constrainsts that must be enforced
 because $\vec p$ is only allowed to take on certain values.
 Thus, we wish to solve the following minimization problem:
+\begin{equation}
+	\arg \min_{\vec p} | A \vec p - \vec r | \label{minimization}
+\end{equation}
 \begin{eqnarray}
-	\vec p & = & \arg \min_{\vec p} | A \vec p - \vec r | \label{minimization}\\
 	\sum_j p_j & = & 1 \label{normalization}\\
 	p_j & \ge & 0 \label{nonnegative}
 \end{eqnarray}
@@ -99,7 +101,7 @@ statistical classification \citep{Fawcett2006,Mills2009,Mills2011}.
 The orthogonality property allows us to reduce the minimization problem 
 in (\ref{minimization}) to something much simpler:
 \begin{eqnnon}
-	\vec p = \arg \min_{\vec p} | \vec p - \vec p_0 |
+	\arg \min_{\vec p} | \vec p - \vec p_0 |
 \end{eqnnon}
 where $\vec p_0 = A^T \vec r/m$ with the constraints in (\ref{normalization}) and
 (\ref{nonnegative}) remaining the same.

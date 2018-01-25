@@ -137,7 +137,7 @@ The normalization coefficient, $\norm$, normalizes $\vectorkernel$:
 The method can be used for statistical classification by comparing
 results from the different classes:
 \begin{equation}
-	\class = \arg \min_i \sum_{j|\classlabel_j = i} K(\testpoint, \sample_i, \kernelparam)
+	\class = \arg \max_i \sum_{j|\classlabel_j = i} K(\testpoint, \sample_i, \kernelparam)
 	\label{kernel_classification}
 \end{equation}
 where $\classlabel_j$ is the class of the $j$th sample.
@@ -510,6 +510,58 @@ the probabilities are all positive, are always satisfied
 and describe an algorithm for solving it iteratively, although a
 simple matrix solver is sufficient.
 
+\subsection{Skill scores}
+
+It is important to evaluate a result based on skill scores that reliably reflect
+how well a given classifier is doing.
+Thus we will define the two scores used in this validation exercise 
+since one in particular is not commonly seen in the literature even though it has several
+attractive features.
+
+Let $\lbrace \confusion_{ij} \rbrace$ be the confusion matrix, that is the number
+test values for which the first classifier (the ``truth'') returns the $i$th class
+while the second classifier (the estimate) returns the $j$th class.
+Let $\ntest=\sum_i \sum_j \confusion_{ij}$ be the total number of test points.
+
+The accuracy is given:
+\begin{eqnnon}
+\accuracy=\frac{\sum_i \confusion_{ii}}{\ntest}
+\label{accuracy}
+\end{eqnnon}
+or simply the fraction of correct guesses.
+
+The uncertainty coefficient is a more sophisticated measure based on the channel 
+capacity \citep{Shannon}. It has the advantage over simple accuracy in that 
+it is not affected by the relative size of each class distribution.
+It is also not affected by consistent rearrangement of the class labels.
+
+The entropy of the prior distribution is given:
+\begin{eqnarraynon}
+	\priorentropy & = & - \sum_i \left (\sum_j \frac{\confusion_{ij}}{\ntest} \right ) 
+	\log \left (\sum_j \frac{\confusion_{ij}}{\ntest} \right )\\
+	& = & - \frac{1}{\ntest} \left [\sum_i \left (\sum_j \confusion_{ij} \right ) 
+	\log \left (\sum_j \confusion_{ij} \right )
+	- \log \ntest \right ]
+	\label{prior_entropy}
+\end{eqnarraynon}
+while the entropy of the posterior distribution is given:
+\begin{eqnarraynon}
+	\posteriorentropy & = & - \sum_i \sum_j \left ( \frac{\confusion_{ij}}{\ntest} \right ) \log \left (\frac{\confusion_{ij}}{\sum_i \confusion_{ij}} \right )
+	\label{posterior_entropy} \\
+	& = & - \frac{1}{\ntest} \left [ \sum_i \sum_j \confusion_{ij} \log \confusion_{ij} 
+- \sum_j \left ( \sum_i \confusion_{ij} \right ) \log \left ( \sum_i \confusion_{ij} \right ) \right ]
+\end{eqnarraynon}
+The uncertainty coefficient is defined in terms of the prior entropy, $\priorentropy$, and the
+posterior entropy, $\posteriorentropy$, as follows:
+\begin{eqnnon}
+	\UC = \frac{\priorentropy - \posteriorentropy}{\priorentropy}
+	\label{uncertainty_coefficient}
+\end{eqnnon}
+and tells us: 
+for a given test classification, how many bits of information 
+on average does the estimate
+supply of the true class value? \citep{Press_etal1992,Mills2011}.
+
 \section{Software and data}
 
 \label{methods}
@@ -646,7 +698,7 @@ All datasets were pre-processed in the same way: by taking the averages and
 standard deviations of each feature from the training data and subtracting
 the averages from both the test and training data and dividing by the 
 standard deviations.
-Features that took on the same value in the training data were removed.
+Features that took on all the same value in the training data were removed.
 
 
 \section{A simple example}
@@ -897,57 +949,6 @@ are higher than those for SVM. This does not break any
 laws of probability, however, since the two scores are well within each others' error
 bars and the interval for borders is larger than that for SVM.
 
-\subsection{Skill scores}
-
-It is important to evaluate a result based on skill scores that reliably reflect
-how well a given classifier is doing.
-Thus we will define the two scores used in this validation exercise 
-since one in particular is not commonly seen in the literature even though it has several
-attractive features.
-
-Let $\lbrace \confusion_{ij} \rbrace$ be the confusion matrix, that is the number
-test values for which the first classifier (the ``truth'') returns the $i$th class
-while the second classifier (the estimate) returns the $j$th class.
-Let $\ntest=\sum_i \sum_j \confusion_{ij}$ be the total number of test points.
-
-The accuracy is given:
-\begin{eqnnon}
-\accuracy=\frac{\sum_i \confusion_{ii}}{\ntest}
-\label{accuracy}
-\end{eqnnon}
-or simply the fraction of correct guesses.
-
-The uncertainty coefficient is a more sophisticated measure based on the channel 
-capacity \citep{Shannon}. It has the advantage over simple accuracy in that 
-it is not affected by the relative size of each class distribution.
-It is also not affected by consistent rearrangement of the class labels.
-
-The entropy of the prior distribution is given:
-\begin{eqnarraynon}
-	\priorentropy & = & - \sum_i \left (\sum_j \frac{\confusion_{ij}}{\ntest} \right ) 
-	\log \left (\sum_j \frac{\confusion_{ij}}{\ntest} \right )\\
-	& = & - \frac{1}{\ntest} \left [\sum_i \left (\sum_j \confusion_{ij} \right ) 
-	\log \left (\sum_j \confusion_{ij} \right )
-	- \log \ntest \right ]
-	\label{prior_entropy}
-\end{eqnarraynon}
-while the entropy of the posterior distribution is given:
-\begin{eqnarraynon}
-	\posteriorentropy & = & - \sum_i \sum_j \left ( \frac{\confusion_{ij}}{\ntest} \right ) \log \left (\frac{\confusion_{ij}}{\sum_i \confusion_{ij}} \right )
-	\label{posterior_entropy} \\
-	& = & - \frac{1}{\ntest} \left [ \sum_i \sum_j \confusion_{ij} \log \confusion_{ij} 
-- \sum_j \left ( \sum_i \confusion_{ij} \right ) \log \left ( \sum_i \confusion_{ij} \right ) \right ]
-\end{eqnarraynon}
-The uncertainty coefficient is defined in terms of the prior entropy, $\priorentropy$, and the
-posterior entropy, $\posteriorentropy$, as follows:
-\begin{eqnnon}
-	\UC = \frac{\priorentropy - \posteriorentropy}{\priorentropy}
-	\label{uncertainty_coefficient}
-\end{eqnnon}
-and tells us: 
-for a given test classification, how many bits of information 
-on average does the estimate
-supply of the true class value? \citep{Press_etal1992,Mills2011}.
 
 \section{Discussion}
 

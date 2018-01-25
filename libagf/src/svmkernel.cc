@@ -117,6 +117,37 @@ namespace libagf {
     return t1;
   }
 
+  template <typename real>
+  real Hellingers_kernel(real *x, real *y, dim_ta n, void *param) {
+    real result=0;
+    for (dim_ta i=0; i<n; i++) {
+      result+=sqrt(x[i]*y[i]);
+    }
+    return result;
+  }
+
+  template <typename real>
+  real Chi_squared_kernel(real *x, real *y, dim_ta n, void *param) {
+    real result=0;
+    for (dim_ta i=0; i<n; i++) {
+      result+=2*x[i]*y[i]/(x[i]+y[i]);
+    }
+    return result;
+  }
+
+  template <typename real>
+  real intersection_kernel(real *x, real *y, dim_ta n, void *param) {
+    real result=0;
+    for (dim_ta i=0; i<n; i++) {
+      if (x[i] < y[i]) {
+        result+=x[i];
+      } else {
+        result+=y[i];
+      }
+    }
+    return result;
+  }
+
   template float linear_basis<float>(float *, float *, dim_ta, void *);
   template float polynomial_basis<float>(float *, float *, dim_ta, void *);
   template float radial_basis<float>(float *, float *, dim_ta, void *);
@@ -136,5 +167,15 @@ namespace libagf {
   template double polynomial_basis_deriv<double>(double *, double *, dim_ta, void *, double *);
   template double radial_basis_deriv<double>(double *, double *, dim_ta, void *, double *);
   template double sigmoid_basis_deriv<double>(double *, double *, dim_ta, void *, double *);
+
+  //additive:
+  template float Hellingers_kernel<float>(float *, float *, dim_ta, void *);
+  template double Hellingers_kernel<double>(double *, double *, dim_ta, void *);
+
+  template float Chi_squared_kernel<float>(float *, float *, dim_ta, void *);
+  template double Chi_squared_kernel<double>(double *, double *, dim_ta, void *);
+
+  template float intersection_kernel<float>(float *, float *, dim_ta, void *);
+  template double intersection_kernel<double>(double *, double *, dim_ta, void *);
 
 }
