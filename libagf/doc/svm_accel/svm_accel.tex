@@ -1,7 +1,8 @@
 \documentclass[11pt]{article}
 
-\bibliographystyle{apa}
 \usepackage{natbib}
+%\bibliographystyle{apa}
+\bibliographystyle{unsrt}
 \usepackage{amsmath}
 \usepackage[dvips]{graphicx}
 \usepackage{url}
@@ -11,6 +12,10 @@
 %that require un-used equations not to be numbered:
 \newenvironment{eqnnon}{\begin{equation}}{\end{equation}}
 \newenvironment{eqnarraynon}{\begin{eqnarray}}{\end{eqnarray}}
+
+%change to numbered citations:
+\renewcommand{\citep}[1]{\cite{#1}}
+\renewcommand{\citet}[1]{\cite{#1}}
 
 \begin{document}
 

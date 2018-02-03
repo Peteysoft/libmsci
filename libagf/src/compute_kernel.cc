@@ -24,6 +24,8 @@ real_a kappa_int(real_a x) {
 int main(int argc, char ** argv) {
 
   FILE *fs;
+  char *testfile;
+  char *testoutfile;
 
   real_a (* kfunc) (real_a *, real_a *, dim_ta, void *);
 
@@ -46,10 +48,10 @@ int main(int argc, char ** argv) {
 //  long ncl;
 //
   
-  if (argc != 2 && argc!=4) {
-    printf("Pre-compute kernel for LIBSVM\n");
+  if (argc < 2 ) {
+    printf("Pre-compute additive kernels for LIBSVM\n");
     printf("\n");
-    printf("usage: compute_kernel [-Q type] train trainout [test testout]\n\n");
+    printf("usage: compute_kernel [-Q type] train [trainout] [test testout]\n\n");
     printf("    where:\n");
     printf("-Q       = type of kernel:\n");
     printf("             0: Hellinger's\n");
@@ -91,7 +93,7 @@ int main(int argc, char ** argv) {
   }
 
   //some of the kernels don't work with negative training data:
-  if (opts.Qtype==0 || opts.Qtype == 3 || opts.Qtype == 4) {
+  if (opts.Qtype==0 || opts.Qtype == 3 || opts.Qtype == 4 || opts.Qtype==6) {
     for (int i=0; i<ntrain; i++) {
       for (dim_ta j=0; j<nvar; j++) {
         if (vec[i][j]<min) min=vec[i][j];
@@ -99,71 +101,93 @@ int main(int argc, char ** argv) {
     }
     for (int i=0; i<ntrain; i++) {
       for (dim_ta j=0; j<nvar; j++) {
-        vec[i][j]-=min+0.0001;			//stupid hacks...
+        vec[i][j]-=1.0001*min;			//stupid hacks...
       }
     }
   }
 
-  fs=fopen(argv[1], "w");
-  if (opts.Qtype<3) {
-    for (int i=0; i<ntrain; i++) {
-      fprintf(fs, "%d", cls[i]);
-      fprintf(fs, " 0:%d", i+1);
-      for (int j=0; j<ntrain; j++) {
-        fprintf(fs, " %d:%g", j+1, (*kfunc)(vec[i], vec[j], nvar, NULL));
+  printf("argc=%d\n", argc);
+
+
+  if (argc!=3) {
+
+    printf("argc!=3\n");
+    fs=fopen(argv[1], "w");
+    if (opts.Qtype<3) {
+      for (int i=0; i<ntrain; i++) {
+        fprintf(fs, "%d", cls[i]);
+        fprintf(fs, " 0:%d", i+1);
+        for (int j=0; j<ntrain; j++) {
+          fprintf(fs, " %d:%g", j+1, (*kfunc)(vec[i], vec[j], nvar, NULL));
+        }
+        fprintf(fs, "\n");
       }
-      fprintf(fs, "\n");
+    } else if (opts.Qtype==3 || opts.Qtype==4) {
+      real_a f1, f2;
+      dim_ta cnt;
+      for (int i=0; i<ntrain; i++) {
+        fprintf(fs, "%d", cls[i]);
+        cnt=1;
+        for (int j=0; j<nvar; j++) {
+          f1=sqrt(vec[i][j]*opts.W1)*sqrt((*kappa)(vec[i][j]));
+          fprintf(fs, " %d:%g", cnt, f1);
+          cnt++;
+          for (int k=1; k<opts.nt; k++) {
+            f1=sqrt(vec[i][j]*opts.W1)*sqrt((*kappa)(opts.W1*(k+1)/2))*cos((k+1)*opts.W1*log(vec[i][j])/2);
+            f2=sqrt(vec[i][j]*opts.W1)*sqrt((*kappa)(opts.W1*k/2))*sin(k*opts.W1*log(vec[i][j])/2);
+            fprintf(fs, " %d:%g %d:%g", cnt, f1, cnt+1, f2);
+	    cnt+=2;
+          }
+        }
+        fprintf(fs, "\n");
+      }
+    } else if (opts.Qtype==5) {
+      dim_ta cnt;
+      for (int i=0; i<ntrain; i++) {
+        fprintf(fs, "%d", cls[i]);
+        cnt=1;
+        for (int j=0; j<nvar; j++) {
+          fprintf(fs, " %d:%g", cnt, vec[i][j]);
+          cnt++;
+        }
+        for (int j=0; j<nvar; j++) {
+          fprintf(fs, " %d:%g", cnt, vec[i][j]*vec[i][j]);
+          cnt++;
+        }
+        for (int j=0; j<nvar; j++) {
+          for (int k=j+1; k<nvar; k++) {
+            fprintf(fs, " %d:%g", cnt, vec[i][j]*vec[i][k]);
+            cnt++;
+          }
+        }
+        fprintf(fs, "\n");
+      }
+    } else if (opts.Qtype==6) {
+      for (int i=0; i<ntrain; i++) {
+        fprintf(fs, "%d", cls[i]);
+        for (int j=0; j<nvar; j++) {
+          fprintf(fs, " %d:%g", j+1, sqrt(vec[i][j]));
+        }
+        fprintf(fs, "\n");
+      }
     }
-  } else if (opts.Qtype==3 || opts.Qtype==4) {
-    real_a f1, f2;
-    dim_ta cnt;
-    for (int i=0; i<ntrain; i++) {
-      fprintf(fs, "%d", cls[i]);
-      cnt=1;
-      for (int j=0; j<nvar; j++) {
-        f1=sqrt(vec[i][j]*opts.W1)*sqrt((*kappa)(vec[i][j]));
-        fprintf(fs, " %d:%g", cnt, f1);
-	cnt++;
-        for (int k=1; k<opts.nt; k++) {
-          f1=sqrt(vec[i][j]*opts.W1)*sqrt((*kappa)(opts.W1*(k+1)/2))*cos((k+1)*opts.W1*log(vec[i][j])/2);
-          f2=sqrt(vec[i][j]*opts.W1)*sqrt((*kappa)(opts.W1*k/2))*sin(k*opts.W1*log(vec[i][j])/2);
-	  fprintf(fs, " %d:%g %d:%g", cnt, f1, cnt+1, f2);
-	  cnt+=2;
-	}
-      }
-      fprintf(fs, "\n");
-    }
-  } else if (opts.Qtype==5) {
-    dim_ta cnt;
-    for (int i=0; i<ntrain; i++) {
-      fprintf(fs, "%d", cls[i]);
-      cnt=1;
-      for (int j=0; j<nvar; j++) {
-        fprintf(fs, " %d:%g", cnt, vec[i][j]);
-        cnt++;
-      }
-      for (int j=0; j<nvar; j++) {
-        fprintf(fs, " %d:%g", cnt, vec[i][j]*vec[i][j]);
-        cnt++;
-      }
-      for (int j=0; j<nvar; j++) {
-        for (int k=j+1; k<nvar; k++) {
-          fprintf(fs, " %d:%g", cnt, vec[i][j]*vec[i][k]);
-	  cnt++;
-	}
-      }
-      fprintf(fs, "\n");
-    }
+    fclose(fs);
+    testfile=argv[2];
+    testoutfile=argv[3];
+  } else {
+    testfile=argv[1];
+    testoutfile=argv[2];
   }
 
-  fclose(fs);
-  if (argc==4 && opts.Qtype < 3) {
+  printf("%s %s\n", testfile, testoutfile);
+
+  if (argc>2 && opts.Qtype < 3) {
     nel_ta ntest;			//number of test samples
     dim_ta nvar1;			//features in test data
     real_a **testvec;
     cls_ta *testcls;
 
-    fs=fopen(argv[2], "w");
+    fs=fopen(testfile, "r");
     ntest=read_svm(fs, testvec, testcls, nvar1);
     if (nvar1==-1 || ntest==-1) {
       fprintf(stderr, "compute_kernel: error reading file: %s\n", argv[2]);
@@ -173,12 +197,21 @@ int main(int argc, char ** argv) {
       fprintf(stderr, "compute_kernel: could not open file, %s, for reading\n", argv[2]);
       exit(UNABLE_TO_OPEN_FILE_FOR_READING);
     }
+    fclose(fs);
     if (nvar!=nvar1) {
       fprintf(stderr, "compute_kernel: dimensions in test and train do not match\n");
       exit(DIMENSION_MISMATCH);
     }
 
-    fs=fopen(argv[3], "w");
+    //have to do the same stupid thing to the test data:
+    if (opts.Qtype==0 || opts.Qtype == 3) {
+      for (int i=0; i<ntest; i++) {
+        for (dim_ta j=0; j<nvar; j++) {
+          testvec[i][j]-=1.0001*min;			//stupid hacks...
+        }
+      }
+    }
+    fs=fopen(testoutfile, "w");
     for (int i=0; i<ntest; i++) {
       fprintf(fs, "%d", testcls[i]);
       fprintf(fs, " 0:%d", i+1);

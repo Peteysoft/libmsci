@@ -1,0 +1,143 @@
+
+#DATASET
+#  = sat
+#  = ...
+
+#METHOD
+#  = linear
+#  = Cramer_Singer
+#  = Hellinger
+#  = Chi_squared
+#  = intersection
+
+TIME = /bin/time
+
+WORKDIR = ../work/$(DATASET)
+DATAPATH = ..
+
+#TRAINCOMMAND_linear = lin-train -s 4 $(TRAIN) $(MODEL)
+#TRAINCOMMAND_Cramer_Singer = lin-train -s 4 $(TRAIN) $(MODEL)
+#TRAINCOMMAND_Hellinger = compute_kernel -Q 0 $(TRAIN) tmp.svm; svm-train -t 4 tmp.svm $(MODEL)
+#TRAINCOMMAND_Chi_squared = compute_kernel -Q 1 $(TRAIN) tmp.svm; svm-train -t 4 tmp.svm $(MODEL)
+#TRAINCOMMAND_intersection = compute_kernel -Q 2 $(TRAIN) tmp.svm; svm-train -t 4 tmp.svm $(MODEL)
+
+TRAINCOMMAND_linear = lin-train -v 10 -s 4 $(TRAIN) $(MODEL) $(RESULT).svmout
+TRAINCOMMAND_Cramer_Singer = lin-train -v 10 -s 4 $(TRAIN) $(MODEL) $(RESULT).svmout
+TRAINCOMMAND_Hellinger = compute_kernel -Q 0 $(TRAIN) tmp.svm; svm-train -v 10 -t 4 tmp.svm $(MODEL) $(RESULT).svmout
+TRAINCOMMAND_Chi_squared = compute_kernel -Q 1 $(TRAIN) tmp.svm; svm-train -v 10 -t 4 tmp.svm $(RESULT).svmout
+TRAINCOMMAND_intersection = compute_kernel -Q 2 $(TRAIN) tmp.svm; svm-train -v 10 -t 4 tmp.svm $(RESULT).svmout
+
+TRAINCOMMAND = $(TRAINCOMMAND_$(METHOD))
+
+TESTCOMMAND_linear = lin-predict $(TEST) $(MODEL) $(RESULT).svmout
+TESTCOMMAND_Cramer_Singer = lin-predict $(TEST) $(MODEL) $(RESULT).svmout
+TESTCOMMAND_Hellinger = compute_kernel -Q 0 $(TRAIN) $(TEST) tmp.svm; svm-predict tmp.svm $(MODEL) $(RESULT).svmout
+TESTCOMMAND_Chi_squared = compute_kernel -Q 1 $(TRAIN) $(TEST) tmp.svm; svm-predict tmp.svm $(MODEL) $(RESULT).svmout
+TESTCOMMAND_intersection = compute_kernel -Q 2 $(TRAIN) $(TEST) tmp.svm; svm-predict tmp.svm $(MODEL) $(RESULT).svmout
+
+TESTCOMMAND =$(TESTCOMMAND_$(METHOD))
+
+STEM = $(DATASET)_$(METHOD)
+RESULT =$(STEM)
+
+TRAIN = $(DATASET).trn.svm
+TESTSTEM = $(WORKDIR)/$(DATASET).tst
+TEST = $(TESTSTEM).svm
+
+MODEL = $(STEM).mod
+
+#subsampling:
+FRAC_shuttle=0.1
+FRAC_codrna=0.1
+FRAC_letter=0.1
+FRAC_mnist=0.1
+FRAC_ijcnn1=0.1
+FRAC_humidity=0.1
+
+#default (looks a little like the Goedel statement):
+FRAC_$(DATASET)$(FRAC_$(DATASET)) = 1
+
+FRAC=$(FRAC_$(DATASET))
+
+SO_shuttle = redirect
+SUBOPT$(SO_$(DATASET)) = -C
+
+all:
+	make DATASET=heart score_heart.txt
+	make DATASET=shuttle score_shuttle.txt
+	make DATASET=sat score_sat.txt
+	make DATASET=segment score_segment.txt
+	make DATASET=dna score_dna.txt
+	make DATASET=splice score_splice.txt
+	make DATASET=codrna score_codrna.txt
+	make DATASET=letter score_letter.txt
+	make DATASET=pendigits score_pendigits.txt
+	make DATASET=usps score_usps.txt 
+	make DATASET=mnist score_mnist.txt
+	make DATASET=ijcnn1 score_ijcnn1.txt
+	make DATASET=madelon score_madelon.txt
+	make DATASET=seismic score_seismic.txt
+	make DATASET=mushrooms score_mushrooms.txt
+	make DATASET=phishing score_phishing.txt
+	make DATASET=humidity score_humidity.txt
+	cat score_*.txt
+
+clean_all:
+	make DATASET=heart clean
+	make DATASET=shuttle clean
+	make DATASET=sat clean
+	make DATASET=segment clean
+	make DATASET=dna clean
+	make DATASET=splice clean
+	make DATASET=codrna clean
+	make DATASET=letter clean
+	make DATASET=pendigits clean
+	make DATASET=usps clean
+	make DATASET=mnist clean
+	make DATASET=ijcnn1 clean
+	make DATASET=madelon clean
+	make DATASET=seismic clean
+	make DATASET=mushrooms clean
+	make DATASET=phishing clean
+	make DATASET=humidity clean
+
+clean:
+	rm -f $(DATASET)_*.*
+	rm -f score_$(DATASET).txt
+
+score_$(DATASET).txt:
+	make METHOD=linear $(DATASET)_linear.txt
+	make METHOD=Cramer_Singer $(DATASET)_Cramer_Singer.txt
+	make METHOD=Hellinger $(DATASET)_Hellinger.txt
+	make METHOD=Chi_squared $(DATASET)_Chi_squared.txt
+	make METHOD=intersection $(DATASET)_intersection.txt
+	echo -n $(DATASET) > score_$(DATASET).txt
+	cls_comp_stats -Hb $(TESTSTEM).cls $(DATASET)_linear | tr -d '\n' >> score_$(DATASET).txt
+	echo -n " " >> score_$(DATASET).txt
+	cls_comp_stats -Hb $(TESTSTEM).cls $(DATASET)_Cramer_Singer | tr -d '\n' >> score_$(DATASET).txt
+	echo -n " " >> score_$(DATASET).txt
+	cls_comp_stats -Hb $(TESTSTEM).cls $(DATASET)_Hellinger | tr -d '\n' >> score_$(DATASET).txt
+	echo -n " " >> score_$(DATASET).txt
+	cls_comp_stats -Hb $(TESTSTEM).cls $(DATASET)_Chi_squared | tr -d '\n' >> score_$(DATASET).txt
+	echo -n " " >> score_$(DATASET).txt
+	cls_comp_stats -Hb $(TESTSTEM).cls $(DATASET)_intersection >> score_$(DATASET).txt
+
+$(RESULT).txt: $(RESULT).svmout
+	svmout2agf $(RESULT).svmout $(RESULT) > $(RESULT).txt
+
+#$(RESULT).svmout: $(MODEL) $(TEST)
+#	$(TESTCOMMAND)
+
+#$(MODEL): $(TRAIN)
+$(RESULT).svmout: $(TRAIN)
+	$(TRAINCOMMAND)
+
+$(TEST): $(WORKDIR)/$(DATASET).tst.vec
+	make -C $(DATAPATH) VER=$(DATASET) $(WORKDIR)/$(DATASET).tst.svm
+	cp $(WORKDIR)/$(DATASET).tst.svm $(TEST)
+
+$(TRAIN): $(WORKDIR)/$(DATASET).trn.vec
+	make -C $(DATAPATH) VER=$(DATASET) work/$(DATASET)/$(DATASET).trn.vec
+	subsample_special $(SUBOPT) -zf $(FRAC) $(WORKDIR)/$(DATASET).trn dum $(DATASET).trn
+	agf2ascii -M $(DATASET).trn $(TRAIN)
+

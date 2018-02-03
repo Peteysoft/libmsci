@@ -1,4 +1,4 @@
-TARGET = proxy2
+TARGET = proxy2_springer
 
 DEPENDENTS = proxy2_abstract.txt proxy2.bib proxy2_body.tex proxy2_ack.txt proxy2_apdx.tex
 

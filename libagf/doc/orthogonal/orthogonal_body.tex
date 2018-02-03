@@ -220,9 +220,9 @@ if they are to be applied to problems with a large number of classes.
 Since the main goal of the method 
 is to solve for the conditional probabilities, 
 we need a good way to validate them. 
-Here we use a technique based on the
-following theorem, which can be derived from Bayes theorem and the 
-definition of probability:
+Here we use a technique based on the following theorem, 
+which is true if $\vec x$ obeys the prior distribution, 
+$p(\vec x)$ \citep{Mills2011}:
 \begin{equation}
 	\lim_{N \rightarrow \infty} \sum_{i=0}^{N} \left [
 	p(c | \vec x_i) - \delta_{cy_i} \right ] = 0

@@ -130,8 +130,20 @@ namespace libagf {
   real Chi_squared_kernel(real *x, real *y, dim_ta n, void *param) {
     real result=0;
     for (dim_ta i=0; i<n; i++) {
-      result+=2*x[i]*y[i]/(x[i]+y[i]);
+      result+=x[i]*y[i]/(x[i]+y[i]);
     }
+    //does scaling matter?
+    return result;
+  }
+
+  template <typename real>
+  real Chi_squared_distance(real *x, real *y, dim_ta n, void *param) {
+    real result=0;
+    for (dim_ta i=0; i<n; i++) {
+      real diff=x[i]-y[i];
+      result+=diff*diff/(x[i]+y[i]);
+    }
+    //does scaling matter?
     return result;
   }
 
