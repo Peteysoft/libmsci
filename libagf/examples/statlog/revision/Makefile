@@ -6,10 +6,14 @@ TIME=/bin/time
 MINSAMPLE=5
 #maximum number of border samples:
 MAXSAMPLE=200
+
+#basic parameters:
 NTEST=20
 NTRIAL=5
 #fraction of data used for testing:
 FRAC=0.4
+#pre-processing options:
+PRE=-n
 
 #number of trials for collecting stats:
 NRUN=10
@@ -84,11 +88,23 @@ SVMOPT_humidity=-h 0 -c 50
 SVMOPT_mnist=-c 50
 SVMOPT_mushrooms=-c 50 -h 0
 SVMOPT_codrna=-h 0
+SVMOPT_ijcnn1=-h 0
 
 SVMOPT=$(SVMOPT_$(VER))
 
 #options for lin-train:
 LINOPT_sat=-s 4
+LINOPT_shuttle=-s 4
+LINOPT_segment=-s 4
+LINOPT_dna=-s 2
+LINOPT_letter=-s 4
+LINOPT_codrna=-s 4
+LINOPT_pendigits=-s 4
+LINOPT_usps=-s 4
+LINOPT_ijcnn1=-s 0
+LINOPT_madelon=-s 2
+LINOPT_phishing=-s 0
+LINOPT_humidity=-s 5
 
 LINOPT=$(LINOPT_$(VER))
 
@@ -194,7 +210,7 @@ RESULTS=$(WORKDIR)/results.txt
 #one-vs-one control file:
 MULTICONTROL=$(WORKDIR)/onevsone.mbc
 
-#model files: SVM, AGF, SVM-borders
+#model files: SVM, linear, SVM-borders
 ifdef SUBSAMPLE_SV
   SVMMODEL=$(BASE).svmmod.1
   SVMMODEL0=$(BASE).svmmod
@@ -206,7 +222,6 @@ endif
 LINMODEL=$(BASE).lin
 ACCELERATOR=$(BASE).accel
 
-NBORDER_AGF=$(WORKDIR)/nborder_agf.txt
 NBORDER_SVM=$(WORKDIR)/nborder_svm.txt
 NSUPPORT=$(WORKDIR)/nsupport.txt
 
@@ -225,11 +240,11 @@ endif
 
 #output results:
 all: $(RESULTS)
-	@echo "KNN:"
-	@echo
-	@cat $(WORKDIR)/knn_time.txt
-	@cls_comp_stats $(TEST).cls $(TEST).knn
-	@echo
+#	@echo "KNN:"
+#	@echo
+#	@cat $(WORKDIR)/knn_time.txt
+#	@cls_comp_stats $(TEST).cls $(TEST).knn
+#	@echo
 	@echo "Linear:"
 	@echo
 	@cat $(WORKDIR)/lin_ttime.txt
@@ -260,19 +275,19 @@ all: $(RESULTS)
 
 #how many lines does results file contain so far?
 NLINE!=cat $(STATFILE) | wc -l
-stats: ../calc_stats
+stats:
 	#for I in {$(NLINE)..$(NRUN)}; do 
 	for ((I=$(NLINE); I<$(NRUN); I++)); do \
 		make $(CLEAN_TARGET); \
 		make RESULTS=$(STATFILE) $(BUILD_TARGET); \
 	done
-	./calc_stats < $(STATFILE)
 
-$(RESULTS): $(TEST).knn.cls $(TEST).lin.cls $(TEST).svm.cls $(TEST).acc.cls
-	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/knn_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
-	echo -n " " >> $(RESULTS)
-	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/knn_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
-	echo -n " " >> $(RESULTS)
+#$(RESULTS): $(TEST).knn.cls $(TEST).lin.cls $(TEST).svm.cls $(TEST).acc.cls
+$(RESULTS): $(TEST).lin.cls $(TEST).svm.cls $(TEST).acc.cls
+#	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/knn_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
+#	echo -n " " >> $(RESULTS)
+#	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/knn_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
+#	echo -n " " >> $(RESULTS)
 	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_ttime.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
 	echo -n " " >> $(RESULTS)
 	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_ttime.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
@@ -297,8 +312,8 @@ $(RESULTS): $(TEST).knn.cls $(TEST).lin.cls $(TEST).svm.cls $(TEST).acc.cls
 	echo -n " " >> $(RESULTS)
 	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/acc_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
 	echo -n " " >> $(RESULTS)
-	cls_comp_stats -Hb $(TEST).cls $(TEST).knn | tr -d '\n' >> $(RESULTS)
-	echo -n " " >> $(RESULTS)
+	#cls_comp_stats -Hb $(TEST).cls $(TEST).knn | tr -d '\n' >> $(RESULTS)
+	#echo -n " " >> $(RESULTS)
 	cls_comp_stats -Hb $(TEST).cls $(TEST).lin | tr -d '\n' >> $(RESULTS)
 	echo -n " " >> $(RESULTS)
 	cls_comp_stats -Hb $(TEST).cls $(TEST).svm | tr -d '\n' >> $(RESULTS)
@@ -319,14 +334,13 @@ clean:
 
 #clean only AGF and SVM-borders:
 clean_borders:
-	rm -f $(AGFMODEL)*
 	rm -f $(ACCELERATOR)*
 
 #clean everything but AGF-borders (get stats on timing at least...):
 clean_but_borders:
 	rm -f $(ACCELERATOR)
 	rm -f $(SVMMODEL)
-	rm -f $(TEST).knn.*
+	rm -f $(TEST).lin*
 
 SVOLD=$(SVMMODEL).old
 
@@ -415,13 +429,12 @@ $(TRAIN).svm: $(TRAIN).cls $(TRAIN).vec
 $(TEST).svm: $(TEST).cls $(TEST).vec
 	agf2ascii -M $(TEST) $(TEST).svm
 
-$(TEST).vec $(TEST).cls: ../work/$(VER)/$(VER).tst.vec $(WORKDIR)/$(VER).timestamp
-	make -C .. VER=$(VER) work/$(VER)/$(VER).tst.vec
-	cp ../work/$(VER)/$(VER).tst.vec $(TEST).vec
-	cp ../work/$(VER)/$(VER).tst.cls $(TEST).cls
+#$(TRAIN).vec $(TRAIN).cls $(TEST).vec $(TEST).cls: $(WORKDIR)/$(VER).vec $(WORKDIR)/$(VER).cls
+$(TRAIN).vec $(TRAIN).cls $(TEST).vec $(TEST).cls: $(WORKDIR)/$(VER).timestamp
+	make -C .. $(TRAIN).vec $(TRAIN).cls $(TEST).vec $(TEST).cls \
+		WORKDIR=$(WORKDIR)
+#	agf_preprocess -f $(FRAC) $(WORKDIR)/$(VER) $(TRAIN) $(TEST)
 
-$(TRAIN).vec $(TRAIN).cls: ../work/$(VER)/$(VER).trn.vec $(WORKDIR)/$(VER).timestamp
-	make -C .. VER=$(VER) work/$(VER)/$(VER).trn.vec
-	cp ../work/$(VER)/$(VER).trn.vec $(TRAIN).vec
-	cp ../work/$(VER)/$(VER).trn.cls $(TRAIN).cls
+$(WORKDIR)/$(VER).vec $(WORKDIR)/$(VER).cls: $(WORKDIR)/$(VER).timestamp
+	make -C ../datasets WORKDIR=$(WORKDIR) PRE=$(PRE)
 

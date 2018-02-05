@@ -139,5 +139,4 @@ $(TEST): $(WORKDIR)/$(DATASET).tst.vec
 $(TRAIN): $(WORKDIR)/$(DATASET).trn.vec
 	make -C $(DATAPATH) VER=$(DATASET) work/$(DATASET)/$(DATASET).trn.vec
 	subsample_special $(SUBOPT) -zf $(FRAC) $(WORKDIR)/$(DATASET).trn dum $(DATASET).trn
-	agf2ascii -M $(DATASET).trn $(TRAIN)
-
+agf2ascii -M $(DATASET).trn $(TRAIN)
