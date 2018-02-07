@@ -5,7 +5,8 @@
 int main(int argc, char **argv) {
   FILE *fs=stdin;
   FILE *outfs=stdout;
-  int ncol=15;		//total number of columns
+  int ncol=12;		//total number of columns
+  int nmethod=3;	//number of methods
   int namelen=10;
   char name[11];
   char line[MAXLL];
@@ -25,16 +26,15 @@ int main(int argc, char **argv) {
   //print out training times:
   ind=0;
   ext=data[0];
-  for (int i=1; i<3; i++) {
-    if (data[i*2-1]< ext) {
-      ext=data[i*2-1];
+  for (int i=1; i<2; i++) {
+    if (data[i*2]< ext) {
+      ext=data[i*2];
       ind=i;
     }
   }
-  if (ind==0) fprintf(outfs, " & {\\bf - }"); else fprintf(outfs, " & -");
-  for (int i=1; i<4; i++) {
-    float val=data[i*2-1];
-    float sd=std[i*2-1];
+  for (int i=0; i<3; i++) {
+    float val=data[i*2];
+    float sd=std[i*2];
     fprintf(outfs, " & $");
     if (ind==i) fprintf(outfs, "\\mathbf{");
     fprintf(outfs, "%12.3g", val);
@@ -46,17 +46,18 @@ int main(int argc, char **argv) {
 
   //print out test times:
   ind=0;
-  ext=data[0];			//KNN test is same as trainging time
-  for (int i=1; i<4; i++) {
-    if (data[i*2] < ext) {
-      ext=data[i*2];
+  ext=data[1];			//KNN test is same as trainging time
+  for (int i=1; i<nmethod; i++) {
+    if (data[i*2+1] < ext) {
+      ext=data[i*2+1];
       ind=i;
     }
   }
   fprintf(stderr, "%g\n", std[0]);
-  for (int i=0; i<4; i++) {
-    float val=data[i*2];
-    float sd=std[i*2];
+  fprintf(outfs, " & test (s)      ");
+  for (int i=0; i<nmethod; i++) {
+    float val=data[i*2+1];
+    float sd=std[i*2+1];
     fprintf(outfs, " & $");
     if (ind==i) fprintf(outfs, "\\mathbf{");
     fprintf(outfs, "%12.3g", val);
@@ -69,16 +70,16 @@ int main(int argc, char **argv) {
   //print out accuracies:
   fprintf(outfs, " & acc      ");
   ind=0;
-  ext=data[7];
-  for (int i=1; i<4; i++) {
-    if (data[i*2+7] > ext) {
-      ext=data[i*2+7];
+  ext=data[nmethod*2];
+  for (int i=1; i<nmethod; i++) {
+    if (data[i*2+nmethod*2] > ext) {
+      ext=data[i*2+nmethod*2];
       ind=i;
     }
   }
-  for (int i=0; i<4; i++) {
-    float val=data[i*2+7];
-    float sd=std[i*2+7];
+  for (int i=0; i<nmethod; i++) {
+    float val=data[i*2+nmethod*2];
+    float sd=std[i*2+nmethod*2];
     fprintf(outfs, " & $");
     if (ind==i) fprintf(outfs, "\\mathbf{");
     fprintf(outfs, "%12.3g", val);
@@ -91,16 +92,16 @@ int main(int argc, char **argv) {
   //print out uncertainty coefficients:
   fprintf(outfs, " & U.C.     ");
   ind=0;
-  ext=data[8];
-  for (int i=1; i<4; i++) {
-    if (data[i*2+8] > ext) {
-      ext=data[i*2+8];
+  ext=data[nmethod*2+1];
+  for (int i=1; i<nmethod; i++) {
+    if (data[i*2+nmethod*2+1] > ext) {
+      ext=data[i*2+nmethod*2+1];
       ind=i;
     }
   }
-  for (int i=0; i<4; i++) {
-    float val=data[i*2+8];
-    float sd=std[i*2+8];
+  for (int i=0; i<nmethod; i++) {
+    float val=data[i*2+nmethod*2+1];
+    float sd=std[i*2+nmethod*2+1];
     fprintf(outfs, " & $");
     if (ind==i) fprintf(outfs, "\\mathbf{");
     fprintf(outfs, "%12.3g", val);

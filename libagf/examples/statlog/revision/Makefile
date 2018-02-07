@@ -105,6 +105,7 @@ LINOPT_ijcnn1=-s 0
 LINOPT_madelon=-s 2
 LINOPT_phishing=-s 0
 LINOPT_humidity=-s 5
+LINOPT_seismic=-s 2
 
 LINOPT=$(LINOPT_$(VER))
 

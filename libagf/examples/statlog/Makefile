@@ -113,6 +113,7 @@ SVMOPT_humidity=-h 0 -c 50
 SVMOPT_mnist=-c 50
 SVMOPT_mushrooms=-c 50 -h 0
 SVMOPT_codrna=-h 0
+SVMOPT_ijcnn1=-h 0
 
 SVMOPT=$(SVMOPT_$(VER))
 
