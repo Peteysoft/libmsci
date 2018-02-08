@@ -246,13 +246,13 @@ all: $(RESULTS)
 #	@cat $(WORKDIR)/knn_time.txt
 #	@cls_comp_stats $(TEST).cls $(TEST).knn
 #	@echo
-	@echo "Linear:"
-	@echo
-	@cat $(WORKDIR)/lin_ttime.txt
-	@cat $(WORKDIR)/lin_time.txt
-	@echo
-	@cls_comp_stats $(TEST).cls $(TEST).lin
-	@echo
+#	@echo "Linear:"
+#	@echo
+#	@cat $(WORKDIR)/lin_ttime.txt
+#	@cat $(WORKDIR)/lin_time.txt
+#	@echo
+#	@cls_comp_stats $(TEST).cls $(TEST).lin
+#	@echo
 	@echo "SVM:"
 	@echo
 	@cat $(WORKDIR)/svm_ttime.txt
@@ -284,19 +284,22 @@ stats:
 	done
 
 #$(RESULTS): $(TEST).knn.cls $(TEST).lin.cls $(TEST).svm.cls $(TEST).acc.cls
-$(RESULTS): $(TEST).lin.cls $(TEST).svm.cls $(TEST).acc.cls
+#$(RESULTS): $(TEST).svm.cls $(TEST).acc.cls #$(TEST).lin.cls
+$(RESULTS): $(TEST).svm.cls $(TEST).acc.cls
 #	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/knn_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
 #	echo -n " " >> $(RESULTS)
 #	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/knn_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
 #	echo -n " " >> $(RESULTS)
-	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_ttime.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
-	echo -n " " >> $(RESULTS)
-	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_ttime.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
-	echo -n " " >> $(RESULTS)
-	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
-	echo -n " " >> $(RESULTS)
-	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
-	echo -n " " >> $(RESULTS)
+	# fill linear with dummy values for mnist dataset:
+	echo -n "0 0 0 0 " >> $(RESULTS)
+	#grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_ttime.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
+	#echo -n " " >> $(RESULTS)
+	#grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_ttime.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
+	#echo -n " " >> $(RESULTS)
+	#grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
+	#echo -n " " >> $(RESULTS)
+	#grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
+	#echo -n " " >> $(RESULTS)
 	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/svm_ttime.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
 	echo -n " " >> $(RESULTS)
 	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/svm_ttime.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
@@ -312,11 +315,13 @@ $(RESULTS): $(TEST).lin.cls $(TEST).svm.cls $(TEST).acc.cls
 	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/acc_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
 	echo -n " " >> $(RESULTS)
 	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/acc_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
-	echo -n " " >> $(RESULTS)
+	# fill linear with dummy values for mnist dataset:
+	echo -n " 0 0 " >> $(RESULTS)
+	#echo -n " " >> $(RESULTS)
 	#cls_comp_stats -Hb $(TEST).cls $(TEST).knn | tr -d '\n' >> $(RESULTS)
 	#echo -n " " >> $(RESULTS)
-	cls_comp_stats -Hb $(TEST).cls $(TEST).lin | tr -d '\n' >> $(RESULTS)
-	echo -n " " >> $(RESULTS)
+	#cls_comp_stats -Hb $(TEST).cls $(TEST).lin | tr -d '\n' >> $(RESULTS)
+	#echo -n " " >> $(RESULTS)
 	cls_comp_stats -Hb $(TEST).cls $(TEST).svm | tr -d '\n' >> $(RESULTS)
 	echo -n " " >> $(RESULTS)
 	cls_comp_stats -Hb $(TEST).cls $(TEST).acc | tr -d '\n' >> $(RESULTS)

@@ -7,6 +7,8 @@
 
 \bibliographystyle{apa}
 
+\newenvironment{eqnnon}{\begin{equation}}{\end{equation}}
+
 \begin{document}
 
 \title{Solving for multi-class: a synthesis\\(manuscript in progress)}
@@ -23,7 +25,7 @@
 
 In a statistical classication problem we are given a set of ordered pairs, 
 $\lbrace \vec x_j : y_j \rbrace$ 
-where $\vec x_j \in \Re^N$ is the location of the {\it sample} in 
+where the vector, $\vec x_j$, is the location of the {\it sample} in 
 the $N$-dimensional {\it feature space} 
 and $y_j \in [1..n_c]$ is the class of the sample
 where $n_c$ is the number of classes,
@@ -66,8 +68,7 @@ $C_i^- \subset [1,n_c]$ is the set of classes that map to $-1$?
 
 Once we have partitioned the classes
 and trained the binary classifers,
-how do we solve for the conditional probabilities, $P(i|\vec x)$,
-where $i \in [1,n_c]$
+how do we solve for the conditional probabilities, $P(c|\vec x)$,
 or alternatively, directly for the most likely class:
 %how do we solve for the most likely class, 
 \begin{equation}
@@ -122,10 +123,16 @@ a_{ic_{ik}^+} & = & +1 | ~k=[1..n_{c_i^+}]
 We can rewrite Equation (\ref{decision_function}) using the decision
 matrix as follows:
 \begin{equation}
-	\frac{\sum_j a_{ij} p_j}{\sum_j |a_{ij}| p_j} = r_i
+	\frac{\sum_{j=1}^{n_c} a_{ij} p_j}{\sum_{j=1}^{n_c} |a_{ij}| p_j} = r_i
 	\label{non_hier}
 \end{equation}
-where $\vec p$, is a vector of multi-class conditional probabilities, $p_i=P(i|\vec x)$.
+where $\vec p=\lbrace p_i | i=[1..n_c]\rbrace$, 
+is a vector of multi-class conditional probabilities, $p_i=P(i|\vec x)$, 
+$n_c$ is the number of classes,
+$\vec r=\lbrace r_i| i=[1..n_p]\rbrace$ 
+is the vector of decision functions,
+and
+$n_p$ is the number of partitions.
 
 Some rearrangement shows that
 we can solve for the probabilities, $\vec p$, via matrix inversion:
@@ -135,11 +142,6 @@ we can solve for the probabilities, $\vec p$, via matrix inversion:
 	q_{ij} & = & a_{ij} + (1-|a_{ij}|) r_i 
 	\label{matrix_equation2}
 \end{eqnarray}
-where $\vec r=\lbrace r_i| i=[1..n_p]\rbrace$ 
-is the vector of decision functions, 
-$n_p$ is the number of partitions,
-$\vec p =\lbrace p_i | i=[1..n_c]\rbrace$
-is the vector of estimated probabilities.
 %and $\delta$ is the Kronecker delta.
 Note that $Q$ reduces to $A$ if $A$ contains no zeroes.
 The case of a coding matrix that contains no zeroes, that is all the partitions divide up all the
@@ -157,8 +159,8 @@ problem solved via minimization:
 \end{equation}
 subject to:
 \begin{eqnarray}
-	\sum_{i=1}^{n_c} p_i & = & 1 \label{first_constraint}\\
-	p_i & \ge & 0 \label{constraints}
+	\sum_{i=1}^{n_c} p_i & = & 1 \label{normalization}\\
+	p_i & \ge & 0 \label{nonnegative}
 \end{eqnarray}
 where straight brackets, $||$, denotes a vector norm which  
 in this case is the Euclidian or $L^2$ norm.
@@ -177,10 +179,10 @@ equation:
 	\label{normal_equation}
 \end{equation}
 Because the binary probability estimates in $\vec r$ are rarely perfect, however,
-in many cases the constraints in (\ref{first_constraint}) and (\ref{constraints}) will not be satisfied 
+in many cases the constraints in (\ref{normalization}) and (\ref{nonnegative}) will not be satisfied 
 so for most applications the results will need to be adjusted, reducing accuracy.
 
-It is straightforward to incorporate the normality constraint in (\ref{first_constraint}) into the problem. There are at least three ways to do this. The most
+It is straightforward to incorporate the normality constraint in (\ref{normalization}) into the problem. There are at least three ways to do this. The most
 obvious is to reduce the dimensionality of the problem by one:
 \begin{equation}
 	p_k = 1 - \sum_{i|i \ne k} p_i
@@ -211,19 +213,19 @@ a Lagrange multiplier:
 where $\lambda$ is the Lagrange multiplier and $\vec 1$ is a vector of all ones.
 
 If the number of partitions is one less than the number of classes, $n_p=n_c-1$,
-the normality constraint, (\ref{first_constraint}), can simply be added to the 
+the normality constraint, (\ref{normalization}), can simply be added to the 
 matrix equation in (\ref{matrix_equation2}) as a row of all ones in $Q$ and a one in an augmented $\vec r$:
 \begin{eqnarray}
 	q_{n_c+1,j} & = & 1 \\
 	r_{n_c+1} & = & 1
 \end{eqnarray}
 
-Since they are inequality constraints, those in (\ref{constraints}) are
+Since they are inequality constraints, those in (\ref{nonnegative}) are
 harder to enforce.
 The exception being the one-versus-one configuration: so long as the normality
 constraint is satisfied, the inequality constraints are also satisfied
 \citep{Wu_etal2004}.
-Methods of enforceing the inequality constraints, (\ref{constraints}), will
+Methods of enforceing the inequality constraints, (\ref{nonnegative}), will
 be left to a later section.
 
 \subsection{Voting solution}
@@ -282,6 +284,9 @@ These include ``one-versus-the-rest'', ``one-versus-one'',
 as well as error-correcting coding matrices including orthogonal and
 random matrices.
 We discuss each of these in turn.
+We will use each of these examples to demonstrate how to solve for the
+conditional probabilities while enforcing the constraints,
+expanding out to the general solution for ``error-correcting-codes.''
 
 \subsubsection{One-versus-the-rest}
 
@@ -309,7 +314,7 @@ simply writing out one side of the equation:
 \begin{equation}
 	p_i = (r_i + 1)/2
 \end{equation}
-The normalization constraint, (\ref{first_constraint}), can be enforced 
+The normalization constraint, (\ref{normalization}), can be enforced 
 through the use of a Lagrange multiplier. See next section.
 
 \subsubsection{One-versus-one}
@@ -334,7 +339,7 @@ Consider the following rearrangement of (\ref{non_hier}):
 	Q \vec p & = & \vec 0 \\
 	q_{ij} & = & a_{ij} - r_i |a_{ij}|
 \end{eqnarray}
-We can include the normalization constraint, (\ref{first_constraint}), via
+We can include the normalization constraint, (\ref{normalization}), via
 a Lagrange multiplier:
 \begin{equation}
 	\min_{\vec p, \lambda} | Q \vec p + \lambda(\vec 1 \cdot \vec p - 1)|
@@ -345,7 +350,7 @@ which produces the following linear system:
 	\sum_j p_j & = & 1
 \end{eqnarray}
 With this solution for a 1-vs-1 coding matrix, it can be shown that the
-inequality constraints in (\ref{constraints}) are always satisfied
+inequality constraints in (\ref{nonnegative}) are always satisfied
 \citep{Wu_etal2004}.
 
 \citet{Hsu_Lin2002} find that the one-vs.-one method is more accurate
@@ -354,9 +359,13 @@ error-correcting codes or one-vs.-the-rest.
 
 \subsubsection{Orthogonal coding matrix}
 
+An error correcting coding matrix is simply an arbitrary one.
+This is often random, but may also be carefully designed 
+\citep{Crammer_Singer2002}.
 To maximize the accuracy of an error-correcting coding matrix, 
+\citep{Allwein_etal2000, Windeatt_Ghaderi2002} show that
 the distance between each of the columns, $| \vec a^{(i)} - \vec a^{(j)} |$, 
-should be as large as possible \citep{Allwein_etal2000, Windeatt_Ghaderi2002}, 
+should be as large as possible,
 where $\vec a^({i})$ is the $i$th column of the matrix $A$ and $i \ne j$. 
 If we take the upright brackets once again to be a
 Euclidian metric and assume that $A$ is ``strict'' then this 
@@ -368,7 +377,8 @@ for a factor of -1 are degenerate.
 In other words, 
 %if the number of rows is equal to the number of classes, 
 the optimal coding matrix will be orthogonal, $A^T A = n_p I$, where $I$ is
-the identity matrix. Thus the voting solution and the (unconstrained) matrix 
+the $[n_c\times n_c]$ identity matrix. 
+Thus the voting solution and the (unconstrained) matrix 
 inverse will be equivalent. Orthogonal, ``strict'' coding matrices 
 are not hard to construct for certain class sizes, for instance:
 \begin{equation}
@@ -383,40 +393,104 @@ A =
 Orthogonal coding matrices for the non-strict case are even easier to
 construct, but the voting solution does not correspond to the inverse solution.
 
-\citet{Mills2017} shows how to solve for an orthogonal coding matrix.
+The orthogonality property allows us to reduce the minimization problem 
+in (\ref{minimization_problem}) to something much simpler:
+\begin{eqnnon}
+	\arg \min_{\vec p} | \vec p - \vec p_0 |
+\end{eqnnon}
+where $\vec p_0 = A^T \vec r/m$ with the constraints in (\ref{normalization}) and
+(\ref{nonnegative}) remaining the same.
+Because the system has been rotated and expanded, the non-negativity 
+constraints in (\ref{nonnegative}) remain orthogonal, meaning they are 
+independent: enforcing one by setting one of the probabilities to zero, 
+$p_k=0$ for example, shouldn't otherwise affect the solution.
+This still leaves the normalization constraint in (\ref{normalization}):
+the problem, now strictly geometrical, is comprised of finding the point nearest $p_0$ on the diagonal hyper-surface that bisects the unit hyper-cube.
+
+Briefly, we can summarize the algorithm as follows:
+1. move to the nearest point that satisfies the normalization constraint,
+(\ref{normalization}); 2. if one or more of the probabilities is negative,
+move to the nearest point that satisfies both 
+the normalization constraint
+and the non-negativity constraints, (\ref{nonnegative}), for the negative probabilities;
+3. repeat step 2.
+More formally, let $\vec 1$ be a vector of all $1$'s:
+\begin{itemize}
+	\item $i=1$; $n_1=n$
+	\item while $\exists k \, p_{ik} < 0 \lor \vec p_i \cdot \vec 1 \ne 1$:
+	\begin{itemize}
+		\item if $\vec p_i \cdot \vec 1 \ne 1$ then 
+		$\vec p_{i+1} = \vec p_i + (\vec p_i \cdot \vec 1 - 1)/n_i$
+		\item let $K$ be the set of $k$ such that $p_{i+1,k} < 0$
+		\item for each $k$ in $K$:
+		\begin{itemize}
+			\item $p_k=0$
+			\item Remove $k$ from the problem
+		\end{itemize}
+		\item $n_{i+1}=n_i-|K|$
+		\item $i=i+1$
+	\end{itemize}
+\end{itemize}
+
+Note that resultant direction vectors for each step form an orthogonal set.
+For instance, suppose $n_1=4$ and after enforcing the normalization constraint,
+the first probability is less than zero, $p_{1,1} < 0$,
+then the direction vectors for the two motions are:
+\begin{eqnnon}
+	\frac{1}{2}[1, 1, 1, 1] \cdot \frac{1}{2\sqrt{3}} [-3, 1, 1, 1] = 0
+\end{eqnnon}
+
+More generally, consider the following sequence of vectors:
+\begin{eqnnon}
+	v_{ij} = \frac{1}{\sqrt{(n-i)^2-2(n-i-1)}} \left \lbrace \begin{array}{rl}
+			0; & j < i \\
+			-n+i+1; & j=i \\
+			1; & j > i
+		\end{array} \right .
+\end{eqnnon}
+where $j \in [1, n]$. \citep{Boyd_Vandenberghe2004}
 
 \subsubsection{Error correcting codes}
 
-Another common coding matrix is simply a random one: this is commonly
+Another common coding matrix is simply an arbitrary one: this is commonly
 known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
 To solve for the probabilities using an arbitary coding matrices
-we transform the problem to an equivalent problem with an orthogonal
+we transform the problem to an equivalent one with an orthogonal
 matrix.
-We wish to transform the problem as follows:
+Consider the following transformation of Equation (\ref{basic_system}):
 \begin{equation}
 	V^\prime Q \vec p = V^\prime \vec r
 \end{equation}
-Consider the singular value decomposition of $Q$:
+Next, consider the singular value decomposition of $Q$:
 \begin{equation}
-	Q Q^T U = S^2 U
+	Q = U S V^T
 \end{equation}
-where $U$ is an $n_p \times n_c$ ortho-normal matrix and $S$ is a diagonal
-matrix of singular values.
-Hence:
-\begin{equation}
-	V^\prime = U^T S^{-1}
-\end{equation}
+where $U$ is an $[n_p \times n_c]$ orthonormal matrix, 
+$S$ is an $[n_c \times n_c]$ diagonal matrix of singular values
 and
+$V^T$ is an $[n_c \times n_c]$ orthonormal matrix.
+
+Let:
 \begin{equation}
-	V^\prime Q = U^T S^{-1} Q = V
+	V^\prime = S^{-1} U^T
 \end{equation}
-where $V$ is other half of the singular value decomposition:
-\begin{eqnarray}
-	Q & = & U S V^T \\
-	Q^T Q V & = & V S^2
-\end{eqnarray}
-Hence, the solution for orthogonal matrices generalizes to non-orthogonal, 
-non-strict coding matrices by setting $p_0$ to the least-squares solution:
+hence,
+\begin{equation}
+	V^\prime Q = S^{-1} U^T Q = V^T
+\end{equation}
+giving us:
+\begin{equation}
+	V^T \vec p = S^{-1} U^T \vec r
+\end{equation}
+
+The optimization problem is:
+\begin{equation}
+	\arg \min_{\vec p} | V^T \vec p - S^{-1} U^T \vec r |
+\end{equation}
+subject to the contraints in (\ref{normalization}) and (\ref{nonnegative}).
+
+Therefore, the solution for strict, orthogonal matrices generalizes to 
+arbitrary (non-strict, non-orthogonal) coding matrices by setting $p_0$ to the least-squares solution:
 \begin{equation}
 	\vec p_0 = V S^{-1} U^T \vec r
 \end{equation}
@@ -460,7 +534,7 @@ A =
 \end{bmatrix}
 \end{equation}
 While there are only three rows for four classes, 
-once we add in the constraint in (\ref{first_constraint}) the system becomes 
+once we add in the constraint in (\ref{normalization}) the system becomes 
 fully determined, although it doesn't scale to larger problems:
 extra partitions will have to be added.
 

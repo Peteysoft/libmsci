@@ -701,15 +701,15 @@ to fit it.
 \label{results_section}
 
 \begin{table}
-	\caption{Summary of the parameters used in the numerical trials for each of the three methods: Linear, SVM (support vector machine) and ACC (``accelerated'' SVM).
-	If the number of trials has been starred, some operations received only a single trial 
-	either because processing times were too long or because the dataset came with
-test and training sets already separated. See text.}
+	\caption{Summary of the parameters used in the numerical trials for each of the three methods: Linear, SVM (support vector machine) and ACC (``accelerated'' SVM).}
 	\label{param}
 	\input{param.tex}
 	\vspace{1 ex}
 
-	\raggedright $^*$ Key:\citep{Fan_etal2008}
+	\raggedright 
+	$^*$ Some operations received only a single trial. See text.
+
+	$^+$ Key:\citep{Fan_etal2008}
 	\begin{enumerate}
 			\setcounter{enumi}{-1}
 		\item L2-regularized logistic regression, primal optimization
@@ -903,6 +903,7 @@ feature maps that are also efficient to compute
 are difficult to derive for many kernels, including RBF. 
 Nonetheless, \citet{Vedaldi_Zisserman2012} have succeeded in doing so for
 several kernels popular in computer vision applications.
+Sadly, comparative results were not available in time.
 
 It's worthwhile to note where the borders classification algorithm 
 is most likely to succeed and conversely where it might fail.
