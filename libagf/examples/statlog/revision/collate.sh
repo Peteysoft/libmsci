@@ -1,6 +1,6 @@
 #DATASET="heart shuttle sat segment dna splice codrna letter pendigits"
-#DATASET="usps mnist ijcnn1 madelon seismic mushrooms phishing humidity"
-DATASET="seismic"
+DATASET="usps mnist ijcnn1 madelon seismic mushrooms phishing humidity"
+#DATASET="seismic"
 
 # col  value
 # 0    Lin train time user (s)

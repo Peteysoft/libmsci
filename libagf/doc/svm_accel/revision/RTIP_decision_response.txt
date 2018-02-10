@@ -1,0 +1,81 @@
+Ref.:  Ms. No. RTIP-D-17-00281
+Accelerating kernel classifiers through borders mapping
+Journal of Real-Time Image Processing
+
+Dear Mr. Mills,
+
+Your manuscript has been reviewed and the reviewers' comments are attached below for your information.
+
+The reviewers suggest a major revision is necessary before the manuscript can be considered for publication in
+Journal of Real-Time Image Processing. If you wish to revise your manuscript as per the reviewers' comments, we should receive your revised manuscript by 14 Feb 2018. In addition to the revised manuscript, please provide a separate document outlining point-by-point responses to their comments. 
+
+Instructions for resubmitting your manuscript together with your responses are provided below. To submit a revision, go to https://rtip.editorialmanager.com/ and log in as an Author. You will see a menu item call Submission Needing Revision. You will find your submission record there.
+
+Thank you for submitting your work to RTIP and we look forward to receiving your revised manuscript.
+
+
+Yours sincerely
+
+Selvarani Gnanadurai
+JEO Assistant
+Journal of Real-Time Image Processing
+
+Reviewers' comments:
+
+Dear author,
+
+Reviewers have now commented on your paper.  You will see that they are advising that you revise your manuscript.
+Generally they agree that the insufficient of comparison with other approaches and the lack of detail in the description of the algorithm and training procedure are the major points to address.
+If you are prepared to undertake the work required, we would be pleased to reconsider my decision.
+
+For your guidance, reviewers' comments are appended below.
+
+----------------------
+
+Reviewer #1: This is a thorough study of using piecewise linear classifier trained from SVM to accelerate the classification.
+
+I have the following comments.
+
+1a) About the presentation:  Sections 2.1 and 2.2 can be reduced, by citing existing textbooks/reviews/tutorials on the kernel methods and SVM.  In this way, space can be saved, and the readers can proceed directly to the key theory section.  As a technical report, the current presentation is fine, but as a journal paper,  I think Sections 2.1 and 2.2 are lengthier than necessary.
+
+1b) Section 2.3 is the key section, and some illustrations on a toy example to convey the intuitions are highly recommended. Although later in the paper Figures 1 and 2 are on a simple example, they do not convey the intuitions behind section 2.3.
+
+2) Page 4, equation 2, 'arg min'  should be 'arg max'
+
+3) Page 13, Figures 1 & 2, in the legend, 'o Border'  should be '-- Border'  because the border delineates a thin curve (instead of a string of discs).
+
+4) Page 14, Figure 3, caption, and line 27 "uncertainty coefficient" is introduced, but it's not explained until page 19, line 40.  I suggest you reorganize the text, so that "uncertainty coefficient" is explained right where it is introduced.
+
+5) Page 25, line 33, "to improve the classification time of"  should be "to improve the classification efficiency of" or "to reduce the classification time of"
+
+
+
+
+Reviewer #2: Support Vector Machine is a very mature algorithm, and LibSVM is widely used for kernel SVM classification. An alternative solution is to explicitly map the feature and then Liblinear is used to conduct the linear classification based on the mapped feature.  It should be noted that LibSVM is slow at conducting linear SVM training, but Liblinear is very fast because it optimizes the loss function in primal problem instead of the dual problem.  Could you compare your algorithm with LIblinear, and report the running time?
+
+It is easy to follow the SVM training flow, but I can clearly follow how to train your algorithm. I suggest you give a detailed algorithm description.
+
+Since libAGF is released online for some time, but I have not observed its large potential. 
+
+Instead of some simple toy data, could you demonstrate the effectiveness of your toolbox in some real applications? I think it will increase our confidence to your work. In current version, it is very hard for me to accept it as a research paper.
+
+
+Fan, Rong-En, et al. "LIBLINEAR: A library for large linear classification." Journal of machine learning research 9.Aug (2008): 1871-1874.
+
+Vedaldi, Andrea, and Andrew Zisserman. "Efficient additive kernels via explicit feature maps." IEEE transactions on pattern analysis and machine intelligence 34.3 (2012): 480-492.
+
+
+
+Reviewer #4: The authors propose the use of piecewise linear classiers that can be trained from kernel-based ones to improve the classification speed. The article explain how finding the roon of the differene of the conditional probabilities between pairs of opposite classes can be use to build up a representation of the decision boundary.
+
+The article is reasonably well written with only a few typos that could be easily corrected.
+
+Introduction of the problem is informative although maybe a bit verbose. This could be solved by adding a couple of general references (for example about SVM) and avoiding some of the more obvious explanations.
+
+Also the explanation on the training method could be written more clearly and in more detail, since it looks a bit convoluted right now.
+
+The experiments seem sufficient although the data sets and problem chosen seem relatively simple. Comparison of the author's results with other similar approaches that can be found in the literature is limited or non-existent. Is this time the first time that this problem is tackled in the literature? What about the comparison of the performance of the proposed piecewise classification methods with other fast classifications available? (I am thinking about linear classifiers such as the available in the LibLinear tool). This lack of comparison with other approaches for fast classification and the experiments performed in "relatively" simple cases are probably the weakest points.
+
+The conclusions are substanciated, and  the cases where the proposed approach is useful are clearly identified.  A specially interesting fact is that the author seems motivated to release real usable software (see libAGF) and this is for me a small token that shows the usefulness of the approach.
+
+Overall, it is a small algorithmic contribution that can accelerate some classification tasks that fulfill a set of particular conditions. Although of reasonably limited interest, the algorithmic approach seems to be sound.

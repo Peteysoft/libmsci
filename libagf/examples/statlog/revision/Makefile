@@ -106,6 +106,7 @@ LINOPT_madelon=-s 2
 LINOPT_phishing=-s 0
 LINOPT_humidity=-s 5
 LINOPT_seismic=-s 2
+LINOPT_mnist=-s 4
 
 LINOPT=$(LINOPT_$(VER))
 
@@ -155,10 +156,10 @@ NSAMP=$(NSAMP_$(VER))
 #clean targets for collecting stats: 
 #(which parts of the makefile do we want to rerun?)
 CLEAN_letter=clean_but_borders
-CLEAN_ijcnn1=clean_borders
-CLEAN_seismic=clean_borders
-CLEAN_codrna=clean_borders
-CLEAN_humidity=clean_borders
+CLEAN_ijcnn1=clean_borders_linear
+CLEAN_seismic=clean_borders_linear
+CLEAN_codrna=clean_borders_linear
+CLEAN_humidity=clean_borders_linear
 CLEAN_mnist=clean_borders
 ifdef CLEAN_$(VER)
   CLEAN_TARGET=$(CLEAN_$(VER))
@@ -246,13 +247,13 @@ all: $(RESULTS)
 #	@cat $(WORKDIR)/knn_time.txt
 #	@cls_comp_stats $(TEST).cls $(TEST).knn
 #	@echo
-#	@echo "Linear:"
-#	@echo
-#	@cat $(WORKDIR)/lin_ttime.txt
-#	@cat $(WORKDIR)/lin_time.txt
-#	@echo
-#	@cls_comp_stats $(TEST).cls $(TEST).lin
-#	@echo
+	@echo "Linear:"
+	@echo
+	@cat $(WORKDIR)/lin_ttime.txt
+	@cat $(WORKDIR)/lin_time.txt
+	@echo
+	@cls_comp_stats $(TEST).cls $(TEST).lin
+	@echo
 	@echo "SVM:"
 	@echo
 	@cat $(WORKDIR)/svm_ttime.txt
@@ -284,22 +285,19 @@ stats:
 	done
 
 #$(RESULTS): $(TEST).knn.cls $(TEST).lin.cls $(TEST).svm.cls $(TEST).acc.cls
-#$(RESULTS): $(TEST).svm.cls $(TEST).acc.cls #$(TEST).lin.cls
-$(RESULTS): $(TEST).svm.cls $(TEST).acc.cls
+$(RESULTS): $(TEST).svm.cls $(TEST).acc.cls $(TEST).lin.cls
 #	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/knn_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
 #	echo -n " " >> $(RESULTS)
 #	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/knn_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
 #	echo -n " " >> $(RESULTS)
-	# fill linear with dummy values for mnist dataset:
-	echo -n "0 0 0 0 " >> $(RESULTS)
-	#grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_ttime.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
-	#echo -n " " >> $(RESULTS)
-	#grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_ttime.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
-	#echo -n " " >> $(RESULTS)
-	#grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
-	#echo -n " " >> $(RESULTS)
-	#grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
-	#echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_ttime.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_ttime.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
+	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/lin_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
 	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/svm_ttime.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
 	echo -n " " >> $(RESULTS)
 	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/svm_ttime.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
@@ -315,13 +313,11 @@ $(RESULTS): $(TEST).svm.cls $(TEST).acc.cls
 	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/acc_time.txt | sed '1q;d' | tr -d '\n' >> $(RESULTS)
 	echo -n " " >> $(RESULTS)
 	grep -o "[0-9]*\.[0-9]*" $(WORKDIR)/acc_time.txt | sed '2q;d' | tr -d '\n' >> $(RESULTS)
-	# fill linear with dummy values for mnist dataset:
-	echo -n " 0 0 " >> $(RESULTS)
-	#echo -n " " >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
 	#cls_comp_stats -Hb $(TEST).cls $(TEST).knn | tr -d '\n' >> $(RESULTS)
 	#echo -n " " >> $(RESULTS)
-	#cls_comp_stats -Hb $(TEST).cls $(TEST).lin | tr -d '\n' >> $(RESULTS)
-	#echo -n " " >> $(RESULTS)
+	cls_comp_stats -Hb $(TEST).cls $(TEST).lin | tr -d '\n' >> $(RESULTS)
+	echo -n " " >> $(RESULTS)
 	cls_comp_stats -Hb $(TEST).cls $(TEST).svm | tr -d '\n' >> $(RESULTS)
 	echo -n " " >> $(RESULTS)
 	cls_comp_stats -Hb $(TEST).cls $(TEST).acc | tr -d '\n' >> $(RESULTS)
@@ -338,7 +334,13 @@ nborders: $(NBORDER_SVM)
 clean:
 	rm -f $(WORKDIR)/*
 
-#clean only AGF and SVM-borders:
+#clean SVM-borders and linear:
+clean_borders_linear:
+	rm -f $(ACCELERATOR)*
+	rm -f $(BASE).lin
+	rm -f $(TEST).lin.*
+
+#clean only SVM-borders:
 clean_borders:
 	rm -f $(ACCELERATOR)*
 
@@ -346,7 +348,8 @@ clean_borders:
 clean_but_borders:
 	rm -f $(ACCELERATOR)
 	rm -f $(SVMMODEL)
-	rm -f $(TEST).lin*
+	rm -f $(BASE).lin
+	rm -f $(TEST).lin.*
 
 SVOLD=$(SVMMODEL).old
 

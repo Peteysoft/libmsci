@@ -567,7 +567,9 @@ $(WORKDIR)/splice.tst.raw.cls: $(DATADIR)/splice.t $(WORKDIR)/$(VER).timestamp
 
 $(WORKDIR)/mnist.trn.raw.cls: $(DATADIR)/mnist $(WORKDIR)/$(VER).timestamp
 	svm2agf -E 0 $(DATADIR)/$(VER) $(TRAIN).raw
-	agf_preprocess -F $(TRAIN).raw $(TRAIN).raw $(MNIST_INDICES)
+	#we subsample the data since for some reason svm-train now bums out
+	#with the full set:
+	agf_preprocess -zFf 0.25 $(TRAIN).raw $(TRAIN).raw $(WORKDIR)/dum $(MNIST_INDICES)
 
 $(WORKDIR)/mnist.tst.raw.cls: $(DATADIR)/mnist.t $(WORKDIR)/$(VER).timestamp
 	svm2agf -E 0 $(DATADIR)/$(VER).t $(TEST).raw
