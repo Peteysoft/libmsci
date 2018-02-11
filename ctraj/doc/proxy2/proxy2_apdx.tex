@@ -1,4 +1,5 @@
-\section{Derivations}
+
+\section{Model properties}
 
 \subsection{Mass conservation}
 
@@ -110,3 +111,43 @@ In the language of set theory and first-order logic:
 	\label{theorem}
 \end{equation}
 
+\section{Departure from equal area}
+
+\label{equal_area}
+
+Here we calculate the ratio between the largest and smallest grid boxes in the
+azimuthal equidistant coordinate system.
+First we show that there is no distortion at the pole:
+\begin{eqnarray}
+	\lim_{x\rightarrow 0, ~y\rightarrow 0} \left (\frac{\mathrm ds}{\mathrm d x} \right )^2 & = & 
+	\lim_{x\rightarrow 0, ~y\rightarrow 0} \left (\frac{\mathrm ds}{\mathrm d y} \right )^2  \\
+	& = & \lim_{x\rightarrow 0, ~y\rightarrow 0} \frac{1}{r^2} \left [
+	\frac{R_E^2}{r^2} \sin^2 \left (\frac{r}{R_E} \right ) y^2 + x^2 \right ] \\
+ & = & \frac{1}{r^2} \left [\frac{R_E^2}{r^2} \left (\frac{r}{R_E} \right )^2
+	y^2 + x^2 \right ] \\ 
+	& = & 1
+\end{eqnarray}
+hence the ratio between projected and unprojected areas is 1.
+Grid areas become progressively smaller the further from the pole you get.
+Since the projection is hemi-spherical, $r$ takes on a maximum value at the
+equator:
+\begin{equation}
+	r=\pi R_E/2
+\end{equation}
+Hence the largest possible values for $x$ and $y$ are:
+\begin{equation}
+	x = y = \frac{\pi R_E}{2 \sqrt{2}}
+\end{equation}
+which represents a point on the equator along a diagonal from the origin 
+in the projected coordinate system.
+The metric coefficients can be calculated:
+\begin{eqnarray}
+	\left (\frac{\mathrm ds}{\mathrm d x} \right )^2 & = & 
+	\left (\frac{\mathrm ds}{\mathrm d y} \right )^2 \\
+     & = & \frac{4}{\pi^2 R_e^2} \left [
+	\frac{4 R_E^2}{\pi^2 R_E^2} \sin^2 \left (\frac{\pi R_E}{2 R_E} \right ) 
+\frac{\pi^2 R_E^2}{8} + \frac{\pi^2 R_E^2}{8} \right ] \\
+& = & \frac{1}{\pi^2 R_E^2} \left ( 2 R_E^2 + \frac{\pi^2 R_E^2}{2} \right ) \\
+& = & \frac{2}{\pi^2} + \frac{1}{2} \\
+& \approx & 0.703
+\end{eqnarray}

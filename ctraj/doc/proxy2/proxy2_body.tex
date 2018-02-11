@@ -56,7 +56,7 @@ the fluid is incompressible ($\nabla \cdot \vect v = 0$).
 In an Eulerian tracer simulation, the approximate value of $q$
 is known only at discrete locations so can be represented as a vector,
 $\vect q=\lbrace q_i \rbrace$.
-The linear operator contained in the braces in Equation 
+The linear operator (see proof, Appendix \ref{linearity}) contained in the braces in Equation 
 (\ref{advection_diffusion}) is approximated as a matrix, $A$, which is 
 multiplied with $\vect q$:
 \begin{equation}
@@ -252,7 +252,7 @@ of the singular values in the limit as time goes to infinity:
 where $s_i$ is the $i$th singular value \citep{Ott1993}.
 For most systems:
 \begin{equation}
-|\delta \vect r| \approx |\delta \vect r(0) | \exp(\lambda_i)
+|\delta \vect r| \approx |\delta \vect r(0) | \exp(\lambda_i t)
 \label{lambda1}
 \end{equation}
 That is, as $H$ is integrated forward, the largest singular value and
@@ -415,7 +415,7 @@ azimuthally-equidistant-projected coordinate system:
 \begin{eqnarray}
   x & = & r \cos \theta \\
   y & = & r \sin \theta \\
-  r & = & \pi/2 - h \phi
+	r & = & R_E (\pi/2 - h \phi)
 \end{eqnarray}
 where $\theta$ is longitude, $\phi$ is latitude
 and $h$ is the hemisphere in which the projection is
@@ -427,10 +427,10 @@ Two fields are advected simultaneously: one for the Northern hemisphere ($h=1$)
 and one for the Southern hemisphere ($h=-1$), with equatorial crossings accounted for.
 The resulting space has the following metric coefficients:
 \begin{eqnarray}
-\left (\frac{ds}{d x} \right )^2 & = & \frac{1}{r^2} \left [
+\left (\frac{\mathrm ds}{\mathrm d x} \right )^2 & = & \frac{1}{r^2} \left [
 	\frac{R_E^2}{r^2} \sin^2 \left (\frac{r}{R_E} \right ) 
 	y^2 + x^2 \right ] \\ \nonumber
-\left (\frac{ds}{d y} \right )^2 & = & \frac{1}{r^2} \left [
+\left (\frac{\mathrm ds}{\mathrm d y} \right )^2 & = & \frac{1}{r^2} \left [
 	\frac{R_E^2}{r^2} \sin^2 \left (\frac{r}{R_E} \right )
 	x^2 + y^2 \right ]
 	\label{metric_coef}
@@ -608,7 +608,8 @@ in agreement with the inequality in (\ref{sv_lt_one}),
 even though Equation (\ref{mass_conservation}) is true only approximately.
 In this case it is close enough: the smallest boxes on the
 azimuthal equidistant grid will deviate from the largest by
-a factor of only $2/\pi+1/2\approx0.7$ (see Equation (\ref{metric_coef}))
+a factor of only $2/\pi^2+1/2\approx0.7$ (see derivation in
+Appendix \ref{equal_area})
 while most real fluids are approximately non-divergent, especially
 when considered over long time scales.
 

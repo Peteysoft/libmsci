@@ -1,0 +1,38 @@
+
+\section{Proof of linearity}
+
+\label{linearity}
+
+A linear operator has the following two properties:
+\begin{eqnarray}
+	L(ka) & = & kLa \\
+	L(a+b) & = & La + Lb
+\end{eqnarray}
+where $L$ is a linear operator and $k$ is a constant.
+We test the operator in (\ref{advection_diffusion}) for each of these two
+properties by writing it out component-by-component:
+\begin{eqnarray}
+	\frac{\partial q}{\partial t} & = & \left \lbrace -\vect v \cdot \nabla + \nabla \cdot D \nabla \right \rbrace q \\
+				   & = & - \sum_i v_i \frac{\partial q}{\partial x_i} + \sum_i \frac{\partial}{\partial x_i} \left ( \sum_j d_{ij} \frac{\partial q}{\partial x_j} \right )
+\end{eqnarray}
+We test the first property by substituting $kq$ for $q$:
+\begin{eqnarray}
+	\left \lbrace -\vect v \cdot \nabla + \nabla \cdot D \nabla \right \rbrace (kq) & = & - \sum_i v_i \frac{\partial kq}{\partial x_i} + \sum_i \frac{\partial}{\partial x_i} \sum_j d_{ij} \frac{\partial kq}{\partial x_j} \\
+	& = & - \sum_i v_i k \frac{\partial q}{\partial x_i} + \sum_i \frac{\partial}{\partial x_i} \sum_j k d_{ij} \frac{\partial q}{\partial x_j} \\
+	& = & - \sum_i k v_i \frac{\partial q}{\partial x_i} + \sum_i \frac{\partial}{\partial x_i} \left ( k \sum_j d_{ij} \frac{\partial q}{\partial x_j} \right ) \\
+	& = & - k \sum_i v_i \frac{\partial q}{\partial x_i} + k \sum_i \frac{\partial}{\partial x_i} \sum_j d_{ij} \frac{\partial q}{\partial x_j} \\
+	& = & k \left ( - \sum_i v_i \frac{\partial q}{\partial x_i} + \sum_i \frac{\partial}{\partial x_i} \sum_j d_{ij} \frac{\partial q}{\partial x_j} \right ) \\
+	& = & k \left \lbrace -\vect v \cdot \nabla + \nabla \cdot D \nabla \right \rbrace q
+\end{eqnarray}
+We test the second property by substituting $q_1 + q_2$ for $q$:
+\begin{eqnarray}
+	& & \left \lbrace -\vect v \cdot \nabla + \nabla \cdot D \nabla \right \rbrace (q_1 + q_2) \\
+	& = & - \sum_i v_i \frac{\partial (q_1+q_2)}{\partial x_i} + \sum_i \frac{\partial}{\partial x_i} \sum_j d_{ij} \frac{\partial (q_1+q_2)}{\partial x_j} \\
+	& = & - \sum_i v_i \left ( \frac{\partial q_1}{\partial x_i} + \frac{\partial q_2}{\partial x_i} \right ) + \sum_i \frac{\partial}{\partial x_i} \sum_j d_{ij} \left ( \frac{\partial q}{\partial x_j} + \frac{\partial q_2}{\partial x_j} \right ) \\
+	& = & \sum_i \left ( v_i \frac{\partial q_1}{\partial x_i} + v_i \frac{\partial q_2}{\partial x_i} \right ) + \sum_i \frac{\partial}{\partial x_i} \left ( \sum_j d_{ij} \frac{\partial q}{\partial x_j} + \sum_j d_{ij} \frac{\partial q_2}{\partial x_j} \right ) \\
+	& = & - \left (\sum_i v_i \frac{\partial q_1}{\partial x_i} + \sum_i v_i \frac{\partial q_2}{\partial x_i} \right ) + \sum_i \left ( \frac{\partial}{\partial x_i} \sum_j d_{ij} \frac{\partial q_1}{\partial x_j} + \frac{\partial}{\partial x_i} \sum_j d_{ij} \frac{\partial q_2}{\partial x_j} \right ) \\
+	& = & - \sum_i v_i \frac{\partial q_1}{\partial x_i} + \sum_i \frac{\partial}{\partial x_i} \sum_j d_{ij} \frac{\partial q_1}{\partial x_j} - \sum_i v_i \frac{\partial q_2}{\partial x_i} + \sum_i \frac{\partial}{\partial x_i} \sum_j d_{ij} \frac{\partial q_2}{\partial x_j} \\
+	& = & \left \lbrace -\vect v \cdot \nabla + \nabla \cdot D \nabla \right \rbrace q_1 + \left \lbrace -\vect v \cdot \nabla + \nabla \cdot D \nabla \right \rbrace q_2
+\end{eqnarray}
+
+

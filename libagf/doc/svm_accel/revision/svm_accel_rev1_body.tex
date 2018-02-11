@@ -811,7 +811,7 @@ although modest, improvement.
 All increases in speed, however, come at the cost of accuracy.
 The question is, is the speed increase worth the decrease in skill?
 To test this, we sub-sample the datasets and then re-apply the SVM training
-until the skill the two methods, SVM and SVM-borders, as measure by
+until the skill the two methods, SVM and SVM-borders, as measured by
 the uncertainty coefficient matches.
 
 It might seem more expedient to directly sub-sample the support vectors themselves
@@ -869,7 +869,7 @@ multiple classes.
 \begin{table}
 	\caption{Summary of results for all 17 datasets including a verdict on the success or failure of borders classification to speed up SVM.}
 	\label{verdict}
-	\input{verdict.tex}
+	\input{verdict_err.tex}
 
 	\vspace{1 ex}
 
@@ -880,14 +880,14 @@ multiple classes.
 The primary goal of this work was to improve the classification efficiency of a SVM
 using a simple, piecewise linear classifier which we call the borders classifier.
 The outcome for each of the 17 datasets is summarized in Table \ref{verdict}.
-When trained from the SVM, the method succeeded for eleven of the datasets.
+When trained from the SVM, the method succeeded for twelve of the datasets.
 Of these, two return better results using a linear classifier rather than
 borders sampling.
 Not a perfect score but certainly worthwhile to try for operational retrievals
 where time performance is critical, 
 for instance classifying large amounts of satellite data in real time.
 This is especially so in light of the high performance ratios for some of the problems:
-the \dataset{humidity} dataset is sped up by almost 20 times,
+the \dataset{humidity} dataset is sped up by over 20 times,
 for instance, with even higher factors for some of the binary datasets.
 
 The same analysis was not repeated for the linear classifier since by its very 
@@ -895,7 +895,7 @@ nature, the linear classifier should almost always come out the winner.
 Even so, in three of the trials, \dataset{codrna}, \dataset{madelon} and
 \dataset{mushrooms}, borders classifications was actually faster than a linear
 classifier. This may have more to do with implementation than anything else,
-however. Even so, if raw speed is the main criterion, linear classifiers are
+however. If raw speed is the main criterion, linear classifiers are
 the gold standard. 
 
 Linear classification has the potential to be both fast
