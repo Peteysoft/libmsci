@@ -1,0 +1,124 @@
+
+\section{Proof of linearity}
+
+\label{linearity}
+
+%(in case you skipped first-year mathematics...)
+
+A linear operator has the following two properties:
+\begin{eqnarray}
+	L(ka) & = & kLa \\
+	L(a+b) & = & La + Lb
+\end{eqnarray}
+where $L$ is a linear operator and $k$ is a constant.
+
+We can test the operator in (\ref{advection_diffusion}) for each of these two
+properties by writing it out component-by-component:
+\begin{eqnarray}
+	\frac{\partial q}{\partial t} & = & \left \lbrace -\vect v \cdot \nabla + \nabla \cdot D \nabla \right \rbrace q \\
+				   & = & - \sum_i v_i \frac{\partial q}{\partial x_i} + \sum_i \frac{\partial}{\partial x_i} \left ( \sum_j d_{ij} \frac{\partial q}{\partial x_j} \right )
+\end{eqnarray}
+This is straightforward, however here we aim for a more axiomatic approach.
+
+First we show that the product of linear operators is a linear operator:
+\begin{eqnarray}
+	L_1 L_2 (ka) & = & L_1 k L_2 a \\
+		    & = & k L_1 L_2 a
+\end{eqnarray}
+\begin{eqnarray}
+	L_1 L_2 (a+b) & = & L_1 (L_2 a + L_2 b) \\
+		    & = & L_1 L_2 a + L_1 L_2 b
+\end{eqnarray}
+
+The sum of linear operators is a linear operator:
+\begin{eqnarray}
+	(L_1 + L_2) (ka) & = & L_1 (ka) + L_2 (ka) \\
+		    & = & k L_1 a + k L_2 a \\
+	     & = & k (L_1 a + L_2 a) \\
+	     & = & k (L_1 + L_2) a
+\end{eqnarray}
+\begin{eqnarray}
+	(L_1 + L_2) (a + b) & = & L_1 (a + b) + L_2 (a + b) \\
+		    & = & L_1 a + L_1 b + L_2 a + L_2 b \\
+	     & = & (L_1 a + L_2 a) + (L_1 b + L_2 b) \\
+	     & = & (L_1 + L_2) a + (L_1 + L_2) b
+\end{eqnarray}
+
+The gradient ($\nabla$) operator is linear:
+\begin{eqnarray}
+\nabla (k \vec r) & = & \left (\frac{\partial}{\partial x_1}, ~
+	\frac{\partial}{\partial x_2}, ~ \frac{\partial}{\partial x_3}
+	\right ) \left [k (r_1, ~ r_2, ~ r_3) \right ] \\
+	& = & \left [\frac{\partial}{\partial x_1} (k r_1), 
+	~ \frac{\partial}{\partial x_2} (k r_2), 
+	~ \frac{\partial}{\partial x_3}	(k r_3) \right ] \\
+	& = & \left (k \frac{\partial r_1}{\partial x_1} , 
+	~ k \frac{\partial r_2}{\partial x_2}, 
+	~ k \frac{\partial r_3}{\partial x_3} \right ) \\
+& = & k \left (\frac{\partial}{\partial x_1}, ~
+	\frac{\partial}{\partial x_2}, ~ \frac{\partial}{\partial x_3}
+	\right ) (r_1, ~ r_2, ~ r_3) \\
+	& = & k \nabla \vec r
+\end{eqnarray}
+\begin{eqnarray}
+\nabla (\vec a + \vec b) 
+& = & \left [\frac{\partial}{\partial x_1} (a_1 + b_1), ~
+\frac{\partial}{\partial x_2} (a_2 + b_2), 
+~ \frac{\partial}{\partial x_3} (a_3 + b_3)
+	\right ]\\
+	& = & \left (\frac{\partial a_1}{\partial x_1}
+	+ \frac{\partial b_1}{\partial x_1},
+	~ \frac{\partial a_2}{\partial x_2} 
+	+ \frac{\partial b_2}{\partial x_2},
+	~ \frac{\partial a_3}{\partial x_3} 
+	+ \frac{\partial b_3}{\partial x_3} \right ) \\
+	& = & \left (\frac{\partial a_1}{\partial x_1},
+	~ \frac{\partial a_2}{\partial x_2},
+	~ \frac{\partial a_3}{\partial x_3} \right ) + 
+	\left ( \frac{\partial b_1}{\partial x_1},
+	~ \frac{\partial b_2}{\partial x_2},
+	~ \frac{\partial b_3}{\partial x_3} \right ) \\
+	& = & \nabla \vec a + \nabla \vec b
+\end{eqnarray}
+
+The dot product is a linear operator:
+\begin{eqnarray}
+	\vec r \cdot (k \vec x) & = & \sum_i r_i (k x_i) \\
+			     & = & k \sum_i r_i x_i \\
+	       & = & k \vec r \cdot \vec x
+\end{eqnarray}
+\begin{eqnarray}
+	\vec r \cdot (\vec a + \vec b) & = & \sum_i r_i (a_i+b_i) \\
+			     & = & \sum_i r_i a_i + \sum_i r_i b_i \\
+	       & = & \vec r \cdot \vec a + \vec r \cdot \vec b
+\end{eqnarray}
+
+Matrix multiplication is a linear operator:
+\begin{eqnarray}
+	A (k \vec x) & = & \sum_j a_{ij} (k x_j) \\
+	  & = &  k \sum_j a_{ij} x_j \\
+	  & = & k A \vec x
+\end{eqnarray}
+\begin{eqnarray}
+	R (\vec a + \vec b) & = & \sum_j r_{ij} (a_j + b_j) \\
+		& = & \sum_j r_{ij} a_j + \sum_j r_{ij} b_j \\
+	 & = & R \vec a + R \vec b
+\end{eqnarray}
+
+Finally, we show that the divergence operator is a linear operator:
+\begin{eqnarray}
+	\nabla \cdot (k \vec r) & = & \sum_i \frac{\partial}{\partial x_i} (k r_i) \\
+	& = & k \sum_i \frac{\partial r_i}{\partial x_i} \\
+	& = & k \nabla \cdot \vec r
+\end{eqnarray}
+\begin{eqnarray}
+	\nabla \cdot (\vec a + \vec b) & = & \sum_i \frac{\partial}{\partial x_i} (a_i + b_i) \\
+	& = & \sum_i \frac{\partial a_i}{\partial x_i}
+	+ \sum_i \frac{\partial b_i}{\partial x_i} \\
+	& = & \nabla \cdot \vec a + \nabla \cdot \vec b
+\end{eqnarray}
+
+The operator in Equation (\ref{advection_diffusion}) is composed of sums and
+products of gradients, dot products, matrix multiplication and divergence
+operators. Therefore, it too is a linear operator.
+

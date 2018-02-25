@@ -95,8 +95,8 @@ the trace while the
 threshold of $1/n$ means that most of the terms on the LHS should be non-zero.
 Note (\ref{second_part}) can be rewritten:
 \begin{equation}
-	\sum_{i=N^\prime+i_0}^{i_0} \delta_{c_iy_i} + N^\prime
-	\approx \sum_{i=N^\prime+i_0}^{i_0} \tilde p(c_i | \vec x_i) + N^\prime
+	\sum_{i=N^\prime+i_0}^{i_0} \delta_{c_iy_i} - N^\prime
+	\approx \sum_{i=N^\prime+i_0}^{i_0} \tilde p(c_i | \vec x_i) - N^\prime
 \end{equation}
 and that $N^\prime$ counts from $-i_0$ to $N-i_0$.
 
@@ -104,48 +104,22 @@ To use this for validation purposes,
 the correlation coefficient can be used to measure the precision while the 
 slope returns the bias.
 
+\subsection{Use for calibration}
 
-\section{Derivation}
-
-Suppose the probability event $c$ for a given trial is constant at $p_0$.
-There are $N$ trials each with value $y_i$. 
-If $y_i=c$ then the event has occured, otherwise not.
-The number of times the event occurs divided by the total number of
-measurements will approach the probability as more measurements are added:
+The theorem can be extended for calibration of decision values returned from
+binary classifiers.
+Note that calibration can itself be stated as a form of probability estimation.
+Consider a binary classifier for which we wish to find the value of
+$P(1|\vec x)$ as a function of $f$, the decision value:
 \begin{equation}
-p_0 = \lim_{N \rightarrow \infty} \frac{1}{N}\sum_{i=1}^N \delta_{cy_i}
+	P(f) \approx \lim_{N \rightarrow \infty;\mathrm d f=0}
+	\frac{\sum_{i=1|f \le f(\vec x_i) < f+\mathrm d f}^N \delta_{1 y_i}}
+	{\sum_{i=1|f \le f(\vec x_i) < f+\mathrm d f}^N 1
 \end{equation}
-where $\delta$ is the Kronecker delta.
-
-The same principle will hold true for a classification condtional probability,
-$P(c|\vec x)$, except that the conditional probability will be able to take
-on multiple values, so we exclude all those for which $P(c|\vec x) \ne p_0$:
+We start with the definition of probability which we define in terms of
+the Kronecker delta:
 \begin{equation}
-p_0 = \lim_{N_0 \rightarrow \infty} \frac{1}{N_0} \sum_{P(c|\vec x_i)=p_0} \delta_{cy_i}
-\end{equation}
-where $\lbrace \vec x_i : y_i | i \in [1, N] \rbrace$ is a set of classification
-training data 
-and $N_0$ is the number of training samples for which $P(c|\vec x)=p_0$,
-$|\lbrace i | P(c|\vec x_i) = p_0 \rbrace |$.
-We rearrange this as follows:
-\begin{eqnarray}
-\lim_{N_0 \rightarrow \infty} \left [\sum_{P(c|\vec x_i)=p_0} \delta_{cy_i} - N_0 p_0 \right ] & = & 0 \\
-\lim_{N_0 \rightarrow \infty} \sum_{P(c|\vec x_i)=p_0} \left [\delta_{cy_i} - p(c | \vec x_i) \right ] & = & 0 \label{constant_prob}
-\end{eqnarray}
-
-We could imagine summing a whole set of equations in the form of 
-(\ref{constant_prob}) with different constant probabilities, $p_0, p_1, p_2, ...$:
-\begin{equation}
-\sum_j \lim_{N_j \rightarrow \infty} \sum_{P(c|\vec x_i)=p_j} \left [\delta_{cy_i} - p(c | \vec x_i) \right ] = 0
-\end{equation}
-\begin{equation}
-\lim_{N_0 \rightarrow \infty} \lim_{N_1 \rightarrow \infty} \lim_{N_2 \rightarrow \infty} ... \sum_i \left [ P(c|\vec x_i) - \delta_{cy_i} \right ] = 0
-\end{equation}
-Some rearrangment produces the following theorem:
-\begin{equation}
-\lim_{N \rightarrow \infty} \sum_i \left [ P(c|\vec x_i) - \delta_{cy_i} \right ] = 0
-\end{equation}
-where $N=\sum_j N_j$.
+	P(x) = \lim_{
 
 \bibliography{../agf_bib}
 

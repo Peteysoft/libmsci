@@ -1,0 +1,174 @@
+\documentclass{letter}
+
+\usepackage{url}
+
+\signature{Peter Mills}
+
+\address{Peter Mills\\
+1159 Meadowlane\\
+Cumberland ON\\
+K4C 1C3\\
+1-613-833-3022\\
+\url{mailto://peteymills@hotmail.com}
+}
+
+\begin{document}
+
+\begin{letter}{Stefano Galmarini\\
+Journal of Environmental Fluid Mechanics}
+
+\opening{Dear Dr. Galmarini, journal editors and referees:}
+
+\begin{quote}
+Dear Mr. Mills,
+
+We have received the reports from our advisors on your manuscript, "PC Proxy: A method for dynamical tracer reconstruction", which you submitted to Environmental Fluid Mechanics.
+
+Based on the advice received, I feel that your manuscript could be reconsidered for publication should you be prepared to incorporate major revisions. When preparing your revised manuscript, you are asked to carefully consider the reviewer comments which are attached, and submit a list of responses to the comments. Please also check online for possible reviewer attachment(s).
+
+"Please make sure to submit your editable source files (i. e. Word, TeX)".
+
+In order to submit your revised manuscript, please access the Editorial Manager Website.
+
+Your username is: peteymills
+If you forgot your password, you can click the 'Send Login Details' link on the EM Login page at https://efmc.editorialmanager.com/
+
+We look forward to receiving your revised manuscript before 03 Apr 2018.
+
+Thank you very much.
+
+With kind regards,
+Stefano Galmarini
+Associate Editor
+Environmental Fluid Mechanics
+\end{quote}
+
+\begin{quote}
+COMMENTS TO THE AUTHOR:
+
+Reviewer #1: General comment:
+The manuscript focuses on the development and validation of a diagnostic tool for stratospheric ozone concentration, based on PCA (Principal Component Analysis).
+
+Provided the results reported on the manuscript and the major issues below, the reviewer suggests a major revision.
+
+Major issues:
+1.On the method formulation and implementation.
+1.1.The few main features of the method need much more details and explanations. For example, Sec.2.2 needs a major revision to provide a clearer explanation of its main contents. Some of the following issues provide some further details.
+1.2.Please provide the main details on the planetary-scale air quality model used for the tracer transport/advection, included the vertical extension of the numerical domain.
+\end{quote}
+All the experiments in this work were performed in only two dimensions.
+It would be straightforward, however, to extend the method to three dimensions.
+\begin{quote}
+Please report the main balance equations of the transport/dispersion model.
+\end{quote}
+The transport model is described in detail in Section 3.1, "Tracer simulation."
+\begin{quote}
+Please provide a detailed description of the proxy tracer simulation, the numerical tracer source, the dimensions of its plume.
+\end{quote}
+There are no sources because all of the tracer simulations applied in this
+work are completely passive. There is no plume, because except for the example
+in Section 4.1, no actual tracers are advected.
+\begin{quote}
+1.3.In PCA, one reduces "n" variables into "m<n" PCs (Principal Components) to reduce the computational time (but losing some accuracy). The presented method seems to reduce "m" measures of the stratospheric ozone concentration (one variable) to "k" PCs. Please clarify in detail this issue.
+\end{quote}
+The method reduces the transport matrix, which is a representation of the passive
+tracer dynamics, to $k$ principal components which are then correlated with the
+measurements.
+Neither the size of the transport matrix nor the number of measurements is
+mentioned explicity since the math can be presented perfectly well without 
+either parameter.
+\begin{quote}
+1.4.The correlation of the stratospheric ozone concentration with a simulated tracer concentration (in the stratosphere) needs detailed explanations and proofs. No reference (on relevant journals) is provided on the state-of-the-art behind this major hypothesis.
+\end{quote}
+Please check reference [1]. The correlation between passive or long-lived tracers over time is well documented. In fact we even provide a numerical demonstration in Section 4.1. The phenomenon has been used to estimate stratospheric ozone as in reference [13].
+\begin{quote}
+1.5.Eq(3). A minus sign seems missed at the beginning of the LHS (Left Hand Side) -also in (5) and (7)-.
+\end{quote}
+Good catch. This has been fixed.
+\begin{quote}
+Please highlight that this refers to a 1D formulation, no boundary condition is considered and no stability criterion is provided.
+\end{quote}
+``For example, consider a second-order finite difference scheme in one dimension...''
+Since it is just an example used for illustrative purposes only, I see no need to mention the boundary conditions.
+\begin{quote}
+1.6.Eq.(17) and Eq.(19). Please provide details on the estimation of the interpolation coefficients "w_i".
+\end{quote}
+``In this work, bilinear interpolation is used to interpolate measurement
+locations.'' has been added.
+\begin{quote}
+1.7.Sec.2.3. No relevant reference is provided on the method itself.
+\end{quote}
+We provide a total of four references for the ``classic'' proxy tracer method.
+I would suggest that reference [1] by Allen and Nakamura, is the most
+comprehensive.
+\begin{quote}
+1.8. Eq.(20). This equation seems incompatible with Eq.(19). For example, "c" depends on "i" instead of "j"; "k" is not defined.
+\end{quote}
+We have added a ``prime'' symbol to $c$ to distinguish it from the $c$ used in
+PC proxy and replaced $k$ with $i$ which is then defined just below the equation. Thanks for spotting the error in Equation (20).
+\begin{quote}
+1.9.Eq(27). Please verify if a time scale is missing.
+\end{quote}
+Thanks. This has been fixed.
+\begin{quote}
+1.10.Eq.(45). The variable "s" should be explicitly defined.
+\end{quote}
+``where $s$ is the path'' has been added.
+\begin{quote}
+1.11.Sec.4.1. Please specify where the tracer sources are located and the correlation coefficient is estimated.
+\end{quote}
+``Tracers are passively advected...''
+``The Pearson coefficient, weighted by grid size, is applied over the whole field at a single time-step.''
+\begin{quote}
+1.12.Sec.5. This method might work locally as a diagnostic tool coupled with a numerical model for the tracer. Please discuss the advantages and shortcomings of using such a modeling system instead of a planetary-scale air quality model with 4D data assimilation.
+\end{quote}
+``Principal component proxy tracer reconstruction is shown to be a powerful
+technique that 
+has many of the advantages of prognostic assimilation models but with
+less of the associated complexity.''
+Without doing a more in depth comparison, 
+I think it would be premature to go into more detail at this point.
+\begin{quote}
+2.On the method validation.
+2.1.Please highlight the possible risks of having too few input measuring points, which might be responsible for providing extrapolated instead of interpolated results in many parts of the investigated stratospheric level. The distribution of the sondes might be too irregular and sparse to provide validation for a diagnostic model. Errors might grow uncontrolled due to extrapolations replacing interpolation. Please discuss this issue.
+\end{quote}
+I think this issue is already discussed in some detail in Section 6, third
+paragraph.
+Since the tracer fields are not themselves integrated and there are no feedback loops, the error
+cannot grow uncrontrollably.
+\begin{quote}
+2.2. For the comparisons (correlation plots), error statistics should be reported either on all the figures or collected in a unique table. In any case, they should be normalized. Please estimate fractional bias, Normalized Mean Square Error, FAC2 and hit rate.
+\end{quote}
+2.3.Page 14. Final period. "In the histogram error plot in Figure 7b. the errors have been normalized by the original error estimates for the POAM III retrievals." This procedure seems not adequate enough: please avoid this correction or properly justify it.
+2.4.Sec.5.1. Please provide the positions of the two ensembles of POAM grid points (the one to estimate the interpolation parameters, the other to compare with the results) and their average spatial resolution.
+
+Minor issues:
+1. Abstract. Please specify that this study refers to the spatial resolution of the planetary-scale.
+2. Abstract.  "long-lived tracers such as ozone" should be replaced with "long-lived atmospheric pollutants such as ozone" or equivalent expression.
+3. Abstract. "with ozone measurements" should be replaced with "with stratospheric ozone concentration measurements" or equivalent expression.
+4.Sec.2."D is the diffusivity tensor." might be replaced with "D is the dispersion tensor" or equivalent expression.
+5."The linear operator" should be replaced with "The non-linear operator".
+6.Eqs.(3)-(4). No need for 2 equation IDs. Please revise the numbering of all the equations since.
+7.Sec.2.2. The symbol "m_i" might be misleading. Please consider introducing "q_m_i" to be coherent with "q".
+8.Sec.2.4. "the tangent vector is simply the dynamics". Please revise this expression.
+9.Sec.2.6. "The error is simply the terms … wind field." All the error contributions should be taken into account. Here, only the method error in the continuum is considered. Please refer to the "method error in the continuum" or equivalent expression.
+10.The software "ctraj" needs a proper citation among the references.
+11.Fig.3. Please verify whether the minima relate to the square of the correlation coefficient or not.
+12.Sec.4.2. Third to last line. Please revise the equality.
+13.Figures. "ozone" should be replaced with "stratospheric ozone concentration".
+14."correlation" might be replaced with "correlation coefficient" (all over the text).
+15.Sec.5.2. "of 0.64, a bias" should be replaced with "of 0.51, a bias".
+16.Fig.12. Caption. Please report "Arctic POAM III only" or an equivalent expression.
+
+
+
+Reviewer #2: This is a high quality research and extremely well written paper. Congratulations to the author for this work. I enjoyed reading it. I think the method the author is proposing for reconstruction of tracer transport field is promising and worth of publication. From the technical standpoint I have no major comments as I think the paper is clear enough to allow replication and widespread use. My biggest and only concern with this paper is that it seems that the topic was already published in a previous paper by the author (see "Principal component proxy tracer analysis." arXiv preprint arXiv:1202.1999 (2012)). arXiv (where this paper seems published)  is a repository of scientific works that as far as I know doesn't undergo the scrutiny of the peer review process. These are electronic prints of work but I am not sure if there are copyright restrictions to these published works. I recommend the author to explain if this research was already published in arXiv and if
+so, to indicate what are the additions or further contributions that make this paper an original and new contribution for consideration in the Journal of Environmental Fluid Mechanics.
+
+If the manuscript available in arXiv is not considered a publication, my suggestion is to accept this manuscript in its present form.
+
+\closing{Kind regards}
+
+\end{letter}
+
+\end{document}

@@ -36,9 +36,9 @@ int main(int argc, char **argv) {
 
   //for reading and storing the samples:
   long nsamp;
-  meas_data *samp;
-  meas_data *samp2;
-  meas_data *samp3;
+  meas_data *samp;		//read directly from measurement file
+  meas_data *samp2;		//interpolates
+  meas_data *samp3;		//restricted to specified range
   long nsamp2;
   int32_t i0;
   int32_t N;
@@ -258,6 +258,7 @@ int main(int argc, char **argv) {
     cov=0;
     var1=0;
     var2=0;
+    int fac2=0;
     //and rms
     for (long i=0; i<nsamp2; i++) {
       //if (tflag==0 || (samp2[i].q > thresh && samp3[i].q > thresh)) {
@@ -270,11 +271,18 @@ int main(int argc, char **argv) {
         var1+=diff1*diff1;
         var2+=diff2*diff2;
 	rms+=diff*diff;
+	if (samp2[i].q/samp3[i].q < 2 && samp3[i].q/samp2[i].q < 2) fac2++;
       }
     }
-    printf("r    = %g\n", cov/sqrt(var1/(nsamp2-nbad-1))/sqrt(var2/(nsamp2-nbad-1))/(nsamp2-nbad-1));
+    float std1=sqrt(var1/(nsamp2-nbad-1));	//interpolates
+    float std2=sqrt(var2/(nsamp2-nbad-1));	//measurements
+    rms=sqrt(rms/(nsamp2-nbad-1));
+    printf("r    = %g\n", cov/std1/std2/(nsamp2-nbad-1));
     printf("bias = %g\n", bias);
-    printf("rms  = %g\n", sqrt(rms/(nsamp2-nbad-1)));
+    printf("rms  = %g\n", rms);
+    printf("fractional bias = %g\n", bias/std2);
+    printf("normalized rms  = %g\n", rms/std2);
+    printf("fac2 = %g\n", 1.*fac2/(nsamp2-nbad));
   } else if (Hflag==0) {
     write_meas(samp2, nsamp2, stdout);
   }

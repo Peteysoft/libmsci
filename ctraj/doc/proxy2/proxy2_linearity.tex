@@ -3,6 +3,8 @@
 
 \label{linearity}
 
+%(in case you skipped first-year mathematics...)
+
 A linear operator has the following two properties:
 \begin{eqnarray}
 	L(ka) & = & kLa \\
@@ -29,8 +31,8 @@ We test the second property by substituting $q_1 + q_2$ for $q$:
 	& & \left \lbrace -\vect v \cdot \nabla + \nabla \cdot D \nabla \right \rbrace (q_1 + q_2) \\
 	& = & - \sum_i v_i \frac{\partial (q_1+q_2)}{\partial x_i} + \sum_i \frac{\partial}{\partial x_i} \sum_j d_{ij} \frac{\partial (q_1+q_2)}{\partial x_j} \\
 	& = & - \sum_i v_i \left ( \frac{\partial q_1}{\partial x_i} + \frac{\partial q_2}{\partial x_i} \right ) + \sum_i \frac{\partial}{\partial x_i} \sum_j d_{ij} \left ( \frac{\partial q}{\partial x_j} + \frac{\partial q_2}{\partial x_j} \right ) \\
-	& = & \sum_i \left ( v_i \frac{\partial q_1}{\partial x_i} + v_i \frac{\partial q_2}{\partial x_i} \right ) + \sum_i \frac{\partial}{\partial x_i} \left ( \sum_j d_{ij} \frac{\partial q}{\partial x_j} + \sum_j d_{ij} \frac{\partial q_2}{\partial x_j} \right ) \\
-	& = & - \left (\sum_i v_i \frac{\partial q_1}{\partial x_i} + \sum_i v_i \frac{\partial q_2}{\partial x_i} \right ) + \sum_i \left ( \frac{\partial}{\partial x_i} \sum_j d_{ij} \frac{\partial q_1}{\partial x_j} + \frac{\partial}{\partial x_i} \sum_j d_{ij} \frac{\partial q_2}{\partial x_j} \right ) \\
+%	& = & \sum_i \left ( v_i \frac{\partial q_1}{\partial x_i} + v_i \frac{\partial q_2}{\partial x_i} \right ) + \sum_i \frac{\partial}{\partial x_i} \left ( \sum_j d_{ij} \frac{\partial q}{\partial x_j} + \sum_j d_{ij} \frac{\partial q_2}{\partial x_j} \right ) \\
+	& = & - \left (\sum_i v_i \frac{\partial q_1}{\partial x_i} + \sum_i v_i \frac{\partial q_2}{\partial x_i} \right ) + \sum_i \frac{\partial}{\partial x_i} \left ( \sum_j d_{ij} \frac{\partial q_1}{\partial x_j} + \sum_j d_{ij} \frac{\partial q_2}{\partial x_j} \right ) \\
 	& = & - \sum_i v_i \frac{\partial q_1}{\partial x_i} + \sum_i \frac{\partial}{\partial x_i} \sum_j d_{ij} \frac{\partial q_1}{\partial x_j} - \sum_i v_i \frac{\partial q_2}{\partial x_i} + \sum_i \frac{\partial}{\partial x_i} \sum_j d_{ij} \frac{\partial q_2}{\partial x_j} \\
 	& = & \left \lbrace -\vect v \cdot \nabla + \nabla \cdot D \nabla \right \rbrace q_1 + \left \lbrace -\vect v \cdot \nabla + \nabla \cdot D \nabla \right \rbrace q_2
 \end{eqnarray}

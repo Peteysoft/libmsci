@@ -200,7 +200,7 @@ int main(int argc, char **argv) {
   }
 
   //read in measurements:
-  printf("Reading in measurements from, %s\n", measurement_file);
+  //printf("Reading in measurements from, %s\n", measurement_file);
   samp=read_meas(measurement_file, &nsamp, dwid);
 
   qint=new float[np];

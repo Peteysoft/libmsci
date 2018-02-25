@@ -1,6 +1,6 @@
 TARGET = proxy2_springer
 
-DEPENDENTS = proxy2_abstract.txt proxy2.bib proxy2_body.tex proxy2_ack.txt proxy2_apdx.tex
+DEPENDENTS = proxy2_abstract.txt proxy2.bib proxy2_body.tex proxy2_ack.txt proxy2_apdx.tex proxy2_linearity2.tex
 
 FIGURES =    classic_O3.1998.10.01.ps \
 	     firstpc1997.12.01.ps \

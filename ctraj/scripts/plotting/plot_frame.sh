@@ -12,7 +12,7 @@ VTYPE=0
 
 CONTOUR=grdimage
 
-while getopts 'c:F:g:I:J:n:r:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
+while getopts 'c:F:g:h:I:J:n:r:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
   case $ARG in
     c) PALETTE=$OPTARG
        DDSWTC=1;		
@@ -23,6 +23,8 @@ while getopts 'c:F:g:I:J:n:r:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
       ;;
     g) ZOPTS="$ZOPTS -g"
        WCFLAG=1
+      ;;
+    h) PFOPTS="$PFOPTS -h $OPTARG"
       ;;
     I) ZOPTS="$ZOPTS -I $OPTARG"
        WCFLAG=1
@@ -65,7 +67,7 @@ while getopts 'c:F:g:I:J:n:r:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
     z) ZOPTS="$ZOPTS -z $OPTARG"
        WCFLAG=1
       ;;
-    H) echo "Usage: plot_frame [-C] [-q] [-r slen] "
+    H) echo "Usage: plot_frame [-C] [-q] [-r slen] [-h hemi] "
        echo "            [-z nz] [-I bottom] [-F top] [-g]"
        echo "            [-x nlon] [-y nlat] datafile [index [outfile]]"
        echo "options:"

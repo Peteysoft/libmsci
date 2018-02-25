@@ -1,4 +1,6 @@
-all: tracer_transport.pdf manual.pdf
+JOURNAL=_elsevier
+
+all: tracer_transport$(JOURNAL).pdf manual.pdf
 	make -C proxy2
 	make -C pc_proxy
 
@@ -13,8 +15,9 @@ manual.pdf: description.tex manual.tex grid_example.ps semi_Lagrangian.ps tracer
 	latex manual
 	dvipdf manual
 
-tracer_transport.pdf: tracer_transport.tex tracer.bib tt_cover_graphic.ps tt_symbol_list.tex
-	make TARGET=tracer_transport
+
+tracer_transport$(JOURNAL).pdf: tracer_transport$(JOURNAL).tex tracer.bib tt_cover_graphic.ps tt_symbol_list.tex tracer_transport_body.tex
+	make TARGET=tracer_transport$(JOURNAL)
 
 $(TARGET).pdf: $(TARGET).tex
 	latex $(TARGET)

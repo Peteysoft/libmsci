@@ -93,15 +93,16 @@ hyperplanes in regions of minimum density \citep{Pavlidis_etal2016}.
 The method described in this paper in some senses combines these two techniques
 by finding the root of the difference in conditional probabilities along a
 line between two points of opposite class.
-It will be tested on two kernel-based classifiers---a support vector
+It will be tested a kernel-based classifier called a support vector
 machine (SVM) \citep{Michie_etal1994,Mueller_etal2001}
-and a simpler, ``pointwise estimator'' \citep{Terrell_Scott1992,Mills2011}---and evaluated based on how
+and evaluated based on how
 well it improves classification speed and at what cost to accuracy.
+It will also be compared to a simple, linear classifier as in (\ref{linear_classifier}).
 
 Section \ref{theory} describes the theory of support
-vector machines and the pointwise estimator (``adaptive Guassian filtering'')
+vector machines and linear classifiers
 as well as the piecewise linear classifier or ``borders'' classifier
-that will be trained on the two kernel estimators.
+that will be trained on the SVM.
 Section \ref{methods} describes the software and test datasets then in
 section \ref{example} we analyze the different classification algorithms on
 a simple, synthetic dataset.
@@ -170,7 +171,7 @@ In a linear SVM, the kernel function, $\vectorkernel$, is a simple dot product:
 \begin{eqnnon}
 	\svmdecision(\testpoint) = \sum_i \svmcoeff_i \classlabel_i \testpoint \cdot \sample_i + \svmborderconst
 \end{eqnnon}
-By switching the order of the summation operators, 
+By exchanging the order of the summation operators, 
 we can show that the normal to the
 decision hyper-plane, $\bordernormal$, takes on the following value:
 \begin{eqnnon}
@@ -228,7 +229,7 @@ First, the nearest border sample to the test point is found.
 Second, we define a new decision function, $\borderdecision$, 
 equivalent to (\ref{linear_classifier}), through a dot product with the normal:
 \begin{eqnarray}
-	i & = & \arg \min_j |\testpoint - \bordervector_j| \\ \nonumber
+	i & = & \arg \min_j |\testpoint - \bordervector_j| \nonumber \\
 	\borderdecision(\testpoint) & = & \bordernormal_i \cdot (\testpoint - \bordervector_i)
 	\label{border_decision}
 \end{eqnarray}
@@ -397,6 +398,7 @@ SVM as well as logistic regression.
 The method that provided the most accurate results for each dataset was used.
 The library may be downloaded at: 
 \url{https://www.csie.ntu.edu.tw/~cjlin/liblinear} \citep{Fan_etal2008}.
+LIBLINEAR is very fast for both training and prediction.
 
 
 \subsection{LIBSVM}
@@ -411,7 +413,8 @@ It also includes code for nonlinear regression and density estimation or
 ``one-class SVM''.
 SVM models were trained using the \verb/svm-train/ command while
 classifications done with \verb/svm-predict/.
-LIBSVM can be found at: \url{https://www.csie.ntu.edu.tw/~cjlin/libsvm}
+LIBSVM can be found at: \url{https://www.csie.ntu.edu.tw/~cjlin/libsvm}.
+LIBSVM is not very fast but tends to be very accurate.
 
 \subsection{LibAGF}
 
@@ -435,7 +438,8 @@ Classifications are then performed with \verb/classify_m/.
 \begin{table}
 	\caption{Summary of datasets used in the numerical trials.}
 	\label{summary}
-	\input{../summary.tex}
+	%\input{../summary.tex}
+	\input{summary.tex}
 \end{table}
 
 The borders classification algorithm was tested on a total of 
@@ -539,7 +543,8 @@ Features that took on all the same value in the training data were removed.
 \label{example}
 
 \begin{figure}
-\includegraphics[width=0.9\textwidth]{../support_vectors}
+%\includegraphics[width=0.9\textwidth]{../support_vectors}
+\includegraphics[width=0.9\textwidth]{support_vectors}
 \caption{Support vectors for a pair of synthetic test classes.}\label{sample_sv}
 \end{figure}
 
@@ -591,7 +596,8 @@ the problem does not increase, adding new training samples does not increase
 the number of border samples required for maximum accuracy.
 
 \begin{figure}
-\includegraphics[width=0.9\textwidth]{../nsv}
+%\includegraphics[width=0.9\textwidth]{../nsv}
+\includegraphics[width=0.9\textwidth]{nsv}
 \caption{Number of support vectors against number of training vectors for pair of synthetic test classes. Fitted curve returns exponent of 0.94 and multiplication coefficient of 0.38.}
 \label{nsv}
 \end{figure}
@@ -614,7 +620,8 @@ for good accuracy, so even with only 200 training samples you will still
 have improved efficiency by using the borders technique.
 
 \begin{figure}
-\includegraphics[width=0.9\textwidth]{../skill_v_nt}
+%\includegraphics[width=0.9\textwidth]{../skill_v_nt}
+\includegraphics[width=0.9\textwidth]{skill_v_nt}
 \caption{Classification accuracy and uncertainty coefficient for a support vector machine (SVM) trained with different numbers of samples.
 Error bars represent the standard deviation of 20 trials.}
 \label{skill_v_nt}
@@ -637,7 +644,8 @@ where $\minborders$ is the minimum number of border vectors required for good
 accuracy.
 
 \begin{figure}
-\includegraphics[width=0.9\textwidth]{../svm_time}
+%\includegraphics[width=0.9\textwidth]{../svm_time}
+\includegraphics[width=0.9\textwidth]{svm_time}
 \caption{Classification time for a SVM for a single test point versus number of support vectors.}
 \label{svm_time}
 \end{figure}
@@ -652,7 +660,8 @@ that attempt to create an idealized representation of the classes through
 a set of ``codebook'' vectors.
 
 \begin{figure}
-\includegraphics[width=0.9\textwidth]{../border_time}
+%\includegraphics[width=0.9\textwidth]{../border_time}
+\includegraphics[width=0.9\textwidth]{border_time}
 \caption{Classification time for a border classifier for a single test point versus number of border samples.}
 \label{border_time}
 \end{figure}
@@ -667,7 +676,8 @@ Fitted straight lines are overlaid for each and the slope and intercept
 printed in the subtitle.
 
 \begin{figure}
-\includegraphics[width=0.9\textwidth]{../break_even}
+%\includegraphics[width=0.9\textwidth]{../break_even}
+\includegraphics[width=0.9\textwidth]{break_even}
 \caption{Number of border samples versus number of support vectors for equal classification times.}
 \label{break_even}
 \end{figure}
@@ -737,8 +747,8 @@ to fit it.
 \end{table}
 
 Three classification models were tested on each of the 17 datasets described in
-Section \ref{datasets}: k-nearest-neighbours (KNN), 
-a support vector machine (SVM) and a borders and a borders
+Section \ref{datasets}: a basic linear classifier, 
+a support vector machine (SVM) and a borders
 model derived from the previous SVM model (Accel. for ``accelerated'' SVM).
 SVM should be more accurate than linear classification for problems in which
 the classes are not linearly separable.
@@ -778,7 +788,7 @@ highlighted.
 
 \begin{table}
 	\caption{Total number of support vectors versus total number of border samples.}
-	\input{../sum_nsv.tex}
+	\input{sum_nsv.tex}
 	\label{sum_nsv}
 \end{table}
 
@@ -794,8 +804,9 @@ highlighted.
 All but one of the classification problems show a significant speed increase with the application
 of the borders technique with \dataset{letter} being the lone exception.
 Despite its simplicity, linear classification is shown to be competitive with
-a non-parametric method such SVM for several of the problems and it is almost 
+a non-parametric method such as SVM for many of the problems and it is almost 
 always faster both for training and for testing.
+(For the author, at least, this is one of the more surprising results.)
 
 Table \ref{sum_nsv} is an attempt to get a handle on the relative time complexity 
 of the two methods and lists all the relevant variables: number of features,
@@ -804,8 +815,9 @@ total number of border samples for the borders method compared with the resultin
 classification time for the two methods. The two most relevant variables here are the
 number of support vectors versus the number of border vectors.
 In order to get a successful speed increase, the former should be larger than 
-the latter, but as is apparent from some problems such as \dataset{sat}, \dataset{usps}, and \dataset{mnist},
-even having slightly more border samples can sometimes produce a significant,
+the latter, but as is apparent from some problems such as \dataset{shuttle}, 
+\dataset{pendigits}, and \dataset{usps},
+even having more border samples can sometimes produce a significant,
 although modest, improvement.
 
 All increases in speed, however, come at the cost of accuracy.
@@ -849,8 +861,6 @@ To understand how this functional form was chosen, please see Appendix \ref{shut
 The results of the sub-sampling exercise are shown in Table \ref{subsampling_table}.
 This gives us a clearer understanding of whether or not and
 when SVM acceration through borders sampling is effective.
-And in a few trials, the speed increase is so great, SVM cannot match the borders
-method even through sub-sampling.
 
 There are at least two major sources of error for the borders technique.
 First, it provides only limited sampling of the discrimination

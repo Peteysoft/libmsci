@@ -33,7 +33,7 @@ CONTOUR=grdimage
 LFLAG=1
 CUSTOMR=0
 
-while getopts 'c:F:g:I:J:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
+while getopts 'c:F:g:h:I:J:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
   case $ARG in
     c) PALETTE=$OPTARG
        DDSWTC=1;		
@@ -44,6 +44,16 @@ while getopts 'c:F:g:I:J:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
       ;;
     g) ZOPTS="$ZOPTS -g"
        WCFLAG=1
+      ;;
+    h) if [[ $OPTARG -lt 0 ]]
+       then
+         RANGE="0/360/-90/0"
+         PROJ="S0/-90/18"
+       elif [[ $OPTARG -eq 0 ]]
+       then
+         RANGE="0/360/-90/90"
+         PROJ="Q0/0/9i"
+       fi
       ;;
     I) Z0=$OPTARG
        WCFLAG=1
@@ -77,7 +87,7 @@ while getopts 'c:F:g:I:J:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
     z) NZ=$OPTARG
        WCFLAG=1
       ;;
-    H) echo "Usage: quick_plot [-q] [-L] [-V 1]"
+    H) echo "Usage: quick_plot [-q] [-L] [-V 1] [-h hemi]"
        echo "            [-z nz] [-I bottom] [-F top] [-g]"
        echo "            [-x nlon] [-y nlat] [outfile]"
        echo "options:"

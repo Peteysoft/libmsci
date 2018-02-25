@@ -1,3 +1,17 @@
+General Comments
+
+All reference to AGF and other pointwise estimators has been removed. This is
+to make room for comparisons with other methods and to shorten an already fat
+manuscript. As a consequence, section 2.1 and 2.1 have been compressed into a
+single, short section. At the reviewers' suggestion, instead of comparing the
+algorithm with KNN and AGF-borders, I have compared it with linear
+classifiers. To keep results consistent, the whole experiment has been redone.
+Discrepencies between the new and old revisions exist because the new results
+were performed on a different computer with a different operating system.
+
+Rather than burden an already over-long paper with a more detailed description of the borders algorithm, I refer
+the readers to an earlier paper which describes it in considerable detail.
+
 Ref.:  Ms. No. RTIP-D-17-00281
 Accelerating kernel classifiers through borders mapping
 Journal of Real-Time Image Processing
@@ -38,17 +52,32 @@ I have the following comments.
 
 1a) About the presentation:  Sections 2.1 and 2.2 can be reduced, by citing existing textbooks/reviews/tutorials on the kernel methods and SVM.  In this way, space can be saved, and the readers can proceed directly to the key theory section.  As a technical report, the current presentation is fine, but as a journal paper,  I think Sections 2.1 and 2.2 are lengthier than necessary.
 
+This has been done.
+
 1b) Section 2.3 is the key section, and some illustrations on a toy example to convey the intuitions are highly recommended. Although later in the paper Figures 1 and 2 are on a simple example, they do not convey the intuitions behind section 2.3.
+
+To avoid repeating myself, I refer readers to an earlier paper.
 
 2) Page 4, equation 2, 'arg min'  should be 'arg max'
 
+Thanks.
+
 3) Page 13, Figures 1 & 2, in the legend, 'o Border'  should be '-- Border'  because the border delineates a thin curve (instead of a string of discs).
+
+Circles are used instead of a line because this is, in fact, how the algorithm
+works: the border is sampled discretely and the samples are in no particular
+order, as for instance along the path. For cases with more than two
+dimensions, this will make more sense. Because the algorithm is trained
+using the mathematical definition of the classes, the border so arrived at
+should nonetheless be very accurate.
 
 4) Page 14, Figure 3, caption, and line 27 "uncertainty coefficient" is introduced, but it's not explained until page 19, line 40.  I suggest you reorganize the text, so that "uncertainty coefficient" is explained right where it is introduced.
 
+This subsection has been moved to the theory section.
+
 5) Page 25, line 33, "to improve the classification time of"  should be "to improve the classification efficiency of" or "to reduce the classification time of"
 
-
+Done.
 
 
 Reviewer #2: Support Vector Machine is a very mature algorithm, and LibSVM is widely used for kernel SVM classification. An alternative solution is to explicitly map the feature and then Liblinear is used to conduct the linear classification based on the mapped feature.  It should be noted that LibSVM is slow at conducting linear SVM training, but Liblinear is very fast because it optimizes the loss function in primal problem instead of the dual problem.  Could you compare your algorithm with LIblinear, and report the running time?
@@ -57,14 +86,31 @@ It is easy to follow the SVM training flow, but I can clearly follow how to trai
 
 Since libAGF is released online for some time, but I have not observed its large potential. 
 
+Part of the reason for publishing this paper is to help publicize the library.
+The original AGF paper has, at this writing, 56 citations:
+https://scholar.google.ca/scholar?oi=bibs&hl=en&cites=10937377970090332807
+Many of these are
+background references but some use the density estimation algorithm
+mainly for astronomy and medical research.
+
 Instead of some simple toy data, could you demonstrate the effectiveness of your toolbox in some real applications? I think it will increase our confidence to your work. In current version, it is very hard for me to accept it as a research paper.
+
+I'm not sure what you mean by real applications. Except for the toy example in
+Section 4, all the data seem to be real applications including text
+recognition, medical diagnosis and satellite imaging among others. While they
+may not be the most difficult problems in the literature, the algorithm is not
+designed with these in mind: rather it's designed for more workaday problems
+such as retrieving satellite data which as machine learning problems go, is
+not a particularly difficult one.
 
 
 Fan, Rong-En, et al. "LIBLINEAR: A library for large linear classification." Journal of machine learning research 9.Aug (2008): 1871-1874.
 
 Vedaldi, Andrea, and Andrew Zisserman. "Efficient additive kernels via explicit feature maps." IEEE transactions on pattern analysis and machine intelligence 34.3 (2012): 480-492.
 
-
+Unfortunately, I did not have time to try this approach. While preliminary
+tests with an "intersection" kernel were extremely promising, I was not able
+to duplicate these results with an explicitly-mapped kernel.
 
 Reviewer #4: The authors propose the use of piecewise linear classiers that can be trained from kernel-based ones to improve the classification speed. The article explain how finding the roon of the differene of the conditional probabilities between pairs of opposite classes can be use to build up a representation of the decision boundary.
 
@@ -74,7 +120,11 @@ Introduction of the problem is informative although maybe a bit verbose. This co
 
 Also the explanation on the training method could be written more clearly and in more detail, since it looks a bit convoluted right now.
 
+See general comments, above.
+
 The experiments seem sufficient although the data sets and problem chosen seem relatively simple. Comparison of the author's results with other similar approaches that can be found in the literature is limited or non-existent. Is this time the first time that this problem is tackled in the literature? What about the comparison of the performance of the proposed piecewise classification methods with other fast classifications available? (I am thinking about linear classifiers such as the available in the LibLinear tool). This lack of comparison with other approaches for fast classification and the experiments performed in "relatively" simple cases are probably the weakest points.
+
+Earlier approaches are described in the introduction. A comparison with LIBLINEAR has been added.
 
 The conclusions are substanciated, and  the cases where the proposed approach is useful are clearly identified.  A specially interesting fact is that the author seems motivated to release real usable software (see libAGF) and this is for me a small token that shows the usefulness of the approach.
 
