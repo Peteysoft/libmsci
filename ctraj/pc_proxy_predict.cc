@@ -54,15 +54,9 @@ int main(int argc, char **argv) {
   float **qvec;
 
   //for calculating lead times:
-  float int_t;		//length in days of transport map 
+  float int_time;		//integration time in days
   float lead;		//days between start of transport map and measurement window
   float window;			//measurement window in days (+/-)
-  time_class tf;		//date at end of lead time
-  time_class tf2;		//date at end of lead time
-  time_class t1, t2;		//measurement time window
-  double l2;			//for truncating matrix array
-  int32_t N2;			//size of matrix array to use
-  int32_t N3;			//index for output field
 
   //measurement data within window:
   meas_data *samp_w;
@@ -92,7 +86,7 @@ int main(int argc, char **argv) {
   int nsamp_max=0;
   int32_t nfield=0;
 
-  i0=0;
+  i0=-1;
   N=-1;
 
   ncv=NARNOLDI;
@@ -142,8 +136,8 @@ int main(int argc, char **argv) {
   matfile=argv[1];
   datefile=argv[2];
   measurement_file=argv[3];
-  sscanf(argv[4], "%f", &int_t);
-  if (flag[11]==0) lead=int_t;
+  sscanf(argv[4], "%f", &int_time);
+  if (flag[11]==0) lead=int_time;
   sscanf(argv[5], "%f", &window);
   if (cflag==0) outfile=argv[6];
 
@@ -170,7 +164,6 @@ int main(int argc, char **argv) {
   //if we are specifying dates, then we are interested in the final,
   //output fields:
   if (flag[5]) {
-    date0.add(-lead);
     i0=ceil(interpolate(t, nall+1, date0, -1));
     if (i0<0) {
       fprintf(stderr, "Insufficient date coverage in tracer mapping\n");
@@ -178,15 +171,25 @@ int main(int argc, char **argv) {
     }
   }
 
+  if (i0<0) {
+    date0=t[0];
+    if (lead-window<0) {
+      date0.add(window);
+    } else {
+      date0.add(lead);
+      i0=ceil(interpolate(t, nall+1, date0, -1));
+    }
+  }
+
   if (flag[6]) {
-    datef.add(-lead);
     N=bin_search_g(t, nall+1, datef, -1)-i0+1;
   }
 
   if (N < 0 || N+i0>nall) {
-    tf=t[nall];
-    tf.add(-int_t-window);
-    N=bin_search_g(t, nall+1, tf, -1)-i0+1;
+    datef=t[nall];
+    if (lead+window>int_time) datef.add(window); else datef.add(-lead+int_time);
+    datef.add(-window);
+    N=bin_search_g(t, nall+1, datef, -1)-i0+1;
   }
 
   if (N<0) {
@@ -196,12 +199,19 @@ int main(int argc, char **argv) {
 
   //now that we've calculated all these dates and indices, it's time to read
   //in the sparse matrices:
-  //we need data starting at this date:
   if (cflag!=1) {
-    int start=i0;
-    t1=t[i0];
-    t1.add(lead-window);
-    if (t1<t[i0]) start=bin_search_g(t, alldates.size(), t1, -1);
+    time_class t0;		//first time grid to load in
+    time_class tf;		//last date we need
+    int start;
+    //we need data starting at this date:
+    t0=t[i0];
+    if (window>lead) t0.add(-window); else t0.add(-lead);
+    start=bin_search_g(t, alldates.size(), t0, -1);
+    if (start<0) {
+      fprintf(stderr, "Insufficient date coverage in tracer mapping\n");
+      exit(SAMPLE_COUNT_MISMATCH);
+    }
+    //printf("Starting index: %d\n", start);
     fprintf(docfs, "Reading file: %s\n", matfile);
     fs=fopen(matfile, "r");
     //scan ahead to the data that we need:
@@ -221,15 +231,9 @@ int main(int argc, char **argv) {
       exit(DIMENSION_MISMATCH);
     }
     //and ending at this date:
-    t1=t[i0+N-1];
-    t1.add(lead+window);
-    t2=t[i0+N-1];
-    t2.add(int_t);
-    if (t1>t2) {
-      nall=ceil(interpolate(t, alldates.size(), t1))-start+1;
-    } else {
-      nall=ceil(interpolate(t, alldates.size(), t2))-start+1;
-    }
+    tf=t[i0+N];
+    if (lead+window > int_time) tf.add(window); else tf.add(int_time-lead);
+    nall=ceil(interpolate(t, alldates.size(), tf))-start+1;
     matall=new sparse_matrix[nall];
     for (int32_t i=0; i<nall; i++) {
       int32_t m1, n1;
@@ -264,29 +268,35 @@ int main(int argc, char **argv) {
     fwrite(&n, sizeof(n), 1, fs);
   }
   nfield=0;
-  nsamp_min=N;
+  nsamp_min=nsamp;
+  long last_ind1=-1;		//speed up binary searches
+  long last_ind2=-1;		//speed up binary searches
   for (int32_t i=i0; i<N+i0; i++) {
     int32_t nall_local;		//to save memory...
-    //calculate lead times:
-    tf=t[i];
-    tf.write_string(tstring);
-    //printf("%d %s\n", i, tstring);
+    int32_t start;		//start grid to pass to pc_proxy
+    time_class tgrid;		//current time grid to output
+    time_class t1, t2;		//start and end of measurement window
+    time_class t0, tf;		//start and end of integration time
+    int32_t l1, l2;		//  "
 
-    tf.add(int_t);
-    l2=interpolate(t, nall+1, tf, -1);
-    N2=(int32_t) (ceil(l2)-i);		//number of sparse matrix elements
+    //current time grid:
+    tgrid=t[i];
 
-    tf2=t[i];
-    tf2.add(lead);
-    t1=tf2;
+    //start and end of measurement window:
+    t1=tgrid;
     t1.add(-window);
-    t2=tf2;
+    t2=tgrid;
     t2.add(window);
-    //round to nearest index: (rel. location of measurement window)
-    N3=(int32_t) (interpolate(t, nall+1, tf2, -1)-i+0.5);
-    //to save memory while doing the interpolation:
-    nall_local=bin_search(t, nall+1, t2, -1)+1-i;
 
+    //start and end of integration period:
+    t0=tgrid;
+    t0.add(-lead);
+    tf=tgrid;
+    tf.add(int_time-lead);
+    l1=ceil(interpolate(t, nall+1, t0, last_ind1));
+    l2=bin_search_g(t, nall+1, tf, last_ind2);
+
+    //informational message (interpolation interval):
     t1.write_string(tstring);
     fprintf(docfs, "Interpolating measurements between %s ", tstring);
     t2.write_string(tstring);
@@ -295,8 +305,8 @@ int main(int argc, char **argv) {
     //select measurements:
     samp_w=select_meas(t1, t2, samp, nsamp, &nsamp_w, hemi);
     //write_meas(samp_w, nsamp_w, stdout);
-    t[N3+i].write_string(tstring);
 
+    tgrid.write_string(tstring);
     if (cflag) {
       //if the -C option is specified, we only output the number of samples per field:
       printf("%d %s: %d\n", nfield, tstring, nsamp_w);
@@ -319,7 +329,23 @@ int main(int argc, char **argv) {
     printf("%d %s\n", nfield, tstring);
     nfield++;
 
-    qvec=pc_proxy(matall+i, t+i, N2, nall_local, samp_w, nsamp_w, nev, ncv, kflag, N3);
+    //earliest time grid we need for interpolation:
+    if (window>lead) {
+      start=bin_search_g(t, nall+1, t1, last_ind1);
+    } else {
+      start=l1;
+    }
+
+    //to save memory while doing the interpolation:
+    //(maximum number of grids we need to pass to pc_proxy)
+    if (tf>t2) {
+      nall_local=ceil(interpolate(t, nall+1, tf, last_ind2))-start+1;
+    } else {
+      nall_local=l2-start+1;
+    }
+
+    //printf("%d, %d, %d, %d\n", start, i-l1, nall_local, i-start);
+    qvec=pc_proxy(matall+start, t+start, i-l1, nall_local, samp_w, nsamp_w, nev, ncv, kflag, i-start);
 
     delete [] samp_w;
 

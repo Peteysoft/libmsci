@@ -32,8 +32,8 @@ TFa= 1999/1/1
 #interpolate POAM data between these two dates:
 #T0b= 1998/11/1
 #TFb= 1998/12/30
-T0b= 1998/9/12
-#T0b= 1998/9/26
+#T0b= 1998/9/12
+T0b= 1998/9/26
 TFb= 1998/11/17
 
 #T0b= 1999/2/1
@@ -118,6 +118,16 @@ ifdef PC
   PROXYFILE=$(CVMAT)
   #create the "key":
   KEY = $(strip "theta=$(THETA);data-path=$(DATA_PATH);interpolates=$(T0b_1):$(TFb_1);ngrid=$(NGRID);tstep=$(TSTEP);nfine=$(NFINE);dcoef=$(DCOEF);integration=$(INT_T);lead=$(LEAD);eigenvalues=$(NEV);Arnoldi-vectors=$(NCV);window=$(WINDOW);$(HEMI1)")
+
+  #cross-validated proxy tracers:
+  PROXY1=$(WORK)/proxy1$(HEMI1)_$(WINDOW)_$(NEV).vec
+  PROXY2=$(WORK)/proxy2$(HEMI1)_$(WINDOW)_$(NEV).vec
+  #corresponding dates:
+  PDATES1=$(WORK)/pdates1$(HEMI1)_$(WINDOW)_$(NEV).txt
+  PDATES2=$(WORK)/pdates2$(HEMI1)_$(WINDOW)_$(NEV).txt
+
+  #cross-validation results:
+  XVRESULTS=xvresults$(HEMI1)_$(WINDOW)_$(NEV).txt
 else
   #command to calculate interpolates:
   PROXY_COMMAND=proxy_tracer
@@ -128,7 +138,17 @@ else
   #proxy field:
   PROXYFILE=$(PROXY_FIELD)
   #create the "key":
-  KEY = $(strip "theta=$(THETA);data-path=$(DATA_PATH);interpolates=$(T0b_1):$(TFb_1);ngrid=$(NGRID);tstep=$(TSTEP);nfine=$(NFINE);dcoef=$(DCOEF);order=$(ORDER);$(HEMI1)")
+  KEY = $(strip "theta=$(THETA);data-path=$(DATA_PATH);interpolates=$(T0b_1):$(TFb_1);ngrid=$(NGRID);tstep=$(TSTEP);nfine=$(NFINE);dcoef=$(DCOEF);order=$(ORDER);window=$(WINDOW);$(HEMI1)")
+
+  #cross-validated proxy tracers:
+  PROXY1=$(WORK)/proxy1$(HEMI1)_$(WINDOW).vec
+  PROXY2=$(WORK)/proxy2$(HEMI1)_$(WINDOW).vec
+  #corresponding dates:
+  PDATES1=$(WORK)/pdates1$(HEMI1)_$(WINDOW).txt
+  PDATES2=$(WORK)/pdates2$(HEMI1)_$(WINDOW).txt
+
+  #cross-validation results:
+  XVRESULTS=xvresults$(HEMI1)_$(WINDOW).txt
 endif
 
 #file names:
@@ -176,19 +196,6 @@ PROXY_O3 = $(WORK)/proxyO3_$(BASE).vec
 PROXY_DATES = $(WORK)/proxyO3_$(BASE).txt
 RESULTS=results$(BASE).txt
 
-#cross-validated proxy tracers:
-PROXY1=$(WORK)/proxy1.vec
-PROXY2=$(WORK)/proxy2.vec
-#corresponding dates:
-PDATES1=$(WORK)/pdates1.txt
-PDATES2=$(WORK)/pdates2.txt
-
-#cross-validation results:
-CVAL1=$(WORK)/v1.txt
-CVAL2=$(WORK)/v2.txt
-XVRESULTS=xvresults.txt
-
-
 all: $(RESULTS)
 	more $(RESULTS)
 
@@ -234,10 +241,10 @@ cross_validate: $(XVRESULTS)
 $(XVRESULTS): $(PROXY1) $(PROXY2) $(PDATES1) $(PDATES2) file1.txt file2.txt
 	tracer_interpolate -t 20 -P \
 		$(TTHRESH) $(HEMI2) $(LATBAND) -i $(T0b) -f $(TFb) \
-		$(PROXY2) $(PDATES2) file1.txt > $(CVAL1) > $(XVRESULTS)
+		$(PROXY2) $(PDATES2) file1.txt > $(XVRESULTS)
 	tracer_interpolate -t 20 -P \
 		$(TTHRESH) $(HEMI2) $(LATBAND) -i $(T0b) -f $(TFb) \
-		$(PROXY1) $(PDATES1) file2.txt > $(CVAL2) >> $(XVRESULTS)
+		$(PROXY1) $(PDATES1) file2.txt >> $(XVRESULTS)
 #endif
 
 clean:
