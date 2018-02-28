@@ -65,7 +65,7 @@ LD_OPTIONS = -L$(GSL_LIB) -L$(LIB_PATH) \
 	#-L$(NCDF_LIB) -lnetcdf_c++ -lnetcdf -lz
 
 #LD_OPTIONS = -L$(LIB_PATH) -ldataset$(OPT_VER) -lpetey$(OPT_VER)
-CFLAGS = -I$(GSL_INC) -I$(NCDF_INC) -I$(INCLUDE_PATH) \
+CFLAGS = -g -I$(GSL_INC) -I$(NCDF_INC) -I$(INCLUDE_PATH) \
 		-Wno-deprecated $(OPT_VER) -D FTRAILING_UNDERSCORES=_
 
 #_____________________________________________________________________________#
@@ -92,7 +92,7 @@ EXE = ctraj_model \
 	ctraj_tracer \
 	tracer_step2_w_renorm \
 	proxy_tracer \
-	pc_proxy pc_proxy_predict.1 \
+	pc_proxy pc_proxy_predict \
 	tracer_interpolate vfield_interpolate \
 	contour_dimension contour_length eq_lat
 

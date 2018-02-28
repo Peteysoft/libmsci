@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 
   int32_t dwid=TFIELD_WIDTH;
   short hemi=0;
-  int cflag=0;
+  int cflag=0;		//calculate Pearson coefficient
 
   //for calculating correlation coefficient:
   float ave1, ave2;
@@ -72,7 +72,8 @@ int main(int argc, char **argv) {
   int flag[20];
 
   int Hflag;		//for generationg histograms
-  int tflag;		//we're cheating...
+  int tflag;		//filter out true values below a certain threshold
+  			//(missing values)
 
   //for generating the interpolation coefficients:
   int32_t np;

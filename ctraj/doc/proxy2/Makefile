@@ -21,7 +21,8 @@ FIGURES =    classic_O3.1998.10.01.ps \
 	     pc_O3_1998_10_01.eps \
 	     ozone_sonde_stations.ps \
 	     sample_sv.ps \
-	     tracer_correlation.eps 
+	     tracer_correlation.eps \
+	     POAM_loc.eps
 #	     svl1.ps svl2.ps svl3.ps svl4.ps \
 #	     svr1.ps svr2.ps svr3.ps svr4.ps 
 

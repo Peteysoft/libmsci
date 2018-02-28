@@ -33,7 +33,7 @@ CONTOUR=grdimage
 LFLAG=1
 CUSTOMR=0
 
-while getopts 'c:F:g:h:I:J:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
+while getopts 'c:F:g:h:I:J:R:T:V:W:x:X:y:Y:z:HLqS' ARG; do
   case $ARG in
     c) PALETTE=$OPTARG
        DDSWTC=1;		
@@ -68,6 +68,8 @@ while getopts 'c:F:g:h:I:J:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
     R) RANGE=$OPTARG
        CUSTOMR=1
       ;;
+    S) SFLAG=1
+      ;;
     T) TITLE=:.\"$OPTARG\":
       ;;
     V) VTYPE=$OPTARG
@@ -94,7 +96,17 @@ while getopts 'c:F:g:h:I:J:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
        echo "  -J projection"
        echo "  -R range"
        echo "  -L plot lines instead of solid contours"
+       echo "  -W width of line/size of symbol"
+       echo "  -S use symbols instead of lines"
+       echo "  -q plot field instead of lines/sybols"
+       echo "  -I bottom contour level"
+       echo "  -F top contour level"
+       echo "  -z number of contour levels"
+       echo "  -g levels have logarithmic progression"
+       echo "  -h hemisphere: 1=N (default); 0=globe; -1=S"
+       echo "  -T title"
        echo "  -H help"
+       echo "  -c colour palette file"
        exit 0
        ;;
   esac
@@ -150,7 +162,7 @@ fi
 
 if [[ $VTYPE -eq 0 && $LFLAG -eq 0 ]]
 then
-  echo "pscoast -R${RANGE} -J${PROJ} -Dl -K -O >> ${OUTFILE}"
+  echo "pscoast -R${RANGE} -J${PROJ} -G220 -Dl -K -O >> ${OUTFILE}"
   pscoast -R${RANGE} -J${PROJ} -G220 -Dl -K -O >> ${OUTFILE}
 fi
 
@@ -177,8 +189,13 @@ if test $QFLAG; then
   $CONTOUR $GRDFILE -R$RANGE -J$PROJ -C$PALETTE -O -K >> $OUTFILE;
 else
   #plot single contour:
-  echo "psxy -R${RANGE} -J${PROJ} -W$THICK,black -O -K >> ${OUTFILE};"
-  psxy -R${RANGE} -J${PROJ} -W$THICK,black -O -K >> ${OUTFILE};
+  if test $SFLAG; then
+    echo "psxy -R${RANGE} -J${PROJ} -Sc${THICK}p -O -K >> ${OUTFILE};"
+    psxy -R${RANGE} -J${PROJ} -Sc${THICK}p -O -K >> ${OUTFILE};
+  else
+    echo "psxy -R${RANGE} -J${PROJ} -W$THICK,black -O -K >> ${OUTFILE};"
+    psxy -R${RANGE} -J${PROJ} -W$THICK,black -O -K >> ${OUTFILE};
+  fi
 fi
 
 # reinforce grid lines:

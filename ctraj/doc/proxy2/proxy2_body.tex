@@ -465,6 +465,12 @@ Gridding in both hemispheres is 50 by 50, or 400km-,
 
 \subsection{Polar Ozone and Aerosol Measurement III instrument}
 
+\begin{figure}
+    \includegraphics[angle=-90,width=0.9\linewidth]{POAM_loc.eps}
+    \caption{Locations of all POAM measurements used in this study. Highlighted points are for a single time grid (two days worth of data).}
+    \label{POAM_loc}
+\end{figure}
+
 The Polar Ozone and Aerosol Measurement (POAM) III instrument was a solar-
 occultation instrument mounted on the SPOT-4 sun-synchronous, low-earth-orbit
 satellite \citep{Lucke_etal1999}.
@@ -478,6 +484,8 @@ a malfunction
 in the instrument, it normally operates in only one or the other hemisphere for longer periods.  Therefore, we confine ourselves to earlier data,
 October and November 1998, when more frequent and diverse measurements
 are available.
+The locations of all POAM measurements used in this study are plotted in
+Figure \ref{POAM_loc}.
 
 \subsection{National Center for Environmental Prediction reanalysis data}
 
@@ -633,8 +641,8 @@ In this section we use PC proxy to reconstruct two-dimensional ozone fields
 from POAM III satellite data.
 To perform the analysis, we need to choose an integration time, 
 $t_n-t_0$ in Equation (\ref{SVD}), as well as a measurement window.
-The integration time determines how long the tracer is advected before performing
-the SVD.
+The integration time determines how long the tracer is advected 
+before performing the SVD.
 Measurements are selected from within the measurement window.
 We also need to choose a lead time which determines how far from the
 beginning of the integration, $t_0$, the measurement window is centered.
@@ -696,7 +704,7 @@ when it does not become unstable due to over-fitting.
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.9\textwidth]{global_PC_xval_scatter_reduced}
+  \includegraphics[width=0.9\textwidth]{global_PC_xval_scatter_reduced_1}
   \includegraphics[width=0.9\textwidth]{global_PC_xval_error}
   \caption{Cross validation of principal component proxy ozone reconstruction. The reconstruction was done globally on the 500 K isentrop from POAM III data between September 26, 1998 and November 17, 1998 using 5 principal components,  an integration time of 60 days, and a measurement window of 2 days.}
   \label{PC_cross_validation}
@@ -736,13 +744,18 @@ of the sonde measured test group.
 Figure \ref{classic_cross_validation} shows the cross-validation results
 for classic proxy tracer while Figure \ref{PC_cross_validation} shows
 those for principal component proxy.
-The correlation for the classic method was 0.956, as shown in 
+The correlation for the classic method was 0.977, as shown in 
 the scatter plot in Figure \ref{classic_cross_validation}a.
-The bias was -0.020 ppmv while the root-mean-square (RMS) error was 0.30 ppmv.
+The bias was -0.0063 ppmv while the root-mean-square (RMS) error was 0.22 ppmv.
 In the histogram error plot in Figure \ref{classic_cross_validation}b.
 the errors have been normalized by the original error estimates for the
 POAM III retrievals.
-When this is done, the bias becomes -0.063 while the RMS error is 1.6.
+This makes it easy to compare actual residuals with the estimated errors
+for the original ozone estimates.
+When this is done, the bias becomes -0.023 while the RMS error is 1.18.
+In other words, if the original error statistics are to be believed, 
+the accuracy of ozone interpolates is almost as good as the original estimates
+from the POAM satellite.
 
 The correlation for the PC proxy method was 0.987, as shown in 
 the scatter plot in Figure \ref{classic_cross_validation}a.
@@ -775,16 +788,22 @@ suggest.
   \label{Nhemi_sonde}
 \end{figure}
 
+\begin{table}
+	\caption{Summary of ozone sonde trials}
+	\label{summary}
+	\input{summary.tex}
+\end{table}
+
 In the second validation exercise, ozone fields were reconstructed from 
 all available POAM data and compared with radio-sonde measurements.
 Figure \ref{global_classic_sonde} shows the results for the classic proxy
 tracer reconstruction validated against ozone sonde data from the WOUDC,
 while figure \ref{global_PC_sonde} shows the same for the PC proxy method.
-Correlation for the classic method stands at 0.76, with a bias of -0.058 ppmv
+Correlation for the classic method stands at 0.76, with a bias of -0.074 ppmv
 and a RMS error of 0.59 ppmv while the PC proxy method provides a correlation
 of 0.91, a bias of -0.0040 ppmv and a RMS error of 0.36 ppmv.
 
-For this case study, the PC proxy method is clearly superior. On the other
+For this case study, the PC proxy method definitely has the edge. On the other
 hand, because ozone values tend to be higher in the Northern hemisphere than
 they are in the South, skill scores may be unnaturally high.
 As pointed out in the previous section, the original proxy tracer was 
@@ -800,30 +819,32 @@ since ozone values there tend to fall in a narrower range of
 between 2 and 3 ppmv or so.
 To this end, Figure \ref{Nhemi_restrict} shows scatter plots of only the
 Northern hemisphere sonde launches as compared to the global POAM interpolates.
-Skill scores for the restricted comparisons show a correlation of 0.64,
-a bias of 0.084 ppmv and a RMS error of 0.30 ppmv for the classic proxy
+Skill scores for the restricted comparisons show a correlation of 0.53,
+a bias of 0.078 ppmv and a RMS error of 0.30 ppmv for the classic proxy
 and a correlation of 0.75, a bias of -0.014 and a RMS error of 0.22 for
 the PC proxy.
 Figure \ref{Nhemi_sonde} shows the results for interpolates for which the
 reconstruction has been done in the Northern hemisphere using 
 Arctic POAM III measurements only.
+Scores improve considerably for the classic proxy tracer and now almost
+match PC proxy.
 Skills scores for the Northern Hemisphere reconstruction show a correlation
-of 0.65, a bias of -0.0015 ppmv, and a RMS error 0.26 ppmv for the classic
+of 0.77, a bias of -0.0029 ppmv, and a RMS error 0.22 ppmv for the classic
 tracer proxy and a correlation of 0.78, a bias of -0.0035 ppmv,
 and a RMS error of 0.21 ppmv for the PC proxy.
 For the N. hemisphere reconstruction, only two (2) principal components were
 used in PC proxy.
 
-While not shown, results for the Southern hemisphere are much more 
+While not shown, results for the Southern hemisphere are more 
 favourable for the PC proxy method.
 For global reconstruction restricted to the S. hemisphere, classic proxy
-returned a correlation of 0.59, a bias of -0.31 ppmv and a RMS error 
-of 0.84 ppmv while PC proxy gave a correlation of 0.86, a bias of 0.014
+returned a correlation of 0.59, a bias of -0.35 ppmv and a RMS error 
+of 0.85 ppmv while PC proxy gave a correlation of 0.86, a bias of 0.014
 and a RMS error of 0.53.
-For S. hemisphere reconstruction, the numbers are: a correlation of 0.62,
-a bias of 1.37 ppmv and a RMS error of 3.1 ppmv for classic proxy
-while PC returned a correlation of 0.887, a bias of 0.14 and a RMS error
-of 0.49.
+For S. hemisphere reconstruction, the numbers are: a correlation of 0.83,
+a bias of 1.24 ppmv and a RMS error of 1.89 ppmv for classic proxy
+while PC returned a correlation of 0.915, a bias of 0.18 and a RMS error
+of 0.42.
 Once again, only two principal components were used in the hemispherical PC
 proxy reconstruction.
 
@@ -833,13 +854,8 @@ The raw skill scores listed in the previous section show the PC proxy method
 to be more accurate than the classic proxy tracer method, even when the classic
 method is done only hemi-spherically while the PC reconstruction is
 performed globally.
-A closer look at the scatter plots, 
-Figures \ref{Nhemi_sonde} and \ref{Nhemi_restrict}, in the previous section
-suggest that this may not be so clear cut.
-Except for one outlier, the plot of the N. hemisphere reconstruction for
-the classic proxy in Figure \ref{Nhemi_sonde}a. appears to have less scatter than either the N. hemisphere
-reconstruction using PC proxy in \ref{Nhemi_sonde}b. or the global reconstruction for the same
-restricted to the N. hemisphere in \ref{Nhemi_restrict}.
+Differences are smaller for hemispherical reconstructions but nonetheless
+significant.
 
 On the other hand, when the reconstruction is done over the whole globe,
 PC proxy is clearly superior.
@@ -870,7 +886,17 @@ method does not fail.
 A better remedy would be either to have more measurements sampling more of
 the globe or to simply not use interpolates far outside the range of the
 measurements.
-It would be instructive to test the method on an instrument that samples
+
+The major advantage of the method, as compared to the classic method, 
+is the ability to accurately combine information from the whole
+globe, allowing seamless reconstruction of global fields even across the 
+equator. 
+Even though there isn't a lot of cross-talk between the two hemispheres, the
+PC proxy method overcomes this by allowing for more degrees of freedom.
+It also accounts a broader range of tracer states, excluding the least likely
+and it is not affected by initial conditions.
+In this regard
+it would be instructive to test the method on an instrument that samples
 more broadly and using more principal components.
 
 Principal component proxy tracer reconstruction is shown to be a powerful
