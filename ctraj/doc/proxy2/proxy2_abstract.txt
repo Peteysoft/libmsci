@@ -3,17 +3,21 @@ tracer reconstruction is presented, including error analysis.
 The method works by correlating the largest principal components of a matrix
 representation of the transport dynamics with a set of sparse measurements. 
 The Lyapunov spectrum was measured and used to quantify the lifetime of each principal component. 
-The method was tested on the 500 K isentropic surface with ozone measurements from the Polar Aerosol and Ozone Measurement (POAM) III satellite instrument
+The method was tested on the 500 K isentropic surface with stratospheric ozone 
+concentration measurements from the Polar Aerosol and Ozone Measurement (POAM) III satellite instrument
 during October and November 1998 and compared with the older proxy tracer method
 which works by correlating measurements with a single other tracer or proxy. 
 Using a 60 day integration time and five (5) principal components, cross
 validation of globally reconstructed ozone and comparison with ozone sondes returned root-mean-square errors of 0.16 ppmv and 0.36 ppmv, respectively.
 This compares favourably with the classic proxy tracer method in which a passive
 tracer equivalent latitude field was used for the proxy and 
-which returned RMS errors of 0.30 ppmv and 0.59 ppmv for cross-validation
+which returned RMS errors of 0.22 ppmv and 0.59 ppmv for cross-validation
 and sonde validation respectively.
 The method seems especially effective for shorter lived tracers and was far
 more accurate than the classic method at predicting ozone concentration in the
 Southern hemisphere over the same time period.
+It is also more effective when reconstruction is performed over the entire
+Earth rather than a single hemisphere allowing for seamless reconstruction of
+global fields.
 
  

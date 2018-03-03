@@ -58,15 +58,16 @@ See below.
 In an Eulerian tracer simulation, the approximate value of $q$
 is known only at discrete locations so can be represented as a vector,
 $\vect q=\lbrace q_i \rbrace$.
-The linear operator (see proof, Appendix \ref{linearity}) contained in the braces in Equation 
-(\ref{advection_diffusion}) is approximated as a matrix, $A$, which is 
-multiplied with $\vect q$:
+The linear operator 
+%(see proof, Appendix \ref{linearity})
+contained in the braces in Equation (\ref{advection_diffusion}) 
+is approximated as a matrix, $A$, which is multiplied with $\vect q$:
 \begin{equation}
 \frac{\mathrm d \vect q}{\mathrm d t} = A(t) \vect q
 \label{linear_ODE}
 \end{equation}
 
-For example, consider a second-order finite difference scheme in one dimension:
+As an illustration, consider a second-order finite difference scheme in one dimension:
 \begin{eqnarray}
 \frac{\partial q_i}{\partial t} & = & \frac{v_i (q_{i-1} - q_{i+1})}{2 \Delta x} +
 	\frac{d (q_{i-1} + q_{i+1} - 2 q_i)}{\Delta x^2} 
@@ -74,7 +75,7 @@ For example, consider a second-order finite difference scheme in one dimension:
 	\\\nonumber
 & = & \left (\frac{v_i}{2 \Delta x} + \frac{d}{\Delta x^2} \right ) q_{i-1} -
 	\frac{2 d}{\Delta x^2} q_i 
-	- \left (\frac{v_i}{2 \Delta x} + \frac{d}{\Delta x^2} \right ) q_{i+1} 
+	+ \left (- \frac{v_i}{2 \Delta x} + \frac{d}{\Delta x^2} \right ) q_{i+1} 
 \end{eqnarray}
 where $d$ is a scalar diffusion coefficient, $\Delta x$ is the grid spacing
 and $v_i$ is the wind speed at the $i$th grid point.
@@ -84,6 +85,8 @@ a_{i,i-1} & = & \frac{v_i}{2 \Delta x} + \frac{d}{\Delta x^2} \\\nonumber
 	a_{i,i} & = & -\frac{2 d}{\Delta x^2} \\\nonumber
 a_{i,i+1} & = & - \frac{v_i}{2 \Delta x} + \frac{d}{\Delta x^2}
 \end{eqnarray}
+The actual transport model used in this study is described in Section 
+\ref{ctraj}.
 
 To produce a general solution to Equation (\ref{linear_ODE}), 
 we first substitute a matrix, $R$, for $\vect q$:
@@ -181,16 +184,16 @@ We have the following minimization problem:
 \end{equation}
 where $t^{(i)}$ is the time stamp of the $i$th measurement, $m_i$, 
 and $\vect w_i$ is a vector of interpolation coefficients.
+In this work, bilinear interpolation is used to interpolate measurement
+locations. 
+Since $R$ is only known at discrete time values, 
+$R(t_0, ~t^{(i)}-t_0) \vect v^{(j)}$ 
+is also approximated through linear interpolation.
 
 Once the coefficients have been fitted, the tracer is reconstructed as follows:
 \begin{equation}
 	\vect q(t_n) \approx \sum_{i=1}^k c_i \vect u^{(i)}
 \end{equation}
-In this work, bilinear interpolation is used to interpolate measurement
-locations. 
-Since $R$ is only known at discrete time values, 
-$R(t_0, ~t^{(i)}-t_0) \vec v^{(i)})$ 
-is also approximated through linear interpolation.
 
 \subsection{Classic proxy tracer}
 
@@ -243,17 +246,15 @@ Now define the \italics{tangent model}, $H$, such that:
 	\frac{\mathrm d}{\mathrm d t} H = \nabla_{\vect r} \vect f H \\
 \end{equation}
 
-A passive Eulerian tracer simulation is linear: the tangent vector is simply
-the dynamics.
-If we take Equation (\ref{linear_ODE}), a system of linear ODEs,
-as our system of ODEs in
-(\ref{ODE}), then setting $\vect r=\vect q$, 
-we have $\vect f(\vect q, ~t)=A(t) \vect q$,
+A passive Eulerian tracer simulation is linear:
+taking Equation (\ref{linear_ODE}) as our system of ODEs in
+(\ref{ODE}) then setting $\vect r=\vect q$, 
+we have, $\vect f(\vect q, ~t)=A(t) \vect q$,
 while the tangent vector is given as:
 \begin{equation}
 	\nabla_{\vect q} \vect f = A
 \end{equation}
-Thus the transport matrix, $R$, is equivalent to the tangent model, $H$.
+Hence the transport matrix, $R$, is equivalent to the tangent model, $H$.
 
 The Lyapunov exponents are defined as the logarithms of the time averages
 of the singular values in the limit as time goes to infinity:
@@ -345,7 +346,7 @@ interpolation looks like this:
 	\vect q(t_n) \approx \sum_{i=0}^k c_{0i} s_i \vect u^{(i)}
 \end{equation}
 
-The most significant source of error would simply be the terms left out of the equation,
+The most significant source of error are the terms left out of the equation,
 discounting errors introduced through discretization and because of
 a finitely resolved (and possibly inaccurate) wind field.
 The smaller the remaining singular values, $\lbrace s_i|i=[k+1..n_p]\rbrace$,
@@ -404,7 +405,8 @@ To understand this last point, rewrite Equation (\ref{error1}) as follows:
 Note that because of diffusion, 
 a backwards integration is not equivalent to the inverse of the
 forwards integration, but only approximately so, that is,
-$R(t+\Delta t, -\Delta t) \approx R^{-1}(t, \Delta t)$.
+$R(t+\Delta t, -\Delta t) \approx R^{-1}(t, \Delta t)$, with the approximation
+becoming worse as $\Delta t$ becomes larger.
 
 Measurement error and fitting discrepancies can be treated in the same way 
 as any other linear least squares problem. 
@@ -420,9 +422,11 @@ possible.
 
 \subsection{Tracer simulation}
 
-To generate the transport maps, the \textit{ctraj} software package is used (http://ctraj.sf.net) \citep{Mills2009}.  
+\label{ctraj}
+
+To generate the transport maps, the \textit{ctraj} software package is used (http://ctraj.sf.net) \citep{Mills2004,Mills2009}.  
 The software is written in C++ and contain programs
-for gridded, semi-Lagrangian tracer advection on an 
+for gridded, two-dimensional, semi-Lagrangian tracer advection on an 
 azimuthally-equidistant-projected coordinate system:
 \begin{eqnarray}
   x & = & r \cos \theta \\\nonumber
@@ -435,8 +439,6 @@ defined:
 \begin{equation}
 h = \left \lbrace \begin{array}{rl} 1; & \mathrm{North} \\ -1; & \mathrm{South} \end{array} \right .
 \end{equation}
-Two fields are advected simultaneously: one for the Northern hemisphere ($h=1$)
-and one for the Southern hemisphere ($h=-1$), with equatorial crossings accounted for.
 The resulting space has the following metric coefficients:
 \begin{eqnarray}
 \left (\frac{\mathrm ds}{\mathrm d x} \right )^2 & = & \frac{1}{r^2} \left [
@@ -448,6 +450,8 @@ The resulting space has the following metric coefficients:
 	\label{metric_coef}
 \end{eqnarray}
 where $R_E$ is the radius of the Earth.
+Two fields are advected simultaneously: one for the Northern hemisphere ($h=1$)
+and one for the Southern hemisphere ($h=-1$), with equatorial crossings accounted for.
 
 Because it is a semi-Lagrangian simulation, the factors, $\lbrace R(t_i,\Delta t) \rbrace$,
 are output directly as sparse matrices by calculating the interpolation coefficients.
@@ -467,7 +471,9 @@ Gridding in both hemispheres is 50 by 50, or 400km-,
 
 \begin{figure}
     \includegraphics[angle=-90,width=0.9\linewidth]{POAM_loc.eps}
-    \caption{Locations of all POAM measurements used in this study. Highlighted points are for a single time grid (two days worth of data).}
+    \caption{Locations of all POAM III measurements used in this study 
+    between Sept. 25, 1998 and November 18, 1998. 
+    Highlighted points are for the first time grid (two days worth of data) between Sept. 25, 1998 and Sept 27, 1998.}
     \label{POAM_loc}
 \end{figure}
 
@@ -533,7 +539,7 @@ towards the equator.
   \end{tabular}
   %\includegraphics[width=1\textwidth]{sample_sv}
   \caption{An example of the singular vectors derived from a discrete transport map.
-  Sixty day integration started on August 1 1998.}
+  Sixty day integration started on August 1 1998 on the 500 K isentrop driven by NCEP wind fields.}
   \label{sample_SV}
 \end{figure}
 
@@ -556,7 +562,8 @@ have negligible dot products.
 \begin{figure}
 \begin{center}
 \includegraphics[width=0.9\textwidth]{tracer_correlation}
-\caption{The correlation over time of two differently-initialized tracers
+\caption{The Pearson correlation coefficient over time of two differently-initialized,
+	two-dimensional tracers
 (broken line)--zonally symmetric and meridionally symmetric--and of
 the zonally-symmetric-initialized tracer with the first principal component.
 The simulation was driven with NCEP reanalysis 1 data on the 500 K isentropic
@@ -575,7 +582,7 @@ a. Tracer & b. First PC\\
 \end{tabular}
 \caption{Comparison of a simulated tracer (a.) and the first principal
 component (b.) for the same time integration.
-Integration started on January 1, 1997 and continued until December 1, 1997, a period of 334 days.}\label{pc1}
+Integration started on January 1, 1997 and continued until December 1, 1997, a period of 334 days and was performed on the 500 K isentrop with NCEP wind fields.}\label{pc1}
 \end{figure}
 
 \subsection{Tracer correlation}
@@ -592,7 +599,7 @@ The Pearson coefficient, weighted by grid size, is applied over the whole field 
 Tracers are passively advected with National Center for Environmental Prediction
 (NCEP) reanalysis 1 data at the 500 K isentrop \citep{Kalnay_etal1996}.
 
-We also plot the correlation of the first tracer with the largest singular
+We also plot the Pearson correlation coefficient of the first tracer with the largest singular
 vector.  
 We see that, because of Equation (\ref{lambda1}), they too become
 correlated over time.
@@ -663,7 +670,7 @@ a given lead time--see Figure \ref{lyap_spec}.
     %\includegraphics[width=0.9\linewidth]{pc_O3_1998_10_01} \\
     b. PC proxy
   \end{tabular}
-  \caption{Sample globally reconstructed ozone fields on the 500 K isentrop for October 1, 1998.}
+  \caption{Sample globally reconstructed ozone fields on the 500 K isentrop for October 1, 1998. Units are parts-per-million by volume (ppmv).}
   \label{sample_O3_field}
 \end{figure}
 
@@ -744,24 +751,24 @@ of the sonde measured test group.
 Figure \ref{classic_cross_validation} shows the cross-validation results
 for classic proxy tracer while Figure \ref{PC_cross_validation} shows
 those for principal component proxy.
-The correlation for the classic method was 0.977, as shown in 
+The correlation coefficient for the classic method was 0.977, as shown in 
 the scatter plot in Figure \ref{classic_cross_validation}a.
-The bias was -0.0063 ppmv while the root-mean-square (RMS) error was 0.22 ppmv.
+The bias was -0.0063 parts-per-million by volume (ppmv) while the root-mean-square (RMS) error was 0.22 ppmv.
 In the histogram error plot in Figure \ref{classic_cross_validation}b.
 the errors have been normalized by the original error estimates for the
 POAM III retrievals.
-This makes it easy to compare actual residuals with the estimated errors
+This makes it easy to compare residuals with the estimated errors
 for the original ozone estimates.
 When this is done, the bias becomes -0.023 while the RMS error is 1.18.
 In other words, if the original error statistics are to be believed, 
 the accuracy of ozone interpolates is almost as good as the original estimates
 from the POAM satellite.
 
-The correlation for the PC proxy method was 0.987, as shown in 
+The correlation coefficient for the PC proxy method was 0.987, as shown in 
 the scatter plot in Figure \ref{classic_cross_validation}a.
 The bias was 0.0039 ppmv while the RMS error was 0.16 ppmv.
 The normalized values are 0.021 for the bias and 0.86 for RMS error.
-In other words, observed errors for the reconstructed ozone are better,
+In other words, residuals for the reconstructed ozone are better,
 on average, than the error bars from the original retrievals!
 On the other hand, the PC proxy method, while more accurate, appears to be
 less stable as the pair of negative values in Figure \ref{PC_cross_validation}a
@@ -771,25 +778,36 @@ suggest.
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.9\textwidth]{global_classic_sonde_Nhemi}
-  \includegraphics[width=0.9\textwidth]{global_PC_sonde_Nhemi}
-  \caption{Validation of global ozone reconstruction against ozone sonde measurements restricted to the Northern hemisphere.
-  Figure a. shows the results for the classic proxy tracer while Figure b. shows those for PC proxy.}
-  \label{Nhemi_restrict}
+  \begin{tabular}{cc}
+  \includegraphics[width=0.45\textwidth]{global_classic_sonde_Nhemi} &
+  \includegraphics[width=0.45\textwidth]{global_PC_sonde_Nhemi} \\
+  \includegraphics[width=0.45\textwidth]{Nhemi_classic_sonde} &
+  \includegraphics[width=0.45\textwidth]{Nhemi_PC_sonde}
+  \end{tabular}
+  \caption{Validation of ozone reconstruction against ozone sonde measurements
+  in the Northern hemisphere: a. global reconstruction classic proxy tracer; b. global reconstruction PC proxy; c. classic proxy tracer Arctic POAM III only; d. PC proxy Arctic POAM III only.}
+  \label{Nhemi}
 \end{figure}
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.9\textwidth]{Nhemi_classic_sonde}
-  \includegraphics[width=0.9\textwidth]{Nhemi_PC_sonde}
-  \caption{Validation of Northern hemisphere ozone reconstruction against ozone sonde measurements. 
-  Figure a. shows the results for the classic proxy tracer while Figure b. shows those for PC proxy.
-  Only 2 principal components were used in PC proxy.}
-  \label{Nhemi_sonde}
+  \begin{tabular}{cc}
+  \includegraphics[width=0.45\textwidth]{global_classic_sonde_Shemi} &
+  \includegraphics[width=0.45\textwidth]{global_PC_sonde_Shemi} \\
+  \includegraphics[width=0.45\textwidth]{Shemi_classic_sonde} &
+  \includegraphics[width=0.45\textwidth]{Shemi_PC_sonde}
+  \end{tabular}
+  \caption{Validation of ozone reconstruction against ozone sonde measurements
+  in the Southern hemisphere: a. global reconstruction classic proxy tracer; b. global reconstruction PC proxy; c. classic proxy tracer Antarctic POAM III only; d. PC proxy Antarctic POAM III only.}
+  \label{Shemi}
 \end{figure}
 
 \begin{table}
-	\caption{Summary of ozone sonde trials}
+	\caption{Summary of ozone sonde trials. 
+	$h_1$ is the hemisphere over which the reconstruction was done. 
+$h_2$ is the hemisphere for which skill scores are shown.
+-1 indicates Southern, +1 Northern and 0 the whole globe.
+FAC2 is fraction of estimates within a factor of 2.}
 	\label{summary}
 	\input{summary.tex}
 \end{table}
@@ -801,10 +819,12 @@ tracer reconstruction validated against ozone sonde data from the WOUDC,
 while figure \ref{global_PC_sonde} shows the same for the PC proxy method.
 Correlation for the classic method stands at 0.76, with a bias of -0.074 ppmv
 and a RMS error of 0.59 ppmv while the PC proxy method provides a correlation
-of 0.91, a bias of -0.0040 ppmv and a RMS error of 0.36 ppmv.
+coefficient of 0.91, a bias of -0.0040 ppmv and a RMS error of 0.36 ppmv.
 
-For this case study, the PC proxy method definitely has the edge. On the other
-hand, because ozone values tend to be higher in the Northern hemisphere than
+For the two case studies discussed up to this point, 
+the PC proxy method definitely has the edge. 
+On the other hand, 
+because ozone values tend to be higher in the Northern hemisphere than
 they are in the South, skill scores may be unnaturally high.
 As pointed out in the previous section, the original proxy tracer was 
 typically only applied to one hemisphere at a time.
@@ -813,56 +833,68 @@ Northern or Southern hemisphere.
 Meanwhile, to get a better idea of the skill of the methods, we should likewise
 restrict comparisons to only a single hemisphere.
 
-To get a more rigorous evaluation of each method we shall confine them
+To get a more rigorous evaluation of each method we shall first confine them
 to the Northern hemisphere
 since ozone values there tend to fall in a narrower range of 
 between 2 and 3 ppmv or so.
-To this end, Figure \ref{Nhemi_restrict} shows scatter plots of only the
-Northern hemisphere sonde launches as compared to the global POAM interpolates.
-Skill scores for the restricted comparisons show a correlation of 0.53,
+To this end, Figure \ref{Nhemi} shows scatter plots of only the
+Northern hemisphere sonde launches as compared to the POAM interpolates.
+In Figures \ref{Nhemi}a. and \ref{Nhemi}b. the reconstruction was done globally
+but comparisons restricted to the Northern hemisphere.
+Skill scores for the restricted comparisons show a correlation coefficient of 0.53,
 a bias of 0.078 ppmv and a RMS error of 0.30 ppmv for the classic proxy
-and a correlation of 0.75, a bias of -0.014 and a RMS error of 0.22 for
+and a correlation coefficient of 0.75, a bias of -0.014 and a RMS error of 0.22 for
 the PC proxy.
-Figure \ref{Nhemi_sonde} shows the results for interpolates for which the
-reconstruction has been done in the Northern hemisphere using 
+Figures \ref{Nhemi}c. and \ref{Nhemi}d. shows results for interpolates for which the
+reconstruction was done in the Northern hemisphere using 
 Arctic POAM III measurements only.
 Scores improve considerably for the classic proxy tracer and now almost
 match PC proxy.
-Skills scores for the Northern Hemisphere reconstruction show a correlation
+Skills scores for the Northern Hemisphere reconstruction show a correlation coefficient
 of 0.77, a bias of -0.0029 ppmv, and a RMS error 0.22 ppmv for the classic
-tracer proxy and a correlation of 0.78, a bias of -0.0035 ppmv,
+tracer proxy and a correlation coefficient of 0.78, a bias of -0.0035 ppmv,
 and a RMS error of 0.21 ppmv for the PC proxy.
 For the N. hemisphere reconstruction, only two (2) principal components were
 used in PC proxy.
 
-While not shown, results for the Southern hemisphere are more 
+Results for the Southern hemisphere, shown in Figure \ref{Shemi}, are even more 
 favourable for the PC proxy method.
 For global reconstruction restricted to the S. hemisphere, classic proxy
-returned a correlation of 0.59, a bias of -0.35 ppmv and a RMS error 
-of 0.85 ppmv while PC proxy gave a correlation of 0.86, a bias of 0.014
+returned a correlation coefficient of 0.59, a bias of -0.35 ppmv and a RMS error 
+of 0.85 ppmv while PC proxy gave a correlation coefficient of 0.86, a bias of 0.014
 and a RMS error of 0.53.
-For S. hemisphere reconstruction, the numbers are: a correlation of 0.83,
-a bias of 1.24 ppmv and a RMS error of 1.89 ppmv for classic proxy
-while PC returned a correlation of 0.915, a bias of 0.18 and a RMS error
-of 0.42.
+For S. hemisphere reconstruction, the numbers are: a correlation coefficient of 0.70,
+a bias of -0.0093 ppmv and a RMS error of 0.75 ppmv for classic proxy
+while PC returned a correlation coefficient of 0.89, a bias of 0.14 and a RMS error
+of 0.49.
 Once again, only two principal components were used in the hemispherical PC
 proxy reconstruction.
+For the classic proxy tracer, hemispherical interpolates were to only first-, rather than
+second-order ($N=1$).
+
+All results for the sonde validation are summarized in Table \ref{summary},
+including relative bias, normalized RMS error and FAC2. 
+Both relative bias and normalized RMS are normalized by the standard 
+deviation of the measurement data.
+FAC2 is the fraction of estimates that are within a factor of 2 of the 
+measurement values.
+
 
 \section{Discussion and conclusions}
 
 The raw skill scores listed in the previous section show the PC proxy method
-to be more accurate than the classic proxy tracer method, even when the classic
-method is done only hemi-spherically while the PC reconstruction is
-performed globally.
-Differences are smaller for hemispherical reconstructions but nonetheless
-significant.
+to be more accurate than the classic proxy tracer method. 
+Differences are largest when the reconstruction is performed globally.
+When the reconstruction is performed over only a single hemisphere,
+differences are smaller but nonetheless significant.
+The two methods are almost the same in the Northern hemisphere but in 
+the Southern hemisphere PC proxy is superior even when the PC proxy
+reconstruction is performed globally while the classic proxy tracer is 
+performed only in the Southern hemisphere.
 
-On the other hand, when the reconstruction is done over the whole globe,
-PC proxy is clearly superior.
-It is also superior in the Southern hemisphere.
 We surmise that part of the advantage lies in having more degrees of freedom
-or at least, more meaningful degrees of freedom: more than one possible
-tracer configuration is represented.
+or at least (in the case of $k \le N+1$), more meaningful degrees of freedom:
+more than one possible tracer configuration is represented.
 Moreover, because it is using information from shorter time scales, it
 is better able to fit more active tracers that are changing more rapidly,
 as ozone would be in the Southern hemisphere during winter time.
@@ -876,37 +908,41 @@ fields.
 This is to be expected: the POAM III data covers only a very small latitude 
 band so that values derived for the equator could be considered an
 extrapolation and are vulnerable to ``over-fitting''.
+Such instabilities also appeared in the classic method, although less often.
 It doesn't affect the validation results so much because most of the 
 radiosonde launch stations are in the higher latitudes, as seen in
 Figure \ref{ozone_sonde_stations}.
-These instabilities can be reduced by using fewer principal components which
-reduces the number of degrees of freedom.
+In PC proxy, instabilities can be reduced by using fewer principal components
+which reduces the number of degrees of freedom.
 Unfortunately, this also tends to reduce the accuracy in the areas where the
 method does not fail.
 A better remedy would be either to have more measurements sampling more of
 the globe or to simply not use interpolates far outside the range of the
 measurements.
 
-The major advantage of the method, as compared to the classic method, 
-is the ability to accurately combine information from the whole
-globe, allowing seamless reconstruction of global fields even across the 
-equator. 
+The ability to accurately combine information over the whole globe
+would appear to be the biggest advantage of the method.
+As compared to the earlier method, PC proxy
+allows for seamless reconstruction even across the equator.
+Note that there is very little difference between the global reconstructions
+and those restricted to a single hemisphere, especially in the Southern
+hemisphere.
 Even though there isn't a lot of cross-talk between the two hemispheres, the
-PC proxy method overcomes this by allowing for more degrees of freedom.
-It also accounts a broader range of tracer states, excluding the least likely
-and it is not affected by initial conditions.
-In this regard
-it would be instructive to test the method on an instrument that samples
+the greater degrees of freedom in the PC proxy method overcomes this.
+It would be instructive to test the method on an instrument that samples
 more broadly and using more principal components.
 
 Principal component proxy tracer reconstruction is shown to be a powerful
 technique that 
 has many of the advantages of prognostic assimilation models but with
 less of the associated complexity.
+In particular, there is no need for explicitly modelled sources and sinks.
 It has the advantage over the classic proxy tracer method because it takes
 into account more than one possible configuration of a passive tracer, operates over
 shorter time scales and has more parameters to tune for optimal accuracy
 and stability.
+It is also more accurate when performed over the entire Earth rather than
+a single hemisphere, allowing for seamless reconstruction of global fields.
 It would be straightforward to adapt to three dimensional reconstruction 
 as well as reconstruction that relies on column measurements or even un-inverted
 level 1 satellite measurements rather than point measurements.
