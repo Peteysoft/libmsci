@@ -97,13 +97,13 @@ namespace libagf {
 	ncls1=select_classes(x, cls, n, map, x1, cls1);
 	map[j]=0;
 	d[k]=sqrt(hausdorff_metric(x0, x1, ncls0, ncls1, D));
-	printf("%12.4g ", d[k]);
+	//printf("%12.4g ", d[k]);
 	k++;
       }
       map[i]=1;
       ncls0=select_classes(x, cls, n, map, x0, cls0);
       map[i]=0;
-      printf("%12.4g\n", sqrt(hausdorff_width(x0, ncls0, D)));
+      //printf("%12.4g\n", sqrt(hausdorff_width(x0, ncls0, D)));
     }
     delete [] map;
     return d;

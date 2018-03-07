@@ -70,7 +70,7 @@ cluster_node<leaf_t, metric_t>::cluster_node(leaf_t leaf) {
 
 template <class leaf_t, class metric_t>
 void cluster_node<leaf_t, metric_t>::print(FILE *fs, int depth, char *opt) {
-  for (int i=0; i<depth; i++) printf("  ");
+  for (int i=0; i<depth; i++) fprintf(fs, "  ");
   if (d<0) {
     fprintf(fs, "%d\n", child.leaf);
   } else {
@@ -82,7 +82,7 @@ void cluster_node<leaf_t, metric_t>::print(FILE *fs, int depth, char *opt) {
     }
     child.branch[0]->print(fs, depth+1, opt);
     child.branch[1]->print(fs, depth+1, opt);
-    for (int i=0; i<depth; i++) printf("  ");
+    for (int i=0; i<depth; i++) fprintf(fs, "  ");
     fprintf(fs, "}\n", opt);
   }
 }
@@ -218,17 +218,17 @@ int cluster_tree<real, cls_t>::build_all(real *d, int nvec, int nvar) {
   //tree stores only indices at the leaf-level, not entire vectors:
   for (int i=0; i<n; i++) leaf[i]=new cluster_node<int, real>(i);
 
-  printf("Building tree:         %6.1f%%", 0.);
+  fprintf(stderr, "Building tree:         %6.1f%%", 0.);
   for (int i=0; i<nd; i++) {
     trimat_coord(sind[i], j, k);
     //printf("%d %d; %g\n", j, k, d[sind[i]]);
     check=new cluster_node<int, real>(d[sind[i]], leaf[j], leaf[k]);
     root=check->check();
     if (root!=check) delete check;
-    printf("\b\b\b\b\b\b\b%6.1f%%", 100.*(i+1)/nd);
-    fflush(stdout);
+    fprintf(stderr, "\b\b\b\b\b\b\b%6.1f%%", 100.*(i+1)/nd);
+    fflush(stderr);
   }
-  printf("\n");
+  fprintf(stderr, "\n");
 
   return 0;
 }
@@ -246,16 +246,16 @@ int cluster_tree<real, cls_t>::build_all(real **vec, int nvec, int nvar) {
   nd=n*(n-1)/2; 
   d=new real[nd];
 
-  printf("Calculating distances: %6.1f%%", 0.);
+  fprintf(stderr, "Calculating distances: %6.1f%%", 0.);
 
   for (int i=0; i<nd; i++) {
     trimat_coord(i, j, k);
     d[i]=sqrt(metric2(vec[j], vec[k], nvar));
     //printf("%d %d; %g\n", j, k, d[i]);
-    printf("\b\b\b\b\b\b\b%6.1f%%", 100.*(i+1)/nd);
-    fflush(stdout);
+    fprintf(stderr, "\b\b\b\b\b\b\b%6.1f%%", 100.*(i+1)/nd);
+    fflush(stderr);
   }
-  printf("\n");
+  fprintf(stderr, "\n");
 
   build_all(d, n, nvar);
 

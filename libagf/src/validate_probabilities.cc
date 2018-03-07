@@ -24,6 +24,7 @@ int main(int argc, char ** argv) {
   cls_ta *class1;
   cls_ta *class2;
   nel_ta n1, n2;
+  nel_ta nsamp;
   dim_ta ncls;
 
   real_a **p;			//probabilities
@@ -44,17 +45,21 @@ int main(int argc, char ** argv) {
 
   flag_a Cflag=0;
   flag_a Hflag=0;
+  flag_a bflag=0;
   int exit_code=0;
 
   char c;
 
-  while ((c = getopt(argc, argv, "HC")) != -1) {
+  while ((c = getopt(argc, argv, "HCb")) != -1) {
     switch (c) {
       case ('C'):
              Cflag=1;
 	     break;
       case ('H'):
 	     Hflag=1;
+	     break;
+      case ('b'):
+	     bflag=1;
 	     break;
       case ('?'):
              fprintf(stderr, "Unknown option: -%c -- ignored\n", optopt);
@@ -80,6 +85,7 @@ int main(int argc, char ** argv) {
     printf("  output = output file for plotting\n");
     printf("  -C     = no class data in ASCII file\n");
     printf("  -H     = no header in ASCII file\n");
+    printf("  -b     = winning probabilities only\n");
     printf("\n");
     return INSUFFICIENT_COMMAND_ARGS;
   }
@@ -97,42 +103,91 @@ int main(int argc, char ** argv) {
     fprintf(stderr, "Unable to open file for reading: %s\n", tfile);
     return UNABLE_TO_OPEN_FILE_FOR_READING;
   }
- 
-  n2=read_lvq(pfile, p, class2, ncls, Hflag+2*Cflag); 
-  if (n2 < 0) {
-    fprintf(stderr, "Error reading input file: %s\n", pfile);
-    return ALLOCATION_FAILURE;
-  }
-  if (p == NULL) {
-    fprintf(stderr, "Unable to open file for reading: %s\n", pfile);
-    return UNABLE_TO_OPEN_FILE_FOR_READING;
-  }
-  if (n1 != n2) {
-    fprintf(stderr, "Data elements in files, %s and %s, do not agree: %d vs. %d\n", 
+
+  if (bflag) {
+    char *yfile;
+    char *confile;
+    real_a *con;		//"confidence ratings"
+    yfile=new char[strlen(pfile)+5];
+    sprintf(yfile, "%s.cls", pfile);
+    confile=new char[strlen(pfile)+5];
+    sprintf(confile, "%s.con", pfile);
+    class2=read_clsfile<cls_ta>(yfile, n2);
+    if (n2 < 0 || class2==NULL) {
+      fprintf(stderr, "Error reading input file, %s\n", yfile);
+      exit(FILE_READ_ERROR);
+    }
+    if (n1 != n2) {
+      fprintf(stderr, "Data elements in files, %s and %s, do not agree: %d vs. %d\n", 
+		    tfile, yfile, n1, n2);
+      return SAMPLE_COUNT_MISMATCH;
+    }
+    con=read_datfile<real_a>(confile, n2);
+    if (n2 < 0 || con==NULL) {
+      fprintf(stderr, "Error reading input file, %s\n", con);
+      exit(FILE_READ_ERROR);
+    }
+    if (n1 != n2) {
+      fprintf(stderr, "Data elements in files, %s and %s, do not agree: %d vs. %d\n", 
+		    tfile, confile, n1, n2);
+      return SAMPLE_COUNT_MISMATCH;
+    }
+    //convert confidence ratings back to conditional probabilities:
+    p=new real_a *[1];
+    p[0]=new real_a[n1];
+    ncls=1;
+    for (nel_ta i=0; i<n1; i++) if (class1[i]>=ncls) ncls=class1[i]+1;
+    for (nel_ta i=0; i<n1; i++) p[0][i]=(con[i]*(ncls-1)+1)/ncls;
+    printf("ncls=%d\n", ncls);
+    nsamp=n1;
+    delete [] con;
+    delete [] yfile;
+    delete [] confile;
+  } else {
+    n2=read_lvq(pfile, p, class2, ncls, Hflag+2*Cflag); 
+    if (n2 < 0) {
+      fprintf(stderr, "Error reading input file: %s\n", pfile);
+      return ALLOCATION_FAILURE;
+    }
+    if (p == NULL) {
+      fprintf(stderr, "Unable to open file for reading: %s\n", pfile);
+      return UNABLE_TO_OPEN_FILE_FOR_READING;
+    }
+    if (n1 != n2) {
+      fprintf(stderr, "Data elements in files, %s and %s, do not agree: %d vs. %d\n", 
 		    tfile, pfile, n1, n2);
-    return SAMPLE_COUNT_MISMATCH;
+      return SAMPLE_COUNT_MISMATCH;
+    }
+    nsamp=n1*ncls;
   }
 
-  sind=heapsort(p[0], n1*ncls);
-  ps=map_vector(p[0], sind, n1*ncls);
+  sind=heapsort(p[0], nsamp);
+  ps=map_vector(p[0], sind, nsamp);
 
-  //for (int i=0; i<n1*ncls; i++) printf("%g\n", ps[i]);
+  //for (int i=0; i<nsamp; i++) printf("%g\n", ps[i]);
   
   //to save memory:
   delete [] p[0];
   delete [] p;
 
-  midind=bin_search(ps, n1*ncls, (float) 1./ncls);
+  midind=bin_search(ps, nsamp, (float) 1./ncls);
   //printf("%g\n", ps[n1*ncls/2]);
-  sum=new double[n1*ncls+1];
-  sump=new double[n1*ncls+1];		//sum of probabilities
-  nacc=new double[n1*ncls+1];		//number of correct guesses
+  sum=new double[nsamp+1];
+  sump=new double[nsamp+1];		//sum of probabilities
+  nacc=new double[nsamp+1];		//number of correct guesses
   sum[midind]=0;
   sump[midind]=0;
   nacc[midind]=0;
   for (int i=midind-1; i>=0; i--) {
-    long k=sind[i]/ncls;
-    cls_ta cls=sind[i]%ncls;
+    long k;
+    cls_ta cls;
+    if (bflag) {
+      k=sind[i];
+      cls=class2[k];
+    } else {
+      k=sind[i]/ncls;
+      cls=sind[i]%ncls;
+    }
     sump[i]=sump[i+1]+ps[i]-1;
     if (cls!=class1[k]) {
       sum[i]=sum[i+1]-1/(1-ps[i]);
@@ -143,27 +198,34 @@ int main(int argc, char ** argv) {
     }
   }
 
-  for (int i=midind+1; i<=n1*ncls; i++) {
-    long k=sind[i-1]/ncls;
-    cls_ta cls=sind[i]%ncls;
-    sump[i]=sump[i-1]+ps[i-1];
-    if (cls==class1[k]) {
-      sum[i]=sum[i-1]+1/ps[i-1];
-      nacc[i]=nacc[i-1]+1;
+  for (int i=midind; i<nsamp; i++) {
+    long k;
+    cls_ta cls;
+    if (bflag) {
+      k=sind[i];
+      cls=class2[k];
     } else {
-      sum[i]=sum[i-1];
-      nacc[i]=nacc[i-1];
+      k=sind[i]/ncls;
+      cls=sind[i]%ncls;
+    }
+    sump[i+1]=sump[i]+ps[i];
+    if (cls==class1[k]) {
+      sum[i+1]=sum[i]+1/ps[i];
+      nacc[i+1]=nacc[i]+1;
+    } else {
+      sum[i+1]=sum[i];
+      nacc[i+1]=nacc[i];
     }
   }
 
   //save more memory:
   delete [] sind;
 
-  rank=new double[n1*ncls];
+  rank=new double[nsamp];
   if (ofile!=NULL) {
     fs=fopen(ofile, "w");
   }
-  for (int i=0; i<n1*ncls; i++) {
+  for (int i=0; i<nsamp; i++) {
     rank[i]=i-midind;
     if (ofile!=NULL) {
       fprintf(fs, "%d %g %g %g %g\n", i-midind, ps[i], sum[i], nacc[i], sump[i]);
@@ -175,16 +237,18 @@ int main(int argc, char ** argv) {
   //lets waste some compute cycles by calculating them independently...
   //r=gsl_stats_correlation(rank, 1, sum, 1, n1*ncls);
   //exit_code=gsl_fit_mul(rank, 1, sum, 1, n1*ncls, &m, &cov, &sumsqr);
-  r=gsl_stats_correlation(nacc, 1, sump, 1, n1*ncls);
-  exit_code=gsl_fit_mul(nacc, 1, sump, 1, n1*ncls, &m, &cov, &sumsqr);
+  r=gsl_stats_correlation(nacc, 1, sump, 1, nsamp+1);
+  exit_code=gsl_fit_mul(nacc, 1, sump, 1, nsamp+1, &m, &cov, &sumsqr);
 
 
   printf("r   = %15.8lg\n", r);
   printf("m   = %15.8lg\n", m);
-  printf("rms = %15.8lg\n", sqrt(sumsqr/(n1-1)));
+  printf("rms = %15.8lg\n", sqrt(sumsqr/(nsamp-1)));
+
+  exit(0);
 
   delete [] class1;
-  delete [] class2;
+  //delete [] class2;
   delete [] ps;
   delete [] sum;
 
