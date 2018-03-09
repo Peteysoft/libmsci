@@ -59,8 +59,12 @@ namespace libagf {
 
   //method I developed for orthogonal coding matrices (applied as general
   //method):
-  template <typename code_t, typename real>
-  void solve_class_renorm(code_t **a, int m, int n, real *r, real *p);
+  //template <typename code_t, typename real>
+  //void solve_class_renorm(code_t **a, int m, int n, real *r, real *p);
+  template <typename code_t>
+  void solve_class_renorm(code_t **a, int m, int n, float *r, float *p);
+  template <typename code_t>
+  void solve_class_renorm(code_t **a, int m, int n, double *r, double *p);
 
   //method I developed for orthogonal coding matrices (mainly appropriate for
   //same):
@@ -71,6 +75,10 @@ namespace libagf {
   //binary probabilities are the same as the multi-class probs.
   template <typename code_t, typename real>
   void solve_class_1vR(code_t **a, int m, int n, real *r, real *p);
+
+  //(Zadrozny 2002)
+  template <typename code_t, typename real>
+  void solve_class_Zadrozny(code_t **a, int m, int n, real *r, real *p);
 
   //convert to logarithms, solve by Newton's method:
   template <typename code_t, typename real>

@@ -37,6 +37,7 @@ int main(int argc, char ** argv) {
   double *sump;			//sum of probabilities
   double *nacc;			//number of correct guesses
   double *rank;
+  double brier=0;		//Brier score
 
   //slope and regression:
   double r, m;
@@ -179,6 +180,7 @@ int main(int argc, char ** argv) {
   sump[midind]=0;
   nacc[midind]=0;
   for (int i=midind-1; i>=0; i--) {
+    double diff;
     long k;
     cls_ta cls;
     if (bflag) {
@@ -192,13 +194,17 @@ int main(int argc, char ** argv) {
     if (cls!=class1[k]) {
       sum[i]=sum[i+1]-1/(1-ps[i]);
       nacc[i]=nacc[i+1]-1;
+      diff=ps[i];
     } else {
       sum[i]=sum[i+1];
       nacc[i]=nacc[i+1];
+      diff=ps[i]-1;
     }
+    brier+=diff*diff;
   }
 
   for (int i=midind; i<nsamp; i++) {
+    double diff;
     long k;
     cls_ta cls;
     if (bflag) {
@@ -212,10 +218,13 @@ int main(int argc, char ** argv) {
     if (cls==class1[k]) {
       sum[i+1]=sum[i]+1/ps[i];
       nacc[i+1]=nacc[i]+1;
+      diff=ps[i]-1;
     } else {
       sum[i+1]=sum[i];
       nacc[i+1]=nacc[i];
+      diff=ps[i];
     }
+    brier+=diff*diff;
   }
 
   //save more memory:
@@ -241,9 +250,9 @@ int main(int argc, char ** argv) {
   exit_code=gsl_fit_mul(nacc, 1, sump, 1, nsamp+1, &m, &cov, &sumsqr);
 
 
-  printf("r   = %15.8lg\n", r);
-  printf("m   = %15.8lg\n", m);
-  printf("rms = %15.8lg\n", sqrt(sumsqr/(nsamp-1)));
+  printf("correlation = %15.8lg\n", r);
+  printf("slope       = %15.8lg\n", m);
+  printf("Brier score = %15.8lg\n", sqrt(brier/(nsamp-1)));
 
   exit(0);
 

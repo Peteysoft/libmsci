@@ -211,7 +211,8 @@ namespace libagf {
 	solve_class=&solve_class_norm2<real, real>;
         break;
       case (6):
-	solve_class=&solve_class_renorm<real, real>;
+	//solve_class=&solve_class_renorm<real, real>;
+	solve_class=&solve_class_renorm<real>;
         break;
       case (7):
         solve_class=&solve_class_constrained1<real, real>;
@@ -223,6 +224,9 @@ namespace libagf {
 	solve_class=&solve_class_1vR<real, real>;
 	break;
       case (10):
+	solve_class=&solve_class_Zadrozny<real, real>;
+	break;
+      case (11):
 	solve_class=&solve_class_interior<real, real>;
 	break;
       default:

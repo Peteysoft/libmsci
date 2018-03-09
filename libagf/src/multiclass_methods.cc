@@ -11,6 +11,7 @@
 #include "constrained.h"
 #include "randomize.h"
 #include "full_util.h"
+#include "multiclass_methods.h"
 
 #include "agf_lib.h"
 
@@ -145,6 +146,7 @@ namespace libagf {
     //printf("\n");
   }
 
+  //basic least squares solution including "non-strict" cases:
   template <typename code_t, typename real>
   void solve_class_scratch(code_t **a0, int m, int n, real *r, real *p) {
     gsl_matrix *u1;
@@ -199,7 +201,7 @@ namespace libagf {
     }
   }
 
-  //here we add the constraint in the form of a "slack" variable after first
+  //here we add the constraint in the form of a Lagrange multiplier after first
   //forming the normal equations:
   template <typename code_t, typename real>
   void solve_class_norm2(code_t **a0, int m, int n, real *r, real *p) {
@@ -247,7 +249,7 @@ namespace libagf {
 
   }
 
-  //here we add the constraint in the form of a "slack" variable before
+  //here we add the constraint in the form of a Lagrange multiplier before
   //solving the least-squares problem:
   template <typename code_t, typename real>
   void solve_class_norm1(code_t **a, int m, int n, real *r, real *p) {
@@ -396,10 +398,30 @@ namespace libagf {
   
   }
 
+  /*
   template <typename code_t, typename real>
   void solve_class_renorm(code_t **a, int m, int n, real *r, real *p) {
     solve_class_scratch(a, m, n, r, p);
     p_constrain_renorm1(p, n);
+  }
+  */
+    
+  template <typename code_t>
+  void solve_class_renorm(code_t **a, int m, int n, double *r, double *p) {
+    solve_class_scratch(a, m, n, r, p);
+    p_constrain_renorm1(p, n);
+  }
+    
+  //can we improve performance by doing all calculations in double-precision?  
+  template <typename code_t>
+  void solve_class_renorm(code_t **a, int m, int n, float *r, float *p) {
+    double r2[m];
+    double p2[n];
+    for (int i=0; i<m; i++) r2[i]=r[i];
+    for (int i=0; i<n; i++) p2[i]=p[i];
+    solve_class_scratch(a, m, n, r2, p2);
+    p_constrain_renorm1b(p2, n);
+    for (int i=0; i<n; i++) p[i]=p2[i];
   }
       
   template <typename code_t, typename real>
@@ -535,6 +557,66 @@ namespace libagf {
     gsl_vector_free(sol);
   }
 
+  //Zadrozny 2002 Advances in Information Processing Systems 1041
+  template <typename code_t, typename real>
+  void solve_class_Zadrozny(code_t **a, int m, int n, real *r, real *p) {
+    real tol=1e-9;
+    int maxiter=100;
+    real rp[m];			//value for r given p
+    real pnew[n];
+    real err;
+    real pt;			//total of pnew
+    int nb[m];
+    //assumes classes are roughly equal in size:
+    for (int i=0; i<m; i++) {
+      nb[i]=0;
+      for (int j=0; j<n; j++) nb[i]+=abs(a[i][j]);
+    }
+    //initialize with equal values for all probabilities:
+    for (int i=0; i<n; i++) p[i]=1./n;
+    for (int j=0; j<m; j++) {
+      real norm=0;
+      rp[j]=0;
+      for (int k=0; k<n; k++) rp[j]+=a[j][k]*p[k];
+      for (int k=0; k<n; k++) norm+=abs(a[j][k])*p[k];
+      rp[j]/=norm;
+      printf("%g ", rp[j]);
+    }
+    printf("\n");
+    for (int i=0; i<maxiter; i++) {
+      pt=0;
+      for (int j=0; j<n; j++) {
+        real num=0;
+	real den=0;
+	for (int k=0; k<m; k++) {
+          num+=nb[k]*r[k];
+	  den+=nb[k]*rp[k];
+	}
+	pnew[j]=p[j]*num/den;
+	pt+=pnew[j];
+      }
+      for (int j=0; j<n; j++) pnew[j]/=pt;
+      for (int j=0; j<m; j++) {
+        real norm=0;
+        rp[j]=0;
+	for (int k=0; k<n; k++) rp[j]+=a[j][k]*p[k];
+	for (int k=0; k<n; k++) norm+=abs(a[j][k])*p[k];
+	rp[j]/=norm;
+      }
+      err=0;
+      for (int j=0; j<m; j++) {
+        real diff=rp[j]-r[j];
+	err+=diff*diff;
+      }
+      if (err<tol) break;
+      for (int j=0; j<n; j++) {
+        p[j]=pnew[j];
+	printf("%g ", p[j]);
+      }
+      printf("\n");
+    }
+  }
+
   template void p_renorm<float>(float *, int);
   template void p_renorm<double>(double *, int);
 
@@ -543,6 +625,8 @@ namespace libagf {
 
   //template void p_constrain_renorm1a<float>(float *, int);
   //template void p_constrain_renorm1a<double>(double *, int);
+
+  //template void p_constrain_renorm1b<double>(double *, int);
 
   template void solve_class_scratch<float, float>(float **, int, int, float *, float *);
   template void solve_class_scratch<double, double>(double **, int, int, double *, double *);
@@ -565,14 +649,20 @@ namespace libagf {
   template void solve_class_constrained2<float, float>(float **, int, int, float *, float *);
   template void solve_class_constrained2<double, double>(double **, int, int, double *, double *);
 
-  template void solve_class_renorm<float, float>(float **, int, int, float *, float *);
-  template void solve_class_renorm<double, double>(double **, int, int, double *, double *);
+  //template void solve_class_renorm<float, float>(float **, int, int, float *, float *);
+  //template void solve_class_renorm<double, double>(double **, int, int, double *, double *);
+
+  template void solve_class_renorm<float>(float **, int, int, float *, float *);
+  template void solve_class_renorm<double>(double **, int, int, double *, double *);
 
   template void solve_class_vote_pdf2<float, float>(float **, int, int, float *, float *);
   template void solve_class_vote_pdf2<double, double>(double **, int, int, double *, double *);
 
   template void solve_class_1vR<float, float>(float **, int, int, float *, float *);
   template void solve_class_1vR<double, double>(double **, int, int, double *, double *);
+
+  template void solve_class_Zadrozny<float, float>(float **, int, int, float *, float *);
+  template void solve_class_Zadrozny<double, double>(double **, int, int, double *, double *);
 
   template void solve_class_interior<float, float>(float **, int, int, float *, float *);
   template void solve_class_interior<double, double>(double **, int, int, double *, double *);

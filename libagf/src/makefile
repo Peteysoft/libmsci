@@ -156,6 +156,7 @@ INCLUDE_FILES = agf_util.h \
 		multiclass_c.h \
 		multiclass_hier.h \
 		multi_control.h \
+		multiclass_methods.h \
 		agf_classify.h \
 		batch_borders.h
 
