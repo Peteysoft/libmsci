@@ -250,8 +250,8 @@ int main(int argc, char ** argv) {
   exit_code=gsl_fit_mul(nacc, 1, sump, 1, nsamp+1, &m, &cov, &sumsqr);
 
 
-  printf("correlation = %15.8lg\n", r);
-  printf("slope       = %15.8lg\n", m);
+  printf("log(1-r)    = %15.8lg\n", 1.-r);
+  printf("m-1         = %15.8lg\n", m-1.);
   printf("Brier score = %15.8lg\n", sqrt(brier/(nsamp-1)));
 
   exit(0);

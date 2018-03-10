@@ -19,7 +19,9 @@
 
 \section{Introduction}
 
-\section{Definition of the problem}
+\section{Preliminaries}
+
+\subsection{Definition of the problem}
 
 \label{description}
 
@@ -72,7 +74,7 @@ how do we solve for the conditional probabilities, $P(c|\vec x)$,
 or alternatively, directly for the most likely class:
 %how do we solve for the most likely class, 
 \begin{equation}
-	c=\arg \max_i P(i | \vec x)
+	c(\vec x)=\arg \max_i P(i | \vec x)
 \end{equation}
 ?
 %given a test point, $\vec x$,
@@ -80,6 +82,37 @@ or alternatively, directly for the most likely class:
 %or else can be any of the classes, $c \in [1,n_c]$?
 %--that is all of the conditional probabilities 
 %or just that of the ``winning'' class?
+
+\subsection{Validation}
+
+Since the goal of this work is not just to generalize binary to multi-class,
+but also to solve for the conditional probabilities, we need a reliable
+method of validating them.
+This is more difficult than validating only the classes since prior known values
+for the conditional probabilities are not available.
+We present two methods for testing the skill of probability estimates:
+the Brier score \citep{Brier1950} and a new method based on a corollary of Bayes
+theorem.
+
+The Brier score is just the root-mean-square-error using the class labels
+themselves as the ``true'' values. This works fine for binary classifiers but
+needs a slight modification for multi-class:
+\begin{equation}
+	P=\frac{1}{n} \sum_{i=1}^{n} \sum_{j=1}{n_c} \left ( \tilde p_i{ij} - E_{ij} \right )^2
+\end{equation}
+where $n$ is the number of test samples,
+$\tilde p_{ij} \approx P(j | \vec x_i)$ is the estimated conditional probability for the $i$th training sample from the test set and the $j$th class
+and $E$ has the following definition:
+\begin{equation}
+	E_{ij} = \left \lbrace \begin{matrix}{lr}
+		1; & c_i = y_i \\
+		0; & c_i \ne y_i
+	\end{matrix}
+\end{equation}
+where $c_i=c(\vec x_i)$ is the estimated class of the $i$th test sample.
+
+
+
 
 \section{Nonhierarchical multi-class classification}
 
@@ -618,10 +651,10 @@ D_{Hij} = \max \left \lbrace \min_k \max_l | \vec x_k - \vec x_l|~,~\min_l \max_
 Despite the restrictions placed on the problem in Section \ref{description}
 -- that the decision functions must approximate the difference in conditional
 probabilities and that the classifier must return the conditional probability
-of the winning class at minimum -- it's apparent that there are still many ways
-of solving the multi-class classification problem.
-Here we present a descriptive language that unifies many of the ideas presented
-in the previous sections.
+of the winning class at minimum -- it's apparent that there are still 
+very many ways of solving the multi-class classification problem.
+Here we present a descriptive control language that unifies many of the ideas
+presented in the previous sections.
 This is not a "one-size-fits-all" solution, but rather a means of specifying
 a particular partitioning that best suits the problem at hand.
 This partitioning could be arrived at either through prior knowledge, 
@@ -718,6 +751,118 @@ surface-classification problem with the key as follows:
 	\item Saltwater
 	\item Marsh
 \end{enumerate}
+
+\section{Numerical trials}
+
+We wish to test a synthesis of the ideas contained in this review on some real
+datasets.
+To this end, will test five different datasets using three configurations 
+solved using two methods each--a ``standard'', proven method and
+the general solution given in Section \ref{general_solution}.
+The configurations are: one-vs-one, an arbitray tree, and a tree generated
+from a bottom-up dendrogram using the Hausdorf metric.
+
+Here are sample ``control files'' for the ``shuttle'' dataset (see below).
+One-vs.-one:
+\begin{verbatim}
+shuttle_1v1-00 0 / 1;
+shuttle_1v1-01 0 / 2;
+shuttle_1v1-02 0 / 3;
+shuttle_1v1-03 0 / 4;
+shuttle_1v1-04 0 / 5;
+shuttle_1v1-05 0 / 6;
+shuttle_1v1-06 1 / 2;
+shuttle_1v1-07 1 / 3;
+shuttle_1v1-08 1 / 4;
+shuttle_1v1-09 1 / 5;
+shuttle_1v1-10 1 / 6;
+shuttle_1v1-11 2 / 3;
+shuttle_1v1-12 2 / 4;
+shuttle_1v1-13 2 / 5;
+shuttle_1v1-14 2 / 6;
+shuttle_1v1-15 3 / 4;
+shuttle_1v1-16 3 / 5;
+shuttle_1v1-17 3 / 6;
+shuttle_1v1-18 4 / 5;
+shuttle_1v1-19 4 / 6;
+shuttle_1v1-20 5 / 6;
+{
+  0
+  1
+  2
+  3
+  4
+  5
+  6
+}
+\end{verbatim}
+; arbitrary hierarchical:
+\begin{verbatim}
+shuttle/shuttle_hier
+{
+  shuttle/shuttle_hier.00
+  {
+    0
+    shuttle/shuttle_hier.00.01
+    {
+      1
+      2
+    }
+  }
+  shuttle/shuttle_hier.01
+  {
+    shuttle/shuttle_hier.01.00
+    {
+      3
+      4
+    }
+    shuttle/shuttle_hier.01.01
+    {
+      5
+      6
+    }
+  }
+}
+
+\end{verbatim}
+; and empirical hierarchical:
+\begin{verbatim}
+shuttle/shuttle_emp
+{
+  shuttle/shuttle_emp.00
+  {
+    shuttle/shuttle_emp.00.00
+    {
+      shuttle/shuttle_emp.00.00.00
+      {
+        shuttle/shuttle_emp.00.00.00.00
+        {
+          shuttle/shuttle_emp.00.00.00.00.00
+          {
+            2
+            1
+          }
+          5
+        }
+        6
+      }
+      3
+    }
+    4
+  }
+  0
+}
+\end{verbatim}
+
+Note that the shuttle dataset is very unbalanced, 
+hence  the tree looks more like a chain: see Figure \ref{shuttle_tree}.
+To solve the hierarchical models using the method in Section \ref{general_solution}, hierarchical models were first translated to non-hierarchical.
+The above, for instance, becomes:
+
+
+\subsection{Data and software}
+
+
 
 \bibliography{../agf_bib.bib,multi2}
 
