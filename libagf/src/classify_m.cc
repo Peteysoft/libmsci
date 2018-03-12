@@ -82,6 +82,8 @@ int main(int argc, char *argv[]) {
     fprintf(helpfs, "                      (may be extremely inefficient (NP) for some cases)\n");
     fprintf(helpfs, "                8 = voting from pdf with renormalization\n");
     fprintf(helpfs, "                      (designed for orthogonal coding matrices)\n");
+    fprintf(helpfs, "                9 = one versus the rest\n");
+    fprintf(helpfs, "                10= iterative method by Zadrozny\n");
     fprintf(helpfs, "  -C          no class data\n");
     fprintf(helpfs, "  -E missing  (in combination with -M) value for missing data\n");
     fprintf(helpfs, "  -H          no header\n");

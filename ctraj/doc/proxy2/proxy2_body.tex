@@ -313,7 +313,7 @@ term, $\sigma$, to Equations (\ref{matrix_soln_decomposition})
 and (\ref{tracer_integration}):
 \begin{eqnarray}
 	  \vect q(t_n) 
-  & \approx & \Delta t_{n} \sigma_{n} + \nonumber \\
+  & \approx & \vect \sigma_{n} + \nonumber \\
   & & R(t_{n-1}, ~ \Delta t_{n-1}) [\vect \sigma_{n-1} + \nonumber \\
   & & R(t_{n-2}, ~ \Delta t_{n-2}) [\vect \sigma_{n-2} + \nonumber \\
   & & \vdots \nonumber \\
@@ -321,6 +321,8 @@ and (\ref{tracer_integration}):
   & & R(t_0, ~ \Delta t_0) \vect q_0 ]...]]
 \end{eqnarray}
 where $\vect \sigma_i$ is the integrated source term for the $i$th time step.
+%If the integration is performed between $t_i - \Delta t_{i-1}/2$ and $t_i + \Delta t_{i+1}/2$, 
+%then the formulation should be second-order accurate. [not sure this is true...]
 Expanding:
 \begin{equation}
 \vect q(t_n) 

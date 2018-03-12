@@ -139,7 +139,7 @@ int main(int argc, char ** argv) {
     ncls=1;
     for (nel_ta i=0; i<n1; i++) if (class1[i]>=ncls) ncls=class1[i]+1;
     for (nel_ta i=0; i<n1; i++) p[0][i]=(con[i]*(ncls-1)+1)/ncls;
-    printf("ncls=%d\n", ncls);
+    //printf("ncls=%d\n", ncls);
     nsamp=n1;
     delete [] con;
     delete [] yfile;

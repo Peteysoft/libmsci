@@ -764,7 +764,7 @@ namespace libagf {
 
     set_id(&id);
     code=allocate_matrix<int, int32_t>(id, n_class());
-    //for (int i=0; i<id*this->ncls; i++) code[0][i]=0;
+    for (int i=0; i<id*this->ncls; i++) code[0][i]=0;
     model=new char*[id];
     clist=new cls_t[this->ncls+1];
     for (cls_t i=0; i<this->ncls; i++) clist[i]=i;
@@ -810,9 +810,10 @@ namespace libagf {
     //coding matrix for first child is in correct position:
     nmodel=children[0]->get_code(code, model);
     //fill all elements to the left with zeroes:
-    for (int i=0; i<nmodel; i++) {
-      for (int j=ncls[0]; j<this->ncls; j++) code[i][j]=0;
-    }
+    //(*+ we just pass a matrix with all zeroes initially--it's a lot easier)
+    //for (int i=0; i<nmodel; i++) {
+    //  for (int j=ncls[0]; j<this->ncls; j++) code[i][j]=0;
+    //}
     code+=nmodel;
     model+=nmodel;
     nmodel_total+=nmodel;
@@ -827,7 +828,7 @@ namespace libagf {
 	  code[j][k]=0;
 	}
         //fill elements to the left with zeroes:
-        for (int k=cnt+ncls[i]; k<this->ncls; k++) code[j][k]=0;
+        //for (int k=cnt+ncls[i]; k<this->ncls; k++) code[j][k]=0; (see above: *+)
       }
       //advance to un-filled rows:
       code+=nmodel;
@@ -835,6 +836,8 @@ namespace libagf {
       cnt+=ncls[i];
       nmodel_total+=nmodel;
     }
+    //print_matrix(stdout, code-nmodel_total, nmodel_total, this->ncls);
+    //printf("\n");
 
     return nmodel_total;
   }

@@ -131,22 +131,24 @@ int main(int argc, char **argv) {
       break;
     case(8):
       int sum;
+      int **codet;
       //int **cm;
       //int **product;
       nrow=4*((n-1)/4+1);
-      coding_matrix=NULL;
+      codet=NULL;
       do {
-        if (coding_matrix!=NULL) delete_matrix(coding_matrix);
-        coding_matrix=ortho_coding_matrix_greedy<int>(nrow, opt_args.Yflag);
+        if (codet!=NULL) delete_matrix(codet);
+        codet=ortho_coding_matrix_greedy<int>(n, nrow, opt_args.Yflag);
 	//pile brute force upon brute force:
 	//(making sure there are classes on both sides of the fence...)
 	//print_matrix(stdout, coding_matrix, nrow, n);
 	for (int i=0; i<nrow; i++) {
 	  sum=0;
-          for (int j=0; j<n; j++) sum+=coding_matrix[i][j];
+          for (int j=0; j<n; j++) sum+=codet[j][i];
 	  if (abs(sum)==n) break;
 	}
       } while (abs(sum)==n);
+      coding_matrix=matrix_transpose(codet, n, nrow);
       break;
     case(9):
       multiclass_hier<real_a, cls_ta> *dum;

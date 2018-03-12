@@ -407,7 +407,7 @@ namespace libagf {
   //need to design a more efficient version of this...
   //(greedy, not brute force... brute force down below...)
   template <typename scalar>
-  scalar ** ortho_coding_matrix_greedy(int n, int toprow1) {
+  scalar ** ortho_coding_matrix_greedy(int m, int n, int toprow1) {
     long *trial;
     //bit_array *tobits;
     bitset<sizeof(int)*8> *tobits;
@@ -417,9 +417,9 @@ namespace libagf {
 
     nperm=pow(2, n);
 
-    coding_matrix=new scalar *[n];
-    coding_matrix[0]=new scalar[n*n];
-    for (int i=1; i<n; i++) coding_matrix[i]=coding_matrix[0]+n*i;
+    coding_matrix=new scalar *[m];
+    coding_matrix[0]=new scalar[m*n];
+    for (int i=1; i<m; i++) coding_matrix[i]=coding_matrix[0]+n*i;
 
     if (n>8*sizeof(long)-1) {
       fprintf(stderr, "Size must be %d or less\n", 8*sizeof(long)-1);
@@ -463,11 +463,11 @@ namespace libagf {
           nfilled++;
         }
         delete tobits;
-        if (nfilled>=n) break;
+        if (nfilled>=m) break;
       }
-    } while (nfilled<n);
+    } while (nfilled<m);
 
-    if (nfilled<n) coding_matrix[nfilled]=NULL;
+    //if (nfilled<n) coding_matrix[nfilled]=NULL;
 
     delete [] trial;
     return coding_matrix;
@@ -668,9 +668,9 @@ namespace libagf {
   template float ** ortho_coding_matrix_nqbf<float>(int,int,int);
   template double ** ortho_coding_matrix_nqbf<double>(int,int,int);
 
-  template int ** ortho_coding_matrix_greedy<int>(int, int);
-  template float ** ortho_coding_matrix_greedy<float>(int, int);
-  template double ** ortho_coding_matrix_greedy<double>(int, int);
+  template int ** ortho_coding_matrix_greedy<int>(int, int, int);
+  template float ** ortho_coding_matrix_greedy<float>(int, int, int);
+  template double ** ortho_coding_matrix_greedy<double>(int, int, int);
 
   template int ** ortho_coding_matrix_brute_force<int>(int);
   template float ** ortho_coding_matrix_brute_force<float>(int);

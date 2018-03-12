@@ -19,50 +19,50 @@ how the set of multiple classes is partitioned.
 Typically, the class of the test point is determined by the distance between
 a column in the matrix and a vector of binary {\it decision functions}:
 \begin{eqnnon}
-	c(\vec x) = \arg \min_j | \vec a^{(j)} - \vec r(\vec x) |
+	c(\vec x) = \arg \min_i | \vec a_i - \vec r(\vec x) |
 	\label{min_dist}
 \end{eqnnon}
-where $\vec a^{(j)}$ is the $j$th column of the coding matrix and $\vec r$
+where $\vec a_i$ is the $i$th row of the coding matrix and $\vec r$
 is a vector of decision functions at {\it test point}, $\vec x$.
 If we take the upright brackets as a Euclidean distance, and assume that
 each partition partitions all of the classes, that is, there are no zeroes
 in $A$, then this reduces to a {\it voting} solution:
 \begin{equation}
-	c = \arg \max A^T \vec r \label{voting}
+	c = \arg \max A \vec r \label{voting}
 \end{equation}
 Both \citet{Allwein_etal2000} and \citet{Windeatt_Ghaderi2002} show that to
 maximize the accuracy of an error-correcting coding matrix, the distance
-between each column, $|\vec a^{(i)} - \vec a^{(j)}|_{i \ne j}$ should be as
+between each column, $|\vec a_i - \vec a_j|_{i \ne j}$ should be as
 large as possible.
 Using the same assumptions, this reduces to:
 \begin{eqnnon}
-	\min |\vec a^{(i)} \cdot \vec a^{(j)}|_{i \ne j}
+	\min |\vec a_i \cdot \vec a_j|_{i \ne j}
 \end{eqnnon}
 In other words, the coding matrix, $A$, should be orthogonal.
 This approach to the multi-class problem will be described in detail in this note.
 
 \section{Algorithm}
 
-We wish to design a set of $m$ binary classifiers, each of which return a 
+We wish to design a set of $n$ binary classifiers, each of which return a 
 decision function:
 \begin{eqnnon}
-r_j(\vec x) = P_i(-1 | \vec x) - P_i(+1 | \vec x)
+r_j(\vec x) = P_j(-1 | \vec x) - P_j(+1 | \vec x)
 \label{rdef}
 \end{eqnnon}
-where $P_i(c | \vec x)$ is the conditional probability of the $c$th class of
-the $i$th classifier.
-Each binary classifier partitions a set of $n$ classes such that for a
+where $P_j(c | \vec x)$ is the conditional probability of the $c$th class of
+the $j$th classifier.
+Each binary classifier partitions a set of $m$ classes such that for a
 given test point, $\vec x$:
 \begin{eqnnon}
-\sum_j a_{ij} p_j = r_j
+	\sum_{i=1}^m a_{ij} p_i = r_j; ~~~ j=[1..n]
 \label{multiclass}
 \end{eqnnon}
 where $A=\lbrace a_{ij} \in \lbrace -1, +1 \rbrace  \rbrace$ is a {\it coding
-matrix} and $p_j = p(j | \vec x)$ is the conditional probability of the $j$th
+matrix} and $p_i = p(i | \vec x)$ is the conditional probability of the $i$th
 class.
 In vector notation:
 \begin{equation}
-	A \vec p = \vec r \label{inverse}
+	A^T \vec p = \vec r \label{inverse}
 \end{equation}
 The more general case where a class can be excluded, that is the coding 
 may include zeroes, $a_{ij} \in \lbrace -1, 0, +1\rbrace$,
@@ -75,22 +75,24 @@ there are a set of constrainsts that must be enforced
 because $\vec p$ is only allowed to take on certain values.
 Thus, we wish to solve the following minimization problem:
 \begin{equation}
-	\arg \min_{\vec p} | A \vec p - \vec r | \label{minimization}
+	\arg \min_{\vec p} | A^T \vec p - \vec r | \label{minimization}
 \end{equation}
 \begin{eqnarray}
-	\sum_j p_j & = & 1 \label{normalization}\\
-	p_j & \ge & 0 \label{nonnegative}
+	\sum_{i=1}^m p_i & = & 1 \label{normalization}\\
+	p_i & \ge & 0; ~~~ i=[1..m] \label{nonnegative}
 \end{eqnarray}
 
 If $A$ is orthogonal,
 \begin{eqnnon}
-	A^T A = m I
+	A A^T = n I
 	\label{orthogonal}
 \end{eqnnon}
-where $I$ is the $n \times n$ identity matrix and $n$ the number of classes,
+where $I$ is the $m \times m$ identity matrix,
 then the unconstrained minimization problem is easy to solve. 
 Note that the voting solution in (\ref{voting}) is now equivalent to
 the inverse solution in (\ref{inverse}).
+%and also that, unless coding matrix, $A$, is 
+%square, $n=m$, it is only orthogonal in one direction.
 This allows us to determine the class easily, but we also wish to solve for
 the probabilities, $\vec p$, so that none of the constraints in 
 (\ref{normalization}) or (\ref{nonnegative}) are violated.
@@ -103,7 +105,7 @@ in (\ref{minimization}) to something much simpler:
 \begin{eqnnon}
 	\arg \min_{\vec p} | \vec p - \vec p_0 |
 \end{eqnnon}
-where $\vec p_0 = A^T \vec r/m$ with the constraints in (\ref{normalization}) and
+where $\vec p_0 = A \vec r/n$ with the constraints in (\ref{normalization}) and
 (\ref{nonnegative}) remaining the same.
 Because the system has been rotated and expanded, the non-negativity 
 constraints in (\ref{nonnegative}) remain orthogonal, meaning they are 
@@ -121,24 +123,24 @@ and the non-negativity constraints, (\ref{nonnegative}), for the negative probab
 3. repeat step 2.
 More formally, let $\vec 1$ be a vector of all $1$'s:
 \begin{itemize}
-	\item $i=1$; $n_1=n$
+	\item $i=0$; $m_0=m$
 	\item while $\exists k \, p_{ik} < 0 \lor \vec p_i \cdot \vec 1 \ne 1$:
 	\begin{itemize}
 		\item if $\vec p_i \cdot \vec 1 \ne 1$ then 
-		$\vec p_{i+1} = \vec p_i + (\vec p_i \cdot \vec 1 - 1)/n_i$
+		$\vec p_{i+1} = \vec p_i + (\vec p_i \cdot \vec 1 - 1)/m_i$
 		\item let $K$ be the set of $k$ such that $p_{i+1,k} < 0$
 		\item for each $k$ in $K$:
 		\begin{itemize}
 			\item $p_k=0$
 			\item Remove $k$ from the problem
 		\end{itemize}
-		\item $n_{i+1}=n_i-|K|$
+		\item $m_{i+1}=m_i-|K|$
 		\item $i=i+1$
 	\end{itemize}
 \end{itemize}
 
 Note that resultant direction vectors for each step form an orthogonal set.
-For instance, suppose $n_1=4$ and after enforcing the normalization constraint,
+For instance, suppose $m_0=4$ and after enforcing the normalization constraint,
 the first probability is less than zero, $p_{1,1} < 0$,
 then the direction vectors for the two motions are:
 \begin{eqnnon}
@@ -147,40 +149,59 @@ then the direction vectors for the two motions are:
 
 More generally, consider the following sequence of vectors:
 \begin{eqnnon}
-	v_{ij} = \frac{1}{\sqrt{(n-i)^2-2(n-i-1)}} \left \lbrace \begin{array}{rl}
+	v_{ij} = \frac{1}{\sqrt{(m-i)^2-2(m-i-1)}} \left \lbrace \begin{array}{rl}
 			0; & j < i \\
-			-n+i+1; & j=i \\
+			-m+i+1; & j=i \\
 			1; & j > i
 		\end{array} \right .
 \end{eqnnon}
-where $j \in [1, n]$. \citep{Boyd_Vandenberghe2004}
+where $i \in [1, m]$ and $j \in [1, m]$. \citep{Boyd_Vandenberghe2004}
 
 
 \section{Constructing the coding matrix}
 
-Finding an $A$ such that $A^T A = m I$ and $a_{ij} \in \lbrace -1, 1, \rbrace$
+\label{construction}
+
+Finding an $A$ such that $A A^T = n I$ and $a_{ij} \in \lbrace -1, 1, \rbrace$
 is quite a difficult combinatorial problem.
 Work in signal processing may be of limited applicability because coding
-matrices are typically comprised of $0$'s and $1$'s rather than $-1$'s and $+1$'s
-as here \citep{Hedayat_etal1999,Panse_etal2014}.
-Moreover, there are restrictions required here: 
+matrices are typically comprised of $0$'s and $1$'s 
+rather than $-1$'s and $+1$'s \citep{Hedayat_etal1999,Panse_etal2014}.
+Moreover, there are further restrictions needed here: 
 each row as well as each column must have
-both positive and negative elements.
+both positive and negative elements, or:
+\begin{eqnarray}
+	\forall i & \left | \sum_{j=0}^n a_{ij} \right | < n & \label{restriction}\\\nonumber
+	\forall j & \left | \sum_{i=0}^m a_{ij} \right | < m & 
+\end{eqnarray}
 
 A simple method of designing an orthogonal $A$ is using harmonic series.
-Consider the following matrix for eight binary classifiers ($m=8$) and
-five classes ($n=5$):
-\begin{eqnnon}
-	A^T = \left [ \begin{array}{rrrrrrrr}
+Consider the following matrix for five classes ($m=5$) 
+and eight binary classifiers ($n=8$):
+\begin{equation}
+	A = \left [ \begin{array}{rrrrrrrr}
 			-1 & -1 & -1 & -1 & 1 & 1 & 1 & 1 \\
-			 1 &  1 & -1 & -1 & -1 & -1 & 1 & 1 \\
 			-1 & -1 & 1 & 1 & -1 & -1 & 1 & 1 \\
-			-1 & 1 & 1 & -1 & -1 & 1 & 1 & -1 \\
-			-1 & 1 & -1 & 1 & -1 & 1 & -1 & 1
+			-1 & 1 & -1 & 1 & -1 & 1 & -1 & 1 \\
+			 1 &  1 & -1 & -1 & -1 & -1 & 1 & 1 \\
+			-1 & 1 & 1 & -1 & -1 & 1 & 1 & -1 
 	\end{array} \right ]
-\end{eqnnon}
+	\label{harmonic}
+\end{equation}
 This will limit the size of $m$ relative to $n$; more precisely:
-$m=2 \log_2 n - 1$.
+$m \le \lfloor 2 \log_2 n \rfloor - 1$. Moreover, only certain values of $n$
+will be admitted: $n=2^t$ where $t$ is a whole number.
+
+The first three rows (\ref{harmonic}) comprise a Walsh-Hadamard code \citep{Arora_Barak2009}.
+A square ($n=m$) orthogonal coding matrix is called a Hadamard matrix.
+It can be shown that besides $n=1$ and $n=2$, only Hadamard matrices of size
+$n=4t$ exist,  
+and it is still unproven that examples exist for all values of $t$
+\citep{Hedayat_Wallis1978}.
+A very simple, recursive method exists to generate matrices of size $n=t^2$ 
+\citep{Hedayat_Wallis1978} but without the properties in (\ref{restriction}).
+Such a matrix will include a ``harmonic series'' of the same type as in
+(\ref{harmonic}).
 
 %Noting which versions of $A$ are degenerate (equivalent) can help us whittle
 %away at the problem:
@@ -191,21 +212,21 @@ $m=2 \log_2 n - 1$.
 
 To compute the results in this note, orthogonal coding matrices were generated
 using a ``greedy'' algorithm.
-We start with an empty matrix.
-Candidate vectors are chosen at random to comprise a column of the matrix
-but never repeated.
-If the candidate vector is orthogonal to existing columns, then it is added to the matrix.
+We choose $n$ to be the smallest multiple of $4$ equal to or larger than $m$.
+and start with an empty matrix.
+Candidate vectors containing both positive and negative elements 
+are chosen at random to comprise a row of the matrix but never repeated.
+If the candidate vector is orthogonal to existing rows, then it is added to the matrix.
 The process is repeated until the matrix is filled.
-The matrix is then checked to ensure that each row contains both positive and
-negative elements.
-A full matrix of $m$ rows is almost always returned but only when $m$
-is a multiple of $4$.
+A full matrix is almost always returned especially if $m<n$.
+The matrix is then checked to ensure that 
+each column contains both positive and negative elements.
 
 Obviously, this method of finding orthogonal coding matrices
 will only work for relatively few classes.
 More work will need to be done to find efficient methods
 of generating these matrices
-if they are to be applied to problems with a large number of classes.
+if they are to be efficiently applied to problems with a large number of classes.
 
 \section{Validating the probabilities}
 
@@ -237,7 +258,7 @@ to the class label, as follows:
 \begin{eqnnon}
 	p(c_{i+1} | \vec x_{i+1}) \ge p(c_i | \vec x_i)
 \end{eqnnon}
-Note that in this ordering, there will be $n$ $i$'s indexing the same $\vec x$ 
+Note that in this ordering, there will be $m$ $i$'s indexing the same $\vec x$ 
 and the same $y$.
 Second, we rearrange Equation (\ref{theorem}) as follows:
 \begin{equation}
@@ -322,7 +343,7 @@ There is the potential for speed increases for binary classification methods
 that don't depend on the number of samples in the training data by using
 orthogonal coding matrices rather than one-versus-one.
 In this case, time efficiency will depend on the number of classes,
-$O(n)$, rather than the number of classes squared, $O(n^2)$.
+$O(m)$, rather than the number of classes squared, $O(m^2)$.
 The obvious example is logistic regression, however there will likely be
 a concordant decrease in accuracy for the orthogonal coding matrices since
 boundaries within partitions will be more complex.
@@ -334,8 +355,8 @@ $O(N)$, where $N$ is the number of training samples.
 Since each partition with an orthogonal coding matrix includes all of the
 training data, time efficiency per partition is proportional to the number
 of training samples, whereas in one-versus-one, it's proportional, on average,
-to the number of training samples divided by the number of classes: $O(N/n)$.
-Hence, both methods will have time efficiency roughly $O(Nn)$.
+to the number of training samples divided by the number of classes: $O(N/m)$.
+Hence, both methods will have time efficiency roughly $O(Nm)$.
 
 As the results suggest, the number of returned support vectors will vary 
 between the two methods and this difference will depend heavily upon the 

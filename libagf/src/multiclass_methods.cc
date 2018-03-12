@@ -560,13 +560,14 @@ namespace libagf {
   //Zadrozny 2002 Advances in Information Processing Systems 1041
   template <typename code_t, typename real>
   void solve_class_Zadrozny(code_t **a, int m, int n, real *r, real *p) {
-    real tol=1e-9;
-    int maxiter=100;
+    real tol=1e-3;
+    int maxiter=10000;
     real rp[m];			//value for r given p
     real pnew[n];
     real err;
     real pt;			//total of pnew
     int nb[m];
+    int cflag=0;
     //assumes classes are roughly equal in size:
     for (int i=0; i<m; i++) {
       nb[i]=0;
@@ -580,17 +581,17 @@ namespace libagf {
       for (int k=0; k<n; k++) rp[j]+=a[j][k]*p[k];
       for (int k=0; k<n; k++) norm+=abs(a[j][k])*p[k];
       rp[j]/=norm;
-      printf("%g ", rp[j]);
+      //printf("%g ", rp[j]);
     }
-    printf("\n");
+    //printf("\n");
     for (int i=0; i<maxiter; i++) {
       pt=0;
       for (int j=0; j<n; j++) {
         real num=0;
 	real den=0;
 	for (int k=0; k<m; k++) {
-          num+=nb[k]*r[k];
-	  den+=nb[k]*rp[k];
+          num+=nb[k]*(a[k][j]*r[k]+1);
+          den+=nb[k]*(a[k][j]*rp[k]+1);
 	}
 	pnew[j]=p[j]*num/den;
 	pt+=pnew[j];
@@ -608,13 +609,18 @@ namespace libagf {
         real diff=rp[j]-r[j];
 	err+=diff*diff;
       }
-      if (err<tol) break;
+      if (sqrt(err/(m-1))<tol) {
+        cflag=1;
+        //fprintf(stderr, "solve_class_Zadrozny: iter= %d\n", i);
+        break;
+      }
       for (int j=0; j<n; j++) {
         p[j]=pnew[j];
-	printf("%g ", p[j]);
+	//printf("%g ", p[j]);
       }
-      printf("\n");
+      //printf("\n");
     }
+    if (cflag==0) fprintf(stderr, "solve_class_Zadrozny: maxiter= %d exceeded\n", maxiter);
   }
 
   template void p_renorm<float>(float *, int);

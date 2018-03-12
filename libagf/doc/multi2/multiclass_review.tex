@@ -4,6 +4,7 @@
 \usepackage[dvips]{graphicx}
 
 \usepackage{natbib}
+\usepackage{url}
 
 \bibliographystyle{apa}
 
@@ -28,7 +29,7 @@
 In a statistical classication problem we are given a set of ordered pairs, 
 $\lbrace \vec x_j : y_j \rbrace$ 
 where the vector, $\vec x_j$, is the location of the {\it sample} in 
-the $N$-dimensional {\it feature space} 
+the $D$-dimensional {\it feature space} 
 and $y_j \in [1..n_c]$ is the class of the sample
 where $n_c$ is the number of classes,
 and the classes are
@@ -107,11 +108,58 @@ and $E$ has the following definition:
 	E_{ij} = \left \lbrace \begin{matrix}{lr}
 		1; & c_i = y_i \\
 		0; & c_i \ne y_i
-	\end{matrix}
+	\end{matrix} \right .
 \end{equation}
 where $c_i=c(\vec x_i)$ is the estimated class of the $i$th test sample.
 
+The other validation method originates was first employed in \citet{Mills2009}.
+From Bayes theorem and the definition of probability:
+\begin{equation}
+\int P(\vec x) P(c | \vec x) \mathrm d \vec x = \lim_{N \rightarrow \infty} N_c/N
+\end{equation}
+where $N_c$ is the number of training samples of class $c$ and $N$ is the 
+total number of training samples.
+Transforming this into a Monte Carlo sum (with importance sampling):
+\begin{equation}
+	\lim_{N \rightarrow \infty} \left [ \sum_{i=1}^N P(c | \vec x_i) = N_c \right ]
+\end{equation}
+where $\vec x_i$ is the features data of $i$th training sample.
+We use the Kronecker delta 
+to move the equals sign outside the limit:
+\begin{equation}
+	\lim_{N \rightarrow \infty} \left [ \sum_{i=1}^N P(c | \vec x_i) - \delta_{cy_i} \right ] = 0 \label{theorem}
+\end{equation}
+where $y_i$ is the class of $i$th training sample.
 
+To make the theorem useful for validation purposes there are two things 
+to be done.
+First, the estimated conditional probabilities, $\tilde p$, are sorted from
+low to high:
+\begin{equation}
+	\tilde p(c_{i+1}|\vec x_{i+1}) \ge \tilde p(c_i|\vec x_i)
+\end{equation}
+Note that there is no need to separate out each class, hence the subscript
+on the class label.
+Second, we define the index, $i_0$, as the rank of the first ``winning''
+probability estimate:
+\begin{equation}
+	\tilde p(c_i | \vec x_i) \ge 1/n \iff i \ge i_0
+\end{equation}
+where $n$ is the number of classes.
+With this in place, Equation (\ref{theorem}) is divided into twp parts.
+The first part counts up:
+\begin{equation}
+	\sum_{i=i_0}^{N^\prime+i_0} \delta_{c_iy_i} 
+		\approx \sum_{i=i_0}^{N^\prime+i_0} \tilde p(c_i | \vec x_i) \\
+\end{equation}
+while the second part counts down:
+\begin{equation}
+	\sum_{i=N^\prime+i_0}^{i_0} \left [\delta_{c_iy_i}-1 \right ] 
+	\approx \sum_{i=N^\prime+i_0}^{i_0} \left [\tilde p(c_i | \vec x_i) - 1 \right ]
+	\label{second_part}
+\end{equation}
+The Pearson correlation coefficient measures the precision while the slope
+measures the bias.
 
 
 \section{Nonhierarchical multi-class classification}
@@ -309,7 +357,7 @@ solution if probabilities are not required \citep{Chang_Lin2011}.
 The disadvantage of a voting solution is
 that it does not return estimates of the probabilities.
 
-\subsection{Common coding matrices}
+\section{Common coding matrices}
 
 There are number of standard, symmetric coding matrices that are commonly used
 to solve for multi-class.
@@ -321,7 +369,7 @@ We will use each of these examples to demonstrate how to solve for the
 conditional probabilities while enforcing the constraints,
 expanding out to the general solution for ``error-correcting-codes.''
 
-\subsubsection{One-versus-the-rest}
+\subsection{One-versus-the-rest}
 
 Common coding matrices include ``one-versus-the-rest'' in which
 we take each class and train it against the rest of the
@@ -350,7 +398,7 @@ simply writing out one side of the equation:
 The normalization constraint, (\ref{normalization}), can be enforced 
 through the use of a Lagrange multiplier. See next section.
 
-\subsubsection{One-versus-one}
+\subsection{One-versus-one}
 
 In a ``one-versus-one'' solution, we train each class against
 every other class. For $n_c=4$:
@@ -390,7 +438,9 @@ inequality constraints in (\ref{nonnegative}) are always satisfied
 for support vector machines (SVM) than either
 error-correcting codes or one-vs.-the-rest.
 
-\subsubsection{Orthogonal coding matrix}
+\subsection{Orthogonal coding matrix}
+
+\label{orthogonal}
 
 An error correcting coding matrix is simply an arbitrary one.
 This is often random, but may also be carefully designed 
@@ -428,9 +478,9 @@ construct, but the voting solution does not correspond to the inverse solution.
 
 The orthogonality property allows us to reduce the minimization problem 
 in (\ref{minimization_problem}) to something much simpler:
-\begin{eqnnon}
+\begin{equation}
 	\arg \min_{\vec p} | \vec p - \vec p_0 |
-\end{eqnnon}
+\end{equation}
 where $\vec p_0 = A^T \vec r/m$ with the constraints in (\ref{normalization}) and
 (\ref{nonnegative}) remaining the same.
 Because the system has been rotated and expanded, the non-negativity 
@@ -469,21 +519,21 @@ Note that resultant direction vectors for each step form an orthogonal set.
 For instance, suppose $n_1=4$ and after enforcing the normalization constraint,
 the first probability is less than zero, $p_{1,1} < 0$,
 then the direction vectors for the two motions are:
-\begin{eqnnon}
+\begin{equation}
 	\frac{1}{2}[1, 1, 1, 1] \cdot \frac{1}{2\sqrt{3}} [-3, 1, 1, 1] = 0
-\end{eqnnon}
+\end{equation}
 
 More generally, consider the following sequence of vectors:
-\begin{eqnnon}
+\begin{equation}
 	v_{ij} = \frac{1}{\sqrt{(n-i)^2-2(n-i-1)}} \left \lbrace \begin{array}{rl}
 			0; & j < i \\
 			-n+i+1; & j=i \\
 			1; & j > i
 		\end{array} \right .
-\end{eqnnon}
+\end{equation}
 where $j \in [1, n]$. \citep{Boyd_Vandenberghe2004}
 
-\subsubsection{Error correcting codes}
+\subsection{Error correcting codes}
 
 Another common coding matrix is simply an arbitrary one: this is commonly
 known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
@@ -757,11 +807,15 @@ surface-classification problem with the key as follows:
 We wish to test a synthesis of the ideas contained in this review on some real
 datasets.
 To this end, will test five different datasets using three configurations 
-solved using two methods each--a ``standard'', proven method and
-the general solution given in Section \ref{general_solution}.
+solved using two methods each--the ``standard'', proven method as given
+in earlier in the text and
+the general solution given in Section \ref{orthogonal}.
 The configurations are: one-vs-one, an arbitray tree, and a tree generated
 from a bottom-up dendrogram using the Hausdorf metric.
 
+The control language allows us to represent any type of multi-class 
+configuration relatively succinctly, including different parameters
+used for the binary classifiers.
 Here are sample ``control files'' for the ``shuttle'' dataset (see below).
 One-vs.-one:
 \begin{verbatim}
@@ -856,13 +910,68 @@ shuttle/shuttle_emp
 
 Note that the shuttle dataset is very unbalanced, 
 hence  the tree looks more like a chain: see Figure \ref{shuttle_tree}.
-To solve the hierarchical models using the method in Section \ref{general_solution}, hierarchical models were first translated to non-hierarchical.
+To solve the hierarchical models using the method in Section \ref{orthogonal}, hierarchical models were first translated to non-hierarchical.
 The above, for instance, becomes:
+\begin{verbatim}
+shuttle/shuttle_emp 0 1 2 3 4 5 / 6;
+shuttle/shuttle_emp.00 0 1 2 3 4 / 5;
+shuttle/shuttle_emp.00.00 0 1 2 3 / 4;
+shuttle/shuttle_emp.00.00.00 0 1 2 / 3;
+shuttle/shuttle_emp.00.00.00.00 0 1 / 2;
+shuttle/shuttle_emp.00.00.00.00.00 0 / 1;
+{ 2 1 6 5 3 4 0}
+\end{verbatim}
+
 
 
 \subsection{Data and software}
 
+\begin{table}
+	\caption{Summary of datasets used in the analysis}\label{datasets}
+	\begin{tabular}{|l|lllll|}
+	\hline
+	Name & $D$ & Type & $n_c$ & $N$ & Reference \\\hline
+	shuttle & 9 & float & 7 & 58000 & {\small \citep{King_etal1995}}\\
+	sat & 36 & float & 6 & 6435 & {\small \citep{King_etal1995}}\\
+	segment & 19 & float & 7 & 2310 & {\small \citep{King_etal1995}} \\
+	letter &  16 & integer & 26 & 20000 & {\small \citep{Frey_Slate1991}}\\
+	pendigits & 16 & integer & 10 & 10992 & {\small \citep{Alimoglu1996}}\\
+	usps & 256 & float & 10 & 9292 & {\small \citep{Hull1994}}\\
+	\hline
+\end{tabular}
+\end{table}
 
+The datasets tested are as follows: 
+the ``sat'' dataset is a satellite land-classification problem;
+the ``segment'' dataset is a pattern-based image classification problem;
+the ``shuttle'' dataset predicts different flight configurations on the
+space shuttle \citep{Michie_etal1994, King_etal1995};
+``pendigits'' and ``usps'' are both digit recognition problems 
+\citep{Alimoglu1996, Hull1994};
+finally, the ``letter'' dataset is another text-recognition problem 
+that classifies letters rather than numbers 
+\citep{Frey_Slate1991}.
+The characteristics of each dataset are summarized in Table \ref{datasets}.
+
+The base binary classifier used to test the ideas in this paper is a 
+support vector machine (SVM) \citep{Mueller_etal2001}.
+We use the LIBSVM \citep{Chang_Lin2011} to perform the training
+using the \verb/svm-train/ command.
+LIBSVM is a simple yet powerful library for SVM that implements multiple
+kernel types and includes two different regularization methods.
+It was developed by Chih-Chung Chang and Chih-Hen Lin of the National
+Taiwan University in Taipei.
+LIBSVM can be downloaded at: \url{https://www.csie.ntu.edu.tw/~cjlin/libsvm}.
+
+Everything else was done using the libAGF library \citep{Mills2011}
+which includes extensive codes for generalized multi-class classification.
+These codes interface seamlessly with LIBSVM and provide for automatic
+generation of multiple types of control file using the \verb/print_control/
+command.
+Control files are used to train the binary classifiers and then
+to make predictions using the \verb/multi_borders/ and \verb/classify_m/
+commands, respectively.
+LibAGF may be downloaded at: \url{https://github.com/peteysoft/libmsci}.
 
 \bibliography{../agf_bib.bib,multi2}
 
