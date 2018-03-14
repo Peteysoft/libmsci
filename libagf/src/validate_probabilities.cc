@@ -22,7 +22,7 @@ int main(int argc, char ** argv) {
   size_t slen;
 
   cls_ta *class1;
-  cls_ta *class2;
+  cls_ta *class2=NULL;
   nel_ta n1, n2;
   nel_ta nsamp;
   dim_ta ncls;
@@ -164,14 +164,30 @@ int main(int argc, char ** argv) {
 
   sind=heapsort(p[0], nsamp);
   ps=map_vector(p[0], sind, nsamp);
-
-  //for (int i=0; i<nsamp; i++) printf("%g\n", ps[i]);
+/*
+  int cnt=0;
+  for (int i=1; i<nsamp; i++) {
+    if (ps[i]==ps[i-1]) {
+      cnt++;
+      printf("%d\n", cnt);
+    }
+    //printf("%g\n", ps[i]);
+  }
+  */
   
+  real_a r2, m2, b2;
+  if (bflag) {
+    validate_cond_prob(class1, p[0], class2, nsamp, r2, m2, b2);
+  } else {
+    validate_cond_prob(class1, p, n1, ncls, r2, m2, b2);
+  }
+
   //to save memory:
   delete [] p[0];
   delete [] p;
 
   midind=bin_search(ps, nsamp, (float) 1./ncls);
+
   //printf("%g\n", ps[n1*ncls/2]);
   sum=new double[nsamp+1];
   sump=new double[nsamp+1];		//sum of probabilities
@@ -254,10 +270,14 @@ int main(int argc, char ** argv) {
   printf("m-1         = %15.8lg\n", m-1.);
   printf("Brier score = %15.8lg\n", sqrt(brier/(nsamp-1)));
 
+  printf("log(1-r)    = %15.8lg\n", 1.-r2);
+  printf("m-1         = %15.8lg\n", m2-1.);
+  printf("Brier score = %15.8lg\n", b2);
+
   exit(0);
 
   delete [] class1;
-  //delete [] class2;
+  delete [] class2;
   delete [] ps;
   delete [] sum;
 

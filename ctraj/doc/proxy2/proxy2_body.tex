@@ -348,9 +348,13 @@ interpolation looks like this:
 	\vect q(t_n) \approx \sum_{i=0}^k c_{0i} s_i \vect u^{(i)}
 \end{equation}
 
-The most significant source of error are the terms left out of the equation,
-discounting errors introduced through discretization and because of
-a finitely resolved (and possibly inaccurate) wind field.
+The most significant source of error are the terms left out of the equation.
+%Errors introduced through discretization and because of
+%a finitely resolved (and possibly inaccurate) wind field are neglected
+%as these will be both smaller and harder to account for.
+%Errors introduced by discretization can be minimized by increasing the 
+%resolution while errors in the wind fields are something to be addressed by the 
+%designers of reanalysis and assimilation models \citep{Kalnay_etal1996}.
 The smaller the remaining singular values, $\lbrace s_i|i=[k+1..n_p]\rbrace$,
 the smaller the error, where $n_p$ is the total number of grid points in the tracer.
 This is why the Lyapunov exponents are useful:
@@ -475,7 +479,7 @@ Gridding in both hemispheres is 50 by 50, or 400km-,
     \includegraphics[angle=-90,width=0.9\linewidth]{POAM_loc.eps}
     \caption{Locations of all POAM III measurements used in this study 
     between Sept. 25, 1998 and November 18, 1998. 
-    Highlighted points are for the first time grid (two days worth of data) between Sept. 25, 1998 and Sept 27, 1998.}
+    Highlighted points are for the first time grid (two days worth of data) between Sept. 25, 1998 0:00 and Sept 27, 1998 0:00 UTC.}
     \label{POAM_loc}
 \end{figure}
 
@@ -596,10 +600,11 @@ this can be used to infer global fields of a long-lived tracer such as
 ozone based on only a few sparse measurements 
 \citep{Allen_Nakamura2003,Randall_etal2002}.
 Figure \ref{tcorr} demonstrates this with the extreme example of an initially
-zonally-symmetric tracer and an initially meridionally-symmetric tracer.
-The Pearson coefficient, weighted by grid size, is applied over the whole field at a single time-step.
+zonally-symmetric tracer and an initially meridionally-symmetric,
+two-dimensional tracer.
 Tracers are passively advected with National Center for Environmental Prediction
 (NCEP) reanalysis 1 data at the 500 K isentrop \citep{Kalnay_etal1996}.
+The Pearson coefficient, weighted by grid size, is applied over the whole field at a single time-step.
 
 We also plot the Pearson correlation coefficient of the first tracer with the largest singular
 vector.  
@@ -649,7 +654,7 @@ when considered over long time scales.
 In this section we use PC proxy to reconstruct two-dimensional ozone fields 
 from POAM III satellite data.
 To perform the analysis, we need to choose an integration time, 
-$t_n-t_0$ in Equation (\ref{SVD}), as well as a measurement window.
+$t_n-t_0$, in Equation (\ref{SVD}), as well as a measurement window.
 The integration time determines how long the tracer is advected 
 before performing the SVD.
 Measurements are selected from within the measurement window.
@@ -676,7 +681,7 @@ a given lead time--see Figure \ref{lyap_spec}.
   \label{sample_O3_field}
 \end{figure}
 
-Two dimensional fields were reconstructed daily on the 500 K isentrop
+Ozone fields were reconstructed daily on the 500 K isentrop
 between September 26 and November 17, 1998,
 which is one of only a few periods in which POAM III was operating in both 
 hemispheres simultaneously.
@@ -771,7 +776,7 @@ the scatter plot in Figure \ref{classic_cross_validation}a.
 The bias was 0.0039 ppmv while the RMS error was 0.16 ppmv.
 The normalized values are 0.021 for the bias and 0.86 for RMS error.
 In other words, residuals for the reconstructed ozone are better,
-on average, than the error bars from the original retrievals!
+on average, than the error bounds for the original retrievals!
 On the other hand, the PC proxy method, while more accurate, appears to be
 less stable as the pair of negative values in Figure \ref{PC_cross_validation}a
 suggest.
@@ -830,7 +835,7 @@ because ozone values tend to be higher in the Northern hemisphere than
 they are in the South, skill scores may be unnaturally high.
 As pointed out in the previous section, the original proxy tracer was 
 typically only applied to one hemisphere at a time.
-To see how the two methods truly compare, we should also apply them to only the
+For a more well-rounded comparison, we should also apply them to only the
 Northern or Southern hemisphere.
 Meanwhile, to get a better idea of the skill of the methods, we should likewise
 restrict comparisons to only a single hemisphere.
@@ -847,7 +852,7 @@ Skill scores for the restricted comparisons show a correlation coefficient of 0.
 a bias of 0.078 ppmv and a RMS error of 0.30 ppmv for the classic proxy
 and a correlation coefficient of 0.75, a bias of -0.014 and a RMS error of 0.22 for
 the PC proxy.
-Figures \ref{Nhemi}c. and \ref{Nhemi}d. shows results for interpolates for which the
+Figures \ref{Nhemi}c. and \ref{Nhemi}d. show results for interpolates for which the
 reconstruction was done in the Northern hemisphere using 
 Arctic POAM III measurements only.
 Scores improve considerably for the classic proxy tracer and now almost
@@ -859,7 +864,7 @@ and a RMS error of 0.21 ppmv for the PC proxy.
 For the N. hemisphere reconstruction, only two (2) principal components were
 used in PC proxy.
 
-Results for the Southern hemisphere, shown in Figure \ref{Shemi}, are even more 
+Results for the Southern hemisphere, shown in Figure \ref{Shemi}, are far more 
 favourable for the PC proxy method.
 For global reconstruction restricted to the S. hemisphere, classic proxy
 returned a correlation coefficient of 0.59, a bias of -0.35 ppmv and a RMS error 
@@ -908,17 +913,23 @@ exercise in Section \ref{cross_validation}, but also in ringing and regions
 of negative concentration towards the equator in some of the reconstructed
 fields.
 This is to be expected: the POAM III data covers only a very small latitude 
-band so that values derived for the equator could be considered an
+band so that values derived near the equator could be considered an
 extrapolation and are vulnerable to ``over-fitting''.
 Such instabilities also appeared in the classic method, although less often.
-It doesn't affect the validation results so much because most of the 
+They don't affect the validation results so much because most of the 
 radiosonde launch stations are in the higher latitudes, as seen in
 Figure \ref{ozone_sonde_stations}.
+
 In PC proxy, instabilities can be reduced by using fewer principal components
 which reduces the number of degrees of freedom.
 Unfortunately, this also tends to reduce the accuracy in the areas where the
 method does not fail.
-A better remedy would be either to have more measurements sampling more of
+A good example of this phenomenon is the classic proxy in the Southern
+hemisphere. Here we have used only a first-order fit because while a 
+second-order fit produced higher correlation scores, it also returned a
+much larger bias and RMS error.
+Stability is traded off for greater potential precision.
+The best remedy would be either to have more measurements sampling more of
 the globe or to simply not use interpolates far outside the range of the
 measurements.
 

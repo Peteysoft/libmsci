@@ -158,7 +158,8 @@ INCLUDE_FILES = agf_util.h \
 		multi_control.h \
 		multiclass_methods.h \
 		agf_classify.h \
-		batch_borders.h
+		batch_borders.h \
+		solve_cond_prob.h
 
 LIBRARY_INCLUDE = agf_lib.h
 

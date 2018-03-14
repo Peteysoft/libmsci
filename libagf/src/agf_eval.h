@@ -86,6 +86,24 @@ namespace libagf {
 		int nhist,			//size of table
 		FILE *fs = stdout);		//print to this file stream
 
+  template <typename real, typename cls_t>
+  int validate_cond_prob(cls_t *class1,		//true classes
+		  real **p,			//conditional prob.
+		  nel_ta n,			//number of samples
+		  cls_t ncls,			//number of classes
+		  real &corr,			//Pearson coefficient
+		  real &slope,			//slope
+		  real &brier);			//Brier score
+
+  template <typename real, typename cls_t>
+  int validate_cond_prob(cls_t *class1,		//true classes
+		  real *p,			//conditional prob.
+		  cls_t *class2,		//estimated classes
+		  nel_ta n,			//number of samples
+		  real &corr,			//Pearson coefficient
+		  real &slope,			//slope
+		  real &brier);			//Brier score
+
 } //end namespace libagf
 
 #endif
