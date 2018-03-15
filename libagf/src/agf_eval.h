@@ -93,7 +93,8 @@ namespace libagf {
 		  cls_t ncls,			//number of classes
 		  real &corr,			//Pearson coefficient
 		  real &slope,			//slope
-		  real &brier);			//Brier score
+		  real &brier,			//Brier score
+		  FILE *fs=NULL);
 
   template <typename real, typename cls_t>
   int validate_cond_prob(cls_t *class1,		//true classes
@@ -102,7 +103,8 @@ namespace libagf {
 		  nel_ta n,			//number of samples
 		  real &corr,			//Pearson coefficient
 		  real &slope,			//slope
-		  real &brier);			//Brier score
+		  real &brier,			//Brier score
+		  FILE *fs=NULL);
 
 } //end namespace libagf
 

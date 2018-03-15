@@ -287,23 +287,23 @@ int prob_struct_comp(const void * v1, const void * v2) {
    prob_struct<real, cls_t> *p1=(prob_struct<real, cls_t> *) v1;
    prob_struct<real, cls_t> *p2=(prob_struct<real, cls_t> *) v2;
    if (p1->p > p2->p) {
-     return -1;
+     return 1;
    } else if (p1->p < p2->p) {
-     return 1;
-   } else if (p1->t > p2->t) {
      return -1;
-   } else if (p1->t < p1->t) {
+   } else if (p1->t > p2->t) {
      return 1;
+   } else if (p1->t < p1->t) {
+     return -1;
    } else {
      return 0;
    }
 }
     
 template <typename real, typename cls_t>
-int validate_cond_prob(prob_struct<real, cls_t> *data, nel_ta nsamp, cls_t ncls,
-		double &corr, double &slope, real &brier) {
+int validate_cond_prob(prob_struct<real, cls_t> *data, nel_ta nsamp, real thresh,
+		double &corr, double &slope, real &brier, FILE *fs) {
   real *ps;			//sorted probalities
-  //double *sum;			//for earlier, equal-step version
+  double *sum=NULL;		//for earlier, equal-step version
   double *sump;			//sum of probabilities
   double *nacc;			//number of correct guesses
   int midind;
@@ -311,19 +311,25 @@ int validate_cond_prob(prob_struct<real, cls_t> *data, nel_ta nsamp, cls_t ncls,
   double cov, sumsqr;		//covariance, sum of squares of residuals
   int exit_code=0;
 
-  qsort(data, nsamp, sizeof(prob_struct<real_a, cls_t>), &prob_struct_comp<real_a, cls_ta>);
+  qsort(data, nsamp, sizeof(prob_struct<real, cls_t>), &prob_struct_comp<real, cls_t>);
 
   ps=new real[nsamp];
-  for (nel_ta i=0; i<nsamp; i++) ps[i]=data[i].p;
+  for (nel_ta i=0; i<nsamp; i++) {
+    ps[i]=data[i].p;
+    //printf("%g\n", ps[i]);
+  }
 
-  midind=bin_search(ps, nsamp, (real) 1./ncls);
+  midind=bin_search(ps, nsamp, thresh);
+  if (midind<0) midind=0;
+
+  printf("midind=%d; thresh=%g\n", midind, thresh);
 
   delete [] ps;
 
-  //sum=new double[nsamp+1];
+  if (fs!=NULL) sum=new double[nsamp+1];
   sump=new double[nsamp+1];		//sum of probabilities
   nacc=new double[nsamp+1];		//number of correct guesses
-  //sum[midind]=0;
+  if (fs!=NULL) sum[midind]=0;
   sump[midind]=0;
   nacc[midind]=0;
   brier=0;
@@ -332,7 +338,7 @@ int validate_cond_prob(prob_struct<real, cls_t> *data, nel_ta nsamp, cls_t ncls,
     sump[i]=sump[i+1]+data[i].p-1;
     nacc[i]=nacc[i+1]+data[i].t-1;
     diff=data[i].p-data[i].t;
-    //sum[i]=sum[i+1]-(data[i].t-1)/(1-data[i].p);
+    if (fs!=NULL) sum[i]=sum[i+1]-(data[i].t-1)/(1-data[i].p);
     brier+=diff*diff;
   }
 
@@ -341,12 +347,26 @@ int validate_cond_prob(prob_struct<real, cls_t> *data, nel_ta nsamp, cls_t ncls,
     sump[i+1]=sump[i]+data[i].p;
     nacc[i+1]=nacc[i]+data[i].t;
     diff=data[i].p-data[i].t;
-    //sum[i+1]=sum[i]+data[i].t/ps[i];
+    if (fs!=NULL) sum[i+1]=sum[i]+data[i].t/data[i].p;
     brier+=diff*diff;
   }
 
+  if (fs!=NULL) {
+    for (int i=0; i<nsamp; i++) {
+      //rank[i]=i-midind;
+      fprintf(fs, "%d %g %lg %lg %lg\n", i-midind, data[i].p, sum[i], nacc[i], sump[i]);
+    }
+  }
+
+  //calculate correlation and fit the slope:
   corr=gsl_stats_correlation(nacc, 1, sump, 1, nsamp+1);
   exit_code=gsl_fit_mul(nacc, 1, sump, 1, nsamp+1, &slope, &cov, &sumsqr);
+
+  //clean up:
+  delete [] sum;
+  delete [] sump;
+  delete [] nacc;
+  delete [] data;
 
   return exit_code;
 
@@ -354,7 +374,7 @@ int validate_cond_prob(prob_struct<real, cls_t> *data, nel_ta nsamp, cls_t ncls,
 
 template <typename real, typename cls_t>
 int validate_cond_prob(cls_t *class1, real **p, nel_ta n, cls_t ncls,
-	real &corr, real &slope, real &brier) {
+	real &corr, real &slope, real &brier, FILE *fs) {
   double r, m;
   int exit_code=0;
   prob_struct<real, cls_t> *data=new prob_struct<real, cls_t>[n*ncls];
@@ -364,7 +384,7 @@ int validate_cond_prob(cls_t *class1, real **p, nel_ta n, cls_t ncls,
     data[i].t=(class1[i/ncls]==(i%ncls));
   }
 
-  exit_code=validate_cond_prob(data, n*ncls, ncls, r, m, brier);
+  exit_code=validate_cond_prob(data, n*ncls, (real) 1./ncls, r, m, brier, fs);
 
   corr=r;
   slope=m;
@@ -376,20 +396,20 @@ int validate_cond_prob(cls_t *class1, real **p, nel_ta n, cls_t ncls,
 
 template <typename real, typename cls_t>
 int validate_cond_prob(cls_t *class1, real *p, cls_t *class2, nel_ta n,
-	real &corr, real &slope, real &brier) {
+	real &corr, real &slope, real &brier, FILE *fs) {
   double r, m;
   cls_t ncls;
   int exit_code=0;
   prob_struct<real, cls_t> *data=new prob_struct<real, cls_t>[n];
 
-  ncls=class1[0]+1;
+  ncls=1;
   for (int i=0; i<n; i++) {
     data[i].p=p[i];
     data[i].t=(class1[i]==class2[i]);
     if (class1[i]>=ncls) ncls=class1[i]+1;
   }
 
-  exit_code=validate_cond_prob(data, n, ncls, r, m, brier);
+  exit_code=validate_cond_prob(data, n, (real) 1./ncls, r, m, brier, fs);
 
   corr=r;
   slope=m;
@@ -419,12 +439,12 @@ template void check_confidence<double, int32_t>(int32_t *, int32_t *, double *,
 		nel_ta n, int nhist, FILE *);
 
 template int validate_cond_prob<float, int32_t>(int32_t *, float **, nel_ta, int32_t, 
-	float &, float &, float &);
+	float &, float &, float &, FILE *);
 template int validate_cond_prob<double, int32_t>(int32_t *, double **, nel_ta, int32_t, 
-	double &, double &, double &);
+	double &, double &, double &, FILE *);
 template int validate_cond_prob<float, int32_t>(int32_t *, float *, int32_t *, nel_ta, 
-	float &, float &, float &);
+	float &, float &, float &, FILE *);
 template int validate_cond_prob<double, int32_t>(int32_t *, double *, int32_t *, nel_ta,
-	double &, double &, double &);
+	double &, double &, double &, FILE *);
 
 } //end namespace libagf

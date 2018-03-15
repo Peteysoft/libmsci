@@ -177,7 +177,7 @@ int main(int argc, char ** argv) {
   
   real_a r2, m2, b2;
   if (bflag) {
-    validate_cond_prob(class1, p[0], class2, nsamp, r2, m2, b2);
+    validate_cond_prob(class1, p[0], class2, n1, r2, m2, b2);
   } else {
     validate_cond_prob(class1, p, n1, ncls, r2, m2, b2);
   }
@@ -187,6 +187,7 @@ int main(int argc, char ** argv) {
   delete [] p;
 
   midind=bin_search(ps, nsamp, (float) 1./ncls);
+  if (midind<0) midind=0;
 
   //printf("%g\n", ps[n1*ncls/2]);
   sum=new double[nsamp+1];
@@ -266,11 +267,11 @@ int main(int argc, char ** argv) {
   exit_code=gsl_fit_mul(nacc, 1, sump, 1, nsamp+1, &m, &cov, &sumsqr);
 
 
-  printf("log(1-r)    = %15.8lg\n", 1.-r);
+  printf("1-r         = %15.8lg\n", 1.-r);
   printf("m-1         = %15.8lg\n", m-1.);
   printf("Brier score = %15.8lg\n", sqrt(brier/(nsamp-1)));
 
-  printf("log(1-r)    = %15.8lg\n", 1.-r2);
+  printf("1-r         = %15.8lg\n", 1.-r2);
   printf("m-1         = %15.8lg\n", m2-1.);
   printf("Brier score = %15.8lg\n", b2);
 
