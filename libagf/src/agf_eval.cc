@@ -309,6 +309,7 @@ int validate_cond_prob(prob_struct<real, cls_t> *data, nel_ta nsamp, real thresh
   int midind;
   double r, m;			//correlation, slope
   double cov, sumsqr;		//covariance, sum of squares of residuals
+  double norm=0;		//normalization
   int exit_code=0;
 
   qsort(data, nsamp, sizeof(prob_struct<real, cls_t>), &prob_struct_comp<real, cls_t>);
@@ -321,8 +322,6 @@ int validate_cond_prob(prob_struct<real, cls_t> *data, nel_ta nsamp, real thresh
 
   midind=bin_search(ps, nsamp, thresh);
   if (midind<0) midind=0;
-
-  printf("midind=%d; thresh=%g\n", midind, thresh);
 
   delete [] ps;
 
@@ -351,6 +350,8 @@ int validate_cond_prob(prob_struct<real, cls_t> *data, nel_ta nsamp, real thresh
     brier+=diff*diff;
   }
 
+  for (int i=0; i<nsamp/2; i++) norm+=i^2;
+
   if (fs!=NULL) {
     for (int i=0; i<nsamp; i++) {
       //rank[i]=i-midind;
@@ -361,6 +362,9 @@ int validate_cond_prob(prob_struct<real, cls_t> *data, nel_ta nsamp, real thresh
   //calculate correlation and fit the slope:
   corr=gsl_stats_correlation(nacc, 1, sump, 1, nsamp+1);
   exit_code=gsl_fit_mul(nacc, 1, sump, 1, nsamp+1, &slope, &cov, &sumsqr);
+
+  printf("sumsqr = %lg\n", sqrt(sumsqr/(nsamp-1)));
+  printf("norm. sumsqr = %lg\n", sqrt(sumsqr/(nsamp-1))/sqrt(2*norm/(nsamp-1)));
 
   //clean up:
   delete [] sum;
@@ -379,9 +383,11 @@ int validate_cond_prob(cls_t *class1, real **p, nel_ta n, cls_t ncls,
   int exit_code=0;
   prob_struct<real, cls_t> *data=new prob_struct<real, cls_t>[n*ncls];
 
-  for (int i=0; i<n*ncls; i++) {
-    data[i].p=p[0][i];
-    data[i].t=(class1[i/ncls]==(i%ncls));
+  for (nel_ta i=0; i<n; i++) {
+    for (cls_t j=0; j<ncls; j++) {
+      data[i*ncls+j].p=p[i][j];
+      data[i*ncls+j].t=(class1[i]==j);
+    }
   }
 
   exit_code=validate_cond_prob(data, n*ncls, (real) 1./ncls, r, m, brier, fs);

@@ -201,6 +201,15 @@ namespace libagf {
     }
   }
 
+  template <typename code_t, typename real>
+  void solve_class_peaked(code_t **a, int m, int n, real *r, real *p) {
+    int cls;
+    solve_class_vote_pdf(a, m, n, r, p);
+    cls=choose_class(p, n);
+    for (int i=0; i<n; i++) p[i]=0;
+    p[cls]=1;
+  }
+
   //here we add the constraint in the form of a Lagrange multiplier after first
   //forming the normal equations:
   template <typename code_t, typename real>
@@ -672,6 +681,9 @@ namespace libagf {
 
   template void solve_class_interior<float, float>(float **, int, int, float *, float *);
   template void solve_class_interior<double, double>(double **, int, int, double *, double *);
+
+  template void solve_class_peaked<float, float>(float **, int, int, float *, float *);
+  template void solve_class_peaked<double, double>(double **, int, int, double *, double *);
 }
 
 #endif

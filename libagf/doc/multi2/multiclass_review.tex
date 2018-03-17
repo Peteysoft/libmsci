@@ -20,7 +20,23 @@
 
 \section{Introduction}
 
-\section{Preliminaries}
+Many statistical classifiers can only discriminate between two classes.
+The most common examples include linear classifiers such as perceptrons and
+logistic regression classifiers \citep{Michie_etal1994} along with extensions
+such as support vector machines (SVM) \citep{Mueller_etal2001} and 
+piecewise linear classifiers \citep{Mills2011, Bagirov2005}.
+There are many possible ways of extending a binary classifier to deal
+with multi-class classification and the number increases exponentially
+with the class labels.
+Moreover, the best method may well depend on the type of problem
+\citep{Dietterich_Bakiri1995,Allwein_etal2000}.
+
+The goal of this paper is not only to provide a summary of the
+best methods of solving for multiclass, but also to synthesize
+these ideas into a comprehensive framework whereby a multi-class problem
+can be solved using a broad array of configurations for the binary
+classifiers. 
+This includes solving for the multi-class conditional probabilities.
 
 \subsection{Definition of the problem}
 
@@ -84,83 +100,6 @@ or alternatively, directly for the most likely class:
 %--that is all of the conditional probabilities 
 %or just that of the ``winning'' class?
 
-\subsection{Validation}
-
-Since the goal of this work is not just to generalize binary to multi-class,
-but also to solve for the conditional probabilities, we need a reliable
-method of validating them.
-This is more difficult than validating only the classes since prior known values
-for the conditional probabilities are not available.
-We present two methods for testing the skill of probability estimates:
-the Brier score \citep{Brier1950} and a new method based on a corollary of Bayes
-theorem.
-
-The Brier score is just the root-mean-square-error using the class labels
-themselves as the ``true'' values. This works fine for binary classifiers but
-needs a slight modification for multi-class:
-\begin{equation}
-	P=\frac{1}{n} \sum_{i=1}^{n} \sum_{j=1}{n_c} \left ( \tilde p_i{ij} - E_{ij} \right )^2
-\end{equation}
-where $n$ is the number of test samples,
-$\tilde p_{ij} \approx P(j | \vec x_i)$ is the estimated conditional probability for the $i$th training sample from the test set and the $j$th class
-and $E$ has the following definition:
-\begin{equation}
-	E_{ij} = \left \lbrace \begin{matrix}{lr}
-		1; & c_i = y_i \\
-		0; & c_i \ne y_i
-	\end{matrix} \right .
-\end{equation}
-where $c_i=c(\vec x_i)$ is the estimated class of the $i$th test sample.
-
-The other validation method originates was first employed in \citet{Mills2009}.
-From Bayes theorem and the definition of probability:
-\begin{equation}
-\int P(\vec x) P(c | \vec x) \mathrm d \vec x = \lim_{N \rightarrow \infty} N_c/N
-\end{equation}
-where $N_c$ is the number of training samples of class $c$ and $N$ is the 
-total number of training samples.
-Transforming this into a Monte Carlo sum (with importance sampling):
-\begin{equation}
-	\lim_{N \rightarrow \infty} \left [ \sum_{i=1}^N P(c | \vec x_i) = N_c \right ]
-\end{equation}
-where $\vec x_i$ is the features data of $i$th training sample.
-We use the Kronecker delta 
-to move the equals sign outside the limit:
-\begin{equation}
-	\lim_{N \rightarrow \infty} \left [ \sum_{i=1}^N P(c | \vec x_i) - \delta_{cy_i} \right ] = 0 \label{theorem}
-\end{equation}
-where $y_i$ is the class of $i$th training sample.
-
-To make the theorem useful for validation purposes there are two things 
-to be done.
-First, the estimated conditional probabilities, $\tilde p$, are sorted from
-low to high:
-\begin{equation}
-	\tilde p(c_{i+1}|\vec x_{i+1}) \ge \tilde p(c_i|\vec x_i)
-\end{equation}
-Note that there is no need to separate out each class, hence the subscript
-on the class label.
-Second, we define the index, $i_0$, as the rank of the first ``winning''
-probability estimate:
-\begin{equation}
-	\tilde p(c_i | \vec x_i) \ge 1/n \iff i \ge i_0
-\end{equation}
-where $n$ is the number of classes.
-With this in place, Equation (\ref{theorem}) is divided into twp parts.
-The first part counts up:
-\begin{equation}
-	\sum_{i=i_0}^{N^\prime+i_0} \delta_{c_iy_i} 
-		\approx \sum_{i=i_0}^{N^\prime+i_0} \tilde p(c_i | \vec x_i) \\
-\end{equation}
-while the second part counts down:
-\begin{equation}
-	\sum_{i=N^\prime+i_0}^{i_0} \left [\delta_{c_iy_i}-1 \right ] 
-	\approx \sum_{i=N^\prime+i_0}^{i_0} \left [\tilde p(c_i | \vec x_i) - 1 \right ]
-	\label{second_part}
-\end{equation}
-The Pearson correlation coefficient measures the precision while the slope
-measures the bias.
-
 
 \section{Nonhierarchical multi-class classification}
 
@@ -192,6 +131,7 @@ $j$ enumerates the class of the multi-class problem.
 In other words, if $a_{ij}$ is $-1$/$+1$, we would assign each of the $j$th class
 labels in the training data a value of $-1$/$+1$ when training the $i$th
 binary classifier. If the value is $0$, the $j$th class label is excluded.
+\citep{Dietterich_Bakiri1995,Windeatt_Ghaderi2002}
 
 The non-zero elements of $A$ are:
 \begin{eqnarray}
@@ -224,7 +164,7 @@ we can solve for the probabilities, $\vec p$, via matrix inversion:
 	\label{matrix_equation2}
 \end{eqnarray}
 %and $\delta$ is the Kronecker delta.
-Note that $Q$ reduces to $A$ if $A$ contains no zeroes.
+Note that $Q$ reduces to $A$ if $A$ contains no zeroes \citep{Kong_Dietterich1997}.
 The case of a coding matrix that contains no zeroes, that is all the partitions divide up all the
 classes rather than a subset, will be called the {\it strict} case.
 From a computational perspective, 
@@ -611,15 +551,18 @@ coding matrix for instance:
 \begin{equation}
 A = 
 \begin{bmatrix}
-1 & 1 & -1 & -1 \\
--1 & 1 & 0 & 0 \\
-0 & 0 & -1 & 1
+-1 & -1 & -1 & -1 & 1 & 1 & 1 & 1 \\
+-1 & -1 & 1 & 1 & 0 & 0 & 0 & 0 \\
+-1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & -1 & 1 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & -1 & -1 & 1 & 1 \\
+0 & 0 & 0 & 0 & -1 & 1 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 & -1 & 1
 \end{bmatrix}
 \end{equation}
-While there are only three rows for four classes, 
+While there are only seven rows for eight classes, 
 once we add in the constraint in (\ref{normalization}) the system becomes 
-fully determined, although it doesn't scale to larger problems:
-extra partitions will have to be added.
+fully determined.
 
 \subsection{Variations}
 
@@ -973,7 +916,15 @@ to make predictions using the \verb/multi_borders/ and \verb/classify_m/
 commands, respectively.
 LibAGF may be downloaded at: \url{https://github.com/peteysoft/libmsci}.
 
-\bibliography{../agf_bib.bib,multi2}
+To evaluate the conditional probabilities we use the Brier score
+\citep{Brier1950, Jolliffe_Stephenson2003}:
+\begin{equation}
+P=\sqrt{\frac{1}{n} \sum_{i=1}^{n} \sum_{j=1}^{n_c} \left ( \tilde p_{ij} - \delta_{jy_i} \right )^2}
+\end{equation}
+where $n$ is the number of test samples.
+
+
+\bibliography{../agf_bib,multi2,../svm_accel/svm_accel,../pwl}
 
 \end{document}
 

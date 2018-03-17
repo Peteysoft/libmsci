@@ -84,6 +84,10 @@ namespace libagf {
   template <typename code_t, typename real>
   void solve_class_interior(code_t **a, int m, int n, real *r, real *p);
 
+  //vote from probabilities, replace with 0's and a 1:
+  template <typename code_t, typename real>
+  void solve_class_peaked(code_t **a, int m, int n, real *r, real *p);
+
 }
 
 #endif

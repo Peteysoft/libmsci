@@ -163,7 +163,7 @@ The singular values are all positive and by convention are arranged from largest
 The matrix can normally be reconstructed to a high degree of accuracy
 using only a few of the largest singular values and vectors.
 This also makes the problem tractable since a typical size for
-the transport map might be $[20000\times20000]$. More on both points later.
+the transport map might be $[(360\cdot181) \times (360\cdot181)] = [65160\times65160]$.
 
 To correlate a set of sparse measurements, $\lbrace m_i \rbrace$,
 with the top $k$ principal components, we first find interpolates at each
@@ -383,7 +383,7 @@ As before, the error is given by terms not included in the analysis:
 	+ \vect u^{(i)} \cdot \sum_{j=1}^n R(t_j, t_n-t_j) \vect \sigma_j \right ]
 	\label{error1}
 \end{equation}
-Note that the first occurrence of the singular vector, $\vect u^(i)$, does not
+Note that the first occurrence of the singular vector, $\vect u^{(i)}$, does not
 cancel out the second occurrence because the factor in square brackets is a scalar, i.e., order of operations matters.
 
 The first term in Equation (\ref{error1}) sums the components of the initial tracer configuration that project onto the smaller singular vectors not included in the analysis. 
@@ -509,8 +509,8 @@ Daily averaged wind and temperature data was used to drive the advection model.
 
 \begin{figure}
   \begin{flushright}
-    \includegraphics[angle=90,width=0.9\textwidth]{ozone_sonde_stations}
-    %\includegraphics[width=0.9\textwidth]{ozone_sonde_stations}
+    %\includegraphics[angle=90,width=0.9\textwidth]{ozone_sonde_stations}
+    \includegraphics[width=0.9\textwidth]{ozone_sonde_stations}
     \caption{Locations of ozone sonde launch stations}
     \label{ozone_sonde_stations}
   \end{flushright}
@@ -531,19 +531,19 @@ towards the equator.
 \section{Numerical preliminaries}
 
 \begin{figure}
-  \begin{tabular}{cccc}
-    \includegraphics[angle=-90,width=0.23\textwidth]{svr4} &
-    \includegraphics[angle=-90,width=0.23\textwidth]{svr3} &
-    \includegraphics[angle=-90,width=0.23\textwidth]{svr2} &
-    \includegraphics[angle=-90,width=0.23\textwidth]{svr1} \\
-    a. Right SV 1 & c. Right SV 2 & e. Right SV 3 & g. Right SV 4 \\
-    \includegraphics[angle=-90,width=0.23\textwidth]{svl4} &
-    \includegraphics[angle=-90,width=0.23\textwidth]{svl3} &
-    \includegraphics[angle=-90,width=0.23\textwidth]{svl2} &
-    \includegraphics[angle=-90,width=0.23\textwidth]{svl1} \\
-    b. Left SV 1 & d. Left SV 2 & f. Left SV 3 & h. Left SV 4
-  \end{tabular}
-  %\includegraphics[width=1\textwidth]{sample_sv}
+  %\begin{tabular}{cccc}
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svr4} &
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svr3} &
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svr2} &
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svr1} \\
+  %  a. Right SV 1 & c. Right SV 2 & e. Right SV 3 & g. Right SV 4 \\
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svl4} &
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svl3} &
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svl2} &
+  %  \includegraphics[angle=-90,width=0.23\textwidth]{svl1} \\
+  %  b. Left SV 1 & d. Left SV 2 & f. Left SV 3 & h. Left SV 4
+  %\end{tabular}
+  \includegraphics[width=1\textwidth]{sample_sv}
   \caption{An example of the singular vectors derived from a discrete transport map.
   Sixty day integration started on August 1 1998 on the 500 K isentrop driven by NCEP wind fields.}
   \label{sample_SV}
@@ -581,10 +581,10 @@ of one 1.2 hours.}\label{tcorr}
 \begin{figure}
 \begin{tabular}{ll}
 a. Tracer & b. First PC\\
-\includegraphics[angle=-90,width=0.45\textwidth]{passive1997_12_01} &
-%\includegraphics[width=0.45\textwidth]{passive1997_12_01} &
-\includegraphics[angle=-90,width=0.45\textwidth]{firstpc1997_12_01}
-%\includegraphics[width=0.45\textwidth]{firstpc1997_12_01}
+%\includegraphics[angle=-90,width=0.45\textwidth]{passive1997_12_01} &
+\includegraphics[width=0.45\textwidth]{passive1997_12_01} &
+%\includegraphics[angle=-90,width=0.45\textwidth]{firstpc1997_12_01}
+\includegraphics[width=0.45\textwidth]{firstpc1997_12_01}
 \end{tabular}
 \caption{Comparison of a simulated tracer (a.) and the first principal
 component (b.) for the same time integration.
@@ -670,11 +670,11 @@ a given lead time--see Figure \ref{lyap_spec}.
 \begin{figure}
   %crude and inappropriate (like me) but does the job:
   \begin{tabular}{l}
-    \includegraphics[angle=-90,width=0.9\linewidth]{classic_O3_1998_10_01} \\
-    %\includegraphics[width=0.9\linewidth]{classic_O3_1998_10_01} \\
+    %\includegraphics[angle=-90,width=0.9\linewidth]{classic_O3_1998_10_01} \\
+    \includegraphics[width=0.9\linewidth]{classic_O3_1998_10_01} \\
     a. Classic proxy tracer \\
-    \includegraphics[angle=-90,width=0.9\linewidth]{pc_O3_1998_10_01} \\
-    %\includegraphics[width=0.9\linewidth]{pc_O3_1998_10_01} \\
+    %\includegraphics[angle=-90,width=0.9\linewidth]{pc_O3_1998_10_01} \\
+    \includegraphics[width=0.9\linewidth]{pc_O3_1998_10_01} \\
     b. PC proxy
   \end{tabular}
   \caption{Sample globally reconstructed ozone fields on the 500 K isentrop for October 1, 1998. Units are parts-per-million by volume (ppmv).}
@@ -710,7 +710,8 @@ when it does not become unstable due to over-fitting.
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.9\textwidth]{global_classic_xval_scatter_reduced}
+  %\includegraphics[width=0.9\textwidth]{global_classic_xval_scatter_reduced}
+  \includegraphics[width=0.9\textwidth]{global_classic_xval_scatter}
   \includegraphics[width=0.9\textwidth]{global_classic_xval_error}
   \caption{Cross validation of classic second-order proxy tracer ozone reconstruction. The reconstruction was done globally on the 500 K isentrop from POAM III data between September 26, 1998 and November 17, 1998 using a measurement window of 2 days.}
   \label{classic_cross_validation}
@@ -718,7 +719,8 @@ when it does not become unstable due to over-fitting.
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.9\textwidth]{global_PC_xval_scatter_reduced_1}
+  %\includegraphics[width=0.9\textwidth]{global_PC_xval_scatter_reduced_1}
+  \includegraphics[width=0.9\textwidth]{global_PC_xval_scatter}
   \includegraphics[width=0.9\textwidth]{global_PC_xval_error}
   \caption{Cross validation of principal component proxy ozone reconstruction. The reconstruction was done globally on the 500 K isentrop from POAM III data between September 26, 1998 and November 17, 1998 using 5 principal components,  an integration time of 60 days, and a measurement window of 2 days.}
   \label{PC_cross_validation}

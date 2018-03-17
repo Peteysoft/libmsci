@@ -229,6 +229,9 @@ namespace libagf {
       case (11):
 	solve_class=&solve_class_interior<real, real>;
 	break;
+      case (12):
+	solve_class=&solve_class_peaked<real, real>;
+	break;
       default:
         solve_class=&solve_class_constrained2<real, real>;
         break;
