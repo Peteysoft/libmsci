@@ -31,6 +31,8 @@ int main(int argc, char ** argv) {
 
   //slope and regression:
   real_a r, m;
+  //other dumb measures that don't really work as well as the Brier score:
+  real_a rms, norm;
 
   flag_a Cflag=0;
   flag_a Hflag=0;
@@ -153,9 +155,9 @@ int main(int argc, char ** argv) {
   }
 
   if (bflag) {
-    validate_cond_prob(class1, p[0], class2, n1, r, m, brier, fs);
+    validate_cond_prob(class1, p[0], class2, n1, r, m, brier, rms, norm, fs);
   } else {
-    validate_cond_prob(class1, p, n1, ncls, r, m, brier, fs);
+    validate_cond_prob(class1, p, n1, ncls, r, m, brier, rms, norm, fs);
   }
 
   if (ofile!=NULL) fclose(fs);
@@ -163,6 +165,7 @@ int main(int argc, char ** argv) {
   printf("1-r         = %15.8lg\n", 1.-r);
   printf("m-1         = %15.8lg\n", m-1.);
   printf("Brier score = %15.8lg\n", brier);
+  printf("norm. rmse  = %15.8lg\n", rms/norm);
 
   delete [] class1;
   delete [] class2;

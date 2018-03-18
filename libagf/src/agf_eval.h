@@ -94,6 +94,8 @@ namespace libagf {
 		  real &corr,			//Pearson coefficient
 		  real &slope,			//slope
 		  real &brier,			//Brier score
+		  real &rms,			//sum of squares from best fit
+		  real &norm,			//highest poss. value for sumsqr
 		  FILE *fs=NULL);
 
   template <typename real, typename cls_t>
@@ -104,6 +106,8 @@ namespace libagf {
 		  real &corr,			//Pearson coefficient
 		  real &slope,			//slope
 		  real &brier,			//Brier score
+		  real &rms,			//sum of squares from best fit
+		  real &norm,			//highest poss. value for sumsqr
 		  FILE *fs=NULL);
 
 } //end namespace libagf

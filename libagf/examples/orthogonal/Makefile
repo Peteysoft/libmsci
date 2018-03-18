@@ -177,9 +177,9 @@ $(STATFILE): $(BASE).1v1.txt $(BASE).ortho.txt
 	echo -n " " >> $(STATFILE)
 	cls_comp_stats -Hb $(TEST).cls $(BASE).ortho | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	validate_probabilities -H $(TEST).cls $(BASE).1v1.txt | grep -o "[0-9]*\.[0-9]*" | tr '\n' ' ' >> $(STATFILE)
+	validate_probabilities -H $(TEST).cls $(BASE).1v1.txt | grep -Eo "[+-]?[0-9]+\.[0-9]+(e[+-]?[0-9]+)?" | tr '\n' ' ' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	validate_probabilities -H $(TEST).cls $(BASE).ortho.txt | grep -o "[0-9]*\.[0-9]*" | tr '\n' ' ' >> $(STATFILE)
+	validate_probabilities -H $(TEST).cls $(BASE).ortho.txt | grep -Eo "[+-]?[0-9]+\.[0-9]+(e[+-]?[0-9]+)?" | tr '\n' ' ' >> $(STATFILE)
 	echo >> $(STATFILE)
 
 #performing classifications:
