@@ -171,8 +171,8 @@ Moreover, there are further restrictions needed here:
 each row as well as each column must have
 both positive and negative elements, or:
 \begin{eqnarray}
-	\forall i & \left | \sum_{j=0}^n a_{ij} \right | < n & \label{restriction}\\\nonumber
-	\forall j & \left | \sum_{i=0}^m a_{ij} \right | < m & 
+	& \left | \sum_{j=0}^n a_{ij} \right | < n; ~~~ & i=[1..m] \label{restriction}\\\nonumber
+	& \left | \sum_{i=0}^m a_{ij} \right | < m; ~~~ & j=[1..n] 
 \end{eqnarray}
 
 A simple method of designing an orthogonal $A$ is using harmonic series.
@@ -192,8 +192,9 @@ This will limit the size of $m$ relative to $n$; more precisely:
 $m \le \lfloor 2 \log_2 n \rfloor - 1$. Moreover, only certain values of $n$
 will be admitted: $n=2^t$ where $t$ is a whole number.
 
-The first three rows (\ref{harmonic}) comprise a Walsh-Hadamard code \citep{Arora_Barak2009}.
-A square ($n=m$) orthogonal coding matrix is called a Hadamard matrix.
+The first three rows in (\ref{harmonic}) comprise a Walsh-Hadamard code \citep{Arora_Barak2009}.
+A square ($n=m$) orthogonal coding matrix is called a Hadamard matrix
+\citep{Sylvester1867}.
 It can be shown that besides $n=1$ and $n=2$, only Hadamard matrices of size
 $n=4t$ exist,  
 and it is still unproven that examples exist for all values of $t$
