@@ -112,7 +112,7 @@ namespace libagf {
     c2=(char) c1;
     if (isdigit(c2)) {
       numflag=1;
-    } else if (isalpha(c2)==0) {
+    } else if (isalpha(c2)==0 && c2!='/') {
       return NULL;
     }
 

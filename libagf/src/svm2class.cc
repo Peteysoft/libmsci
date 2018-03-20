@@ -26,7 +26,7 @@ namespace libagf {
     nel_ta nsv[n];
     real **sv[n];				//all the support vectors
     real ** unn;			//union of support vectors
-    int nsv_total;			//size of union
+    int nsv_total=0;			//size of union
     int *ind[n];				//indices into union
     int nparam;				//how many kernel paramters are there?
     dim_ta D;
@@ -145,6 +145,9 @@ namespace libagf {
     helper->kval=new real[nsv_total];
     helper->test=new real[D];
     helper->flag=new int[nsv_total];
+
+    //clean up:
+    delete [] unn;
 
     return helper;
   }
@@ -348,16 +351,18 @@ namespace libagf {
   template <typename real, typename cls_t>
   svm2class2<real, cls_t>::svm2class2(char *name) {
     FILE *fs;
-    char *line;
+    char *line=NULL;
     this->name=new char[strlen(name)+1];
     strcpy(this->name, name);
     do {
+      delete [] line;
       line=fget_line(global_svm_allinone, 1);
       if (line==NULL) {
         fprintf(stderr, "svm2class2: error in input file\n");
 	throw FILE_READ_ERROR;
       }
     } while (strcmp(line, name)!=0);
+    delete [] line;
 
     //the sin:
     fs=global_svm_allinone;

@@ -1,6 +1,8 @@
 #ifndef LIBPETEY_INTERSECTION_H
 #define LIBPETEY_INTERSECTION_H
 
+#include <stdint.h>
+
 namespace libpetey {
 
   template <typename scalar>

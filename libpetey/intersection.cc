@@ -58,6 +58,9 @@ namespace libpetey {
     zone=bin_search(nt, n0+1, sind[nt[n0]-1], -1);
     ind[zone][sind[nt[n0]-1]-nt[zone]]=k;
 
+    //clean up:
+    delete [] all;
+
     return k+1;
 
   }

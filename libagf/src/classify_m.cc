@@ -44,7 +44,6 @@ int main(int argc, char *argv[]) {
   opt_args.Qtype=-1;
   opt_args.algtype=0;
   errcode=agf_parse_command_opts(argc, argv, "O:a:Q:w:c:nuMCHE:Ky:Z", &opt_args);
-  if (opt_args.nt==NT_DEFAULT) opt_args.nt=2;
   if (errcode==FATAL_COMMAND_OPTION_PARSE_ERROR) return errcode;
 
   //parse the command line arguments:

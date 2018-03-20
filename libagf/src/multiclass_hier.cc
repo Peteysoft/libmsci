@@ -989,6 +989,7 @@ namespace libagf {
         blist[i]->save(fs);
 	delete blist[i];
       }
+      delete global_svm_helper;
       //fflush(fs);
     } else {
       if (nonh_flag==0) {
@@ -1000,6 +1001,7 @@ namespace libagf {
     					//(could stick labels at very end...)
       for (int i=0; i<this->ncls; i++) children[i]->save(fs);
     }
+    delete [] blist;
     return 0;
   }
 

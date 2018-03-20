@@ -210,7 +210,7 @@ int main (int argc, char **argv) {
   opt_args.xflag=flag[13];
 
   //write statements to stdout:
-  char *commandbuf;
+  char *commandbuf=NULL;
   if (opt_args.Kflag) {
     commandfs=stdout;
   } else {
@@ -465,8 +465,9 @@ int main (int argc, char **argv) {
 
   delete [] extra;
 
-  if (opt_args.Kflag==0) delete [] commandbuf;
-  if (buffer != NULL) delete [] buffer;
+  //if (commandbuf!=NULL) delete [] commandbuf;
+  delete [] precom;
+  delete [] buffer;
 
 }
 

@@ -67,6 +67,8 @@ nel_ta read_lvq(FILE *fs, real_a **&train, cls_ta *&cls, dim_ta &nvar, int flags
   int hflag2;			//not hflag
   linked_list<real_a> first_line;		//first line data
 
+  nel_ta exit_code=0;
+
   char fcode[4];
   char format1[10];
 
@@ -104,7 +106,10 @@ nel_ta read_lvq(FILE *fs, real_a **&train, cls_ta *&cls, dim_ta &nvar, int flags
     //printf("read_lvq: found %d features\n", nvar);
   } else {
     err=sscanf(line[0], "%d", &nvar);
-    if (err!=1) return -1;
+    if (err!=1) {
+      exit_code=-1;
+      goto finish;
+    }
     n--;
   }
 
@@ -152,7 +157,12 @@ nel_ta read_lvq(FILE *fs, real_a **&train, cls_ta *&cls, dim_ta &nvar, int flags
     count++;
   }
 
-  return count;
+  exit_code=count;
+  finish:
+    for (int i=0; i<n; i++) delete [] line[i];
+    delete [] line;
+
+  return exit_code;
 
 }
 

@@ -167,6 +167,9 @@ int main(int argc, char ** argv) {
   printf("Brier score = %15.8lg\n", brier);
   printf("norm. rmse  = %15.8lg\n", rms/norm);
 
+  //clean up:
+  delete [] p[0];
+  delete [] p;
   delete [] class1;
   delete [] class2;
 
