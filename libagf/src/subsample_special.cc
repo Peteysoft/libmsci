@@ -284,6 +284,10 @@ int main(int argc, char *argv[]) {
   if (vecfile!=NULL) delete [] vecfile;
   if (outvec!=NULL) delete [] outvec;
 
+  delete [] testvec;
+  delete [] testcls;
+  delete [] ord;
+
   ran_end();
 
   return exit_value;

@@ -179,7 +179,7 @@ all:
 	echo -n " " >> $(STATFILE)
 	validate_probabilities -b $(TEST).cls $(BASE)_emp_rec | grep -oE "[+-]?[0-9]+\.[0-9]+(e[+-]?[0-9]+)?" | tr '\n' ' ' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	validate_probabilities -b $(TEST).cls $(BASE)_emp_iter | grep -oE "[+-]?[0-9]*\.[0-9]*(e[+-]?[0-9]+)?" | tr '\n' ' ' >> $(STATFILE)
+	validate_probabilities -b $(TEST).cls $(BASE)_emp_iter | grep -oE "[+-]?[0-9]+\.[0-9]+(e[+-]?[0-9]+)?" | tr '\n' ' ' >> $(STATFILE)
 	echo >> $(STATFILE)
 
 #how many lines does results file contain so far?

@@ -230,6 +230,8 @@ int cluster_tree<real, cls_t>::build_all(real *d, int nvec, int nvar) {
   }
   fprintf(stderr, "\n");
 
+  delete [] sind;
+
   return 0;
 }
 
