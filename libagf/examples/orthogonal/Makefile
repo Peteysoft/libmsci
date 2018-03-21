@@ -59,7 +59,8 @@ OPTIONS_svm=$(SVMOPT_$(VER))
 
 OPTIONS=$(OPTIONS_$(METHOD))
 
-WORKDIR=/home/petey/work/orthogonal/$(VER)_$(METHOD)
+#WORKDIR=/home/petey/work/orthogonal/$(VER)_$(METHOD)
+WORKDIR=$(VER)_$(METHOD)
 BASE=$(WORKDIR)/$(VER)
 
 TRAIN=$(BASE).trn
@@ -178,10 +179,9 @@ $(STATFILE): $(BASE).1v1.txt $(BASE).ortho.txt
 	echo -n " " >> $(STATFILE)
 	cls_comp_stats -Hb $(TEST).cls $(BASE).ortho | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	validate_probabilities -H $(TEST).cls $(BASE).1v1.txt | grep -Eo "[+-]?[0-9]+\.[0-9]+(e[+-]?[0-9]+)?" | tr '\n' ' ' >> $(STATFILE)
+	validate_probabilities -BH $(TEST).cls $(BASE).1v1.txt | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	validate_probabilities -H $(TEST).cls $(BASE).ortho.txt | grep -Eo "[+-]?[0-9]+\.[0-9]+(e[+-]?[0-9]+)?" | tr '\n' ' ' >> $(STATFILE)
-	echo >> $(STATFILE)
+	validate_probabilities -BH $(TEST).cls $(BASE).ortho.txt >> $(STATFILE)
 
 #performing classifications:
 $(RESULT).txt: $(MODEL) $(TEST).svm

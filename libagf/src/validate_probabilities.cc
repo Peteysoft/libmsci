@@ -37,11 +37,12 @@ int main(int argc, char ** argv) {
   flag_a Cflag=0;
   flag_a Hflag=0;
   flag_a bflag=0;
+  flag_a Bflag=0;
   int exit_code=0;
 
   char c;
 
-  while ((c = getopt(argc, argv, "HCb")) != -1) {
+  while ((c = getopt(argc, argv, "HCbB")) != -1) {
     switch (c) {
       case ('C'):
              Cflag=1;
@@ -51,6 +52,9 @@ int main(int argc, char ** argv) {
 	     break;
       case ('b'):
 	     bflag=1;
+	     break;
+      case ('B'):
+	     Bflag=1;
 	     break;
       case ('?'):
              fprintf(stderr, "Unknown option: -%c -- ignored\n", optopt);
@@ -77,6 +81,7 @@ int main(int argc, char ** argv) {
     printf("  -C     = no class data in ASCII file\n");
     printf("  -H     = no header in ASCII file\n");
     printf("  -b     = winning probabilities only\n");
+    printf("  -B     = Brier score only\n");
     printf("\n");
     return INSUFFICIENT_COMMAND_ARGS;
   }
@@ -162,10 +167,14 @@ int main(int argc, char ** argv) {
 
   if (ofile!=NULL) fclose(fs);
 
-  printf("1-r         = %15.8lg\n", 1.-r);
-  printf("m-1         = %15.8lg\n", m-1.);
-  printf("Brier score = %15.8lg\n", brier);
-  printf("norm. rmse  = %15.8lg\n", rms/norm);
+  if (Bflag) {
+    printf("%g\n", brier);
+  } else {
+    printf("1-r         = %15.8g\n", 1.-r);
+    printf("m-1         = %15.8g\n", m-1.);
+    printf("Brier score = %15.8g\n", brier);
+    printf("norm. rmse  = %15.8g\n", rms/norm);
+  }
 
   //clean up:
   delete [] p[0];

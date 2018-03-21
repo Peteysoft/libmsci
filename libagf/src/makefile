@@ -9,23 +9,23 @@
 
 OPT_VER=-g
 
-#EXE_EXT=.exe
+EXE_EXT=.exe
 
 CC = g++
 
-#BASE_PATH = /home/lenovo
-BASE_PATH = /home/petey
+BASE_PATH = /home/lenovo
+#BASE_PATH = /home/petey
 #BASE_PATH=/mnt/sdc1/home2/pete
 
 LIB_PATH = $(BASE_PATH)/lib
 BIN_PATH = $(BASE_PATH)/bin
 INCLUDE_PATH = $(BASE_PATH)/include
 
-GSL_LIB = $(LIB_PATH)
-GSL_INCLUDE = $(INCLUDE_PATH)
+#GSL_LIB = $(LIB_PATH)
+#GSL_INCLUDE = $(INCLUDE_PATH)
 
-#GSL_LIB = /usr/local/lib
-#GSL_INCLUDE = /usr/local/include
+GSL_LIB = /usr/local/lib
+GSL_INCLUDE = /usr/local/include
 
 LD_OPTIONS = -L$(GSL_LIB) -L$(LIB_PATH) -L. \
 		-lpetey$(OPT_VER) -lgsl -lgslcblas #-L/usr/lib/ncurses -lcurses

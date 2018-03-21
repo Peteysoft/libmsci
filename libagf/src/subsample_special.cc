@@ -286,7 +286,6 @@ int main(int argc, char *argv[]) {
 
   delete [] testvec;
   delete [] testcls;
-  delete [] ord;
 
   ran_end();
 
