@@ -59,8 +59,8 @@ OPTIONS_svm=$(SVMOPT_$(VER))
 
 OPTIONS=$(OPTIONS_$(METHOD))
 
-#WORKDIR=/home/petey/work/orthogonal/$(VER)_$(METHOD)
-WORKDIR=$(VER)_$(METHOD)
+WORKDIR=/home/petey/work/orthogonal/$(VER)_$(METHOD)
+#WORKDIR=$(VER)_$(METHOD)
 BASE=$(WORKDIR)/$(VER)
 
 TRAIN=$(BASE).trn
