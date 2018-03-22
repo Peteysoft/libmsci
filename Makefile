@@ -18,8 +18,8 @@ OPT=-g
 # C++ compiler:
 CPP = g++
 
-BASE_PATH = /home/lenovo
-#BASE_PATH = /home/petey
+#BASE_PATH = /home/lenovo
+BASE_PATH = /home/petey
 #BASE_PATH = /mnt/sdc1/home2/pete
 #BASE_PATH = /home/pmills
 
@@ -32,11 +32,11 @@ MANPATH=$(BASE_PATH)/man
 #MANPATH=/usr/local/man
 
 # GSL include location:
-GSL_INCLUDE = /usr/local/include
-#GSL_INCLUDE = $(INCLUDE_PATH)
+#GSL_INCLUDE = /usr/local/include
+GSL_INCLUDE = $(INCLUDE_PATH)
 # GSL library locations:
-GSL_LIB = /usr/local/lib
-#GSL_LIB = $(LIB_PATH)
+#GSL_LIB = /usr/local/lib
+GSL_LIB = $(LIB_PATH)
 
 # C++ compiler options:
 #CFLAGS = $(OPT) -Wno-deprecated -I$(INCLUDE_PATH) -I$(GSL_INCLUDE) -g
@@ -55,7 +55,7 @@ LIBLEX=fl
 INT_UTIL_LDF = -L$(READLINE_LIB) -l$(LIBLEX) -lreadline -lncurses
 
 # extension for executables (for libsparse and libagf):
-EXE_EXT=.exe
+#EXE_EXT=.exe
 
 #----------------------------------------------------------------#
 ########### The following macros are for libsparse: ##############

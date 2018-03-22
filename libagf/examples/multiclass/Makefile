@@ -40,7 +40,8 @@ NCLS=$(NCLS_$(VER))
 #SOL=iter		#iterative
 #SOL=rec		#recursive
 
-WORKDIR=$(VER)
+WORKDIR=/home/petey/work/multiclass/$(VER)
+#WORKDIR=$(VER)
 BASE=$(WORKDIR)/$(VER)
 
 KEY = $(TYPE)_$(SOL)

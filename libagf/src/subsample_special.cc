@@ -198,6 +198,7 @@ int main(int argc, char *argv[]) {
     for (nel_ta i=0; i<ntrain; i++) {
       cnew[i]=ord[rind[i]];
     }
+    delete [] ord;
     ord=cnew;
     delete [] rind;
     //randomize_vec(train, nvar, ntrain, cls);
