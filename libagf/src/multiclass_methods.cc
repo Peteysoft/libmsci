@@ -427,18 +427,32 @@ namespace libagf {
     double r2[m];
     double p2[n];
     for (int i=0; i<m; i++) r2[i]=r[i];
-    for (int i=0; i<n; i++) p2[i]=p[i];
     solve_class_scratch(a, m, n, r2, p2);
     p_constrain_renorm1b(p2, n);
     for (int i=0; i<n; i++) p[i]=p2[i];
   }
-      
+  
+/*  
   template <typename code_t, typename real>
   void solve_class_vote_pdf2(code_t **a, int m, int n, real *r, real *p) {
     solve_class_vote_pdf(a, m, n, r, p);
     //can't forget to divide by the number of rows:
     for (int i=0; i<n; i++) p[i]/=m;
     p_constrain_renorm1b(p, n);
+  }
+  */
+     
+  //do the same dumb shit here and maybe the gods will smile on us... 
+  template <typename code_t, typename real>
+  void solve_class_vote_pdf2(code_t **a, int m, int n, real *r, real *p) {
+    double p2[n];
+    double r2[m];
+    for (int i=0; i<m; i++) r2[i]=r[i];
+    solve_class_vote_pdf(a, m, n, r2, p2);
+    //can't forget to divide by the number of rows:
+    for (int i=0; i<n; i++) p2[i]/=m;
+    p_constrain_renorm1b(p2, n);
+    for (int i=0; i<n; i++) p2[i]=p[i];
   }
       
   template <typename code_t, typename real>

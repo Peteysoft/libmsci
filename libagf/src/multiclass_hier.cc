@@ -989,7 +989,8 @@ namespace libagf {
         blist[i]->save(fs);
 	delete blist[i];
       }
-      delete global_svm_helper;
+      delete helper;
+      global_svm_helper=NULL;
       //fflush(fs);
     } else {
       if (nonh_flag==0) {
