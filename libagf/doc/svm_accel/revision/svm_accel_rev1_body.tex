@@ -40,7 +40,8 @@ linear decision value in each partition.
 To train the classifier, a cost function is defined in terms
 of this decision function and directly minimized using an
 analog to the derivative for non-smooth functions \citep{Bagirov1999}.
-Naturally, such an approach will be quite computationally costly.
+Naturally, such an approach will be quite computationally costly,
+especially for a large number of component linear classifiers.
 
 Partitioning of the feature space can be separate from the discrimination 
 borders \citep{Huang_etal2013} but more normally the discrimination borders 
@@ -66,7 +67,7 @@ evaluated.
 There seems to be some tension in the literature between training the
 decision boundary through simultaneous optimization \citep{Bagirov2005,Wang_Saligrama2013} or through
 methods that are more piece meal \citep{Gai_Zhang2010,Herman_Yeung1992,Kostin2006}.
-Obviously, simultaneous optimization will be more accurate but also much more computationally expensive.
+Obviously, simultaneous optimization will be more accurate but also more computationally expensive.
 In addition, finding global minima for cost functions 
 involving more than a handful of hyper-surfaces will be all but impossible.
 There is also the issue of separability. Many of the current crop of 
@@ -93,7 +94,7 @@ hyperplanes in regions of minimum density \citep{Pavlidis_etal2016}.
 The method described in this paper in some senses combines these two techniques
 by finding the root of the difference in conditional probabilities along a
 line between two points of opposite class.
-It will be tested a kernel-based classifier called a support vector
+It will be tested on a kernel-based classifier called a support vector
 machine (SVM) \citep{Michie_etal1994,Mueller_etal2001}
 and evaluated based on how
 well it improves classification speed and at what cost to accuracy.
@@ -125,15 +126,17 @@ machine (SVM) and a borders classifier.
 
 \subsection{Support vector machines}
 
-We describe support vector machines (SVMs) and linear classifiers in the same
+Even though different software is used, 
+we describe support vector machines (SVMs) and linear classifiers in the same
 section since a linear classifier is just a restricted version of a SVM.
 The decision function for a SVM is defined as follows:
 \begin{equation}
-	\svmdecision(\testpoint) = \sum_i \svmcoeff_i \classlabel_i \vectorkernel (\testpoint, \sample_i) + \svmborderconst
+	\svmdecision(\testpoint) = \sum_{i=1}^\nsample \svmcoeff_i \classlabel_i \vectorkernel (\testpoint, \sample_i) + \svmborderconst
 	\label{svm_decision}
 \end{equation}
 where $\vectorkernel$ is a {\it kernel function}, $\svmborderconst$ is a
-constant, and $\lbrace \svmcoeff_i \rbrace$ are a sparse set of coefficients.
+constant, and $\lbrace \svmcoeff_i \rbrace$ are a sparse set of coefficients
+and $\nsample$ is the number of training samples.
 The class is determined as in (\ref{linear_classifier}) by the sign of the decision value:
 \begin{equation}
 	\class(\testpoint) = \frac{\svmdecision(\testpoint)}{|\svmdecision(\testpoint)|}
@@ -157,7 +160,7 @@ where $\svmcost$ is the {\it cost} \citep{Mueller_etal2001,Chang_Lin2011}.
 
 SVM models will be trained with LIBSVM \citep{Chang_Lin2011}.
 LIBSVM has the option to return estimates of the conditional 
-probabilities by applying logistic regression to the raw decision function:
+probabilities by transforming the raw decision function using logistic regression:
 \begin{equation}
 	\svmprob(\testpoint) = \tanh \left (\frac{\svmprobcoeffA \svmdecision(\testpoint)+ \svmprobcoeffB}{2} \right )
 	\label{svm_prob}
@@ -198,7 +201,7 @@ small class of problems, it is not very accurate.
 In the binary classification method described in \citet{Mills2011},
 a non-linear decision border is built up piece-wise from a collection of linear borders.
 It is essentially a root-finding procedure for a decision function,
-such as $\svmdecision$ in (\ref{svm_decision}).
+such as $\svmprob$ in (\ref{svm_prob}).
 Let $\decisionfunction$ be a decision function
 that approximates the difference in conditional probabilities:
 \begin{eqnnon}
@@ -398,7 +401,8 @@ SVM as well as logistic regression.
 The method that provided the most accurate results for each dataset was used.
 The library may be downloaded at: 
 \url{https://www.csie.ntu.edu.tw/~cjlin/liblinear} \citep{Fan_etal2008}.
-LIBLINEAR is very fast for both training and prediction.
+LIBLINEAR is very fast for both training and prediction and it is especially
+well suited to large-dimensional problems.
 
 
 \subsection{LIBSVM}
@@ -414,7 +418,8 @@ It also includes code for nonlinear regression and density estimation or
 SVM models were trained using the \verb/svm-train/ command while
 classifications done with \verb/svm-predict/.
 LIBSVM can be found at: \url{https://www.csie.ntu.edu.tw/~cjlin/libsvm}.
-LIBSVM is not very fast but tends to be very accurate.
+LIBSVM is not very fast but tends to be very accurate for a many different
+types of problems.
 
 \subsection{LibAGF}
 
@@ -508,7 +513,7 @@ Feature Selection Challenge \citep{Guyon_etal2004}.
 The ``\dataset{seismic}'' dataset deals with vehicle classification from \dataset{seismic} data
 \citep{Duarte_Hu2004}.
 The ``\dataset{mushrooms}'' dataset classifies wild mushrooms
-into poisonous and non-poisonous types based on their physical characteristics \citep{Iba_etal1988}.
+into poisonous and non-poisonous varieties based on their physical characteristics \citep{Iba_etal1988}.
 The ``\dataset{phishing}'' dataset uses characteristics of a web address to predict whether
 or not a website is being used for nefarious purposes \citep{Mohommad_etal2014}.
 
@@ -759,7 +764,7 @@ The parameter, $\nborder$, in the borders technique
 was chosen for the best compromise between reduced accuracy and a speed
 improvement over SVM. 
 
-For SVM, a Gaussian kernel, also known as a radial basis function (RBF) is used:
+For SVM, a Gaussian kernel, also known as a radial basis function (RBF), is used:
 \begin{eqnnon}
 	K(\vec x, \vec y) = \exp \left ( - \rbkernelparam | \vec y - \vec x |^2 \right )
 \end{eqnnon}
@@ -809,7 +814,7 @@ always faster both for training and for testing.
 (For the author, at least, this is one of the more surprising results.)
 
 Table \ref{sum_nsv} is an attempt to get a handle on the relative time complexity 
-of the two methods and lists all the relevant variables: number of features,
+of the two methods--SVM and SVM-borders--and lists all the relevant variables: number of features,
 number of classes, total number of training samples, total support for SVM,
 total number of border samples for the borders method compared with the resulting
 classification time for the two methods. The two most relevant variables here are the
