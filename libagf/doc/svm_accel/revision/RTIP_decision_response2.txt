@@ -1,0 +1,26 @@
+In addition to those discussed below, I have made minor changes to the manuscript to improve clarity, accuracy and flow.
+
+> Reviewer #2: The author introduced a software to improve the training
+> of kernel based classification. The software can speed up the svm 
+> training according to the authors' experiments.
+
+> However, we can still see that the performances on some datasets (such 
+> as set, dna, splice, letter) decrease a lot as shown in Tab. 3 and Tab. 4. 
+> If the performance of this software can be comparable to the original 
+> SVM on all datasets, It will attract some users to use it in their future 
+> works. Overall, this software may be one choice for users who want to 
+> conduce kernel based classification.
+
+No, the software is not effective for all cases. We take some pains to describe those types of problems for which it is most likely to be effective.
+
+> One suggestion, for the linear classification, use Liblienar instead of 
+> Libsvm with linear kernel. Liblinear solves the classification in the primal 
+> problem, LibSVM solves the problem in the dual space.
+
+We have used Liblinear for all of the linear classifications. Some were trained with dual and some with the primal problem, depending upon which was more accurate. There is even a short section, Section 3.1, describing the Liblinear library. Since the theory section describes both linear classifiers and SVMs together in the same subsection, we have added the following:
+"Even though different software is used for each, we describe support vector machines (SVMs) and linear classifiers in the same section since a linear classifier is just a restricted version of a SVM."
+
+
+> Reviewer #4: I am satisfied with the author's response.
+
+Thank you.

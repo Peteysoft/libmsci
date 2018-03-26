@@ -2,28 +2,28 @@
 
 Linear classifiers are well studied in the literature. Methods such as
 the perceptron, Fisher discriminant, logistic regression and now linear
-support vector machines (SVM) \citep{Michie_etal1994}
+{\it support vector machines} (SVMs) \citep{Michie_etal1994}
 are often appropriate for relatively simple,
-binary classification problems in which both classes are closely 
-clustered or are well separated.
-An obvious extension for more complex problems is a piecewise linear classifier 
-in which the decision boundary is built up from a series of linear classifiers.
+{\it binary classification} problems in which both classes are closely 
+clustered or otherwise well separated.
+An obvious extension for more complex problems is a {\it piecewise linear classifier} 
+in which the {\it decision boundary} is built up from a series of linear classifiers.
 Piecewise linear classifiers enjoyed some popularity during the early 
 development of the field of machine learning 
 \citep{Osborne1977,Sklansky_Michelotti1980,Lee_Richards1984,Lee_Richards1985}
 and because of their versatility, generality and simplicity there has been recent renewed interest 
 \citep{Bagirov2005,Kostin2006,Gai_Zhang2010,Webb2012,Wang_Saligrama2013,Pavlidis_etal2016}.
 
-A linear classifier takes the form:
+A {\it linear classifier} takes the form:
 \begin{equation}
 	\lindecision(\testpoint) = \bordernormal \cdot \testpoint + \borderconst
 	\label{linear_classifier}
 \end{equation}
-where $\testpoint$ is a test point in the feature space, $\bordernormal$ is a normal to
-the decision hyper-surface, $\borderconst$ determines the location of the
-decision boundary along the normal and
-$\lindecision$ is the decision function which we use to estimate the class 
-of the test point through its sign.
+where $\testpoint$ is a {\it test point} in the {\it feature} space,
+$\bordernormal$ is a normal to the decision hyper-surface, 
+$\borderconst$ determines the location of the decision boundary along the normal
+and $\lindecision$ is the {\it decision function} 
+which we use to estimate the class of the test point through its sign.
 
 A piecewise linear classifier collects a set of such linear classifiers:
 $\lbrace \bordernormal_i \rbrace = \lbrace \bordernormal_1, \bordernormal_2,
@@ -116,8 +116,8 @@ Section \ref{conclusion} concludes the paper.
 \label{theory}
 
 We are interested in training a binary classification model based on a set of 
-training data, $\lbrace \sample_i: \classlabel_i \rbrace$, where $\sample_i$
-is a vector of {\it features} data and 
+{\it training data}, $\lbrace \sample_i: \classlabel_i|~i \in [1,\nsample] \rbrace$, where $\sample_i$
+is a vector of features data and 
 $\classlabel_i \in \lbrace -1,~ +1 \rbrace$ is the corresponsing
 {\it class label}.
 In this section we will describe methods for training the three types of
@@ -126,7 +126,7 @@ machine (SVM) and a borders classifier.
 
 \subsection{Support vector machines}
 
-Even though different software is used, 
+Even though different software is used for each, 
 we describe support vector machines (SVMs) and linear classifiers in the same
 section since a linear classifier is just a restricted version of a SVM.
 The decision function for a SVM is defined as follows:
@@ -135,7 +135,7 @@ The decision function for a SVM is defined as follows:
 	\label{svm_decision}
 \end{equation}
 where $\vectorkernel$ is a {\it kernel function}, $\svmborderconst$ is a
-constant, and $\lbrace \svmcoeff_i \rbrace$ are a sparse set of coefficients
+constant, $\lbrace \svmcoeff_i \rbrace$ are a sparse set of coefficients
 and $\nsample$ is the number of training samples.
 The class is determined as in (\ref{linear_classifier}) by the sign of the decision value:
 \begin{equation}
@@ -157,6 +157,8 @@ subject to the following constraints:
 	\sum_i \svmcoeff_i \classlabel_i & = & 0 \label{constraint2}
 \end{eqnarray}
 where $\svmcost$ is the {\it cost} \citep{Mueller_etal2001,Chang_Lin2011}.
+The coefficients thus derived are typically sparse and the training samples
+for which $\svmcoeff_i$ are non-zero are called {\it support vectors}.
 
 SVM models will be trained with LIBSVM \citep{Chang_Lin2011}.
 LIBSVM has the option to return estimates of the conditional 
@@ -166,7 +168,8 @@ probabilities by transforming the raw decision function using logistic regressio
 	\label{svm_prob}
 \end{equation}
 where $\svmprobcoeffA$ and $\svmprobcoeffB$ are coefficients derived from
-the training data via a nonlinear fitting technique \citep{Platt1999,Lin_etal2007}.
+the training data via a nonlinear fitting technique \citep{Platt1999,Lin_etal2007} and $\svmprob$ is an estimator for the difference in conditional
+probabilities--see Equation (\ref{rdef}), below.
 Probability estimates are needed for the borders training: see the following
 section.
 
@@ -204,13 +207,13 @@ It is essentially a root-finding procedure for a decision function,
 such as $\svmprob$ in (\ref{svm_prob}).
 Let $\decisionfunction$ be a decision function
 that approximates the difference in conditional probabilities:
-\begin{eqnnon}
+\begin{equation}
 	\decisionfunction(\point) \approx \diffcondprob(\point) = 
-	\condprob(1|\point) - \condprob(-1|\point)
+	\condprob(+1|\point) - \condprob(-1|\point)
 	\label{rdef}
-\end{eqnnon}
+\end{equation}
 where $\condprob(\class|\point)$ represents the conditional probabilities of
-a binary classifier having labels $\class \in \lbrace -1, 1 \rbrace$.
+a binary classifier having labels $\class \in \lbrace -1, +1 \rbrace$.
 
 The procedure is as follows: pick a pair of points on either side of the decision
 boundary (the decision function has opposite signs). Good candidates are one
@@ -218,7 +221,7 @@ random training sample from each class. Then, zero the decision function
 along the line between the points. This can be done as many times as needed
 to build up a good representation of the decision boundary.
 We now have a set of points, $\lbrace \bordervector_i \rbrace$, such that
-$\decisionfunction(\bordervector_i)=0$ for every $i \in [1..\nborder]$ where
+$\decisionfunction(\bordervector_i)=0$ for every $i \in [1,~\nborder]$ where
 $\nborder$ is the number of border samples.
 
 Along with the border samples,  $\lbrace \bordervector_i \rbrace$, we also
@@ -316,7 +319,9 @@ can be related to those of the binary classifiers as follows:
 	\diffcondprob_{ij}(\point) = \frac{\condprob(j|\point) - \condprob(i|\point)}{\condprob(i|\point) + \condprob(j|\point)}
 	\label{bin2multi}
 \end{eqnnon}
-where $i \in [1..\nclass-1]$, $j \in [1..\nclass]$, $\nclass$ is the number of classes, $j>i$,
+where $i\in[1,\nclass-1]$, $j\in[1,\nclass]$, 
+$j>i$,
+$\nclass$ is the number of classes, 
 and $\diffcondprob_{ij}$ is the difference in conditional probabilities of
 the binary classifier that discriminates between the $i$th and $j$th classes.
 \citet{Wu_etal2004} transform this problem into the following linear system:
@@ -348,14 +353,14 @@ test values for which the first classifier (the ``truth'') returns the $i$th cla
 while the second classifier (the estimate) returns the $j$th class.
 Let $\ntest=\sum_i \sum_j \confusion_{ij}$ be the total number of test points.
 
-The accuracy is given:
+The {\it accuracy} is given:
 \begin{eqnnon}
 \accuracy=\frac{\sum_i \confusion_{ii}}{\ntest}
 \label{accuracy}
 \end{eqnnon}
 or simply the fraction of correct guesses.
 
-The uncertainty coefficient is a more sophisticated measure based on the channel 
+The {\it uncertainty coefficient} is a more sophisticated measure based on the channel 
 capacity \citep{Shannon}. It has the advantage over simple accuracy in that 
 it is not affected by the relative size of each class distribution.
 It is also not affected by consistent rearrangement of the class labels.
@@ -418,21 +423,19 @@ It also includes code for nonlinear regression and density estimation or
 SVM models were trained using the \verb/svm-train/ command while
 classifications done with \verb/svm-predict/.
 LIBSVM can be found at: \url{https://www.csie.ntu.edu.tw/~cjlin/libsvm}.
-LIBSVM is not very fast but tends to be very accurate for a many different
-types of problems.
+LIBSVM is not very fast but tends to be very accurate for a wide variety
+of problems.
 
 \subsection{LibAGF}
 
 Similar to LIBSVM, libAGF is a machine learning library but for variable kernel 
 estimation \citep{Mills2011,Terrell_Scott1992} rather than SVM.
-Like LIBSVM, it supports statistical classification, lonlinear regression
+Like LIBSVM, it supports statistical classification, nonlinear regression
 and density estimation.
 It supports both Gaussian kernels and k-nearest neighbours.
 It was written by Peter Mills and can be found at
 \url{https://github.com/peteysoft/libmsci}.
-
-Except for training and classifying the SVM models, all calculations in this paper were done 
-with the libAGF library. To convert a LIBSVM model to a borders model,
+To convert a LIBSVM model to a borders model,
 the single command, \verb/svm_accelerate/, can be used.
 Classifications are then performed with \verb/classify_m/.
 

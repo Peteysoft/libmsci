@@ -458,8 +458,9 @@ namespace libagf {
   template <typename code_t, typename real>
   void solve_class_1vR(code_t **a, int m, int n, real *r, real *p) {
     printf("%d %d\n", m, n);
-    assert(m<=n);
+    assert(m==n);
     for (int i=0; i<m; i++) p[i]=(1+r[i])/2;
+    p_constrain_renorm1b(p, n);
   }
 
   template <typename code_t, typename real>

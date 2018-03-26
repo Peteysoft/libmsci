@@ -233,10 +233,8 @@ if they are to be efficiently applied to problems with a large number of classes
 \section{Results}
 
 \begin{table}
-\caption{Speed and skill of multi-class classification results.}\label{class_results}
-\input{orthogonal_class_results.tex}
-\caption{Precision and bias of solved conditional probabilities.}\label{prob_results}
-\input{orthogonal_prob_results.tex}
+\caption{Speed and skill of multi-class classification results; Brier score for conditional probability estimates.}\label{class_results}
+\input{orthogonal_result_S_g.tex}
 \end{table}
 
 Orthogonal error correcting codes were tested on six different datasets:
@@ -256,7 +254,7 @@ sets of support vectors for each partition.
 By indexing into the combined list of support vectors, the algorithms are
 optimized in both space and time \citep{Chang_Lin2011}.
 
-Results are shown in Tables \ref{class_results} and \ref{prob_results}.
+Results are shown in Table \ref{class_results}.
 Each dataset was randomly separated into 70\% training and 30\%
 test data.
 Confidence limits represent standard deviations over 20 trials.

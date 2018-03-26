@@ -40,13 +40,15 @@ Integrating:
 \begin{equation*}
 	\subsample(n)=\submultcoef n^{-\subexp}
 \end{equation*}
-The parameter, $\subexp$, is set such that:
+The parameter, 
+$\submultcoef$, is set such that $n_1^\prime=n_1$:
 \begin{equation*}
-	\sum_i \submultcoef(n_i) n_i = \datafraction \sum_i n_i
+	C = n_1^\subexp
 \end{equation*}
+while $\subexp$ is set such that:
+\begin{eqnarray*}
+	\datafraction \sum_i n_i & = & \sum_i \subsample(n_i) n_i \\
+			      & = & n_1^\subexp \sum_i n_i^{1-\subexp}
+\end{eqnarray*}
 where $0 < \datafraction < 1$ is the desired fraction of training data.
-With rearrangement:
-\begin{equation*}
-	\frac{\submultcoef}{\datafraction} \sum_i n_i^\subexp = 0
-\end{equation*}
 

@@ -1,23 +1,28 @@
+#!/bin/bash
+
 DATASET="shuttle segment sat pendigits usps vehicle"
+
+PATH=/cygdrive/f/peteysoft/libmsci/libagf/examples/orthogonal
+
+SUFFIX=-g.txt
 
 BINPATH=../statlog
 
 # col  value
-# 1    1 versus 1 test time user (s)
-# 2    1 versus 1 test time system
-# 3    orthogonal test time user
-# 4    orthogonal test time system
-# 5    1 versus 1 accuracy
-# 6    1 versus 1 U.C.
-# 7    orthogonal accuracy
-# 8    orthogonal U.C.
-# 9    1 versus 1 prob. corr.
-# 10   1 versus 1 prob. slope
-# 11   orthogonal prob. corr.
-# 12   orthogonal prob. slope
+# 0    1 versus 1 test time user (s)
+# 1    1 versus 1 test time system
+# 2    orthogonal test time user
+# 3    orthogonal test time system
+# 4    1 versus 1 accuracy
+# 5    1 versus 1 U.C.
+# 6    orthogonal accuracy
+# 7    orthogonal U.C.
+# 8    1 versus 1 Brier score
+# 9    orthogonal Brier score
 
 for D in $DATASET; do
   #printf "%10s" $D
-   $BINPATH/sum_col 0 1 / 4 / 5 / 8 / 9 / 2 3 / 6 / 7 / 10 / 11 < $D.txt | $BINPATH/calc_stats 10 | ./write_results $D
+   echo "$BINPATH/sum_col 0 1 / 5 / 8 / 2 3 / 7 / 9 < $PATH/$D$SUFFIX | $BINPATH/calc_stats 6 | ./write_results 6 $D"
+   $BINPATH/sum_col 0 1 / 5 / 8 / 2 3 / 7 / 9 < $PATH/$D$SUFFIX | $BINPATH/calc_stats 6 | ./write_results 6 $D
 done
 

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #define MAXLL 1000
 
@@ -6,7 +7,6 @@ int main(int argc, char **argv) {
   FILE *fs=stdin;
   FILE *outfs=stdout;
   int ncol=10;		//total number of columns
-  int namelen=10;
   char name[11];
   char line[MAXLL];
   float data[ncol];	//data read in from file
@@ -14,13 +14,15 @@ int main(int argc, char **argv) {
   int ind;		//index of extremum
   float ext;		//extremum
 
+  ncol=atof(argv[1]);
+
   //fscanf(fs, "%10", name);
   for (int i=0; i<ncol; i++) fscanf(fs, "%g", data+i);
   //fgets(line, MAXLL, fs);
   for (int i=0; i<ncol; i++) fscanf(fs, "%g", std+i);
   //fgets(line, MAXLL, fs);
   //print out name of dataset:
-  if (argc>=2) fprintf(outfs, "%s", argv[1]);
+  if (argc>=3) fprintf(outfs, "%s", argv[2]);
 
   for (int i=0; i<ncol; i++) {
     float val=data[i];
