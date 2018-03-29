@@ -17,7 +17,7 @@ more carefully designed.
 In error-correcting coding, there is a coding matrix, $A$, that specifies
 how the set of multiple classes is partitioned.
 Typically, the class of the test point is determined by the distance between
-a column in the matrix and a vector of binary {\it decision functions}:
+a row in the matrix and a vector of binary {\it decision functions}:
 \begin{eqnnon}
 	c(\vec x) = \arg \min_i | \vec a_i - \vec r(\vec x) |
 	\label{min_dist}
@@ -32,7 +32,7 @@ in $A$, then this reduces to a {\it voting} solution:
 \end{equation}
 Both \citet{Allwein_etal2000} and \citet{Windeatt_Ghaderi2002} show that to
 maximize the accuracy of an error-correcting coding matrix, the distance
-between each column, $|\vec a_i - \vec a_j|_{i \ne j}$ should be as
+between each row, $|\vec a_i - \vec a_j|_{i \ne j}$ should be as
 large as possible.
 Using the same assumptions, this reduces to:
 \begin{eqnnon}
@@ -234,7 +234,7 @@ if they are to be efficiently applied to problems with a large number of classes
 
 \begin{table}
 \caption{Speed and skill of multi-class classification results; Brier score for conditional probability estimates.}\label{class_results}
-\input{orthogonal_result_S_g.tex}
+\input{orthogonal_results_Sd_O2.tex}
 \end{table}
 
 Orthogonal error correcting codes were tested on six different datasets:

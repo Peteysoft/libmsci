@@ -4,7 +4,7 @@ DATASET="shuttle segment sat pendigits usps vehicle"
 
 PATH=/cygdrive/f/peteysoft/libmsci/libagf/examples/orthogonal
 
-SUFFIX=-g.txt
+SUFFIX=.txt
 
 BINPATH=../statlog
 
