@@ -93,10 +93,10 @@ real libagf::knn_pdf(real **mat, dim_ta m, nel_ta n, real *vec, nel_ta k) {
   sqrtpir=sqrt(M_PI)*r;
   V=1;
   for (dim_ta i=0; i<m; i++) V*=sqrtpir;
-  //V=V/gsl_sf_gamma(m/2.+1);
+  V=V/gsl_sf_gamma(m/2.+1);
 
   //calculate pdf:
-  pdf=gsl_sf_gamma(m/2.+1)*k/V/(real) n;
+  pdf=(real) k/V/(real) n;
   //printf("r=%g, V=%g\n", r, V);
 
   //clean up:

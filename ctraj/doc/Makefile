@@ -1,4 +1,4 @@
-#JOURNAL=_elsevier
+JOURNAL=_elsevier
 
 all: tracer_transport$(JOURNAL).pdf manual.pdf
 	make -C proxy2
