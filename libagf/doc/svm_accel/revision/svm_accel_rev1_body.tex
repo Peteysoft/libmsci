@@ -35,8 +35,8 @@ feature space to determine which linear decision boundary is used for a given
 test point.
 
 In \citet{Bagirov2005} for instance, the decision function is defined by
-partitioning the set of linear classifiers and maximizing the minimum
-linear decision value in each partition.
+dividing the set of linear classifiers and maximizing the minimum
+linear decision value in each subset.
 To train the classifier, a cost function is defined in terms
 of this decision function and directly minimized using an
 analog to the derivative for non-smooth functions \citep{Bagirov1999}.
@@ -56,7 +56,7 @@ In the method described in this paper, the constant term, $\borderconst_i$,
 is changed to a vector and the partitioning accomplished through a nearest
 neighbours to this vector. 
 Thus the zone of influence for each hyperplane
-will be described by the Veronoi tesselation \citep{Kohonen2000}.
+will be described by the Veronoi tessellation \citep{Kohonen2000}.
 If the class domains are simply connected and don't curve back on themselves, 
 then the partitions will also be shaped as hyper-pyramids, 
 with the axes of the pyramids roughly perpendicular to the decision border.
@@ -70,8 +70,8 @@ methods that are more piece meal \citep{Gai_Zhang2010,Herman_Yeung1992,Kostin200
 Obviously, simultaneous optimization will be more accurate but also more computationally expensive.
 In addition, finding global minima for cost functions 
 involving more than a handful of hyper-surfaces will be all but impossible.
-There is also the issue of separability. Many of the current crop of 
-methods seem to be designed with disjoint classes in mind \citep{Herman_Yeung1992}, for instance
+There is also the issue of separability. Many of the current 
+methods seem designed with disjoint classes in mind \citep{Herman_Yeung1992}, for instance
 \citet{Gai_Zhang2010}, who stick the hyper-plane borders between 
 neighbouring pairs of opposite classes.
 Yet there is no reason why a piecewise linear classifier cannot be just as
@@ -118,7 +118,7 @@ Section \ref{conclusion} concludes the paper.
 We are interested in training a binary classification model based on a set of 
 {\it training data}, $\lbrace \sample_i: \classlabel_i|~i \in [1,\nsample] \rbrace$, where $\sample_i$
 is a vector of features data and 
-$\classlabel_i \in \lbrace -1,~ +1 \rbrace$ is the corresponsing
+$\classlabel_i \in \lbrace -1,~ +1 \rbrace$ is the corresponding
 {\it class label}.
 In this section we will describe methods for training the three types of
 models tested in this paper: a basic linear classifier, a support vector
@@ -230,7 +230,7 @@ such that:
 \begin{eqnnon}
 \bordernormal_i=\nabla_{\point}{\decisionfunction |_{\point=\bordervector_i}}
 \end{eqnnon}
-With this system, determining the class is a two step proces.
+With this system, determining the class is a two step process.
 First, the nearest border sample to the test point is found.
 Second, we define a new decision function, $\borderdecision$, 
 equivalent to (\ref{linear_classifier}), through a dot product with the normal:
@@ -293,7 +293,7 @@ transcendental functions except for the very last step (which can be omitted)---
 
 A border classifier trained with SVM will be referred to as an
 ``SVM-borders'' classifier or an ``accelerated'' SVM classifier.
-For more details on the alogrithm, please refer to \citet{Mills2011},
+For more details on the algorithm, please refer to \citet{Mills2011},
 in particular Sections 2.2, 2.3 and 3.3.
 
 \subsection{Multi-class classification}
@@ -444,10 +444,13 @@ Classifications are then performed with \verb/classify_m/.
 \label{datasets}
 
 \begin{table}
-	\caption{Summary of datasets used in the numerical trials.}
-	\label{summary}
-	%\input{../summary.tex}
-	\input{summary.tex}
+  \caption{Summary of datasets used in the numerical trials.}
+  \label{summary}
+  \ifsubmit
+    \input{summary.tex}
+  \else
+    \input{../summary.tex}
+  \fi
 \end{table}
 
 The borders classification algorithm was tested on a total of 
@@ -551,9 +554,12 @@ Features that took on all the same value in the training data were removed.
 \label{example}
 
 \begin{figure}
-%\includegraphics[width=0.9\textwidth]{../support_vectors}
-\includegraphics[width=0.9\textwidth]{support_vectors}
-\caption{Support vectors for a pair of synthetic test classes.}\label{sample_sv}
+  \ifsubmit
+    \includegraphics[width=0.9\textwidth]{support_vectors}
+  \else
+    \includegraphics[width=0.9\textwidth]{../support_vectors}
+  \fi
+  \caption{Support vectors for a pair of synthetic test classes.}\label{sample_sv}
 \end{figure}
 
 We use the pair of synthetic test classes defined in \citet{Mills2011} to 
@@ -604,8 +610,11 @@ the problem does not increase, adding new training samples does not increase
 the number of border samples required for maximum accuracy.
 
 \begin{figure}
-%\includegraphics[width=0.9\textwidth]{../nsv}
-\includegraphics[width=0.9\textwidth]{nsv}
+  \ifsubmit
+    \includegraphics[width=0.9\textwidth]{nsv}
+  \else
+    \includegraphics[width=0.9\textwidth]{../nsv}
+  \fi
 \caption{Number of support vectors against number of training vectors for pair of synthetic test classes. Fitted curve returns exponent of 0.94 and multiplication coefficient of 0.38.}
 \label{nsv}
 \end{figure}
@@ -628,8 +637,11 @@ for good accuracy, so even with only 200 training samples you will still
 have improved efficiency by using the borders technique.
 
 \begin{figure}
-%\includegraphics[width=0.9\textwidth]{../skill_v_nt}
-\includegraphics[width=0.9\textwidth]{skill_v_nt}
+  \ifsubmit
+    \includegraphics[width=0.9\textwidth]{skill_v_nt}
+  \else
+    \includegraphics[width=0.9\textwidth]{../skill_v_nt}
+  \fi
 \caption{Classification accuracy and uncertainty coefficient for a support vector machine (SVM) trained with different numbers of samples.
 Error bars represent the standard deviation of 20 trials.}
 \label{skill_v_nt}
@@ -652,8 +664,11 @@ where $\minborders$ is the minimum number of border vectors required for good
 accuracy.
 
 \begin{figure}
-%\includegraphics[width=0.9\textwidth]{../svm_time}
-\includegraphics[width=0.9\textwidth]{svm_time}
+  \ifsubmit
+    \includegraphics[width=0.9\textwidth]{svm_time}
+  \else
+    \includegraphics[width=0.9\textwidth]{../svm_time}
+  \fi
 \caption{Classification time for a SVM for a single test point versus number of support vectors.}
 \label{svm_time}
 \end{figure}
@@ -668,8 +683,11 @@ that attempt to create an idealized representation of the classes through
 a set of ``codebook'' vectors.
 
 \begin{figure}
-%\includegraphics[width=0.9\textwidth]{../border_time}
-\includegraphics[width=0.9\textwidth]{border_time}
+  \ifsubmit
+    \includegraphics[width=0.9\textwidth]{border_time}
+  \else
+    \includegraphics[width=0.9\textwidth]{../border_time}
+  \fi
 \caption{Classification time for a border classifier for a single test point versus number of border samples.}
 \label{border_time}
 \end{figure}
@@ -684,16 +702,19 @@ Fitted straight lines are overlaid for each and the slope and intercept
 printed in the subtitle.
 
 \begin{figure}
-%\includegraphics[width=0.9\textwidth]{../break_even}
-\includegraphics[width=0.9\textwidth]{break_even}
+  \ifsubmit
+    \includegraphics[width=0.9\textwidth]{break_even}
+  \else
+    \includegraphics[width=0.9\textwidth]{../break_even}
+  \fi
 \caption{Number of border samples versus number of support vectors for equal classification times.}
 \label{break_even}
 \end{figure}
 
 Figure \ref{break_even} plots the number of border vectors versus the number
-of support vectors at the ``break even'' point: that is, the classfication
+of support vectors at the ``break even'' point: that is, the classification
 time is the same for each method.
-This graph was simply derived from the fitted coefficents of the previous
+This graph was simply derived from the fitted coefficients of the previous
 two graphs.
 It is somewhat optimistic
 since LIBSVM has a larger overhead than the border classifiers.
@@ -908,8 +929,8 @@ This is especially so in light of the high performance ratios for some of the pr
 the \dataset{humidity} dataset is sped up by over 20 times,
 for instance, with even higher factors for some of the binary datasets.
 
-The same analysis was not repeated for the linear classifier since by its very 
-nature, the linear classifier should almost always come out the winner.
+The same analysis was not repeated for the linear classifier since 
+it is a constant time algorithm, so should always come out the winner.
 Even so, in three of the trials, \dataset{codrna}, \dataset{madelon} and
 \dataset{mushrooms}, borders classifications was actually faster than a linear
 classifier. This may have more to do with implementation than anything else,

@@ -19,11 +19,11 @@ OPT=-g
 CPP = g++
 
 #executable extension:
-EXE_EXT = .exe
+#EXE_EXT = .exe
 
 # paths -- library, include, binary executables
-BASE_PATH = /home/lenovo
-#BASE_PATH = /home/Peter
+#BASE_PATH = /home/lenovo
+BASE_PATH = /home/peter
 #BASE_PATH = /mnt/sda1/home2/pete
 #BASE_PATH = /home/pmills
 
@@ -57,7 +57,8 @@ YY  = bison
 LIBLEX=fl
 
 # linker options for interactive utilities sparse_calc and date_calc:
-INT_UTIL_LDF = -L$(READLINE_LIB) -l$(LIBLEX) -lreadline -lncurses
+#INT_UTIL_LDF = -L$(READLINE_LIB) -l$(LIBLEX) -lreadline -lncurses
+INT_UTIL_LDF = -L$(READLINE_LIB) -lreadline
 
 #list of include files:
 INCLUDE = peteys_tmpl_lib.h \
