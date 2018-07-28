@@ -8,6 +8,13 @@
 \usepackage{url}
 %\usepackage{tablefootnote}
 
+\newif\ifsubmit
+%\submittrue
+\submitfalse
+
+\pagestyle{myheadings}
+\markright{J. Real-Time Image Processing 15(1):1-15}
+
 %to keep our list of symbols intact yet still submit to journals
 %that require un-used equations not to be numbered:
 \newenvironment{eqnnon}{\begin{equation}}{\end{equation}}
@@ -25,20 +32,23 @@
 
 \maketitle
 
-\input{svm_accel_symbol_def}
+\ifsubmit
+  \input{svm_accel_symbol_def}
+\else
+  \input{../svm_accel_symbol_def}
+\fi
 
 \begin{abstract}
-	\input{svm_accel_abstract.txt}
+  \input{svm_accel_rev1_abstract.txt}
 \end{abstract}
 
 \subsection*{Keywords}
 \textbf{class borders,
 multi-dimensional root-finding,
-adaptive Gaussian filtering,
 binary classifier,
 multi-class classifier, 
-non-parametric statistics, 
-variable kernel density estimation}
+kernel methods,
+non-parametric statistics} 
 
 \tableofcontents
 
@@ -47,19 +57,26 @@ variable kernel density estimation}
 \addcontentsline{toc}{section}{List of symbols}
 
 {\small
-  \input{svm_accel_symbol_table}
+  \input{svm_accel_rev1_symbol_table}
 }
 
-\input{svm_accel_body.tex}
+\input{svm_accel_rev1_body.tex}
 
 \appendix
 
-\input{shuttle_subsampling}
+\ifsubmit
+  \input{shuttle_subsampling}
+\else
+  \input{../shuttle_subsampling}
+\fi
 
 \newpage
 
 \addcontentsline{toc}{section}{References}
-
-\bibliography{../agf_bib,svm_accel,../pwl}
+\ifsubmit
+  \bibliography{agf_bib,svm_accel,pwl}
+\else
+  \bibliography{../../agf_bib,../svm_accel,../../pwl}
+\fi
 
 \end{document}
