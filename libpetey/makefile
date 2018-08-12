@@ -18,6 +18,9 @@ OPT=-g
 # C++ compiler:
 CPP = g++
 
+# Fortran compiler:
+F77 = gfortran
+
 #executable extension:
 #EXE_EXT = .exe
 
@@ -44,12 +47,14 @@ GSL_LIB = /usr/local/lib
 #CFLAGS = $(OPT) -Wno-deprecated -I$(INCLUDE_PATH) -I$(GSL_INCLUDE) -g
 CFLAGS = $(OPT) -I$(INCLUDE_PATH) -I$(GSL_INCLUDE)
 
+FFLAGS = $(OPT)
+
 #linker flags (standard executables):
 LDFLAGS = -L$(GSL_LIB) -lgsl -lgslcblas
 
 #the following macros are for executables built with lex/yacc:
 # readline library:
-READLINE_LIB=$(BASE_PATH)/lib
+READLINE_LIB=/usr/local/readline-master
 
 # lex & yacc:
 LEX = flex -I
@@ -57,8 +62,8 @@ YY  = bison
 LIBLEX=fl
 
 # linker options for interactive utilities sparse_calc and date_calc:
-#INT_UTIL_LDF = -L$(READLINE_LIB) -l$(LIBLEX) -lreadline -lncurses
-INT_UTIL_LDF = -L$(READLINE_LIB) -lreadline
+INT_UTIL_LDF = -L$(READLINE_LIB) -l$(LIBLEX) -lreadline -lncurses
+#INT_UTIL_LDF = -L$(READLINE_LIB) -lreadline -lncurses
 
 #list of include files:
 INCLUDE = peteys_tmpl_lib.h \
@@ -119,6 +124,8 @@ OBJECT =	symbol_table$(OPT).o \
 		peteys_no_templates$(OPT).o \
 		interpol_coeff$(OPT).o
 
+FORTRAN = nnls$(OPT).o
+
 #list of executables:
 EXE = ignore_code
 EXE2=$(addsuffix $(EXE_EXT), $(EXE))
@@ -144,6 +151,7 @@ clean:
 	rm -f libpetey*.a
 	rm -f libpetey*.so
 	rm -f $(OBJECT)
+	rm -f $(FORTRAN)
 	rm -f $(EXE)
 	rm -f $(TEST)
 	rm -f date_calc.tab.*
@@ -171,14 +179,17 @@ test: $(TEST2)
 	./test_libpetey
 
 # build the static library:
-libpetey$(OPT).a:	$(OBJECT)
-	ar -rs libpetey$(OPT).a $(OBJECT)
+libpetey$(OPT).a: $(OBJECT) $(FORTRAN)
+	ar -rs libpetey$(OPT).a $(OBJECT) $(FORTRAN)
 
 # this part is built rather oddly (*** time for a refactor? ***)
 peteys_tmpl_lib.cc: heapsort_tmpl.cc bin_search.cc rk_dumb_tmpl.cc treesort.cpp
 	touch peteys_tmpl_lib.cc
 
 $(OBJECT): %$(OPT).o: %.cc $(INCLUDE)
+	$(CPP) $(CFLAGS) -c $< -o $@
+
+$(FORTRAN): %$(OPT).o: %.f $(INCLUDE)
 	$(CPP) $(CFLAGS) -c $< -o $@
 
 

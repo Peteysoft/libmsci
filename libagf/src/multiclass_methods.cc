@@ -25,13 +25,13 @@ namespace libagf {
     //transform coding matrix to a linear system: 
     for (int i=0; i<m; i++) {
       for (int j=0; j<n; j++) {
-	if (a[i][j]==0) {
+        if (a[i][j]==0) {
           //gsl_matrix_set(q, i, j, 1);
           gsl_matrix_set(q, i, j, r[i]);
-	} else {
+        } else {
           //gsl_matrix_set(q, i, j, map_el/r[i]);
           gsl_matrix_set(q, i, j, a[i][j]);
-	}
+        }
       }
       gsl_vector_set(b, i, r[i]);
     }
@@ -452,7 +452,7 @@ namespace libagf {
     //can't forget to divide by the number of rows:
     for (int i=0; i<n; i++) p2[i]/=m;
     p_constrain_renorm1b(p2, n);
-    for (int i=0; i<n; i++) p2[i]=p[i];
+    for (int i=0; i<n; i++) p[i]=p2[i];
   }
       
   template <typename code_t, typename real>
@@ -647,6 +647,394 @@ namespace libagf {
     if (cflag==0) fprintf(stderr, "solve_class_Zadrozny: maxiter= %d exceeded\n", maxiter);
   }
 
+  template <typename code_t, typename real>
+  void solve_class_kkt_iter(code_t **a0, int m, int n, real *r, real *p) {
+    real **a; 			//full problem matrix
+    real **at;			//full problem matrix transposed
+    real **ata;			//full problem matrix squared
+    real *atp[n];		//reduced problem matrix transposed
+    real **ap;			//reduced problem, non transposed
+    real **atpap;		//reduced problem matrix squared
+    int flag[n];		//flag non-zero variables
+    int fold[n];		//previous flags
+    int index[n];		//index of variables still included
+    int nnon;			//number of non-zero variables
+    real lambda;		//Lagrange multiplier
+    real mu[n];			//slack variables
+    int notdone;		//are we done yet?
+
+    //set the problem matrix, calculate its transpose and square:
+    a=allocate_matrix<real>(m, n);
+    for (int i=0; i<m; i++) {
+      for (int j=0; j<n; j++) {
+        a[i][j]=a0[i][j];
+        if (a[i][j]!=0) a[i][j]-=r[i];
+      }
+    }
+    at=matrix_transpose(a, m, n);
+    ata=matrix_mult(at, a, n, m, n);
+    delete_matrix(a);
+
+    //initialize book-keeping:
+    nnon=n;
+    for (int i=0; i<n; i++) {
+      index[i]=i;
+      flag[i]=1;
+      fold[i]=1;
+    }
+
+    atpap=allocate_matrix<real>(n, n);
+
+    do {
+      for (int i=0; i<n; i++) {
+        printf(" %d", flag[i]);
+      }
+      printf("\n");
+      //solve the reduced problem:
+      for (int i=0; i<nnon; i++) atp[i]=at[index[i]];
+      ap=matrix_transpose(atp, n, m);
+      matrix_mult(atp, ap, atpap, nnon, m, nnon);
+
+      //since normalization constraint has been added, we can use a linear
+      //system in which the result is 0:
+      gsl_matrix *q=gsl_matrix_alloc(nnon+1, nnon+1);
+      gsl_vector *b=gsl_vector_alloc(nnon+1);
+
+      for (int i=0; i<nnon; i++) {
+        for (int j=0; j<nnon; j++) {
+          gsl_matrix_set(q, i, j, atpap[i][j]);
+        }
+        gsl_vector_set(b, i, 0);
+        gsl_matrix_set(q, i, nnon, 1);
+        gsl_matrix_set(q, nnon, i, 1);
+      }
+      gsl_matrix_set(q, nnon, nnon, 0);
+      gsl_vector_set(b, nnon, 1);
+
+      gsl_vector *p1=gsl_vector_alloc(nnon+1);
+      gsl_lsq_solver(q, b, p1);
+
+      for (int i=0; i<n; i++) p[i]=0;
+      for (int i=0; i<nnon; i++) p[index[i]]=gsl_vector_get(p1, i);
+      lambda=gsl_vector_get(p1, nnon);
+
+      //find variables that have gone out-of-range or back in range:
+      vector_mult(ata, p, mu, n, n);
+      for (int j=0; j<n; j++) mu[j]=-mu[j]-lambda;
+      for (int i=0; i<n; i++) {
+        //out-of-range:
+        if (flag[i] && p[i]<0) {
+          p[i]=0;
+	      flag[i]=0;
+        }
+        //back in-range:
+        if (flag[i]==0 && mu[i]<0) flag[i]=1;
+      }
+
+      nnon=0;
+      notdone=0;
+      for (int i=0; i<n; i++) {
+        if (flag[i]!=fold[i]) {
+          notdone=1;
+          fold[i]=flag[i];
+        }
+        if (flag[i]) {
+          index[nnon]=i;
+          nnon++;
+        }
+      }
+
+      delete_matrix(ap);
+
+      gsl_matrix_free(q);
+      gsl_vector_free(b);
+      gsl_vector_free(p1);
+    } while (notdone);
+
+    delete_matrix(ata);
+
+  }
+
+  //(Hanson and Lawson)
+  template <typename code_t, typename real>
+  void solve_class_nnls(code_t **a0, int m, int n, real *r, real *p) {
+    double **a;			//full problem matrix
+    double **at;		//full problem matrix transposed
+    double **ata;		//full problem matrix squared
+    double *atp[n];		//reduced problem matrix transposed
+    double **ap;		//reduced problem, non transposed
+    double **atpap;		//reduced problem matrix squared
+    int flag[n];		//flag non-zero variables
+    int fold[n];		//previous flags
+    int index[n];		//index of variables still included
+    int nnon;			//number of non-zero variables
+    double lambda;		//Lagrange multiplier
+    double mu[n];		//slack variables
+    double x[n];		//current "best guess"
+    double z[n];		//reduced least squares solution
+    int flag1, flag2;
+    int minmax;			//index of min/max
+    double eps=1e-8;		//zero
+
+    //set the problem matrix, calculate its transpose and square:
+    a=allocate_matrix<double>(m, n);
+    for (int i=0; i<m; i++) {
+      for (int j=0; j<n; j++) {
+        a[i][j]=a0[i][j];
+        if (a[i][j]!=0) a[i][j]-=r[i];
+      }
+    }
+    //print_matrix(stdout, a, m, n);
+    //printf("\n");
+    at=matrix_transpose(a, m, n);
+    //print_matrix(stdout, at, n, m);
+    //printf("\n");
+    ata=matrix_mult(at, a, n, m, n);
+    //print_matrix(stdout, ata, n, n);
+    //printf("\n");
+    delete_matrix(a);
+
+    //initialize book-keeping:
+    //(Step 1)
+    for (int i=1; i<n; i++) {
+      flag[i]=0;
+      fold[i]=0;
+      x[i]=0;
+    }
+    x[0]=1;
+    flag[0]=1;
+    nnon=1;
+    index[0]=0;
+
+    atpap=allocate_matrix<double>(n, n);
+
+    do {
+      for (int i=0; i<n; i++) {
+        printf(" %d", flag[i]);
+      }
+      printf("\n");
+      //solve the reduced problem:
+      //(Step 6)
+      for (int i=0; i<nnon; i++) atp[i]=at[index[i]];
+      ap=matrix_transpose(atp, nnon, m);
+      matrix_mult(atp, ap, atpap, nnon, m, nnon);
+      //print_matrix(stdout, atpap, nnon, nnon);
+
+      //since normalization constraint has been added, we can use a linear
+      //system in which the result is 0:
+      gsl_matrix *q=gsl_matrix_alloc(nnon+1, nnon+1);
+      gsl_vector *b=gsl_vector_alloc(nnon+1);
+
+      for (int i=0; i<nnon; i++) {
+        for (int j=0; j<nnon; j++) {
+          gsl_matrix_set(q, i, j, atpap[i][j]);
+        }
+        gsl_vector_set(b, i, 0);
+        gsl_matrix_set(q, i, nnon, 1);
+        gsl_matrix_set(q, nnon, i, 1);
+      }
+      gsl_matrix_set(q, nnon, nnon, 0);
+      gsl_vector_set(b, nnon, 1);
+
+      gsl_vector *p1=gsl_vector_alloc(nnon+1);
+      gsl_lsq_solver(q, b, p1);
+      gsl_vector_fprintf(stdout, p1, "%g");
+
+      for (int i=0; i<n; i++) z[i]=0;
+      for (int i=0; i<nnon; i++) z[index[i]]=gsl_vector_get(p1, i);
+      lambda=gsl_vector_get(p1, nnon);
+
+      delete_matrix(ap);
+
+      gsl_matrix_free(q);
+      gsl_vector_free(b);
+      gsl_vector_free(p1);
+
+      flag1=1;
+      for (int i=0; i<nnon; i++) {
+        double alpha, alpha1;
+	//(Step 7)
+        if (z[index[i]]<-eps) {
+          minmax=index[0];
+	  //(Step 8 & 9)
+	  alpha=x[index[0]]/(x[index[0]]-z[index[0]]);
+          for (int j=1; j<nnon; j++) {
+	    alpha1=x[index[j]]/(x[index[j]]-z[index[j]]);
+            if (alpha1<alpha) {
+              minmax=index[j];
+	      alpha=alpha1;
+            }
+	  }
+	  //(Step 10)
+	  for (int j=0; j<n; j++) {
+            x[j]+=alpha*(z[j]-x[j]);
+	  }
+	  flag[minmax]=0;
+	  flag1=0;
+	  break;
+	}
+      }
+      if (flag1) {
+        //(Step 7)
+	for (int i=0; i<n; i++) x[i]=z[i];
+        //(Step 2)
+        vector_mult(ata, z, mu, n, n);
+	printf("lambda=%g\n", lambda);
+        for (int j=0; j<n; j++) {
+          mu[j]=-lambda-mu[j];
+          printf(" %g", mu[j]);
+	}
+	printf("\n");
+        minmax=0;
+	flag2=0;
+        for (int i=1; i<n; i++) {
+          if (mu[i]>eps && flag[i]==0) {		//(Step 3)
+            //(Step 4)
+            if (mu[i]>mu[minmax]) minmax=i;
+	    flag2=1;
+	  }
+	}
+	//(Step 5)
+	if (flag2) flag[minmax]=1; else break;
+      }
+
+      nnon=0;
+      for (int i=0; i<n; i++) {
+        if (flag[i]) {
+          index[nnon]=i;
+	  nnon++;
+	}
+      }
+
+    } while (1);
+
+    for (int i=0; i<n; i++) p[i]=x[i];
+
+    delete_matrix(ata);
+    delete_matrix(at);
+
+  }
+
+  //(Hanson and Lawson)
+  //doesn't solve the exact problem, but should confirm at least that the
+  //Fortran codes work:
+  extern "C" {void nnls_(double *, int32_t *, int32_t *, int32_t *, double *,
+                double *, double *, double *, double *, int32_t *, int32_t *);}
+
+  template <typename code_t, typename real>
+  void solve_class_nnls2(code_t **a0, int m, int n, real *r, real *p) {
+    double **a;			//full problem matrix
+    double **at;		//full problem matrix transposed
+    double **ata;		//full problem matrix squared
+    double b[n+1];
+    double x[n+1];
+    double rnorm;
+    double w[n+1];
+    double zz[n+1];
+    int32_t index[n+1];
+    int32_t mode;
+
+    //set the problem matrix, calculate its transpose and square:
+    a=allocate_matrix<double>(m, n);
+    for (int i=0; i<m; i++) {
+      for (int j=0; j<n; j++) {
+        a[i][j]=a0[i][j];
+        if (a[i][j]!=0) a[i][j]-=r[i];
+      }
+    }
+    //print_matrix(stdout, a, m, n);
+    //printf("\n");
+    at=matrix_transpose(a, m, n);
+    //print_matrix(stdout, at, n, m);
+    //printf("\n");
+    ata=allocate_matrix<double>(n+1, n+1);
+    matrix_mult(at, a, ata, n, m, n);
+    //print_matrix(stdout, ata, n, n);
+    //lagrange multiplier:
+    for (int i=0; i<n; i++) {
+      ata[i][n]=-1;
+      ata[n][i]=1;
+      b[i]=0;
+    }
+    ata[n][n]=0;
+    b[n]=1;
+
+    n++;
+
+    nnls_(ata[0], &n, &n, &n, b, x, &rnorm, w, zz, index, &mode);
+
+    printf("exit code=%d\n", mode);
+
+    for (int i=0; i<n; i++) p[i]=x[i];
+
+    delete_matrix(a);
+    delete_matrix(at);
+    delete_matrix(ata);
+
+  }
+
+  //someday I might get this thing working...
+  template <typename code_t, typename real>
+  void solve_class_nnls3(code_t **a0, int m, int n, real *r, real *p) {
+    double **at;		//full problem matrix row major ordering
+    double **atp;   	//equality constrained problem matrix row major
+    double b[m];        //solution vector
+    double bp[m];       //solution vector for equality constrained problem
+    double x[n];
+    double rnorm;
+    double w[n];
+    double zz[m];
+    int32_t index[n];
+    int32_t mode;
+    int32_t nm1=n-1;
+
+    //set the problem matrix:
+    at=allocate_matrix<double>(n, m);
+    for (int i=0; i<m; i++) {
+      for (int j=0; j<n; j++) {
+        if (a0[i][j]==0) {
+          at[j][i]=r[i];
+        } else {
+          at[j][i]=a0[i][j];
+        }
+      }
+      b[i]=r[i];
+    }
+    //print_matrix(stdout, ata, n, n);
+    atp=allocate_matrix<double>(n-1, m);
+    //try each variable in turn to set the equality constraint:
+    for (int i=0; i<n; i++) {
+      double x_i;
+      for (int j=0; j<i; j++) {
+        for (int k=0; k<m; k++) atp[j][k]=at[j][k]-at[i][k];
+      }
+      for (int j=i+1; j<n; j++) {
+        for (int k=0; k<m; k++) atp[j-1][k]=at[j][k]-at[i][k];
+      }
+      for (int j=0; j<m; j++) bp[j]=b[j]-at[i][j];
+
+      nnls_(atp[0], &m, &m, &nm1, bp, x, &rnorm, w, zz, index, &mode);
+
+      printf("exit code=%d\n", mode);
+ 
+      x_i=1;
+      for (int j=0; j<i; j++) x_i-=x[j];
+      for (int j=i+1; j<n; j++) x_i-=x[j-1];
+      //if the excluded variable obeys the inequality constraint,
+      //set probabily results and exit:
+      if (x_i >= 0) {
+        for (int j=0; j<i; j++) p[j]=x[j];
+        for (int j=i+1; j<n; j++) p[j]=x[j-1];
+        p[i]=x_i;
+        break;
+      }
+    }
+      
+    delete_matrix(atp);
+    delete_matrix(at);
+
+  }
+
   template void p_renorm<float>(float *, int);
   template void p_renorm<double>(double *, int);
 
@@ -699,6 +1087,18 @@ namespace libagf {
 
   template void solve_class_peaked<float, float>(float **, int, int, float *, float *);
   template void solve_class_peaked<double, double>(double **, int, int, double *, double *);
+
+  template void solve_class_kkt_iter<float, float>(float **, int, int, float *, float *);
+  template void solve_class_kkt_iter<double, double>(double **, int, int, double *, double *);
+
+  template void solve_class_nnls<float, float>(float **, int, int, float *, float *);
+  template void solve_class_nnls<double, double>(double **, int, int, double *, double *);
+
+  template void solve_class_nnls2<float, float>(float **, int, int, float *, float *);
+  template void solve_class_nnls2<double, double>(double **, int, int, double *, double *);
+
+  template void solve_class_nnls3<float, float>(float **, int, int, float *, float *);
+  template void solve_class_nnls3<double, double>(double **, int, int, double *, double *);
 }
 
 #endif

@@ -1,5 +1,5 @@
 SHELL=/bin/bash
-TIME=/bin/time
+TIME=/usr/bin/time
 
 DATAPATH=../datasets
 
@@ -40,8 +40,8 @@ NCLS=$(NCLS_$(VER))
 #SOL=iter		#iterative
 #SOL=rec		#recursive
 
-WORKDIR=/home/petey/work/multiclass/$(VER)
-#WORKDIR=$(VER)
+#WORKDIR=/home/petey/work/multiclass/$(VER)
+WORKDIR=$(VER)
 BASE=$(WORKDIR)/$(VER)
 
 KEY = $(TYPE)_$(SOL)

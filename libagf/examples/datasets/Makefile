@@ -28,7 +28,7 @@ NCLS_humidity=8
 NCLS=$(NCLS_$(VER))
 
 #directory containing unprocessed data:
-DATADIR=../statlog/data/$(VER)
+DATADIR=/media/peter/D4802ADC802AC4B8/cygwin/home/lenovo/my_software/libmsci/libagf/examples/statlog/data/$(VER)
 
 #working directory for processing data:
 WORKDIR=.

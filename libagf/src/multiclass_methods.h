@@ -88,6 +88,23 @@ namespace libagf {
   template <typename code_t, typename real>
   void solve_class_peaked(code_t **a, int m, int n, real *r, real *p);
 
+  //an iterated method based on KKT:
+  //- solve least squares problem
+  //- set negative values to zero
+  //- add Lagrange multiplier for negative result
+  //- repeat until no new negative values
+  template <typename code_t, typename real>
+  void solve_class_kkt_iter(code_t **a, int m, int n, real *r, real *p);
+  
+  template <typename code_t, typename real>
+  void solve_class_nnls(code_t **a, int m, int n, real *r, real *p);
+
+  template <typename code_t, typename real>
+  void solve_class_nnls2(code_t **a, int m, int n, real *r, real *p);
+
+  template <typename code_t, typename real>
+  void solve_class_nnls3(code_t **a, int m, int n, real *r, real *p);
+
 }
 
 #endif

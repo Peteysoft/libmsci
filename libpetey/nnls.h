@@ -16,7 +16,7 @@ extern "C" {
 			int32_t *mode);
 
 	void FORTRAN_FUNC(nnls)(double **a,
-			double *mda,
+			int32_t *mda,
 			int32_t *m,
 			int32_t *n,
 			double *b,
@@ -27,7 +27,7 @@ extern "C" {
 			int32_t *mode);
 
 	void FORTRAN_FUNC(svdrs)(double **a, 
-			double *mda, 
+			int32_t *mda, 
 			int32_t *M1, 
 			int32_t *N1, 
 			double **B, 

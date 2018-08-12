@@ -9,12 +9,12 @@
 
 OPT_VER=-g
 
-EXE_EXT=.exe
+#EXE_EXT=.exe
 
 CC = g++
 
-BASE_PATH = /home/lenovo
-#BASE_PATH = /home/petey
+#BASE_PATH = /home/lenovo
+BASE_PATH = /home/peter
 #BASE_PATH=/mnt/sdc1/home2/pete
 
 LIB_PATH = $(BASE_PATH)/lib
@@ -27,8 +27,10 @@ INCLUDE_PATH = $(BASE_PATH)/include
 GSL_LIB = /usr/local/lib
 GSL_INCLUDE = /usr/local/include
 
+FORTRAN_RUNTIME = gfortran
+
 LD_OPTIONS = -L$(GSL_LIB) -L$(LIB_PATH) -L. \
-		-lpetey$(OPT_VER) -lgsl -lgslcblas #-L/usr/lib/ncurses -lcurses
+		-lpetey$(OPT_VER) -lgsl -lgslcblas -l$(FORTRAN_RUNTIME) #-L/usr/lib/ncurses -lcurses
 
 #CFLAGS = $(OPT_VER) -I$(GSL_INCLUDE) -I$(INCLUDE_PATH) -Wno-deprecated #-O2 -g
 CFLAGS = $(OPT_VER) -I$(GSL_INCLUDE) -I$(INCLUDE_PATH)

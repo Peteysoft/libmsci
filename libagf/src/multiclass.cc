@@ -194,44 +194,56 @@ namespace libagf {
     switch (ct) {
       case (0):
         solve_class=&solve_class_constrained2<real, real>;
-	break;
+        break;
       case (1):
-	solve_class=&solve_class_scratch<real, real>;
+        solve_class=&solve_class_scratch<real, real>;
         break;
       case (2):
-	solve_class=&solve_class_vote_pdf<real, real>;
+        solve_class=&solve_class_vote_pdf<real, real>;
         break;
       case (3):
-	solve_class=&solve_class_vote<real, real>;
+        solve_class=&solve_class_vote<real, real>;
         break;
       case (4):
-	solve_class=&solve_class_norm1<real, real>;
+        solve_class=&solve_class_norm1<real, real>;
         break;
       case (5):
-	solve_class=&solve_class_norm2<real, real>;
+        solve_class=&solve_class_norm2<real, real>;
         break;
       case (6):
 	//solve_class=&solve_class_renorm<real, real>;
-	solve_class=&solve_class_renorm<real>;
+        solve_class=&solve_class_renorm<real>;
         break;
       case (7):
         solve_class=&solve_class_constrained1<real, real>;
-	break;
+        break;
       case (8):
-	solve_class=&solve_class_vote_pdf2<real, real>;
-	break;
+        solve_class=&solve_class_vote_pdf2<real, real>;
+        break;
       case (9):
-	solve_class=&solve_class_1vR<real, real>;
-	break;
+        solve_class=&solve_class_1vR<real, real>;
+        break;
       case (10):
-	solve_class=&solve_class_Zadrozny<real, real>;
-	break;
+        solve_class=&solve_class_Zadrozny<real, real>;
+        break;
       case (11):
-	solve_class=&solve_class_interior<real, real>;
-	break;
+        solve_class=&solve_class_interior<real, real>;
+        break;
       case (12):
-	solve_class=&solve_class_peaked<real, real>;
-	break;
+        solve_class=&solve_class_peaked<real, real>;
+        break;
+      case (13):
+        solve_class=&solve_class_kkt_iter<real, real>;
+        break;
+      case (14):
+        solve_class=&solve_class_nnls<real, real>;
+        break;
+      case (15):
+        solve_class=&solve_class_nnls2<real, real>;
+        break;
+      case (16):
+        solve_class=&solve_class_nnls3<real, real>;
+        break;
       default:
         solve_class=&solve_class_constrained2<real, real>;
         break;

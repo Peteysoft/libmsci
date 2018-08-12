@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-TIME=/bin/time
+TIME=/usr/bin/time
 
 #minimum number of border samples:
 MINSAMPLE=5
@@ -203,7 +203,7 @@ endif
 SCRIPTDIR=../../scripts
 
 #directory containing data:
-DATADIR=data/$(VER)
+DATADIR=/media/peter/D4802ADC802AC4B8/cygwin/home/lenovo/my_software/libmsci/libagf/examples/statlog/data/$(VER)
 
 #working directory for processing data:
 WORKDIR=work/$(VER)
