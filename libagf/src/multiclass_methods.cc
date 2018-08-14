@@ -980,13 +980,16 @@ namespace libagf {
     double **atp;   	//equality constrained problem matrix row major
     double b[m];        //solution vector
     double bp[m];       //solution vector for equality constrained problem
-    double x[n];
-    double rnorm;
-    double w[n];
-    double zz[m];
-    int32_t index[n];
-    int32_t mode;
-    int32_t nm1=n-1;
+    double x[n];        //variables
+    double rnorm;       //Euclidean norm of residual vector
+    double w[n];        //slack variables
+    double zz[m];       //working space
+    int32_t index[n];   //more working space
+    long *ran;         //we choose the variable to exclude randomly
+    long sub;            //variable to exclude
+    int32_t mode;       //error code: 1=success; 2=bad dimensions; 3=max iter exceeded
+    int32_t nm1=n-1;    //rows in equality constrained problem
+    int failflag=1;	//make sure everything worked OK
 
     //set the problem matrix:
     at=allocate_matrix<double>(n, m);
@@ -1002,36 +1005,50 @@ namespace libagf {
     }
     //print_matrix(stdout, ata, n, n);
     atp=allocate_matrix<double>(n-1, m);
+    ran=randomize(n);
     //try each variable in turn to set the equality constraint:
     for (int i=0; i<n; i++) {
       double x_i;
-      for (int j=0; j<i; j++) {
-        for (int k=0; k<m; k++) atp[j][k]=at[j][k]-at[i][k];
+      sub=ran[i];
+      for (int j=0; j<sub; j++) {
+        for (int k=0; k<m; k++) atp[j][k]=at[j][k]-at[sub][k];
       }
-      for (int j=i+1; j<n; j++) {
-        for (int k=0; k<m; k++) atp[j-1][k]=at[j][k]-at[i][k];
+      for (int j=sub+1; j<n; j++) {
+        for (int k=0; k<m; k++) atp[j-1][k]=at[j][k]-at[sub][k];
       }
-      for (int j=0; j<m; j++) bp[j]=b[j]-at[i][j];
+      for (int j=0; j<m; j++) bp[j]=b[j]-at[sub][j];
 
       nnls_(atp[0], &m, &m, &nm1, bp, x, &rnorm, w, zz, index, &mode);
 
-      printf("exit code=%d\n", mode);
+      if (mode!=1) {
+        fprintf(stderr, "solve_class_nnls3: warning, nnls routine failed to converge\n");
+        continue;
+      }
+      //printf("exit code=%d\n", mode);
  
       x_i=1;
-      for (int j=0; j<i; j++) x_i-=x[j];
-      for (int j=i+1; j<n; j++) x_i-=x[j-1];
+      for (int j=0; j<sub; j++) x_i-=x[j];
+      for (int j=sub+1; j<n; j++) x_i-=x[j-1];
       //if the excluded variable obeys the inequality constraint,
       //set probabily results and exit:
       if (x_i >= 0) {
-        for (int j=0; j<i; j++) p[j]=x[j];
-        for (int j=i+1; j<n; j++) p[j]=x[j-1];
-        p[i]=x_i;
+        for (int j=0; j<sub; j++) p[j]=x[j];
+        for (int j=sub+1; j<n; j++) p[j]=x[j-1];
+        p[sub]=x_i;
+	failflag=0;
         break;
       }
     }
       
     delete_matrix(atp);
     delete_matrix(at);
+
+    delete [] ran;
+
+    if (failflag) {
+      fprintf(stderr, "solve_class_nnls3: failed to find solution\n");
+      assert(failflag==0);
+    }
 
   }
 

@@ -44,7 +44,7 @@ CFLAGS = $(OPT) -I$(INCLUDE_PATH) -I$(GSL_INCLUDE)
 
 #the following macros are for executables built with lex/yacc:
 # readline library:
-READLINE_LIB=$(BASE_PATH)/lib
+READLINE_LIB=/usr/local/readline-master
 
 # lex & yacc:
 LEX = flex -I
@@ -117,7 +117,8 @@ libagf$(OPT).a: $(INSTALL_PETEY)
 	make -C libagf LIB_PATH=$(LIB_PATH) INCLUDE_PATH=$(INCLUDE_PATH) \
 		OPT_VER=$(OPT) EXE_EXT=$(EXE_EXT) \
 		CC=$(CPP) CFLAGS="$(CFLAGS)" \
-		GSL_INCLUDE=$(GSL_INCLUDE) GSL_LIB=$(GSL_LIB)
+		GSL_INCLUDE=$(GSL_INCLUDE) GSL_LIB=$(GSL_LIB) \
+		FORTRAN_RUNTIME=$(FORTRAN_RUNTIME)
 
 allopt:
 	make OPT=-g all

@@ -157,7 +157,6 @@ More generally, consider the following sequence of vectors:
 \end{eqnnon}
 where $i \in [1, m]$ and $j \in [1, m]$. \citep{Boyd_Vandenberghe2004}
 
-
 \section{Constructing the coding matrix}
 
 \label{construction}
@@ -234,7 +233,7 @@ if they are to be efficiently applied to problems with a large number of classes
 
 \begin{table}
 \caption{Speed and skill of multi-class classification results; Brier score for conditional probability estimates.}\label{class_results}
-\input{orthogonal_result_S_g.tex}
+\input{orthogonal_results2018_08_13.tex}
 \end{table}
 
 Orthogonal error correcting codes were tested on six different datasets:
@@ -245,8 +244,10 @@ dataset--``sat'', a similar dataset for image recognition--``segment'',
 and a dataset for vehicle recognition--``vehicle'' \citep{Siebert1987}.
 The last four are borrowed from the ``statlog'' project \citep{King_etal1995,Michie_etal1994}.
 
-The method was compared with a technique that solves the ``one versus one'' 
-partitioning using matrix inversion \citep{Wu_etal2004}.
+The method was compared with random error correcting codes using an equivalent
+number of codes (the number binary classifiers, or columns in the matrix, $n$, is kept constant).
+These were solved using a constrained linear least squares method based
+on the Karesh-Kuhn-Tucker conditions \citep{Hanson_Lawson1993}.
 Both techniques were applied to support vector machines (SVMs) trained using
 LIBSVM \citep{Chang_Lin2011}.
 Partitions were trained separately then combined by finding the union of
@@ -267,48 +268,23 @@ which is the root-mean-square
 error measured against the truth of the class as a 0 or 1 value
 \citep{Brier1950,Jolliffe_Stephenson2003}.
 
-The results suggest that there is very little difference between the two
-methods, whether in classification accuracy, accuracy of probabily estimates
-or classification time.
-On the whole, the one-versus-one method appears to have a slight edge in
-classification accuracy as well as both precision and bias in probabilty
-estimates.
-Differences are small but nonetheless statistically significant.
-Probability estimates for both methods appear to be highly accurate.
+For most of the datasets, orthogonal coding matrices provide a small but
+significant improvement over random coding matrices in both classification
+accuracy and in the accuracy of the conditional probabilities.
+Results are also more consistent for the orthogonal codes as given by the
+calculated error bars.
 
-There is the potential for speed increases for binary classification methods
-that don't depend on the number of samples in the training data by using
-orthogonal coding matrices rather than one-versus-one.
-In this case, time efficiency will depend on the number of classes,
-$O(m)$, rather than the number of classes squared, $O(m^2)$.
-The obvious example is logistic regression, however there will likely be
-a concordant decrease in accuracy for the orthogonal coding matrices since
-boundaries within partitions will be more complex.
+Using orthogonal coding matrices appears to be slightly faster as well,
+although this difference is less significant.
+The speed difference results because the solution method is much simpler.
+Since actually solving for the conditional probabilities is such a minor
+component of multi-class classification, the difference is small.
+The rest of the calculation should be roughly equivalent speed-wise.
 
-On the other hand, the speed of a SVM is directly proportional to the number 
-of support vectors which in turn is proportional, on average,
-to the number of training samples: 
-$O(N)$, where $N$ is the number of training samples.
-Since each partition with an orthogonal coding matrix includes all of the
-training data, time efficiency per partition is proportional to the number
-of training samples, whereas in one-versus-one, it's proportional, on average,
-to the number of training samples divided by the number of classes: $O(N/m)$.
-Hence, both methods will have time efficiency roughly $O(Nm)$.
-
-As the results suggest, the number of returned support vectors will vary 
-between the two methods and this difference will depend heavily upon the 
-dataset.
-The applied optimization complicates things further as the number of merged
-support vectors will also vary a great deal between the two methods and
-for different datasets.
-
-Solving for the multi-class probabilities given the binary probabilities should
-be more efficient with an orthogonal coding matrix. 
-Unfortunately the time
-spent on this part of the calculation is insignificant for a SVM.
-While there don't appear to be significant performance advantages to the method
-when compared to one-versus-one, at least as applied to SVMs, 
-it is very simple and has a certain elegance to it.
-It may suggest new directions in the search for more efficient and
+As predicted, solving for multi-class using orthogonal coding matrices 
+is more accurate than the equivalent problem using random coding matrices.
+While the difference is small,
+the method is very simple and elegance and
+may suggest new directions in the search for more efficient and
 accurate methods in multi-class classification.
 

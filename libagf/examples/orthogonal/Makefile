@@ -83,6 +83,7 @@ MODEL=$(BASE).$(TYPE).mbc
 #control file option:
 CODE1v1=5
 CODEortho=8
+CODEecc=16
 CODE=$(CODE$(TYPE))
 
 #preprocessing options:
@@ -95,14 +96,15 @@ ifneq ($(strip $(PRE)),)
 endif
 
 #subsampling option:
-CFLAG_shuttle=correction
+#CFLAG_shuttle=correction
 #keep class sizes constant:
 SAMPLING_METHOD_= -C
 #correct for smaller classes:
-SAMPLING_METHOD_correction=
+#SAMPLING_METHOD_correction=
 #there must be a way of doing it without using three levels of indirection
 #(and without resorting to 'if'):
 SAMPLING_METHOD=$(SAMPLING_METHOD_$(CFLAG_$(VER)))
+#(no need to do this anyway: why the fuck am I doing this?)
 
 #command for subsampling:
 #takes into account relative class sizes:
@@ -137,12 +139,17 @@ TM_CLASS=$(BASE).tst.$(TYPE).tm
 STATFILE = $(VER).txt
 
 
-all: $(BASE).1v1.txt $(BASE).ortho.txt
+all: $(BASE).1v1.txt $(BASE).ecc.txt $(BASE).ortho.txt
 	echo "1 vs. 1 results:"
 	more $(BASE).trn.1v1.tm
 	more $(BASE).tst.1v1.tm
 	cls_comp_stats $(TEST).cls $(BASE).1v1
 	validate_probabilities -H $(TEST).cls $(BASE).1v1.txt 
+	echo "ECC results:"
+	more $(BASE).trn.ecc.tm
+	more $(BASE).tst.ecc.tm
+	cls_comp_stats $(TEST).cls $(BASE).ecc
+	validate_probabilities -H $(TEST).cls $(BASE).ecc.txt 
 	echo "orthogonal results:"
 	more $(BASE).trn.ortho.tm
 	more $(BASE).tst.ortho.tm
@@ -158,35 +165,55 @@ $(BASE)$(TYPE).1v1.txt:
 $(BASE)$(TYPE).ortho.txt:
 	make TYPE=ortho $(BASE).ortho.txt
 
+$(BASE)$(TYPE).ecc.txt:
+	make TYPE=ecc $(BASE).ecc.txt
 
 #how many lines does results file contain so far?
 NLINE!=cat $(STATFILE) | wc -l
 stats:
+	touch sol_time_ecc.txt
+	touch sol_time_ortho.txt
+	touch sol_time_1v1.txt
 	for ((I=$(NLINE); I<$(NTRIAL); I++)); do \
 		make clean; \
 		make $(STATFILE); \
 	done
+	mv sol_time_ecc.txt sol_time_ecc_$(VER).txt
+	mv sol_time_ortho.txt sol_time_ortho_$(VER).txt
+	mv sol_time_1v1.txt sol_time_1v1_$(VER).txt
 
-$(STATFILE): $(BASE).1v1.txt $(BASE).ortho.txt
-	grep -o "[0-9]*\.[0-9]*" $(BASE).tst.1v1.tm | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+#$(STATFILE): $(BASE).1v1.txt $(BASE).ecc.txt $(BASE).ortho.txt
+$(STATFILE): $(BASE).ecc.txt $(BASE).ortho.txt
+	#grep -o "[0-9]*\.[0-9]*" $(BASE).tst.1v1.tm | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	#echo -n " " >> $(STATFILE)
+	#grep -o "[0-9]*\.[0-9]*" $(BASE).tst.1v1.tm | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	#echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE).tst.ecc.tm | sed '1q;d' | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	grep -o "[0-9]*\.[0-9]*" $(BASE).tst.1v1.tm | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE).tst.ecc.tm | sed '2q;d' | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
 	grep -o "[0-9]*\.[0-9]*" $(BASE).tst.ortho.tm | sed '1q;d' | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
 	grep -o "[0-9]*\.[0-9]*" $(BASE).tst.ortho.tm | sed '2q;d' | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	cls_comp_stats -Hb $(TEST).cls $(BASE).1v1 | tr -d '\n' >> $(STATFILE)
+	#cls_comp_stats -Hb $(TEST).cls $(BASE).1v1 | tr -d '\n' >> $(STATFILE)
+	#echo -n " " >> $(STATFILE)
+	cls_comp_stats -Hb $(TEST).cls $(BASE).ecc | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
 	cls_comp_stats -Hb $(TEST).cls $(BASE).ortho | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	validate_probabilities -BH $(TEST).cls $(BASE).1v1.txt | tr -d '\n' >> $(STATFILE)
+	#validate_probabilities -BH $(TEST).cls $(BASE).1v1.txt | tr -d '\n' >> $(STATFILE)
+	#echo -n " " >> $(STATFILE)
+	validate_probabilities -BH $(TEST).cls $(BASE).ecc.txt | tr -d '\n' >> $(STATFILE)
+	#validate_probabilities -BH $(TEST).cls $(BASE).ecc.txt >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
 	validate_probabilities -BH $(TEST).cls $(BASE).ortho.txt >> $(STATFILE)
 
 #performing classifications:
 $(RESULT).txt: $(MODEL) $(TEST).svm
+	mv sol_time_$(TYPE).txt sol_time.txt
 	$(TIME) -o $(TM_CLASS) $(TESTCOMMAND)
+	mv sol_time.txt sol_time_$(TYPE).txt
 	$(FCONV)
 
 #training the model:

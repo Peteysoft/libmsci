@@ -175,16 +175,23 @@ namespace libagf {
       if (strictflag==0) break;
     }
 
+    sol_time=0;
+
     return 0;
   }
 
   template <typename real, typename cls_t>
   multiclass<real, cls_t>::~multiclass() {
+    FILE *fs;
     //delete the binary classifiers and the decision matrix:
     for (int i=0; i<nmodel; i++) delete twoclass[i];
     delete [] twoclass;
 
     if (pol!=NULL) delete [] pol;
+
+    fs=fopen("sol_time.txt", "a");
+    fprintf(fs, "%g\n", (float) sol_time/CLOCKS_PER_SEC);
+    fclose(fs);
 
     delete_matrix(code);
   }
@@ -281,8 +288,9 @@ namespace libagf {
       //printf("%12.6g", r[i]);
     }
     //printf("\n");
-
+    sol_time-=clock();
     (*solve_class)(code, nmodel, this->ncls, r, p);
+    sol_time+=clock();
     //for (cls_t i=0; i<this->ncls; i++) pt+=p[i];
     //printf("pt=%g\n", pt);
     return choose_class(p, this->ncls);

@@ -2,6 +2,7 @@
 #define MULTICLASS_H 1
 
 #include <stdio.h>
+#include <time.h>
 #include <gsl/gsl_matrix.h>
 
 #include "agf_defs.h"
@@ -32,6 +33,9 @@ namespace libagf {
 
       //"polarity" of each binary classifier:
       int *pol;
+
+      //time to solve multiclass problem, excluding binary classification:
+      clock_t sol_time;
     protected:
       //the partitions:
       binaryclassifier<real, cls_t> **twoclass;
