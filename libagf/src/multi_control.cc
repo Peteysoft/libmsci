@@ -208,6 +208,40 @@ namespace libagf {
     done: return coding_matrix;
   }
 
+  //basic brute force:
+  //- no attempt to keep track of trials
+  //- not halting
+  template <typename scalar>
+  scalar **orthogonal_coding_matrix(int ncls, int nrow) {
+    scalar **result_t;
+    scalar **result;
+    scalar dprod;
+    int notdone;
+
+    result_t=allocate_matrix<scalar>(ncls, nrow);
+
+    for (int i=0; i<ncls; i++) {
+      do {
+        notdone=0;
+        random_coding_row(result_t[i], nrow, 1);
+	for (int j=0; j<i; j++) {
+	  dprod=0;
+	  for (int k=0; k<nrow; k++) dprod+=result_t[i][k]*result_t[j][k];
+	  if (dprod!=0) {
+            notdone=1;
+	    break;
+	  }
+	}
+      } while (notdone);
+      print_matrix(stdout, result_t, ncls, nrow);
+    }
+    result=matrix_transpose(result_t, ncls, nrow);
+    delete_matrix(result_t);
+    return result;
+  }
+
+
+
   template <typename scalar>
   scalar ** exhaustive_coding_matrix(int ncls) {
     int64_t nrow;
@@ -675,6 +709,10 @@ namespace libagf {
   template int ** ortho_coding_matrix_brute_force<int>(int);
   template float ** ortho_coding_matrix_brute_force<float>(int);
   template double ** ortho_coding_matrix_brute_force<double>(int);
+
+  template int ** orthogonal_coding_matrix<int>(int, int);
+  template float ** orthogonal_coding_matrix<float>(int, int);
+  template double ** orthogonal_coding_matrix<double>(int, int);
 
   template int ** hierarchical_nonhierarchical<int>(int);
   template float ** hierarchical_nonhierarchical<float>(int);

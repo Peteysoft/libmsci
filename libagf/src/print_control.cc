@@ -166,6 +166,11 @@ int main(int argc, char **argv) {
       coding_matrix=ortho_coding_matrix_brute_force<int>(n);
       nrow=n;
       break;
+    case(11):
+      nrow=4*((n-1)/4+1);
+      coding_matrix=orthogonal_coding_matrix<int>(n, nrow);
+      nrow=n;
+      break;
     case(16):
       nrow=4*((n-1)/4+1);
       coding_matrix=random_coding_matrix<int>(n, nrow, 1);

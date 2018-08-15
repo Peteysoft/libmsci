@@ -117,6 +117,9 @@ SUBSAMPLE=subsample_special
 TRAINCOMMAND_svm=multi_borders -M -- svm-train -+ "-b 1 $(OPTIONS)" \
 		$(CONTROL) $(TRAIN).svm $(BASE).$(TYPE) $(MODEL).0; \
 		mbh2mbm -Z $(MODEL).0 $(MODEL)
+TRAINCOMMAND_linear=multi_borders -M -- lin-train -+ "-b 1 $(OPTIONS)" \
+		$(CONTROL) $(TRAIN).svm $(BASE).$(TYPE) $(MODEL).0; \
+		mbh2mbm -Z $(MODEL).0 $(MODEL)
 TRAINCOMMAND_agf=multi_borders $(OPTIONS) $(CONTROL) $(TRAIN) $(BASE).$(TYPE) $(MODEL)
 TRAINCOMMAND=$(TRAINCOMMAND_$(METHOD))
 
@@ -134,6 +137,9 @@ FCONV=$(FCONV_$(METHOD))
 TM_TRAIN=$(BASE).trn.$(TYPE).tm
 #classification time:
 TM_CLASS=$(BASE).tst.$(TYPE).tm
+
+#where to store solution times:
+SOL_TIME=sol_time_$(TYPE)_$(VER).txt
 
 #collect statistics:
 STATFILE = $(VER).txt
@@ -171,16 +177,10 @@ $(BASE)$(TYPE).ecc.txt:
 #how many lines does results file contain so far?
 NLINE!=cat $(STATFILE) | wc -l
 stats:
-	touch sol_time_ecc.txt
-	touch sol_time_ortho.txt
-	touch sol_time_1v1.txt
 	for ((I=$(NLINE); I<$(NTRIAL); I++)); do \
 		make clean; \
 		make $(STATFILE); \
 	done
-	mv sol_time_ecc.txt sol_time_ecc_$(VER).txt
-	mv sol_time_ortho.txt sol_time_ortho_$(VER).txt
-	mv sol_time_1v1.txt sol_time_1v1_$(VER).txt
 
 #$(STATFILE): $(BASE).1v1.txt $(BASE).ecc.txt $(BASE).ortho.txt
 $(STATFILE): $(BASE).ecc.txt $(BASE).ortho.txt
@@ -211,9 +211,7 @@ $(STATFILE): $(BASE).ecc.txt $(BASE).ortho.txt
 
 #performing classifications:
 $(RESULT).txt: $(MODEL) $(TEST).svm
-	mv sol_time_$(TYPE).txt sol_time.txt
-	$(TIME) -o $(TM_CLASS) $(TESTCOMMAND)
-	mv sol_time.txt sol_time_$(TYPE).txt
+	export SOL_TIME=$(SOL_TIME); $(TIME) -o $(TM_CLASS) $(TESTCOMMAND)
 	$(FCONV)
 
 #training the model:

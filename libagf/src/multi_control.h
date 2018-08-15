@@ -19,6 +19,8 @@ namespace libagf {
   template <typename scalar>
   scalar ** random_coding_matrix(int ncls, int &ntrial, int strictflag=0);
   template <typename scalar>
+  scalar ** orthogonal_coding_matrix(int ncls, int ncode);
+  template <typename scalar>
   scalar ** exhaustive_coding_matrix(int ncls);
   template <typename scalar>
   scalar ** ortho_coding_matrix_nqbf(int ncls, 

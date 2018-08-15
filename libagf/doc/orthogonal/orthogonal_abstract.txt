@@ -1,10 +1,9 @@
 We describe a method of solving for the conditional probabilities
-in multi-class classification using orthogonal error correcting codes.
+in multi-class classification using orthogonal error-correcting codes.
 The method is tested on six different datasets using support
-vector machines and is found to be more accurate than random coding
+vector machines as the binary classifiers and both the classification results as well as the
+probability estimates are found to be more accurate than using random coding
 matrices, as predicted by recent literature.
-The is the case for both the classification results as well as the probability
-estimates.
 Probability estimates are desirable in statistical classification
 both for gauging the accuracy of 
 a classification result and for calibration.

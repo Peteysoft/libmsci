@@ -10,7 +10,7 @@ multi-class.
 Three of the most common are one versus one, one versus the rest and 
 error-correcting coding matrices \citep{Hsu_Lin2002}.
 Here we are interested in the error-correcting coding matrices
-\citep{Dietterich_Bakiri1995, Windeatt_Ghaderi2002} and
+\citep{Dietterich_Bakiri1995,Windeatt_Ghaderi2002} and
 rather than use a random coding matrix we are interested in one that is
 more carefully designed.
 
@@ -191,7 +191,8 @@ This will limit the size of $m$ relative to $n$; more precisely:
 $m \le \lfloor 2 \log_2 n \rfloor - 1$. Moreover, only certain values of $n$
 will be admitted: $n=2^t$ where $t$ is a whole number.
 
-The first three rows in (\ref{harmonic}) comprise a Walsh-Hadamard code \citep{Arora_Barak2009}.
+The first three rows in (\ref{harmonic}) comprise a Walsh-Hadamard code \citep{Arora_Barak2009}:
+all possible permutations are listed.
 A square ($n=m$) orthogonal coding matrix is called a Hadamard matrix
 \citep{Sylvester1867}.
 It can be shown that besides $n=1$ and $n=2$, only Hadamard matrices of size
@@ -217,13 +218,12 @@ and start with an empty matrix.
 Candidate vectors containing both positive and negative elements 
 are chosen at random to comprise a row of the matrix but never repeated.
 If the candidate vector is orthogonal to existing rows, then it is added to the matrix.
-The process is repeated until the matrix is filled.
+New candidates are tested until the matrix is filled or we run out of permutations.
 A full matrix is almost always returned especially if $m<n$.
 The matrix is then checked to ensure that 
 each column contains both positive and negative elements.
+Note that the whole process can be repeated as many times as necessary.
 
-Obviously, this method of finding orthogonal coding matrices
-will only work for relatively few classes.
 More work will need to be done to find efficient methods
 of generating these matrices
 if they are to be efficiently applied to problems with a large number of classes.
@@ -232,22 +232,22 @@ if they are to be efficiently applied to problems with a large number of classes
 \section{Results}
 
 \begin{table}
-\caption{Speed and skill of multi-class classification results; Brier score for conditional probability estimates.}\label{class_results}
-\input{orthogonal_results2018_08_13.tex}
+\caption{Solution time, uncertainty coefficient and Brier score for six different datasets using random and orthogonal error-correcting codes.}\label{class_results}
+\input{orthogonal_results2018_08_14.tex}
 \end{table}
 
-Orthogonal error correcting codes were tested on six different datasets:
+Orthogonal error-correcting codes were tested on six different datasets:
 two for digit recognition--``pendigits'' \citep{Alimoglu1996} and
-``usps'' \citep{Hull1994}, the space shuttle control dataset--``shuttle''
-\citep{King_etal1995}, a satellite land recognition
-dataset--``sat'', a similar dataset for image recognition--``segment'',
+``usps'' \citep{Hull1994}; the space shuttle control dataset--``shuttle''
+\citep{King_etal1995}; a satellite land recognition
+dataset--``sat''; a similar dataset for image recognition--``segment'';
 and a dataset for vehicle recognition--``vehicle'' \citep{Siebert1987}.
 The last four are borrowed from the ``statlog'' project \citep{King_etal1995,Michie_etal1994}.
 
-The method was compared with random error correcting codes using an equivalent
-number of codes (the number binary classifiers, or columns in the matrix, $n$, is kept constant).
-These were solved using a constrained linear least squares method based
-on the Karesh-Kuhn-Tucker conditions \citep{Hanson_Lawson1993}.
+The method was compared with random error-correcting codes using using the same
+number of codes or matrix rows, $m$.
+Random codes were solved using a constrained linear least squares method based
+on the Karesh-Kuhn-Tucker conditions \citep{Lawson_Hanson1995}.
 Both techniques were applied to support vector machines (SVMs) trained using
 LIBSVM \citep{Chang_Lin2011}.
 Partitions were trained separately then combined by finding the union of
@@ -256,35 +256,42 @@ By indexing into the combined list of support vectors, the algorithms are
 optimized in both space and time \citep{Chang_Lin2011}.
 
 Results are shown in Table \ref{class_results}.
-Each dataset was randomly separated into 70\% training and 30\%
-test data.
-Confidence limits represent standard deviations over 20 trials.
+Confidence limits represent standard deviations over 20 trials using
+different, randomly chosen coding matrices.
+For each trial, datasets were randomly separated into 70\% training and 30\%
+test.
 ``U.C'' stands for uncertainty
 coefficient, a skill score based on Shannon's channel capacity
 \citep{Shannon,Press_etal1992,Mills2011} that has many advantage over simple
 fraction of correct guesses or ``accuracy''.
 Probabilities are validated with the Brier score 
-which is the root-mean-square
+which is root-mean-square
 error measured against the truth of the class as a 0 or 1 value
 \citep{Brier1950,Jolliffe_Stephenson2003}.
 
 For most of the datasets, orthogonal coding matrices provide a small but
 significant improvement over random coding matrices in both classification
 accuracy and in the accuracy of the conditional probabilities.
+This is in line with the literature as in \citet{Dietterich_Bakiri1995,Windeatt_Ghaderi2002}.
 Results are also more consistent for the orthogonal codes as given by the
 calculated error bars.
 
-Using orthogonal coding matrices appears to be slightly faster as well,
-although this difference is less significant.
-The speed difference results because the solution method is much simpler.
-Since actually solving for the conditional probabilities is such a minor
-component of multi-class classification, the difference is small.
-The rest of the calculation should be roughly equivalent speed-wise.
+Also as expected, solution times are
+considerably faster for the orthogonal coding matrices.
+Depending on the problem and classification method, this may or may not
+be significant.
+Since SVM is a relatively slow classifier, solution times
+are a minor portion of the total.
+For fast classifiers such as a linear classifier or perceptron,
+solving the constrained optimization problem for the probabilities
+could easily comprise the bulk of classification times.
+Note that for both methods under examination, time to perform the binary
+classifications should be roughly equivalent.
 
 As predicted, solving for multi-class using orthogonal coding matrices 
 is more accurate than the equivalent problem using random coding matrices.
 While the difference is small,
-the method is very simple and elegance and
+the method is simple and elegant and
 may suggest new directions in the search for more efficient and
-accurate methods in multi-class classification.
+accurate multi-class classification algorithms.
 

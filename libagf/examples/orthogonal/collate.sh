@@ -29,6 +29,7 @@ BINPATH=../statlog
 for D in $DATASET; do
   #printf "%10s" $D
    #echo "$BINPATH/sum_col 0 1 / 7 / 12 / 2 3 / 9 / 13 / 4 / 5 / 11 / 14 < $PATH/$D$SUFFIX | $BINPATH/calc_stats 9 | ./write_results 9 $D"
-   $BINPATH/sum_col 0 1 / 7 / 12 / 2 3 / 9 / 13 / 4 5 / 11 / 14 < $PATH/$D$SUFFIX | $BINPATH/calc_stats 9 | ./write_results 9 $D
+   #$BINPATH/sum_col 0 1 / 7 / 12 / 2 3 / 9 / 13 / 4 5 / 11 / 14 < $PATH/$D$SUFFIX | $BINPATH/calc_stats 9 | ./write_results 9 $D
+   $BINPATH/sum_col 0 1 / 5 / 8 / 2 3 / 7 / 9 < $PATH/$D$SUFFIX | $BINPATH/calc_stats 6 | ./write_results 6 $D
 done
 

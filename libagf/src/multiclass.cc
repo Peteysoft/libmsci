@@ -183,15 +183,19 @@ namespace libagf {
   template <typename real, typename cls_t>
   multiclass<real, cls_t>::~multiclass() {
     FILE *fs;
+    char *fname;
     //delete the binary classifiers and the decision matrix:
     for (int i=0; i<nmodel; i++) delete twoclass[i];
     delete [] twoclass;
 
     if (pol!=NULL) delete [] pol;
 
-    fs=fopen("sol_time.txt", "a");
-    fprintf(fs, "%g\n", (float) sol_time/CLOCKS_PER_SEC);
-    fclose(fs);
+    fname=getenv("SOL_TIME");
+    if (fname!=NULL) {
+      fs=fopen(fname, "a");
+      fprintf(fs, "%g\n", (float) sol_time/CLOCKS_PER_SEC);
+      fclose(fs);
+    }
 
     delete_matrix(code);
   }
