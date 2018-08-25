@@ -24,6 +24,7 @@ NCLS_usps=10
 #this one actually sets the number of classes:
 NCLS_humidity=8
 NCLS_vehicle=4
+NCLS_urban=9
 
 NCLS=$(NCLS_$(VER))
 
@@ -62,6 +63,9 @@ MODEL=$(BASE)_$(TYPE)
 #everything else is the same:
 CLASSCONTROL_1v1_inv = $(BASE)_1v1
 CLASSCONTROL_1v1_iter = $(BASE)_1v1
+CLASSCONTROL_1vR_iter = $(BASE)_1vR
+CLASSCONTROL_ortho_iter = $(BASE)_ortho
+CLASSCONTROL_adj_iter = $(BASE)_adj
 #for hierarchical classification there are different control files depending
 #on the solution method
 # there is no need for retraining but the classifiation control file is
@@ -76,6 +80,9 @@ CLASSCONTROL=$(CLASSCONTROL_$(KEY))
 
 #argument for initial control file:
 CONTROL_ARG_1v1 = $(NCLS)
+CONTROL_ARG_1vR = $(NCLS)
+CONTROL_ARG_ortho = $(NCLS)
+CONTROL_ARG_adj = $(NCLS)
 CONTROL_ARG_hier = $(NCLS)
 CONTROL_ARG_emp = $(TRAIN)
 
@@ -93,6 +100,7 @@ SVMOPT_segment=-c 100 -g 0.1
 SVMOPT_pendigits=-c 50 -g 0.01
 SVMOPT_letter=-c 50 -h 0
 SVMOPT_humidity=-h 0 -c 50
+#SVMOPT_urban=-h 0 -c 10 -g 0.001
 
 OPTIONS=$(SVMOPT_$(VER))
 
@@ -103,6 +111,9 @@ EXT=$(EXT_$(METHOD))
 
 #control file option:
 TRAINCODE_1v1=5
+TRAINCODE_1vR=1
+TRAINCODE_adj=2
+TRAINCODE_ortho=8
 TRAINCODE_hier=0
 TRAINCODE_emp=6
 
@@ -110,7 +121,7 @@ TRAINCODE=$(TRAINCODE_$(TYPE))
 
 #solution option:
 TESTCODEinv=5
-TESTCODEiter=6
+TESTCODEiter=16
 TESTCODErec=0
 
 TESTCODE=$(TESTCODE$(SOL))
@@ -125,11 +136,11 @@ ifneq ($(strip $(PRE)),)
 endif
 
 #subsampling option:
-CFLAG_shuttle=correction
+#CFLAG_shuttle=correction
 #keep class sizes constant:
 SAMPLING_METHOD_= -C
 #correct for smaller classes:
-SAMPLING_METHOD_correction=
+#SAMPLING_METHOD_correction=
 #there must be a way of doing it without using three levels of indirection
 #(and without resorting to 'if'):
 SAMPLING_METHOD=$(SAMPLING_METHOD_$(CFLAG_$(VER)))
@@ -146,18 +157,87 @@ FCONV=$(FCONV_$(METHOD))
 #collect statistics:
 STATFILE = $(VER).txt
 
+#measure the time:
+TRAINTIME=$(RESULT).traintime
+TESTTIME=$(RESULT).testtime
+
 
 all:
 	make $(BASE)_1v1_inv.txt TYPE=1v1 SOL=inv
-	make $(BASE)_1v1_iter.txt TYPE=1v1 SOL=iter
+	make $(BASE)_1vR_iter.txt TYPE=1vR SOL=iter
+	make $(BASE)_ortho_iter.txt TYPE=ortho SOL=iter
+	make $(BASE)_adj_iter.txt TYPE=adj SOL=iter
+	#make $(BASE)_1v1_iter.txt TYPE=1v1 SOL=iter
 	make $(BASE)_hier_rec.txt TYPE=hier SOL=rec
 	make $(BASE)_hier_iter.txt TYPE=hier SOL=iter
 	make $(BASE)_emp_rec.txt TYPE=emp SOL=rec
 	make $(BASE)_emp_iter.txt TYPE=emp SOL=iter
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_1v1_inv.traintime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_1v1_inv.traintime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_1vR_iter.traintime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_1vR_iter.traintime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_ortho_iter.traintime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_ortho_iter.traintime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_adj_iter.traintime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_adj_iter.traintime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_hier_rec.traintime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_hier_rec.traintime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_emp_rec.traintime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_emp_rec.traintime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_1v1_inv.testtime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_1v1_inv.testtime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_1vR_iter.testtime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_1vR_iter.testtime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_ortho_iter.testtime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_ortho_iter.testtime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_adj_iter.testtime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_adj_iter.testtime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_hier_rec.testtime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_hier_rec.testtime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_hier_iter.testtime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_hier_iter.testtime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_emp_rec.testtime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_emp_rec.testtime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_emp_iter.testtime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_emp_iter.testtime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
 	cls_comp_stats -Hb $(TEST).cls $(BASE)_1v1_inv | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	cls_comp_stats -Hb $(TEST).cls $(BASE)_1v1_iter | tr -d '\n' >> $(STATFILE)
+	cls_comp_stats -Hb $(TEST).cls $(BASE)_1vR_iter | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
+	cls_comp_stats -Hb $(TEST).cls $(BASE)_ortho_iter | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	cls_comp_stats -Hb $(TEST).cls $(BASE)_adj_iter | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	#cls_comp_stats -Hb $(TEST).cls $(BASE)_1v1_iter | tr -d '\n' >> $(STATFILE)
+	#echo -n " " >> $(STATFILE)
 	cls_comp_stats -Hb $(TEST).cls $(BASE)_hier_rec | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
 	cls_comp_stats -Hb $(TEST).cls $(BASE)_hier_iter | tr -d '\n' >> $(STATFILE)
@@ -168,16 +248,28 @@ all:
 	echo -n " " >> $(STATFILE)
 	validate_probabilities -BH $(TEST).cls $(BASE)_1v1_inv.txt | tr '\n' ' ' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	validate_probabilities -BH $(TEST).cls $(BASE)_1v1_iter.txt | tr '\n' ' ' >> $(STATFILE)
+	validate_probabilities -BH $(TEST).cls $(BASE)_1vR_iter.txt | tr '\n' ' ' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
+	validate_probabilities -BH $(TEST).cls $(BASE)_ortho_iter.txt | tr '\n' ' ' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	validate_probabilities -BH $(TEST).cls $(BASE)_adj_iter.txt | tr '\n' ' ' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	#validate_probabilities -BH $(TEST).cls $(BASE)_1v1_iter.txt | tr '\n' ' ' >> $(STATFILE)
+	#echo -n " " >> $(STATFILE)
 	validate_probabilities -BH $(TEST).cls $(BASE)_hier_iter.txt | tr '\n' ' ' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
 	validate_probabilities -BH $(TEST).cls $(BASE)_emp_iter.txt | tr '\n' ' ' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
 	validate_probabilities -Bb $(TEST).cls $(BASE)_1v1_inv | tr '\n' ' ' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	validate_probabilities -Bb $(TEST).cls $(BASE)_1v1_iter | tr '\n' ' ' >> $(STATFILE)
+	validate_probabilities -Bb $(TEST).cls $(BASE)_1vR_iter | tr '\n' ' ' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
+	validate_probabilities -Bb $(TEST).cls $(BASE)_ortho_iter | tr '\n' ' ' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	validate_probabilities -Bb $(TEST).cls $(BASE)_adj_iter | tr '\n' ' ' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	#validate_probabilities -Bb $(TEST).cls $(BASE)_1v1_iter | tr '\n' ' ' >> $(STATFILE)
+	#echo -n " " >> $(STATFILE)
 	validate_probabilities -Bb $(TEST).cls $(BASE)_hier_rec | tr '\n' ' ' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
 	validate_probabilities -Bb $(TEST).cls $(BASE)_hier_iter | tr '\n' ' ' >> $(STATFILE)
@@ -199,7 +291,7 @@ clean:
 
 #performing classifications:
 $(RESULT).txt: $(TEST).svm $(CLASSCONTROL).mbaio
-	classify_m -Z -Q $(TESTCODE) $(CLASSCONTROL).mbaio $(TEST).vec $(RESULT) > $(RESULT).txt
+	$(TIME) -o $(TESTTIME) classify_m -Z -Q $(TESTCODE) $(CLASSCONTROL).mbaio $(TEST).vec $(RESULT) > $(RESULT).txt
 	$(FCONV)
 
 #compiling the "all-in-one" model file:
@@ -210,7 +302,7 @@ $(CLASSCONTROL).mbaio: $(MODEL).mbc
 
 #training the model:
 $(MODEL).mbc: $(TRAIN).svm $(TRAINCONTROL)
-	multi_borders -M -- svm-train -+ "-b 1 $(OPTIONS)" \
+	$(TIME) -o $(TRAINTIME) multi_borders -M -- svm-train -+ "-b 1 $(OPTIONS)" \
 			$(TRAINCONTROL) $(TRAIN).svm $(MODEL) $(MODEL).mbc
 
 #create control files:

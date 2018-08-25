@@ -123,19 +123,19 @@ and the non-negativity constraints, (\ref{nonnegative}), for the negative probab
 3. repeat step 2.
 More formally, let $\vec 1$ be a vector of all $1$'s:
 \begin{itemize}
-	\item $i=0$; $m_0=m$
+	\item $i:=0$; $m_0:=m$
 	\item while $\exists k \, p_{ik} < 0 \lor \vec p_i \cdot \vec 1 \ne 1$:
 	\begin{itemize}
 		\item if $\vec p_i \cdot \vec 1 \ne 1$ then 
-		$\vec p_{i+1} = \vec p_i + (\vec p_i \cdot \vec 1 - 1)/m_i$
+		$\vec p_{i+1} := \vec p_i + (\vec p_i \cdot \vec 1 - 1)/m_i$
 		\item let $K$ be the set of $k$ such that $p_{i+1,k} < 0$
 		\item for each $k$ in $K$:
 		\begin{itemize}
-			\item $p_k=0$
+			\item $p_k:=0$
 			\item Remove $k$ from the problem
 		\end{itemize}
-		\item $m_{i+1}=m_i-|K|$
-		\item $i=i+1$
+		\item $m_{i+1}:=m_i-|K|$
+		\item $i:=i+1$
 	\end{itemize}
 \end{itemize}
 
@@ -167,18 +167,17 @@ Work in signal processing may be of limited applicability because coding
 matrices are typically comprised of $0$'s and $1$'s 
 rather than $-1$'s and $+1$'s \citep{Hedayat_etal1999,Panse_etal2014}.
 Moreover, there are further restrictions needed here: 
-each row as well as each column must have
-both positive and negative elements, or:
-\begin{eqnarray}
-	\left | \sum_{j=0}^n a_{ij} \right | < n; & ~~~ & i=[1..m] \label{restriction}\\\nonumber
-	\left | \sum_{i=0}^m a_{ij} \right | < m; & ~~~ & j=[1..n] 
-\end{eqnarray}
+column must have both positive and negative elements, or:
+\begin{equation}
+	\left | \sum_{i=0}^m a_{ij} \right | < m;  ~~~ i=[1..n] \label{restriction}
+\end{equation}
 
 A simple method of designing an orthogonal $A$ is using harmonic series.
-Consider the following matrix for five classes ($m=5$) 
+Consider the following matrix for six classes ($m=6$) 
 and eight binary classifiers ($n=8$):
 \begin{equation}
 	A = \left [ \begin{array}{rrrrrrrr}
+			 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 \\
 			-1 & -1 & -1 & -1 & 1 & 1 & 1 & 1 \\
 			-1 & -1 & 1 & 1 & -1 & -1 & 1 & 1 \\
 			-1 & 1 & -1 & 1 & -1 & 1 & -1 & 1 \\
@@ -188,7 +187,7 @@ and eight binary classifiers ($n=8$):
 	\label{harmonic}
 \end{equation}
 This will limit the size of $m$ relative to $n$; more precisely:
-$m \le \lfloor 2 \log_2 n \rfloor - 1$. Moreover, only certain values of $n$
+$m \le \lfloor 2 \log_2 n \rfloor$. Moreover, only certain values of $n$
 will be admitted: $n=2^t$ where $t$ is a whole number.
 
 The first three rows in (\ref{harmonic}) comprise a Walsh-Hadamard code \citep{Arora_Barak2009}:

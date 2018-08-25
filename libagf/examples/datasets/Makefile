@@ -22,6 +22,7 @@ NCLS_mushrooms=2
 NCLS_madelon=2
 NCLS_phishing=2
 NCLS_splice=2
+NCLS_urban=9
 #this one actually sets the number of classes:
 NCLS_humidity=8
 
@@ -156,10 +157,16 @@ $(WORKDIR)/mnist.0.cls: $(DATADIR)/mnist $(DATADIR)/mnist.t
 $(WORKDIR)/humidity.0.cls: ../humidity_data/train_SQ36s.dat ../humidity_data/est_bt_cld_land_z0.00.vec
 	cp ../humidity_data/est_bt_cld_land_z0.00.vec $(WORKDIR)/humidity.0.vec
 	float_to_class -q $(NCLS_humidity) -g ../humidity_data/train_SQ36s.dat $(WORKDIR)/humidity.0.cls 0.00007 0.001
+	agf_preprocess -f 0.1 $(WORKDIR)/humidity.0 $(WORKDIR)/dum $(WORKDIR)/humidity.0
 
 $(WORKDIR)/vehicle.0.cls: $(DATADIR)/xa?.dat.txt
 	cat $(DATADIR)/xa?.dat.txt | sed 's/opel/0/;s/saab/1/;s/bus/2/;s/van/3/' > $(BASE).0.txt
 	lvq2agf -H $(BASE).0.txt $(BASE).0
+
+$(WORKDIR)/urban.0.cls: $(DATADIR)/training.csv $(DATADIR)/testing.csv
+	cat $(DATADIR)/training.csv | sed '1d;s/,/ /g;s/tree/0/;s/grass/1/;s/soil/2/;s/concrete/3/;s/asphalt/4/;s/building/5/;s/car/6/;s/pool/7/;s/shadow/8/;' > $(BASE).trn.csv
+	cat $(DATADIR)/testing.csv | sed '1d;s/,/ /g;s/tree/0/;s/grass/1/;s/soil/2/;s/concrete/3/;s/asphalt/4/;s/building/5/;s/car/6/;s/pool/7/;s/shadow/8/;' > $(BASE).tst.csv
+	cat $(BASE).trn.csv $(BASE).tst.csv | lvq2agf -H $(BASE).0
 
 #we like the mnist dataset because it takes 3 days to train in LIBSVM:
 MNIST_INDICES = 33 \

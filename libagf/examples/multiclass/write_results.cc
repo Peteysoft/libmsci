@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
 
 #define MAXLL 1000
 
@@ -14,16 +15,28 @@ int main(int argc, char **argv) {
   int offset;		//offset column
   int ndata;		//number of datasets (rows)
   int *maxind;		//max value
+  int fflag=0;
+  char c;
 
-  if (argc<4) {
-    fprintf(stderr, "write_results offset ncol dataset1 [ dataset2 [ dataset3 ...]]\n");
+  while ((c=getopt(argc, argv, "F")) != -1) {
+    switch (c) {
+      case('F'): fflag=1;
+      break;
+    }
+  }
+
+  argc-=optind;
+  argv+=optind;
+
+  if (argc<3) {
+    fprintf(stderr, "write_results [-F] offset ncol dataset1 [ dataset2 [ dataset3 ...]]\n");
     return 1;
   }
 
-  offset=atof(argv[1]);
-  ncol=atof(argv[2]);
+  offset=atof(argv[0]);
+  ncol=atof(argv[1]);
 
-  ndata=argc-3;
+  ndata=argc-2;
 
   data=new float*[ndata];
   data[0]=new float[ndata*ncol];
@@ -49,7 +62,7 @@ int main(int argc, char **argv) {
 
   //fscanf(fs, "%10", name);
   for (int i=0; i<ndata; i++) {
-    fprintf(outfs, " & %s", argv[i+3]);
+    fprintf(outfs, " & %s", argv[i+2]);
   }
   fprintf(outfs, "\\\\\n");
   for (int i=0; i<ncol; i++) {
@@ -57,7 +70,11 @@ int main(int argc, char **argv) {
       //if (maxind[j]==i) {
       //  fprintf(outfs, "& $\\mathbf{%g \\pm %g}$ ", data[j][i], std[j][i]);
       //} else {
+      if (fflag) {
+        fprintf(outfs, "& $%g \\pm %g $ ", data[j][i], std[j][i]);
+      } else {
         fprintf(outfs, "& $%.3g \\pm %.1g $ ", data[j][i], std[j][i]);
+      }
       //}
     }
     fprintf(outfs, "\\\\\n");

@@ -1,4 +1,6 @@
 \begin{table}
+	\caption{Table of uncertainty coefficients for different multi-class
+	configurations and solution methods.}
 {\small
 \begin{tabular}{|ll|llllll|}
 \hline
@@ -16,32 +18,34 @@ emp. & rec. & $0.909 \pm 0.003 $ & $0.974 \pm 0.005 $ & $0.792 \pm 0.01 $ & $0.8
 \end{table}
 
 \begin{table}
+	\caption{Table of Brier scores for different multi-class configurations. All probabilities included.}
 {\small
 \begin{tabular}{|ll|llllll|}
 \hline
  method & & letter & pendigits & sat & segment & shuttle & usps\\
 \hline\hline
-1 vs 1 & inv. & $0.0479 \pm 0.001 $ & $0.0331 \pm 0.001 $ & $0.144 \pm 0.004 $ & $0.091 \pm 0.003 $ & $0.0324 \pm 0.002 $ & $0.0656 \pm 0.002 $ \\
- & iter. & $0.0836 \pm 0.001 $ & $0.0392 \pm 0.001 $ & $0.146 \pm 0.004 $ & $0.0935 \pm 0.003 $ & $0.0326 \pm 0.001 $ & $0.0677 \pm 0.002 $ \\
-hier. & iter. & $0.062 \pm 0.0009 $ & $0.0424 \pm 0.002 $ & $0.151 \pm 0.004 $ & $0.0961 \pm 0.005 $ & $0.0421 \pm 0.001 $ & $0.0734 \pm 0.003 $ \\
-emp. & iter. & $0.0545 \pm 0.0009 $ & $0.0385 \pm 0.003 $ & $0.149 \pm 0.004 $ & $0.0976 \pm 0.004 $ & $0.0378 \pm 0.001 $ & $0.07 \pm 0.002 $ \\
+1 vs 1 & inv. & $0.045 \pm 0.001 $ & $0.033 \pm 0.001 $ & $0.144 \pm 0.004 $ & $0.091 \pm 0.003 $ & $0.032 \pm 0.002 $ & $0.066 \pm 0.002 $ \\
+ & iter. & $0.084 \pm 0.001 $ & $0.0392 \pm 0.001 $ & $0.146 \pm 0.004 $ & $0.094 \pm 0.003 $ & $0.033 \pm 0.001 $ & $0.068 \pm 0.002 $ \\
+hier. & iter. & $0.0620 \pm 0.0009 $ & $0.042 \pm 0.002 $ & $0.151 \pm 0.004 $ & $0.096 \pm 0.005 $ & $0.042 \pm 0.001 $ & $0.073 \pm 0.003 $ \\
+emp. & iter. & $0.0545 \pm 0.0009 $ & $0.039 \pm 0.003 $ & $0.149 \pm 0.004 $ & $0.098 \pm 0.004 $ & $0.038 \pm 0.001 $ & $0.070 \pm 0.002 $ \\
 \hline
 \end{tabular}
 }
 \end{table}
 
 \begin{table}
+	\caption{Table of Brier scores for different multi-class configurations. Winning classes only.}
 {\small
 \begin{tabular}{|ll|llllll|}
 \hline
  method & & letter & pendigits & sat & segment & shuttle & usps\\
 \hline\hline
-1 vs 1 & inv. & $0.174 \pm 0.004 $ & $0.0753 \pm 0.003 $ & $0.244 \pm 0.007 $ & $0.168 \pm 0.006 $ & $0.0566 \pm 0.003 $ & $0.14 \pm 0.004 $ \\
- & iter. & $0.379 \pm 0.005 $ & $0.0982 \pm 0.004 $ & $0.247 \pm 0.006 $ & $0.176 \pm 0.007 $ & $0.057 \pm 0.003 $ & $0.148 \pm 0.005 $ \\
-hier. & rec. & $0.205 \pm 0.002 $ & $0.0907 \pm 0.004 $ & $0.254 \pm 0.007 $ & $0.173 \pm 0.009 $ & $0.0763 \pm 0.002 $ & $0.153 \pm 0.006 $ \\
- & iter. & $0.208 \pm 0.003 $ & $0.0916 \pm 0.004 $ & $0.255 \pm 0.007 $ & $0.174 \pm 0.01 $ & $0.0764 \pm 0.002 $ & $0.154 \pm 0.005 $ \\
-emp. & rec. & $0.183 \pm 0.004 $ & $0.0826 \pm 0.006 $ & $0.251 \pm 0.006 $ & $0.167 \pm 0.007 $ & $0.0679 \pm 0.003 $ & $0.147 \pm 0.005 $ \\
- & iter. & $0.184 \pm 0.004 $ & $0.0828 \pm 0.006 $ & $0.251 \pm 0.006 $ & $0.172 \pm 0.007 $ & $0.0679 \pm 0.003 $ & $0.148 \pm 0.004 $ \\
+1 vs 1 & inv. & $0.174 \pm 0.004 $ & $0.075 \pm 0.003 $ & $0.244 \pm 0.007 $ & $0.168 \pm 0.006 $ & $0.057 \pm 0.003 $ & $0.140 \pm 0.004 $ \\
+ & iter. & $0.379 \pm 0.005 $ & $0.098 \pm 0.004 $ & $0.247 \pm 0.006 $ & $0.176 \pm 0.007 $ & $0.057 \pm 0.003 $ & $0.148 \pm 0.005 $ \\
+hier. & rec. & $0.205 \pm 0.002 $ & $0.091 \pm 0.004 $ & $0.254 \pm 0.007 $ & $0.173 \pm 0.009 $ & $0.076 \pm 0.002 $ & $0.153 \pm 0.006 $ \\
+ & iter. & $0.208 \pm 0.003 $ & $0.092 \pm 0.004 $ & $0.255 \pm 0.007 $ & $0.174 \pm 0.01 $ & $0.076 \pm 0.002 $ & $0.154 \pm 0.005 $ \\
+emp. & rec. & $0.183 \pm 0.004 $ & $0.083 \pm 0.006 $ & $0.251 \pm 0.006 $ & $0.167 \pm 0.007 $ & $0.068 \pm 0.003 $ & $0.147 \pm 0.005 $ \\
+ & iter. & $0.184 \pm 0.004 $ & $0.083 \pm 0.006 $ & $0.251 \pm 0.006 $ & $0.172 \pm 0.007 $ & $0.068 \pm 0.003 $ & $0.148 \pm 0.004 $ \\
 \hline
 \end{tabular}
 }

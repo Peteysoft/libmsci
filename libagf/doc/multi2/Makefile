@@ -2,7 +2,7 @@ BIBFILE = ../agf_bib.bib
 
 SOURCE1 = binary_class_map.eps config1.eps rhist.eps sample_roc.eps skillvsr0.eps
 
-SOURCE2 = landclasstree.eps
+SOURCE2 = landclasstree.eps shuttle_tree.eps results.tex results2018_08_24.tex
 
 all:
 	make TARGET=constrained SOURCE="$(SOURCE1)" constrained.pdf

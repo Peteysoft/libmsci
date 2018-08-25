@@ -1,6 +1,7 @@
 \documentclass{article}
 
 \usepackage{amsmath}
+\usepackage{amsfonts}
 \usepackage[dvips]{graphicx}
 
 \usepackage{natbib}
@@ -21,18 +22,18 @@
 \section{Introduction}
 
 Many statistical classifiers can only discriminate between two classes.
-The most common examples include linear classifiers such as perceptrons and
-logistic regression classifiers \citep{Michie_etal1994} along with extensions
-such as support vector machines (SVM) \citep{Mueller_etal2001} and 
+Common examples include linear classifiers such as perceptrons and
+logistic regression classifiers \citep{Michie_etal1994} as well as extensions
+of these methods such as support vector machines (SVM) \citep{Mueller_etal2001} and 
 piecewise linear classifiers \citep{Mills2011, Bagirov2005}.
 There are many possible ways of extending a binary classifier to deal
-with multi-class classification and the number increases exponentially
+with multi-class classification and the options increase exponentially
 with the class labels.
 Moreover, the best method may well depend on the type of problem
 \citep{Dietterich_Bakiri1995,Allwein_etal2000}.
 
 The goal of this paper is not only to provide a summary of the
-best methods of solving for multiclass, but also to synthesize
+best methods of solving for multiclass, but to synthesize
 these ideas into a comprehensive framework whereby a multi-class problem
 can be solved using a broad array of configurations for the binary
 classifiers. 
@@ -43,11 +44,11 @@ This includes solving for the multi-class conditional probabilities.
 \label{description}
 
 In a statistical classication problem we are given a set of ordered pairs, 
-$\lbrace \vec x_j : y_j \rbrace$ 
+$\lbrace \vec x_j : y_j \rbrace$, of {\it training data},
 where the vector, $\vec x_j$, is the location of the {\it sample} in 
-the $D$-dimensional {\it feature space} 
-and $y_j \in [1..n_c]$ is the class of the sample
-where $n_c$ is the number of classes,
+the {\it feature space},
+$y_j \in [1..n_c]$ is the class of the sample,
+$n_c$ is the number of classes,
 and the classes are
 distributed according to an unknown conditional distribution,
 $P(c | \vec x)$ with $c \in [1..n_c]$ the class label and $\vec x$ the location
@@ -70,8 +71,10 @@ above except that the classes can only take on one of two values,
 which for convenience are chosen as either $-1$ or $+1$, 
 that is, $y_{ij} \in \lbrace -1, +1 \rbrace$.
 
-How can we partition the classes, $\lbrace y_i \rbrace$, that is create
-a mapping of the form:
+The problem under consideration in this review is, first,
+how can we partition the classes, $\lbrace y_i \rbrace$, for each binary
+classifier?
+That is we want to create a mapping of the form:
 \begin{equation}
 	y_{ij} (y_j) = \left \lbrace  \begin{array}{lr}
 -1 & | y_j \in C_i^+ \\
@@ -81,19 +84,19 @@ a mapping of the form:
 \end{equation}
 where $y_{ij}$ is the class value of $j$th sample of the transformed data 
 for trainng the $i$th binary classifier and 
-$C_i^+ \subset [1,n_c]$ is the set of classes from the original set, 
-$[1..n_c]$, that map to $+1$ while
-$C_i^- \subset [1,n_c]$ is the set of classes that map to $-1$?
+$C_i^+ \subset \lbrace 1..n_c \rbrace$ is the set of class labels from the original set,
+$\lbrace 1..n_c \rbrace$, that map to $+1$ while
+$C_i^- \subset \lbrace 1..nc \rbrace$ is the set of classes that map to $-1$.
 
-Once we have partitioned the classes
+And second, once we have partitioned the classes
 and trained the binary classifers,
-how do we solve for the conditional probabilities, $P(c|\vec x)$,
-or alternatively, directly for the most likely class:
+how do we solve for the conditional probabilities, $P(c|\vec x)$?
+Alternatively, we might be able to solve directly for the most likely class:
 %how do we solve for the most likely class, 
 \begin{equation}
 	c(\vec x)=\arg \max_i P(i | \vec x)
 \end{equation}
-?
+
 %given a test point, $\vec x$,
 %or alternatively, directly for $P(c | \vec x)$ where $c$ is either the most likely class
 %or else can be any of the classes, $c \in [1,n_c]$?
@@ -126,7 +129,8 @@ the $i$th partition
 It's more natural to describe the problem using a
 {\it coding matrix}, $A$, 
 which is structured such that
-$a_{ij} \in \lbrace -1, 0, 1 \rbrace$ where $i$ enumerates the binary classifier and
+$a_{ij} \in \lbrace -1, 0, 1 \rbrace$, 
+where $i$ enumerates the binary classifier and
 $j$ enumerates the class of the multi-class problem.
 In other words, if $a_{ij}$ is $-1$/$+1$, we would assign each of the $j$th class
 labels in the training data a value of $-1$/$+1$ when training the $i$th
@@ -167,9 +171,9 @@ we can solve for the probabilities, $\vec p$, via matrix inversion:
 Note that $Q$ reduces to $A$ if $A$ contains no zeroes \citep{Kong_Dietterich1997}.
 The case of a coding matrix that contains no zeroes, that is all the partitions divide up all the
 classes rather than a subset, will be called the {\it strict} case.
-From a computational perspective, 
+From a computational perspective, in the strict case,
 $Q$ must be regenerated for every new test point or value of $\vec r$ 
-whereas $A$ can be inverted or decomposed and then
+whereas in the non-strict case, $A$ can be inverted or decomposed and then
 applied to every subsequent value of $\vec r$.
 
 Because the decision functions, $\vec r$, are not estimated perfectly,
@@ -200,54 +204,32 @@ equation:
 	\label{normal_equation}
 \end{equation}
 Because the binary probability estimates in $\vec r$ are rarely perfect, however,
-in many cases the constraints in (\ref{normalization}) and (\ref{nonnegative}) will not be satisfied 
-so for most applications the results will need to be adjusted, reducing accuracy.
+in many cases the constraints in (\ref{normalization}) and (\ref{nonnegative}) will not be satisfied. 
+Therefore, for most applications, either the results will need to be adjusted, likely reducing accuracy, or the problem constrained.
 
-It is straightforward to incorporate the normality constraint in (\ref{normalization}) into the problem. There are at least three ways to do this. The most
-obvious is to reduce the dimensionality of the problem by one:
+It is straightforward to incorporate the normalization constraint in (\ref{normalization}) into the problem. 
+There are at several ways of doing this. The most
+obvious is to write one probability in terms of the others:
 \begin{equation}
 	p_k = 1 - \sum_{i|i \ne k} p_i
+	\label{reduce_dimension1}
 \end{equation}
-We can now rewrite the elements of the matrix, $Q$:
+And solve the following, reduced dimensional linear system:
 \begin{equation}
-	q_{ij} = a_{ij} - a_{ik} + (|a_{ij}|-|a_{ik}|)r_i | ~ j \ne k
+	\sum_j (q_{ij} - q_{ik} ) p_j = r_i - q_{ik}
+	\label{reduce_dimension2}
 \end{equation}
-and the solution vector which we'll now call $\vec b$:
-\begin{equation}
-	b_i = r_i - a_{ik} + (|a_{ik}| - 1) r_i
-\end{equation}
-Replace $\vec r$ with $\vec b$ in Equation (\ref{minimization_problem}) or (\ref{normal_equation}).
-
-A more symmetric method involves adding an extra variable similar to
-a Lagrange multiplier:
-\begin{equation}
-	\begin{bmatrix}
-		Q^T Q & \vec 1 \\
-		\vec 1 & 0
-	\end{bmatrix}
-	\begin{bmatrix}
-		\vec p\\
-		\lambda
-	\end{bmatrix}
-	= [\vec r, 1]
-\end{equation}
-where $\lambda$ is the Lagrange multiplier and $\vec 1$ is a vector of all ones.
-
-If the number of partitions is one less than the number of classes, $n_p=n_c-1$,
-the normality constraint, (\ref{normalization}), can simply be added to the 
-matrix equation in (\ref{matrix_equation2}) as a row of all ones in $Q$ and a one in an augmented $\vec r$:
-\begin{eqnarray}
-	q_{n_c+1,j} & = & 1 \\
-	r_{n_c+1} & = & 1
-\end{eqnarray}
+A more symmetric method is the Lagrange multiplier which will be
+derived in Section \ref{one_vs_one}.
+\citet{Hanson_Lawson1995} discuss at least two other methods of
+enforcing equality constraints on linear least squares problems.
 
 Since they are inequality constraints, those in (\ref{nonnegative}) are
-harder to enforce.
-The exception being the one-versus-one configuration: so long as the normality
-constraint is satisfied, the inequality constraints are also satisfied
-\citep{Wu_etal2004}.
-Methods of enforceing the inequality constraints, (\ref{nonnegative}), will
-be left to a later section.
+harder to enforce and details  will be left to a later section.
+\citet{Hanson_Lawson1995} outline several methods of applying equality
+constraints to least squares. Moreover when a Lagrange multiplier is added
+to the one-versus-one method, a basics matrix inverse generates probability
+estimates that obey the inequality constraints. See below.
 
 \subsection{Voting solution}
 
@@ -274,15 +256,15 @@ will return a different type of continuous decision function
 (that doesn't represent the difference in conditional probabilities).
 
 Here we are assuming that the decision functions return an approximation of the 
-difference in conditional probabilities of the binary classifier, hence we will once again use a
-Euclidian metric. Expanding:
+difference in conditional probabilities of the binary classifier.
+In this case a more natural choice of metric is the Euclidian. Expanding:
 \begin{equation}
-	c = \arg \min_i \left [|\vec a^{(i)}|^2 - 2 \vec a^{(i)} \cdot \vec r + |\vec r|^2 \right ]
+	c = \arg \min_i \left \lbrace |\vec a^{(i)}|^2 - 2 \vec a^{(i)} \cdot \vec r + |\vec r|^2 \right \rbrace
 \end{equation}
 The length of $\vec r$ is independent of $i$, hence it can be eliminated from the expression.
 For the strict case, the length of each column will also be constant at $|\vec a^{(i)}|=\sqrt{n_p}$.
 Even for the non-strict case, we would expect the column lengths to be close for typical coding 
-matrices. The column lengths are equal in the one-versus-one case for instance.
+matricesr; for instance, the column lengths are equal in the one-versus-one case.
 Eliminating these two terms produces a {\it voting} solution:
 \begin{equation}
 	c = \arg \max A^T \vec r
@@ -291,7 +273,7 @@ That is, if the sign of $r_i$ matches the $i$th element of the column, then a vo
 in proportion to the size of $r_i$ for the class label corresponding to the column number.
 
 A voting solution can be used for any coding matrix and 
-is especially appropriate if each $r_i$ returns on $-1$ or $+1$.  
+is especially appropriate if each $r_i$ returns only $-1$ or $+1$.  
 The LIBSVM libary, for instance, uses a one-versus-one arrangement with a voting
 solution if probabilities are not required \citep{Chang_Lin2011}.
 The disadvantage of a voting solution is
@@ -299,13 +281,13 @@ that it does not return estimates of the probabilities.
 
 \section{Common coding matrices}
 
-There are number of standard, symmetric coding matrices that are commonly used
+There are a number of standard, symmetric coding matrices that are commonly used
 to solve for multi-class.
 These include ``one-versus-the-rest'', ``one-versus-one'',
-as well as error-correcting coding matrices including orthogonal and
-random matrices.
-We discuss each of these in turn.
-We will use each of these examples to demonstrate how to solve for the
+as well as error-correcting coding matrices such as orthogonal and
+random.
+We discuss each of these in turn and
+use them to demonstrate how to solve for the
 conditional probabilities while enforcing the constraints,
 expanding out to the general solution for ``error-correcting-codes.''
 
@@ -340,6 +322,8 @@ through the use of a Lagrange multiplier. See next section.
 
 \subsection{One-versus-one}
 
+\label{one_vs_one}
+
 In a ``one-versus-one'' solution, we train each class against
 every other class. For $n_c=4$:
 \begin{equation}
@@ -363,7 +347,7 @@ Consider the following rearrangement of (\ref{non_hier}):
 We can include the normalization constraint, (\ref{normalization}), via
 a Lagrange multiplier:
 \begin{equation}
-	\min_{\vec p, \lambda} | Q \vec p + \lambda(\vec 1 \cdot \vec p - 1)|
+	\min_{\vec p, \lambda} \left \lbrace | Q \vec p | + \lambda(\vec 1 \cdot \vec p - 1) \right \rbrace
 \end{equation}
 which produces the following linear system:
 \begin{eqnarray}
@@ -386,7 +370,7 @@ An error correcting coding matrix is simply an arbitrary one.
 This is often random, but may also be carefully designed 
 \citep{Crammer_Singer2002}.
 To maximize the accuracy of an error-correcting coding matrix, 
-\citep{Allwein_etal2000, Windeatt_Ghaderi2002} show that
+\citet{Allwein_etal2000} and \citet{Windeatt_Ghaderi2002} show that
 the distance between each of the columns, $| \vec a^{(i)} - \vec a^{(j)} |$, 
 should be as large as possible,
 where $\vec a^({i})$ is the $i$th column of the matrix $A$ and $i \ne j$. 
@@ -477,52 +461,121 @@ where $j \in [1, n]$. \citep{Boyd_Vandenberghe2004}
 
 Another common coding matrix is simply an arbitrary one: this is commonly
 known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
-To solve for the probabilities using an arbitary coding matrices
-we transform the problem to an equivalent one with an orthogonal
-matrix.
-Consider the following transformation of Equation (\ref{basic_system}):
-\begin{equation}
-	V^\prime Q \vec p = V^\prime \vec r
-\end{equation}
-Next, consider the singular value decomposition of $Q$:
-\begin{equation}
-	Q = U S V^T
-\end{equation}
-where $U$ is an $[n_p \times n_c]$ orthonormal matrix, 
-$S$ is an $[n_c \times n_c]$ diagonal matrix of singular values
-and
-$V^T$ is an $[n_c \times n_c]$ orthonormal matrix.
+In principle this covers all the earliers cases, however in practice the
+term can also refer more specifically to a random coding matrix.
+We cover the solution of the general case, which includes a random
+matrix, in the next section, Section \ref{general_case_solution}.
 
-Let:
+\subsection{Deriving probabilities for generalized error-correcting codes}
+
+\label{general_case_solution}
+
+\citet{Zadrozny2001} describe the following, iterative method of solving
+for the probabilities using an arbitrary coding matrix:
+
+\begin{itemize}
+	\item For each $i=1, 2, ..., k$:
+			$\tilde p_i := \frac{\sum_j n_j a_{ji} \tilde r_j}{\sum_j n_j a_{ji}}$
+	\item $T = \sum_i \tilde p_i$; $\tilde p_i := \tilde p_i/T$
+	\item $\tilde r_j := \sum_i a_{ji} \tilde p_i/\sum_i |a_{ji}|$
+\end{itemize}
+The technique minimizes the weighted Kullback-Leibler distance rather between actual and calculated
+binary probabilities:
 \begin{equation}
-	V^\prime = S^{-1} U^T
+	l(\vec x) = \sum_{i} n_i r_i \left [ \log \frac{r_i-1}{\tilde r_i-1} - \log \frac{1-r_i}{1-\tilde r_i} \right ]
 \end{equation}
-hence,
+as opposed to the usual Euclidean distance.
+The method supplies probability estimates roughly as accurate as the others described here,
+however convergence is too slow to be useful.
+
+\subsection{Digression on quadratic optimization}
+
+Before constructing a general method of solving the constrained minimzation problem in
+(\ref{minimization_problem})-(\ref{nonnegative}), we need two general principles.
+The first are the Karesh-Kuhn-Tucker conditions \citep{Boyd_Vandenbergh2004,Lawson_Hanson1995}.
+These are the equivalent of Lagrange multipliers for inequality constraints.
+Consider the cost function, $C(\vec x)$, subject to a set of equality and inequality constraints:
+\begin{eqnarray}
+	f_i(\vec x) & = & 0 | ~ i=1..n_f \\
+	g_i(\vec x) & \ge & 0 | ~ i=1..n_g
+\end{eqnarray}
+Then the following conditions must be true:
 \begin{equation}
-	V^\prime Q = S^{-1} U^T Q = V^T
+	\nabla C + \sum_i \lambda_i \nabla f_i = \sum_i \mu_i \nabla g
 \end{equation}
-giving us:
+where $\lbrace \lambda_i \rbrace$ are the Lagrange multipliers while
+$\lbrace \mu_i \rbrace$ are the {\it slack variables}.
+The slack variables are themselves constrained:
 \begin{equation}
-	V^T \vec p = S^{-1} U^T \vec r
+	\mu_i \ge 0
+\end{equation}
+and:
+\begin{eqnarray}
+	\mu_i = 0 & \iff & g_i > 0 \\
+	\mu_i > 0 & \iff & g_i = 0 
+\end{eqnarray}
+or more succinctly:
+\begin{equation}
+	\mu_i g_i = 0
+\end{equation}
+The KKT conditions are the basis for many solution methods for constrained optimization
+problems.
+Suppose we have the minimization problem:
+\begin{equation}
+	\min_{\vec x} | Q^T Q \vec x - \vec b |
+\end{equation}
+as follows:
+\begin{eqnarray}
+	E \vec p & = & \vec f \\
+	G \vec p & \ge & \vec h
+\end{eqnarray}
+then the KKT conditions translate to:
+\begin{equation}
+	Q^T Q \vec p + \vec \lambda E = \vec \mu G + Q^T \vec r
 \end{equation}
 
-The optimization problem is:
+The second principle is that of {\it convexity}.
+The cost function we need to solve has the following, 
+convexity property:
 \begin{equation}
-	\arg \min_{\vec p} | V^T \vec p - S^{-1} U^T \vec r |
+	\gamma C(\vec x_1) + (1 - \gamma) C(\vec x_2) \le C(\gamma \vec x_1 + (1 - \gamma) \vec x_2)
 \end{equation}
-subject to the contraints in (\ref{normalization}) and (\ref{nonnegative}).
+where $0 \le \gamma \le 1$ is a  coefficient.
+Similarly, if $\vec x_1$ and $\vec x_2$ are both admissable,
+that is they fall within the constraints, then so too
+does $\gamma \vec x_1 + (1 - \gamma) \vec x_2$.
+In fact the constraints form a triangular hyper-pyramid in
+the solution space.
 
-Therefore, the solution for strict, orthogonal matrices generalizes to 
-arbitrary (non-strict, non-orthogonal) coding matrices by setting $p_0$ to the least-squares solution:
-\begin{equation}
-	\vec p_0 = V S^{-1} U^T \vec r
-\end{equation}
-or equivalently:
-\begin{equation}
-	Q^T Q \vec p_0 = Q^T \vec r
-\end{equation}
+The above two properties are used in the iterative, Lawson and Hanson 
+solution, below.
 
-[whut????]
+
+\subsection{Lawson and Hanson solution}
+
+\citet{Lawson_Hanson1995} describe an iterative solution to the following
+inequality constrained least squares problem:
+\begin{equation}
+	\min_{\vec x} | Q \vec x - \vec b |
+\end{equation}
+subject to:
+\begin{equation}
+	\vec x > \vec 0
+\end{equation}
+where $\vec 0$ is a vector of all zeroes.
+
+[plug in solution and 
+
+\citet{Lawson_Hanson1995} describe several methods of combining
+equality constraints such as the normalization constraint
+in (\ref{normalization}) with the inequality constrained
+least squares problem in (\ref{gen_least_squares})
+and (\ref{inequality2}).
+The most obvious is to repeat the variable substition
+described in Equations ( ) to ( ) until the excluded
+probability is less-than-or-equal to $p_k\le 1$.
+
+
 
 
 \section{Decision trees}
@@ -541,7 +594,7 @@ classifiers.
 Decision trees have the advantage that they are fast since on average they
 require only $\log_2 n_c$ classifications and there is no need to solve a 
 constrained matrix inverse. On the other hand, because there is less
-information being taken into consideration, they also tend to be less
+information being taken into consideration, they can be less
 accurate [citation].
 
 Interestingly, the same partitions created for a decision tree can also
@@ -594,11 +647,11 @@ How do you divide up the tree to best classify the measurements into one of thes
 A priori, it would make the most sense to first divide them by their more general grouping: field versus forest and then, once you have field, classify by type of field, or if you have forest, classify by the type of forest.
 This is illustrated in Figure \ref{landclasstree}.
 
-In this case we have prior knowledge of how the classes are related to one another,
-but in many cases, we the classes may be too abstract to have any knowledge without examining the actual training data.
+In this case we have prior knowledge of how the classes are related to one another.
+On the other hand the classes may be too abstract to have any knowledge without examining the actual training data.
 Many different methods of empirically designing both decision trees and coding matrices have been shown in the literature.
 \citet{Cheong_etal2004}, for instance, use a self-organizing-map (SOM)
-\cite{Kohonen2000} to visualize the relationship between the classes while
+\citep{Kohonen2000} to visualize the relationship between the classes while
 \citet{Lee_Oh2003} use a genetic algorithm to optimize the decision tree.
 
 \citet{Benabdeslem_Bennani2006} design the tree by measuring the distance between
@@ -611,9 +664,10 @@ That is the {\it interclass distance} between field and forest is larger.
 How does one measure the interclass distance? Fundamentally this is a the distance between two sets and there are many methods of measuring this.
 We could notate this as follows:
 \begin{eqnarray}
-	D_{ij} & = & D\left [P(\vec x|i),~P(\vec x|j)\right ] \\
+	D_{ij} & = & \mathfrak D \left \lbrace P(\vec x|i),~P(\vec x|j) \right \rbrace \\
 	       & \approx & D\left (\lbrace \vec x_k|~y_k=i \rbrace,~\lbrace \vec x_k|~y_k=j\rbrace \right )
 \end{eqnarray}
+where $\mathfrak D$ is a distance operator between two distributions and $D$ is a distance operator between two sets.
 
 Consider the square of the distance between the means of the two classes divided by their standard deviations. Let:
 \begin{equation}
@@ -641,12 +695,8 @@ D_{Hij} = \max \left \lbrace \min_k \max_l | \vec x_k - \vec x_l|~,~\min_l \max_
 
 \section{Unifying framework}
 
-Despite the restrictions placed on the problem in Section \ref{description}
--- that the decision functions must approximate the difference in conditional
-probabilities and that the classifier must return the conditional probability
-of the winning class at minimum -- it's apparent that there are still 
-very many ways of solving the multi-class classification problem.
-Here we present a descriptive control language that unifies many of the ideas
+Since there are many ways of solving the multi-class classification problem,
+we presenti here a descriptive control language that unifies many of the ideas
 presented in the previous sections.
 This is not a "one-size-fits-all" solution, but rather a means of specifying
 a particular partitioning that best suits the problem at hand.
@@ -664,7 +714,7 @@ $<$partition$>$ & ::= & $<$TWOCLASS$>$ $<$class-list$>$ `` / '' $<$class-list$>$
 $<$class-list$>$ & ::= & $<$CLASS$>$ $|$ $<$class-list$>$ `` '' $<$CLASS$>$
 \end{tabular}.
 
-$<$CLASS$>$ is a class value between 0 and $n_c-1$.  It is used in two senses.
+where $<$CLASS$>$ is a class value between 0 and $n_c-1$.  It is used in two senses.
 It may be one of the class values in a partition in a non-hierarchical model.
 In this case it's value is relative, that is local to the non-hierarchical model.
 It may also be the class value returned
@@ -700,9 +750,9 @@ like this:
 A hierarchical specification might look like this:
 
 \begin{verbatim}
-  model0 {
-    model00 {0 1}
-    model01 {2 3}
+  TreeVsField {
+    EvergreenVsDeciduous {0 1}
+    CornVsWheat {2 3}
   }
 \end{verbatim}
 
@@ -731,27 +781,27 @@ as in the following, nine-class example:
   }
 \end{verbatim}
 
-To demonstrate how this feature might be useful, this is another hypothetical 
+To demonstrate how this feature might be useful, the above another hypothetical 
 surface-classification problem with the key as follows:
-\begin{enumerate}
-	\item Deciduous forest
-	\item Evergreen forest
-	\item Shrubs
-	\item Corn field
-	\item Wheat field
-	\item Legume field
-	\item Freshwater
-	\item Saltwater
-	\item Marsh
-\end{enumerate}
+
+\begin{tabular}{ll}
+	0 & Deciduous forest \\
+	1 & Evergreen forest \\
+	2 & Shrubs \\
+	3 & Corn field \\
+	4 & Wheat field \\
+	5 & Legume field \\
+	6 & Freshwater \\
+	7 & Saltwater \\
+	8 & Marsh
+\end{tabular}
 
 \section{Numerical trials}
 
 We wish to test a synthesis of the ideas contained in this review on some real
 datasets.
-To this end, will test five different datasets using three configurations 
-solved using two methods each--the ``standard'', proven method as given
-in earlier in the text and
+To this end, we will test five different datasets using three configurations 
+solved using two methods each--the ``standard'', proven method and
 the general solution given in Section \ref{orthogonal}.
 The configurations are: one-vs-one, an arbitray tree, and a tree generated
 from a bottom-up dendrogram using the Hausdorf metric.
@@ -851,6 +901,12 @@ shuttle/shuttle_emp
 }
 \end{verbatim}
 
+\begin{figure}
+	\includegraphics[width=\textwidth]{shuttle_tree.eps}
+	\caption{Multiclass decision trees for the shuttle dataset. 
+	In (a) we rank them mechanically whereas in (b) the tree is a dendrogram based on the Hausdorff distance between each class.}\label{shuttle_tree}
+\end{figure}
+
 Note that the shuttle dataset is very unbalanced, 
 hence  the tree looks more like a chain: see Figure \ref{shuttle_tree}.
 To solve the hierarchical models using the method in Section \ref{orthogonal}, hierarchical models were first translated to non-hierarchical.
@@ -923,8 +979,9 @@ B=\sqrt{\frac{1}{n} \sum_{i=1}^{n} \sum_{j=1}^{n_c} \left ( \tilde p_{ij} - \del
 \end{equation}
 where $n$ is the number of test samples.
 
-\input{results}
+\section{Results and discussion}
 
+\input{results2018_08_24.tex}
 
 \bibliography{../agf_bib,multi2,../svm_accel/svm_accel,../pwl}
 

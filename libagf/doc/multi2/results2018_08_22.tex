@@ -1,0 +1,106 @@
+\begin{table}
+        \caption{Table of uncertainty coefficients for different multi-class
+        configurations and solution methods. Character recognition datasets.}
+\begin{tabular}{|ll|lll|}
+\hline
+config. & method & letter & pendigits & usps \\
+\hline \hline
+1 vs. 1 & inverse & $0.939 \pm 0.004 $ & $0.985 \pm 0.002 $ & $0.935 \pm 0.007 $ \\
+1 vs. rest& lsq. & $0.932 \pm 0.004 $ & $0.984 \pm 0.002 $ & $0.929 \pm 0.007 $ \\
+ortho. & lsq. & $0.921 \pm 0.004 $ & $0.982 \pm 0.002 $ & $0.928 \pm 0.007 $ \\
+adj. & lsq. & $0.884 \pm 0.005 $ & $0.973 \pm 0.003 $ & $0.91 \pm 0.009 $ \\
+hier. & rec. & $0.877 \pm 0.004 $ & $0.972 \pm 0.004 $ & $0.911 \pm 0.01 $ \\
+& lsq. & $0.885 \pm 0.003 $ & $0.974 \pm 0.004 $ & $0.914 \pm 0.01 $ \\
+emp & rec. & $0.907 \pm 0.005 $ & $0.979 \pm 0.003 $ & $0.919 \pm 0.008 $ \\
+& lsq. & $0.91 \pm 0.004 $ & $0.979 \pm 0.003 $ & $0.921 \pm 0.007 $ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+        \caption{Table of uncertainty coefficients for different multi-class
+        configurations and solution methods.}
+\begin{tabular}{|ll|llll|}
+\hline
+config. & method & sat & segment & shuttle & humidity\\
+\hline \hline
+1 vs. 1 & inverse & $0.802 \pm 0.009 $ & $0.926 \pm 0.009 $ & $0.979 \pm 0.002 $ & $0.436 \pm 0.005 $ \\
+1 vs. rest& lsq. & $0.799 \pm 0.01 $ & $0.925 \pm 0.01 $ & $0.977 \pm 0.002 $ & $0.361 \pm 0.006 $ \\
+ortho. & lsq.  & $0.8 \pm 0.01 $ & $0.927 \pm 0.01 $ & $0.973 \pm 0.002 $ & $0.403 \pm 0.006 $ \\
+adj. & lsq. & $0.793 \pm 0.01 $ & $0.917 \pm 0.01 $ & $0.969 \pm 0.004 $ & $0.453 \pm 0.007 $ \\
+hier. & rec. & $0.787 \pm 0.01 $ & $0.91 \pm 0.01 $ & $0.972 \pm 0.002 $ & $0.439 \pm 0.006 $ \\
+& lsq. & $0.791 \pm 0.01 $ & $0.911 \pm 0.01 $ & $0.971 \pm 0.002 $ & $0.439 \pm 0.006 $ \\
+emp & rec. & $0.791 \pm 0.01 $ & $0.905 \pm 0.01 $ & $0.976 \pm 0.003 $ & $0.444 \pm 0.008 $ \\
+& lsq. & $0.792 \pm 0.01 $ & $0.913 \pm 0.01 $ & $0.974 \pm 0.003 $ & $0.443 \pm 0.007 $ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+        \caption{Table of Brier scores for different multi-class configurations. Character recognition datasets. All probabilities included.}
+\begin{tabular}{|l|lll|}
+\hline
+config. & letter & pendigits & usps \\
+\hline \hline
+1 vs. 1 & $0.0485 \pm 0.001 $ & $0.0313 \pm 0.002 $ & $0.0647 \pm 0.003 $ \\
+1 vs. rest & $0.0524 \pm 0.001 $ & $0.0341 \pm 0.002 $ & $0.069 \pm 0.003 $ \\
+ortho & $0.0588 \pm 0.001 $ & $0.0367 \pm 0.001 $ & $0.0696 \pm 0.003 $ \\
+adj. & $0.0643 \pm 0.001 $ & $0.0402 \pm 0.002 $ & $0.0762 \pm 0.003 $ \\
+hier. & $0.0629 \pm 0.0009 $ & $0.0388 \pm 0.003 $ & $0.0733 \pm 0.004 $ \\
+emp. & $0.0552 \pm 0.001 $ & $0.035 \pm 0.003 $ & $0.0697 \pm 0.003 $ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+        \caption{Table of Brier scores for different multi-class configurations. All probabilities included.}
+\begin{tabular}{|l|llll|}
+\hline
+config. & sat & segment & shuttle & humidity\\
+\hline \hline
+1 vs. 1 & $0.144 \pm 0.004 $ & $0.0877 \pm 0.005 $ & $0.0188 \pm 0.0009 $ & $0.259 \pm 0.001 $ \\
+1 vs. rest & $0.148 \pm 0.004 $ & $0.0901 \pm 0.005 $ & $0.0212 \pm 0.001 $ & $0.275 \pm 0.001 $ \\
+ortho & $0.148 \pm 0.003 $ & $0.0883 \pm 0.004 $ & $0.0224 \pm 0.0008 $ & $0.268 \pm 0.0009 $ \\
+adj. & $0.152 \pm 0.004 $ & $0.0931 \pm 0.006 $ & $0.0255 \pm 0.001 $ & $0.264 \pm 0.002 $ \\
+hier. & $0.15 \pm 0.004 $ & $0.0939 \pm 0.006 $ & $0.0238 \pm 0.0009 $ & $0.259 \pm 0.001 $ \\
+emp. & $0.148 \pm 0.004 $ & $0.0924 \pm 0.005 $ & $0.023 \pm 0.001 $ & $0.26 \pm 0.002 $\\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+        \caption{Table of Brier scores for different multi-class configurations. Character recognition datasets. Winning classes only.}
+\begin{tabular}{|ll|lll|}
+\hline
+ config. & method & letter & pendigits & usps \\
+\hline\hline
+1 vs. 1 & inv. & $0.177 \pm 0.003 $ & $0.0704 \pm 0.004 $ & $0.14 \pm 0.005 $ \\
+1 vs. rest & lsq. & $0.188 \pm 0.004 $ & $0.08 \pm 0.004 $ & $0.15 \pm 0.006 $ \\
+ortho. & lsq. & $0.214 \pm 0.003 $ & $0.0841 \pm 0.003 $ & $0.152 \pm 0.005 $ \\
+adj. & lsq. & $0.212 \pm 0.004 $ & $0.0855 \pm 0.005 $ & $0.157 \pm 0.006 $ \\
+hier. & rec. & $0.207 \pm 0.003 $ & $0.0829 \pm 0.007 $ & $0.154 \pm 0.007 $ \\
+& lsq. & $0.211 \pm 0.003 $ & $0.0837 \pm 0.007 $ & $0.155 \pm 0.006 $ \\
+emp & rec. & $0.185 \pm 0.004 $ & $0.0748 \pm 0.005 $ & $0.146 \pm 0.006 $ \\
+& lsq. & $0.187 \pm 0.004 $ & $0.0751 \pm 0.005 $ & $0.147 \pm 0.007 $ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+        \caption{Table of Brier scores for different multi-class configurations. Winning classes only.}
+\begin{tabular}{|ll|llll|}
+\hline
+ config. & method & sat & segment & shuttle & humidity \\
+\hline\hline
+1 vs. 1 & inv. & $0.244 \pm 0.007 $ & $0.161 \pm 0.01 $ & $0.0338 \pm 0.002 $ & $0.434 \pm 0.003 $ \\
+1 vs. rest & lsq. & $0.249 \pm 0.006 $ & $0.169 \pm 0.01 $ & $0.0375 \pm 0.003 $ & $0.419 \pm 0.005 $ \\
+ortho. & lsq. & $0.25 \pm 0.006 $ & $0.164 \pm 0.009 $ & $0.04 \pm 0.002 $ & $0.433 \pm 0.004 $ \\
+adj. & lsq. & $0.253 \pm 0.006 $ & $0.17 \pm 0.01 $ & $0.0454 \pm 0.002 $ & $0.448 \pm 0.003 $ \\
+hier. & rec. & $0.251 \pm 0.007 $ & $0.17 \pm 0.01 $ & $0.0431 \pm 0.002 $ & $0.436 \pm 0.002 $ \\
+& lsq. & $0.252 \pm 0.006 $ & $0.17 \pm 0.01 $ & $0.0431 \pm 0.002 $ & $0.435 \pm 0.003 $ \\
+emp & rec. & $0.248 \pm 0.007 $ & $0.16 \pm 0.008 $ & $0.0404 \pm 0.003 $ & $0.434 \pm 0.006 $ \\
+& lsq. & $0.249 \pm 0.008 $ & $0.164 \pm 0.007 $ & $0.0414 \pm 0.002 $ & $0.435 \pm 0.006 $ \\
+\hline
+\end{tabular}
+\end{table}
+
