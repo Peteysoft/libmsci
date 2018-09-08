@@ -1,0 +1,181 @@
+\begin{table}
+	\caption{Training times in seconds for the first four datasets for six different multi-class configurations.}\label{training1}
+\begin{tabular}{|l|llll|}
+\hline
+config. & letter & pendigits & usps & segment \\
+\hline\hline
+1 vs. 1 & $157 \pm 2 $ & $14.4 \pm 0.2 $ & $244 \pm 11 $ & $2.06 \pm 0.05 $ \\
+1 vs. rest & $322 \pm 15 $ & $25 \pm 1 $ & $344 \pm 43 $ & $2.50 \pm 0.07 $ \\
+ortho. & $3776 \pm 139 $ & $76 \pm 2 $ & $939 \pm 111 $ & $4.21 \pm 0.08 $ \\
+adj. & $2021 \pm 43 $ & $42.9 \pm 0.7 $ & $568 \pm 56 $ & $2.51 \pm 0.07 $ \\
+	hier. & $197 \pm 6 $ & $10.6 \pm 0.5 $ & $169 \pm 12 $ & $\mathbf{1.27 \pm 0.03}$ \\
+	emp. & $\mathbf{111 \pm 5} $ & $\mathbf{10 \pm 1} $ & $\mathbf{146 \pm 16} $ & $1.38 \pm 0.03 $ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+\caption{Training times in seconds for the last four datasets for six different multi-class configurations.}
+\begin{tabular}{|l|llll|}
+\hline
+config. & sat & urban & shuttle & humidity\\
+\hline\hline
+	1 vs. 1 & $11.6 \pm 0.2 $ & $6.30 \pm 0.04 $ & $87 \pm 4 $ & $\mathbf{32.7 \pm 0.5}$ \\
+1 vs. rest & $30 \pm 2 $ & $4.4 \pm 0.3 $ & $161 \pm 7 $ & $566 \pm 19 $ \\
+ortho. & $57 \pm 4 $ & $8.8 \pm 0.6 $ & $297 \pm 14 $ & $420 \pm 108 $ \\
+adj. & $29 \pm 2 $ & $4.8 \pm 0.2 $ & $215 \pm 7 $ & $94 \pm 4 $ \\
+	hier. & $11.3 \pm 0.4 $ & $\mathbf{2.13 \pm 0.03}$ & $78 \pm 3 $ & $37 \pm 1$ \\
+	emp. & $\mathbf{11.1 \pm 0.8}$ & $2.37 \pm 0.04 $ & $\mathbf{67 \pm 4}$ & $47 \pm 7 $ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+\caption{Classification times in seconds for the first four datasets for eight different multi-class configurations and solution methods.}
+\begin{tabular}{|ll|llll|}
+\hline
+config. & method & letter & pendigits & usps & segment \\
+\hline\hline
+1 vs. 1 & inv. & $10.9 \pm 0.9 $ & $0.49 \pm 0.01 $ & $10.3 \pm 0.9 $ & $0.057 \pm 0.005 $ \\
+1 vs. rest & lsq. & $3.50 \pm 0.08 $ & $0.32 \pm 0.01 $ & $7.4 \pm 0.5 $ & $0.035 \pm 0.005 $ \\
+ortho. & iter. & $12 \pm 2 $ & $0.89 \pm 0.08 $ & $20 \pm 2 $ & $0.035 \pm 0.005 $ \\
+adj. & lsq. & $7.2 \pm 0.6 $ & $0.50 \pm 0.01 $ & $12.2 \pm 0.9 $ & $0.033 \pm 0.005 $ \\
+	hier. & rec. & $1.40 \pm 0.04 $ & $0.120 \pm 0.006 $ & $3.7 \pm 0.3 $ & $\mathbf{0.016 \pm 0.005}$ \\
+ & lsq. & $3.02 \pm 0.08 $ & $0.25 \pm 0.01 $ & $5.7 \pm 0.4 $ & $0.030 \pm 0.005 $ \\
+	emp. & rec. & $\mathbf{1.19 \pm 0.04}$ & $\mathbf{0.10 \pm 0.02}$ & $\mathbf{3.0 \pm 0.3}$ & $0.017 \pm 0.005 $ \\
+& lsq. & $2.73 \pm 0.08 $ & $0.22 \pm 0.01 $ & $5.2 \pm 0.4 $ & $0.03 \pm 5e-06 $ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+\caption{Classification times in seconds for the last four datasets for eight different multi-class configurations and solution methods.}
+\begin{tabular}{|ll|llll|}
+\hline
+config. & method & sat & urban & shuttle & humidity \\
+\hline\hline
+1 vs. 1 & inv. & $0.43 \pm 0.02 $ & $0.077 \pm 0.005 $ & $2.6 \pm 0.1 $ & $1.24 \pm 0.06 $ \\
+1 vs. rest & lsq. & $0.40 \pm 0.01 $ & $0.059 \pm 0.003 $ & $2.3 \pm 0.2 $ & $1.06 \pm 0.03 $ \\
+ortho. & iter. & $0.45 \pm 0.02 $ & $0.070 \pm 0.007 $ & $3.0 \pm 0.1 $ & $1.30 \pm 0.06 $ \\
+adj. & lsq. & $0.364 \pm 0.008 $ & $0.057 \pm 0.005 $ & $2.55 \pm 0.08 $ & $0.94 \pm 0.02 $ \\
+	hier. & rec. & $\mathbf{0.210 \pm 0.008}$ & $\mathbf{0.041 \pm 0.003}$ & $1.26 \pm 0.02 $ & $\mathbf{0.44 \pm 0.02}$ \\
+ & lsq. & $0.321 \pm 0.007 $ & $0.054 \pm 0.005 $ & $1.68 \pm 0.04 $ & $0.84 \pm 0.02 $ \\
+	emp. & rec. & $0.21 \pm 0.01 $ & $0.043 \pm 0.005 $ & $\mathbf{1.09 \pm 0.09}$ & $0.50 \pm 0.03 $ \\
+& lsq. & $0.323 \pm 0.007 $ & $0.054 \pm 0.005 $ & $1.60 \pm 0.07 $ & $0.85 \pm 0.03 $ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+\caption{Uncertainty coefficients for the first four datasets for eight different multi-class configurations and solution methods.}
+\begin{tabular}{|ll|llll|}
+\hline
+config. & method & letter & pendigits & usps & segment \\
+\hline\hline
+	1 vs. 1 & inv. & $\mathbf{0.940 \pm 0.002}$ & $\mathbf{0.986 \pm 0.003}$ & $\mathbf{0.931 \pm 0.009}$ & $0.922 \pm 0.010 $ \\
+1 vs. rest & lsq. & $0.932 \pm 0.003 $ & $0.982 \pm 0.004 $ & $0.928 \pm 0.007 $ & $0.921 \pm 0.010 $ \\
+	ortho. & iter. & $0.922 \pm 0.003^*$ & $0.982 \pm 0.003 $ & $0.927 \pm 0.008 $ & $\mathbf{0.923 \pm 0.010}$ \\
+adj. & lsq. & $0.886 \pm 0.005 $ & $0.971 \pm 0.004 $ & $0.906 \pm 0.008 $ & $0.913 \pm 0.010 $ \\
+hier & rec. & $0.880 \pm 0.004 $ & $0.972 \pm 0.004 $ & $0.910 \pm 0.007 $ & $0.909 \pm 0.008 $ \\
+& lsq. & $0.888 \pm 0.004 $ & $0.973 \pm 0.004 $ & $0.912 \pm 0.007 $ & $0.909 \pm 0.008 $ \\
+emp. & rec. & $0.905 \pm 0.003 $ & $0.979 \pm 0.003 $ & $0.917 \pm 0.008 $ & $0.903 \pm 0.006 $ \\
+& lsq. & $0.910 \pm 0.003 $ & $0.979 \pm 0.004 $ & $0.920 \pm 0.010 $ & $0.909 \pm 0.007 $ \\
+\hline
+\end{tabular}
+	\vspace{1 ex}
+
+	$^*$ A random coding matrix was used since building an orthogonal matrix would take too long using current methods.
+\end{table}
+
+\begin{table}
+\caption{Uncertainty coefficients for the last four datasets for eight different multi-class configurations and solution methods.}
+\begin{tabular}{|ll|llll|}
+\hline
+config. & method & sat & urban & shuttle & humidity\\
+\hline\hline
+	1 vs. 1 & inv. & $\mathbf{0.800 \pm 0.010}$ & $0.729 \pm 0.030 $ & $\mathbf{0.982 \pm 0.003}$ & $0.432 \pm 0.006 $ \\
+1 vs. rest & lsq. & $0.799 \pm 0.009 $ & $0.728 \pm 0.030 $ & $0.979 \pm 0.003 $ & $0.359 \pm 0.007 $ \\
+ortho. & iter. & $0.798 \pm 0.010 $ & $0.730 \pm 0.030 $ & $0.974 \pm 0.002 $ & $0.403 \pm 0.009 $ \\
+	adj. & lsq. & $0.792 \pm 0.010 $ & $\mathbf{0.735 \pm 0.030}$ & $0.970 \pm 0.002 $ & $\mathbf{0.448 \pm 0.006}$ \\
+hier & rec. & $0.788 \pm 0.010 $ & $0.724 \pm 0.030 $ & $0.974 \pm 0.003 $ & $0.435 \pm 0.006 $ \\
+& lsq. & $0.789 \pm 0.010 $ & $0.727 \pm 0.030 $ & $0.973 \pm 0.002 $ & $0.433 \pm 0.007 $ \\
+emp. & rec. & $0.790 \pm 0.009 $ & $0.702 \pm 0.050 $ & $0.977 \pm 0.004 $ & $0.440 \pm 0.008 $ \\
+& lsq. & $0.795 \pm 0.010 $ & $0.714 \pm 0.040 $ & $0.975 \pm 0.003 $ & $0.437 \pm 0.008 $ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+\caption{Brier scores for the first four datasets for six different multi-class configurations.}
+\begin{tabular}{|l|llll|}
+\hline
+config. & letter & pendigits & usps & segment \\
+\hline\hline
+	1 vs. 1 & $\mathbf{0.0480 \pm 0.0008}$ & $\mathbf{0.032 \pm 0.002}$ & $\mathbf{0.066 \pm 0.003}$ & $0.090 \pm 0.005 $ \\
+1 vs. rest & $0.0519 \pm 0.0007 $ & $0.035 \pm 0.002 $ & $0.070 \pm 0.003 $ & $0.092 \pm 0.004 $ \\
+	ortho. & $0.0587 \pm 0.0006^*$ & $0.037 \pm 0.002 $ & $0.070 \pm 0.003 $ & $\mathbf{0.090 \pm 0.006}$ \\
+adj. & $0.063 \pm 0.001 $ & $0.042 \pm 0.002 $ & $0.077 \pm 0.003 $ & $0.093 \pm 0.007 $ \\
+hier. & $0.062 \pm 0.001 $ & $0.040 \pm 0.002 $ & $0.075 \pm 0.003 $ & $0.095 \pm 0.005 $ \\
+emp. & $0.0553 \pm 0.0008 $ & $0.035 \pm 0.003 $ & $0.071 \pm 0.004 $ & $0.094 \pm 0.003 $ \\
+\hline
+\end{tabular}
+	\vspace{1 ex}
+
+	$^*$ A random coding matrix was used.
+\end{table}
+
+\begin{table}
+\caption{Brier scores for the last four datasets for six different multi-class configurations.}
+\begin{tabular}{|l|llll|}
+\hline
+config. & sat & urban & shuttle & humidity\\
+\hline\hline
+	1 vs. 1 & $\mathbf{0.145 \pm 0.004}$ & $0.170 \pm 0.006 $ & $0.018 \pm 0.001 $ & $\mathbf{0.259 \pm 0.001}$ \\
+	1 vs. rest & $0.149 \pm 0.003 $ & $0.171 \pm 0.007 $ & $\mathbf{0.012 \pm 0.001}$ & $0.2750 \pm 0.0009 $ \\
+ortho. & $0.149 \pm 0.003 $ & $0.172 \pm 0.005 $ & $0.022 \pm 0.001 $ & $0.268 \pm 0.002 $ \\
+	adj. & $0.152 \pm 0.004 $ & $\mathbf{0.167 \pm 0.008}$ & $0.0248 \pm 0.0007 $ & $0.264 \pm 0.002 $ \\
+hier. & $0.150 \pm 0.004 $ & $0.167 \pm 0.007 $ & $0.023 \pm 0.001 $ & $0.259 \pm 0.001 $ \\
+emp. & $0.149 \pm 0.004 $ & $0.173 \pm 0.008 $ & $0.022 \pm 0.001 $ & $0.261 \pm 0.002 $ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+\caption{Brier scores for the first four datasets for eight different multi-class configurations and solution methods. Winning classes only.}
+\begin{tabular}{|ll|llll|}
+\hline
+config. & method & letter & pendigits & usps & segment \\
+\hline\hline
+	1 vs. 1 & inv. & $\mathbf{0.175 \pm 0.004}$ & $\mathbf{0.072 \pm 0.004}$ & $\mathbf{0.140 \pm 0.007}$ & $0.16 \pm 0.01 $ \\
+1 vs. rest & lsq. & $0.186 \pm 0.004 $ & $0.079 \pm 0.002 $ & $0.149 \pm 0.008 $ & $0.17 \pm 0.01 $ \\
+	ortho. & iter. & $0.214 \pm 0.003^*$ & $0.086 \pm 0.004 $ & $0.152 \pm 0.006 $ & $\mathbf{0.16 \pm 0.01}$ \\
+adj. & lsq. & $0.209 \pm 0.003 $ & $0.088 \pm 0.003 $ & $0.158 \pm 0.007 $ & $0.17 \pm 0.01 $ \\
+hier. & rec. & $0.205 \pm 0.003 $ & $0.085 \pm 0.004 $ & $0.156 \pm 0.007 $ & $0.17 \pm 0.01 $ \\
+& lsq. & $0.208 \pm 0.003 $ & $0.085 \pm 0.004 $ & $0.157 \pm 0.007 $ & $0.17 \pm 0.01 $ \\
+emp. & rec. & $0.184 \pm 0.004 $ & $0.076 \pm 0.006 $ & $0.15 \pm 0.01 $ & $0.162 \pm 0.009 $ \\
+& lsq. & $0.187 \pm 0.003 $ & $0.076 \pm 0.006 $ & $0.15 \pm 0.01 $ & $0.165 \pm 0.009 $ \\
+\hline
+\end{tabular}
+	\vspace{1 ex}
+
+	$^*$ A random coding matrix was used.
+\end{table}
+
+\begin{table}
+	\caption{Brier scores for the first four datasets for eight different multi-class configurations and solution methods. Winning classes only.}\label{Brier4}
+\begin{tabular}{|ll|llll|}
+\hline
+config. & method & sat & urban & shuttle & humidity\\
+\hline\hline
+	1 vs. 1 & inv. & $\mathbf{0.246 \pm 0.006}$ & $0.353 \pm 0.009 $ & $\mathbf{0.032 \pm 0.002}$ & $0.433 \pm 0.003 $ \\
+	1 vs. rest & lsq. & $0.250 \pm 0.004 $ & $0.34 \pm 0.01 $ & $0.036 \pm 0.002 $ & $\mathbf{0.419 \pm 0.005}$ \\
+ortho. & iter. & $0.251 \pm 0.005 $ & $0.352 \pm 0.007 $ & $0.039 \pm 0.002 $ & $0.434 \pm 0.004 $ \\
+adj. & lsq. & $0.255 \pm 0.006 $ & $0.34 \pm 0.01 $ & $0.0442 \pm 0.002 $ & $0.448 \pm 0.003 $ \\
+	hier. & rec. & $0.253 \pm 0.006 $ & $\mathbf{0.34 \pm 0.01}$ & $0.0416 \pm 0.002 $ & $0.434 \pm 0.002 $ \\
+& lsq. & $0.254 \pm 0.006 $ & $0.34 \pm 0.01 $ & $0.042 \pm 0.002 $ & $0.434 \pm 0.002 $ \\
+emp. & rec. & $0.251 \pm 0.006 $ & $0.35 \pm 0.01 $ & $0.040 \pm 0.003 $ & $0.432 \pm 0.004 $ \\
+& lsq. & $0.252 \pm 0.006 $ & $0.35 \pm 0.01 $ & $0.041 \pm 0.002 $ & $0.432 \pm 0.004 $ \\
+\hline
+\end{tabular}
+\end{table}
+
