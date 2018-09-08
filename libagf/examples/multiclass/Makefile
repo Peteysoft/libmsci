@@ -64,7 +64,7 @@ MODEL=$(BASE)_$(TYPE)
 CLASSCONTROL_1v1_inv = $(BASE)_1v1
 CLASSCONTROL_1v1_iter = $(BASE)_1v1
 CLASSCONTROL_1vR_iter = $(BASE)_1vR
-CLASSCONTROL_ortho_iter = $(BASE)_ortho
+CLASSCONTROL_ortho_ortho = $(BASE)_ortho
 CLASSCONTROL_adj_iter = $(BASE)_adj
 #for hierarchical classification there are different control files depending
 #on the solution method
@@ -123,6 +123,7 @@ TRAINCODE=$(TRAINCODE_$(TYPE))
 TESTCODEinv=5
 TESTCODEiter=16
 TESTCODErec=0
+TESTCODEortho=8
 
 TESTCODE=$(TESTCODE$(SOL))
 
@@ -165,7 +166,7 @@ TESTTIME=$(RESULT).testtime
 all:
 	make $(BASE)_1v1_inv.txt TYPE=1v1 SOL=inv
 	make $(BASE)_1vR_iter.txt TYPE=1vR SOL=iter
-	make $(BASE)_ortho_iter.txt TYPE=ortho SOL=iter
+	make $(BASE)_ortho_ortho.txt TYPE=ortho SOL=ortho
 	make $(BASE)_adj_iter.txt TYPE=adj SOL=iter
 	#make $(BASE)_1v1_iter.txt TYPE=1v1 SOL=iter
 	make $(BASE)_hier_rec.txt TYPE=hier SOL=rec
@@ -180,9 +181,9 @@ all:
 	echo -n " " >> $(STATFILE)
 	grep -o "[0-9]*\.[0-9]*" $(BASE)_1vR_iter.traintime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	grep -o "[0-9]*\.[0-9]*" $(BASE)_ortho_iter.traintime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_ortho_ortho.traintime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	grep -o "[0-9]*\.[0-9]*" $(BASE)_ortho_iter.traintime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_ortho_ortho.traintime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
 	grep -o "[0-9]*\.[0-9]*" $(BASE)_adj_iter.traintime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
@@ -204,9 +205,9 @@ all:
 	echo -n " " >> $(STATFILE)
 	grep -o "[0-9]*\.[0-9]*" $(BASE)_1vR_iter.testtime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	grep -o "[0-9]*\.[0-9]*" $(BASE)_ortho_iter.testtime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_ortho_ortho.testtime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	grep -o "[0-9]*\.[0-9]*" $(BASE)_ortho_iter.testtime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE)_ortho_ortho.testtime | sed '2q;d' | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
 	grep -o "[0-9]*\.[0-9]*" $(BASE)_adj_iter.testtime | sed '1q;d' | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
@@ -232,7 +233,7 @@ all:
 	echo -n " " >> $(STATFILE)
 	cls_comp_stats -Hb $(TEST).cls $(BASE)_1vR_iter | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	cls_comp_stats -Hb $(TEST).cls $(BASE)_ortho_iter | tr -d '\n' >> $(STATFILE)
+	cls_comp_stats -Hb $(TEST).cls $(BASE)_ortho_ortho | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
 	cls_comp_stats -Hb $(TEST).cls $(BASE)_adj_iter | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
@@ -250,7 +251,7 @@ all:
 	echo -n " " >> $(STATFILE)
 	validate_probabilities -BH $(TEST).cls $(BASE)_1vR_iter.txt | tr '\n' ' ' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	validate_probabilities -BH $(TEST).cls $(BASE)_ortho_iter.txt | tr '\n' ' ' >> $(STATFILE)
+	validate_probabilities -BH $(TEST).cls $(BASE)_ortho_ortho.txt | tr '\n' ' ' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
 	validate_probabilities -BH $(TEST).cls $(BASE)_adj_iter.txt | tr '\n' ' ' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
@@ -264,7 +265,7 @@ all:
 	echo -n " " >> $(STATFILE)
 	validate_probabilities -Bb $(TEST).cls $(BASE)_1vR_iter | tr '\n' ' ' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	validate_probabilities -Bb $(TEST).cls $(BASE)_ortho_iter | tr '\n' ' ' >> $(STATFILE)
+	validate_probabilities -Bb $(TEST).cls $(BASE)_ortho_ortho | tr '\n' ' ' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
 	validate_probabilities -Bb $(TEST).cls $(BASE)_adj_iter | tr '\n' ' ' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)

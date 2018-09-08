@@ -182,10 +182,15 @@ int cluster_node<leaf_t, metric_t>::split(cluster_node<leaf_t, metric_t> **root,
 
 }
 
+//converts "flat" ordering of distance triangle into 2-D coord:
 void trimat_coord(int n, int &j, int &k) {
   j=(-1.+sqrt(1.+8.*n))/2.;
   k=n - (j+1)*j/2;
   j++;
+}
+
+int trimat_coord(int j, int k) {
+  return j*(j-1)/2+k;
 }
 
 template <class real, class cls_t>

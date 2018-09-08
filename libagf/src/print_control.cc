@@ -18,6 +18,14 @@ int main(int argc, char **argv) {
   char **name=NULL;		//list of binary classifiers
   cls_ta *label=NULL;		//list of class labels
 
+  //for empirically designed multi-class models:
+  nel_ta ntrain;		//number of training samples
+  dim_ta D;			//dimensionality of problem
+  real_a **x=NULL;		//features data
+  cls_ta *cls=NULL;		//class data
+  real_a *d=NULL;		//Hausdorff distance btw. all pairs of classes
+				//(upper or lower triangular?)
+
   opt_args.Qtype=0;
   err=agf_parse_command_opts(argc, argv, "Q:GnS:Yy:", &opt_args);
   if (err!=0) exit(err);
@@ -45,12 +53,45 @@ int main(int argc, char **argv) {
     exit(0);
   }
 
-  if (opt_args.Qtype!=6 && opt_args.Qtype!=9) {
+  if (opt_args.Qtype!=6 && opt_args.Qtype!=9 && opt_args.Qtype!=12) {
     err=sscanf(argv[0], "%d", &n);
     if (err!=1) {
       fprintf(stderr, "print_control: error parsing command line first argument\n");
       exit(COMMAND_OPTION_PARSE_ERROR);
     }
+  }
+
+  //read in training data for designing multi-class model:
+  if (opt_args.Qtype==6 || opt_args.Qtype==12) {
+    char *fname;		//filename
+    nel_ta n1;			//number of samples in class data
+    int rmflag=0;		//remove normalization file?
+
+    if ((opt_args.svd>0 || opt_args.normflag) && opt_args.normfile == NULL) {
+      opt_args.normfile=new char[L_tmpnam];
+      tmpnam(opt_args.normfile);
+      rmflag=1;
+    }
+    x=agf_get_features<real_a>(argv[0], &opt_args, ntrain, D, 0);
+    if (x==NULL || ntrain<=0) {
+      fprintf(stderr, "Error reading input file, %s.vec\n", argv[0]);
+      exit(FILE_READ_ERROR);
+    }
+    fname=new char[strlen(argv[0])+5];
+    sprintf(fname, "%s.cls", argv[0]);
+    cls=read_clsfile<cls_ta>(fname, n1);
+    if (cls==NULL || n1<=0) {
+      fprintf(stderr, "Error reading input file, %s\n", fname);
+      exit(FILE_READ_ERROR);
+    }
+    if (cls==NULL || n1<=0) {
+      fprintf(stderr, "Sample count mismatch: %d in %s.vec; %d in %s\n", n, argv[0], n1, fname);
+      exit(SAMPLE_COUNT_MISMATCH);
+    }
+    d=class_triangle(x, cls, ntrain, D);
+    n=0;
+    for (nel_ta i=0; i<ntrain; i++) if (cls[i]>=n) n=cls[i]+1;
+    if (rmflag) remove(opt_args.normfile);
   }
 
   ran_init();
@@ -80,49 +121,12 @@ int main(int argc, char **argv) {
       nrow=(n-1)*n/2;
       break;
     case(6): {
-        char *fname;		//filename
-        dim_ta D;		//dimensionality of problem
-        nel_ta ntrain;		//number of training samples
-        real_a **x;		//features data
-        cls_ta *cls;		//class data
-        real_a *d;		//Hausdorff distance between all classes
-	nel_ta n1;		//number of samples in class data
-	int rmflag=0;		//remove normalization file?
         //dendrogram based on distance between classes:
         cluster_tree<real_a, cls_ta> dg;
         char options[3]="\"\"";
 
-        if ((opt_args.svd>0 || opt_args.normflag) && opt_args.normfile == NULL) {
-          opt_args.normfile=new char[L_tmpnam];
-	  tmpnam(opt_args.normfile);
-	  rmflag=1;
-        }
-	x=agf_get_features<real_a>(argv[0], &opt_args, ntrain, D, 0);
-	if (x==NULL || ntrain<=0) {
-          fprintf(stderr, "Error reading input file, %s.vec\n", argv[0]);
-	  exit(FILE_READ_ERROR);
-	}
-	fname=new char[strlen(argv[0])+5];
-	sprintf(fname, "%s.cls", argv[0]);
-        cls=read_clsfile<cls_ta>(fname, n1);
-	if (cls==NULL || n1<=0) {
-          fprintf(stderr, "Error reading input file, %s\n", fname);
-	  exit(FILE_READ_ERROR);
-	}
-	if (cls==NULL || n1<=0) {
-          fprintf(stderr, "Sample count mismatch: %d in %s.vec; %d in %s\n", n, argv[0], n1, fname);
-	  exit(SAMPLE_COUNT_MISMATCH);
-	}
-        d=class_triangle(x, cls, ntrain, D);
-        n=0;
-        for (nel_ta i=0; i<ntrain; i++) if (cls[i]>=n) n=cls[i]+1;
         dg.build_all(d, n, D);
         dg.print(stdout, options);
-	delete [] d;
-	delete [] cls;
-	delete [] x[0];
-	delete [] x;
-	if (rmflag) remove(opt_args.normfile);
       }
       break;
     case(7):
@@ -171,6 +175,21 @@ int main(int argc, char **argv) {
       coding_matrix=orthogonal_coding_matrix<int>(n, nrow);
       nrow=n;
       break;
+    case(12): {
+        real_a *dtriangle;
+        nel_ta k;
+        nrow=atoi(argv[1]);
+        dtriangle=new real_a[ntrain*(ntrain-1)/2+1];
+        for (nel_ta i=0; i<ntrain; i++) {
+          for (nel_ta j=0; j<i; j++) {
+            dtriangle[k]=metric2(x[i], x[j], D);
+            k++;
+          }
+        }
+        coding_matrix=optimal_coding_matrix<int>(dtriangle, cls, ntrain, nrow);
+	delete [] dtriangle;
+      }
+      break;
     case(16):
       nrow=4*((n-1)/4+1);
       coding_matrix=random_coding_matrix<int>(n, nrow, 1);
@@ -193,7 +212,14 @@ int main(int argc, char **argv) {
 
   if (name!=NULL) delete [] name;
   if (label!=NULL) delete [] label;
+  delete [] d;
   ran_end();
+
+  delete [] cls;
+  if (x!=NULL) {
+    delete [] x[0];
+    delete [] x;
+  }
 
   exit(0);
 

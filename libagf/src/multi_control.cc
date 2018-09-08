@@ -16,6 +16,7 @@
 #include "error_codes.h"
 #include "randomize.h"
 #include "tree_lg.h"
+#include "kselect.h"
 
 #include "agf_lib.h"
 
@@ -38,6 +39,7 @@ namespace libagf {
     return ncls1;
   }
 
+  //calculate the Hausdorff distance between two finite sets:
   template <class real>
   real hausdorff_metric(real **x0, real **x1, int ncls0, int ncls1, int D) {
     real dmin0[ncls0];
@@ -58,6 +60,109 @@ namespace libagf {
     return result;
   }
 
+  //calculate the Hausdorf metric between the two partitions in a row of 
+  //a coding matrix
+  template <typename real, typename scalar>
+  real partition_distance(real *d, int n, scalar *coding_row) {
+    int n1, n2;		//number in each partition
+    int ind1[n], ind2[n];		//indices of each partition
+    int k;				//1-d subscript
+
+    real *dmin1;
+    real *dmin2;
+    real result;
+    n1=0; n2=0;
+    for (int i=0; i<n; i++) {
+      if (coding_row[i]<0) {
+        ind1[n1]=i;
+        n1++;
+      } else if (coding_row[i]>0) {
+        ind2[n2]=i;
+        n2++;
+      }
+    }
+    dmin1=new real[n1];
+    dmin2=new real[n2];
+
+    for (int i=0; i<n1; i++) dmin1[i]=-1;
+    for (int i=0; i<n2-1; i++) dmin2[i]=-1;
+
+    for (int i=0; i<n1; i++) {
+      for (int j=0; j<n2; j++) {
+        if (ind1[i]>ind2[j]) {
+          k=ind1[i]*(ind1[i]-1)/2+ind2[j];
+	} else {
+          k=ind2[j]*(ind2[j]-1)/2+ind1[i];
+	}
+	if (dmin1[i]<0 || d[k]<dmin1[i]) dmin1[i]=d[k];
+	if (dmin2[j]<0 || d[k]<dmin2[j]) dmin2[j]=d[k];
+      }
+    }
+
+    result=0;
+    for (int i=0; i<n1; i++) if (dmin1[i]>result) result=dmin1[i];
+    for (int i=0; i<n2; i++) if (dmin2[i]>result) result=dmin2[i];
+
+    delete [] dmin1;
+    delete [] dmin2;
+
+    return result;
+
+  }
+
+  //calculate the Hausdorf metric between the two partitions in a row of 
+  //a coding matrix
+  template <typename real, typename scalar, typename cls_t>
+  real partition_distance(real *d, 		//distance triangle (all points)
+		  cls_t *cls,			//classes
+		  nel_ta n,			//number of points
+		  scalar *coding_row) {		//row of coding matrix
+    int n1, n2;		//number in each partition
+    int ind1[n], ind2[n];		//indices of each partition
+    int k;				//1-d subscript
+
+    real *dmin1;
+    real *dmin2;
+    real result;
+    n1=0; n2=0;
+    for (int i=0; i<n; i++) {
+      if (coding_row[cls[i]]<0) {
+        ind1[n1]=i;
+        n1++;
+      } else if (coding_row[cls[i]]>0) {
+        ind2[n2]=i;
+        n2++;
+      }
+    }
+    dmin1=new real[n1];
+    dmin2=new real[n2];
+
+    for (int i=0; i<n1; i++) dmin1[i]=-1;
+    for (int i=0; i<n2-1; i++) dmin2[i]=-1;
+
+    for (int i=0; i<n1; i++) {
+      for (int j=0; j<n2; j++) {
+        if (ind1[i]>ind2[j]) {
+          k=ind1[i]*(ind1[i]-1)/2+ind2[j];
+	} else {
+          k=ind2[j]*(ind2[j]-1)/2+ind1[i];
+	}
+	if (dmin1[i]<0 || d[k]<dmin1[i]) dmin1[i]=d[k];
+	if (dmin2[j]<0 || d[k]<dmin2[j]) dmin2[j]=d[k];
+      }
+    }
+
+    result=0;
+    for (int i=0; i<n1; i++) if (dmin1[i]>result) result=dmin1[i];
+    for (int i=0; i<n2; i++) if (dmin2[i]>result) result=dmin2[i];
+
+    delete [] dmin1;
+    delete [] dmin2;
+
+    return result;
+
+  }
+
   template <class real>
   real hausdorff_width(real **x, int n, int D) {
     real dmin[n];
@@ -75,6 +180,8 @@ namespace libagf {
     return result;
   }
 
+  //builds a distance triangle for the classes based on the Hausdorff
+  //metric
   template <class real, class cls_t>
   real * class_triangle(real **x, cls_t *cls, int n, int D) {
     int ncls=0;
@@ -609,6 +716,98 @@ namespace libagf {
 
   }
 
+  template <typename scalar, typename real>
+  scalar **optimal_coding_matrix(int n, 	//number of classes
+		  int nrow, 			//desired number of rows
+		  real *d) {			//distance triangle btw. classes
+    long nperm=pow(2, n-1);		//number of possible rows
+    scalar **result;			//returned coding matrix
+    int ndone;				//number of rows found
+    scalar testrow[n];			//test row
+    kiselect_base<real> *all;		//rows stored as integers
+    long rows[nrow];			//rows as integers (2)
+    real dmax[nrow];			//largest distances (not needed)
+    long dum;				//for pulling out bits
+
+    all=new kiselect_heap<real>(nrow);
+    for (long i=1; i<nperm; i++) {
+      //convert integer to an array of {-1, 1} values:
+      dum=i;
+      for (int j=0; j<n; j++) {
+        testrow[j]=dum & 1;
+        if (testrow[j]==0) testrow[j]=-1;
+	dum=dum >> 1;
+      }
+      //measure partition distance and add to heap:
+      all->add(-partition_distance(d, n, testrow), i);
+    }
+    result=allocate_matrix<scalar>(nrow, n);
+
+    //extract the resultant coding matrix:
+    all->get(dmax, rows);
+    for (int i=0; i<nrow; i++) {
+      dum=rows[i];
+      for (int j=0; j<n; j++) {
+        result[i][j]=dum & 1;
+        if (result[i][j]==0) result[i][j]=-1;
+	dum=dum >> 1;
+      }
+    }
+
+    delete all;
+
+    return result;
+  }
+
+  template <typename scalar, typename real, typename cls_t>
+  scalar **optimal_coding_matrix(real *d,	//distance triangle (all points)
+		  cls_t *cls,			//classes
+		  nel_ta n, 			//number of points
+		  int nrow) {			//desired number of rows
+    long nperm;				//number of possible rows
+    cls_t ncls;				//nuumber of classes
+    scalar **result;			//returned coding matrix
+    int ndone;				//number of rows found
+    scalar testrow[n];			//test row
+    kiselect_base<real> *all;		//rows stored as integers
+    long rows[nrow];			//rows as integers (2)
+    real dmax[nrow];			//largest distances (not needed)
+    long dum;				//for pulling out bits
+
+    ncls=1;
+    for (nel_ta i=0; i<n; i++) if (cls[i]>=ncls) ncls=cls[i]+1;
+    nperm=pow(2, ncls-1);
+
+    all=new kiselect_heap<real>(nrow);
+    for (long i=1; i<nperm; i++) {
+      //convert integer to an array of {-1, 1} values:
+      dum=i;
+      for (int j=0; j<n; j++) {
+        testrow[j]=dum & 1;
+        if (testrow[j]==0) testrow[j]=-1;
+	dum=dum >> 1;
+      }
+      //measure partition distance and add to heap:
+      all->add(-partition_distance(d, cls, n, testrow), i);
+    }
+    result=allocate_matrix<scalar>(nrow, n);
+
+    //extract the resultant coding matrix:
+    all->get(dmax, rows);
+    for (int i=0; i<nrow; i++) {
+      dum=rows[i];
+      for (int j=0; j<n; j++) {
+        result[i][j]=dum & 1;
+        if (result[i][j]==0) result[i][j]=-1;
+	dum=dum >> 1;
+      }
+    }
+
+    delete all;
+
+    return result;
+  }
+
   template <typename scalar>
   scalar ** hierarchical_nonhierarchical(int n) {
     scalar **result;
@@ -677,6 +876,16 @@ namespace libagf {
     }
     fprintf(fs, "}\n");
   }
+
+  template int **optimal_coding_matrix<int, float>(int, int, float *);
+  template int **optimal_coding_matrix<int, double>(int, int, double *);
+  template float **optimal_coding_matrix<float, float>(int, int, float *);
+  template float **optimal_coding_matrix<float, double>(int, int, double *);
+  template double **optimal_coding_matrix<double, float>(int, int, float *);
+  template double **optimal_coding_matrix<double, double>(int, int, double *);
+
+  template int **optimal_coding_matrix<int, float, cls_ta>(float *, cls_ta *, nel_ta, int);
+  template int **optimal_coding_matrix<int, double, cls_ta>(double *, cls_ta *, nel_ta, int);
 
   template int ** one_against_all<int>(int);
   template float ** one_against_all<float>(int);

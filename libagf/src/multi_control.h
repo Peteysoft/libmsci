@@ -8,6 +8,13 @@ namespace libagf {
   template <class real, class cls_t>
   real * class_triangle(real **x, cls_t *cls, int n, int D);
 
+  //given the class distance triangle, calculate the Hausdorff distance
+  //between each side of a partition in a single row of the coding matrix:
+  template <typename real, typename scalar>
+  real partition_distance(real *d,		//distance triangle
+		  int n,			//number of classes
+		  scalar *row);			//coding row
+
   //generate the most common kinds of coding matrices:
   //(non-hierarchical component only)
   template <typename scalar>
@@ -32,6 +39,19 @@ namespace libagf {
   scalar ** ortho_coding_matrix_brute_force(int ncls);
   template <typename scalar>
   scalar ** hierarchical_nonhierarchical(int ncls);
+
+  //find partitions with maximum distance between each side:
+  template <typename scalar, typename real>
+  scalar ** optimal_coding_matrix(int n,	//number of classes
+		  int nrow,			//number of rows
+		  real *d);			//distance triangle btw. classes
+
+  //find partitions with maximum distance between each side:
+  template <typename scalar, typename real, typename cls_t>
+  scalar ** optimal_coding_matrix(real *d,	//distance triangle (all pts.)
+		  cls_t *cls,			//classes
+		  nel_ta n,			//number of points
+		  int nrow);			//number of rows
 
   //generate common control files:
   //(complete control file)

@@ -6,6 +6,13 @@
 
 namespace libagf {
 
+  //convert linear ordering of a lower triangular matrix to and from 
+  //2-D ordering:
+  //to:
+  void trimat_coord(int n, int &i, int &j);
+  //from:
+  int trimat_coord(int i, int j);
+
   //clustering analysis using knn and a threshold density:
   template <class real, class cls_t>
   void cluster_knn(real **x, 		//sample vectors

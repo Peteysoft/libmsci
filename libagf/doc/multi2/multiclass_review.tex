@@ -13,11 +13,30 @@
 
 \begin{document}
 
-\title{Solving for multi-class: a synthesis\\(manuscript in progress)}
+
+\title{Solving for multi-class: a survey and synthesis}
 
 \author{Peter Mills\\\textit{peteymills@hotmail.com}}
 
 \maketitle
+
+\section*{Abstract}
+
+We review the most common methods of solving for multi-class from binary
+and generalize them to a common framework.
+Since conditional probabilties are useful both for quantifying the accuracy of
+an estimate and for calibration purposes, 
+these are a required part of the solution.
+There is some indication that the best solution for multi-class classification
+is dependent on the particular dataset.
+As such, we are particularly interested in data-driven solution design, 
+whether based on a priori considerations or empirical examination of the data.
+Numerical results indicate that while
+a one-size-fits-all solution consisting of one-versus-one 
+is appropriate for most datasets,
+a minority will benefit from a more customized approach.
+
+\tableofcontents
 
 \section{Introduction}
 
@@ -37,7 +56,10 @@ best methods of solving for multiclass, but to synthesize
 these ideas into a comprehensive framework whereby a multi-class problem
 can be solved using a broad array of configurations for the binary
 classifiers. 
-This includes solving for the multi-class conditional probabilities.
+In particular, we require that any algorithm solve 
+for the multi-class conditional probabilities.
+These are useful both for gauging the accuracy of a result and for various
+forms of recalibration \citep{Jolliffe_Stephenson2003,Fawcett2006,Mills2009,Mills2011}.
 
 \subsection{Definition of the problem}
 
@@ -80,21 +102,21 @@ That is we want to create a mapping of the form:
 -1 & | y_j \in C_i^+ \\
 +1 & | y_j \in C_i^-
 \end{array}
-\right .
+	\right . \label{mapping}
 \end{equation}
 where $y_{ij}$ is the class value of $j$th sample of the transformed data 
 for trainng the $i$th binary classifier and 
 $C_i^+ \subset \lbrace 1..n_c \rbrace$ is the set of class labels from the original set,
 $\lbrace 1..n_c \rbrace$, that map to $+1$ while
-$C_i^- \subset \lbrace 1..nc \rbrace$ is the set of classes that map to $-1$.
+$C_i^- \subset \lbrace 1..n_c \rbrace$ is the set of classes that map to $-1$.
 
 And second, once we have partitioned the classes
 and trained the binary classifers,
 how do we solve for the conditional probabilities, $P(c|\vec x)$?
-Alternatively, we might be able to solve directly for the most likely class:
-%how do we solve for the most likely class, 
+The class of the test point is determined through maximum likelihood:
 \begin{equation}
 	c(\vec x)=\arg \max_i P(i | \vec x)
+	\label{maximum_likelihood}
 \end{equation}
 
 %given a test point, $\vec x$,
@@ -126,7 +148,7 @@ the $i$th partition,
 and $n_i^+$ is the number of class labels on the positive side of
 the $i$th partition
 
-It's more natural to describe the problem using a
+It's more natural (and considerably simpler) to describe the problem using a
 {\it coding matrix}, $A$, 
 which is structured such that
 $a_{ij} \in \lbrace -1, 0, 1 \rbrace$, 
@@ -185,15 +207,11 @@ problem solved via minimization:
 subject to:
 \begin{eqnarray}
 	\sum_{i=1}^{n_c} p_i & = & 1 \label{normalization}\\
-	p_i & \ge & 0 \label{nonnegative}
+	\vec p & \ge & \vec 0 \label{nonnegative}
 \end{eqnarray}
 where straight brackets, $||$, denotes a vector norm which  
-in this case is the Euclidian or $L^2$ norm.
-
-The class of the test point is determined through maximum likelihood:
-\begin{equation}
-	c = \arg \max_i p_i
-\end{equation}
+in this case is the Euclidian or $L^2$ norm and
+$\vec 0$ is a vector of all zeroes.
 
 \subsection{Basic inverse solution}
 
@@ -221,15 +239,10 @@ And solve the following, reduced dimensional linear system:
 \end{equation}
 A more symmetric method is the Lagrange multiplier which will be
 derived in Section \ref{one_vs_one}.
-\citet{Hanson_Lawson1995} discuss at least two other methods of
+\citet{Lawson_Hanson1995} discuss at least two other methods of
 enforcing equality constraints on linear least squares problems.
-
 Since they are inequality constraints, those in (\ref{nonnegative}) are
 harder to enforce and details  will be left to a later section.
-\citet{Hanson_Lawson1995} outline several methods of applying equality
-constraints to least squares. Moreover when a Lagrange multiplier is added
-to the one-versus-one method, a basics matrix inverse generates probability
-estimates that obey the inequality constraints. See below.
 
 \subsection{Voting solution}
 
@@ -293,6 +306,8 @@ expanding out to the general solution for ``error-correcting-codes.''
 
 \subsection{One-versus-the-rest}
 
+\label{one_vs_rest}
+
 Common coding matrices include ``one-versus-the-rest'' in which
 we take each class and train it against the rest of the
 classes.
@@ -347,14 +362,14 @@ Consider the following rearrangement of (\ref{non_hier}):
 We can include the normalization constraint, (\ref{normalization}), via
 a Lagrange multiplier:
 \begin{equation}
-	\min_{\vec p, \lambda} \left \lbrace | Q \vec p | + \lambda(\vec 1 \cdot \vec p - 1) \right \rbrace
+	\min_{\vec p, \lambda} \left \lbrace | Q \vec p |^2 + \lambda(\vec 1 \cdot \vec p - 1) \right \rbrace
 \end{equation}
 which produces the following linear system:
 \begin{eqnarray}
-	\sum_k q_{ki} q_{kj} p_j + \lambda & = & 0 \\
+	2 \sum_k q_{ki} q_{kj} p_j + \lambda & = & 0 \\
 	\sum_j p_j & = & 1
 \end{eqnarray}
-With this solution for a 1-vs-1 coding matrix, it can be shown that the
+It can be shown that with this solution for a 1-vs-1 coding matrix,
 inequality constraints in (\ref{nonnegative}) are always satisfied
 \citep{Wu_etal2004}.
 
@@ -362,13 +377,21 @@ inequality constraints in (\ref{nonnegative}) are always satisfied
 for support vector machines (SVM) than either
 error-correcting codes or one-vs.-the-rest.
 
-\subsection{Orthogonal coding matrix}
+\subsection{Error correcting codes}
+
+Another common coding matrix is simply an arbitrary one: this is commonly
+known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
+This is often random, but may also be carefully designed 
+\citep{Crammer_Singer2002}.
+In principle this covers all the earliers cases, however in practice the
+term can also refer more specifically to a random coding matrix.
+We cover the solution of the general case, which includes a random
+matrix, in Section \ref{general_case_solution}, below.
+
+\subsection{Orthogonal codes}
 
 \label{orthogonal}
 
-An error correcting coding matrix is simply an arbitrary one.
-This is often random, but may also be carefully designed 
-\citep{Crammer_Singer2002}.
 To maximize the accuracy of an error-correcting coding matrix, 
 \citet{Allwein_etal2000} and \citet{Windeatt_Ghaderi2002} show that
 the distance between each of the columns, $| \vec a^{(i)} - \vec a^{(j)} |$, 
@@ -385,8 +408,7 @@ In other words,
 %if the number of rows is equal to the number of classes, 
 the optimal coding matrix will be orthogonal, $A^T A = n_p I$, where $I$ is
 the $[n_c\times n_c]$ identity matrix. 
-Thus the voting solution and the (unconstrained) matrix 
-inverse will be equivalent. Orthogonal, ``strict'' coding matrices 
+Orthogonal coding matrices 
 are not hard to construct for certain class sizes, for instance:
 \begin{equation}
 A = 
@@ -397,188 +419,182 @@ A =
 -1 & -1 & 1 & -1
 \end{bmatrix}
 \end{equation}
-Orthogonal coding matrices for the non-strict case are even easier to
-construct, but the voting solution does not correspond to the inverse solution.
+\citet{Mills2017} provides a fast, simple and elegant iterative solution for solving
+for conditional probabilities when using a ``strict'' orthogonal coding matrix.
 
-The orthogonality property allows us to reduce the minimization problem 
-in (\ref{minimization_problem}) to something much simpler:
-\begin{equation}
-	\arg \min_{\vec p} | \vec p - \vec p_0 |
-\end{equation}
-where $\vec p_0 = A^T \vec r/m$ with the constraints in (\ref{normalization}) and
-(\ref{nonnegative}) remaining the same.
-Because the system has been rotated and expanded, the non-negativity 
-constraints in (\ref{nonnegative}) remain orthogonal, meaning they are 
-independent: enforcing one by setting one of the probabilities to zero, 
-$p_k=0$ for example, shouldn't otherwise affect the solution.
-This still leaves the normalization constraint in (\ref{normalization}):
-the problem, now strictly geometrical, is comprised of finding the point nearest $p_0$ on the diagonal hyper-surface that bisects the unit hyper-cube.
-
-Briefly, we can summarize the algorithm as follows:
-1. move to the nearest point that satisfies the normalization constraint,
-(\ref{normalization}); 2. if one or more of the probabilities is negative,
-move to the nearest point that satisfies both 
-the normalization constraint
-and the non-negativity constraints, (\ref{nonnegative}), for the negative probabilities;
-3. repeat step 2.
-More formally, let $\vec 1$ be a vector of all $1$'s:
-\begin{itemize}
-	\item $i=1$; $n_1=n$
-	\item while $\exists k \, p_{ik} < 0 \lor \vec p_i \cdot \vec 1 \ne 1$:
-	\begin{itemize}
-		\item if $\vec p_i \cdot \vec 1 \ne 1$ then 
-		$\vec p_{i+1} = \vec p_i + (\vec p_i \cdot \vec 1 - 1)/n_i$
-		\item let $K$ be the set of $k$ such that $p_{i+1,k} < 0$
-		\item for each $k$ in $K$:
-		\begin{itemize}
-			\item $p_k=0$
-			\item Remove $k$ from the problem
-		\end{itemize}
-		\item $n_{i+1}=n_i-|K|$
-		\item $i=i+1$
-	\end{itemize}
-\end{itemize}
-
-Note that resultant direction vectors for each step form an orthogonal set.
-For instance, suppose $n_1=4$ and after enforcing the normalization constraint,
-the first probability is less than zero, $p_{1,1} < 0$,
-then the direction vectors for the two motions are:
-\begin{equation}
-	\frac{1}{2}[1, 1, 1, 1] \cdot \frac{1}{2\sqrt{3}} [-3, 1, 1, 1] = 0
-\end{equation}
-
-More generally, consider the following sequence of vectors:
-\begin{equation}
-	v_{ij} = \frac{1}{\sqrt{(n-i)^2-2(n-i-1)}} \left \lbrace \begin{array}{rl}
-			0; & j < i \\
-			-n+i+1; & j=i \\
-			1; & j > i
-		\end{array} \right .
-\end{equation}
-where $j \in [1, n]$. \citep{Boyd_Vandenberghe2004}
-
-\subsection{Error correcting codes}
-
-Another common coding matrix is simply an arbitrary one: this is commonly
-known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
-In principle this covers all the earliers cases, however in practice the
-term can also refer more specifically to a random coding matrix.
-We cover the solution of the general case, which includes a random
-matrix, in the next section, Section \ref{general_case_solution}.
-
-\subsection{Deriving probabilities for generalized error-correcting codes}
+\section{Solving for all the probabilities in the general case}
 
 \label{general_case_solution}
 
-\citet{Zadrozny2001} describe the following, iterative method of solving
+\subsection{General comments}
+
+\begin{figure}
+	\includegraphics[width=0.9\textwidth]{config1.eps}
+	\label{config1}
+\end{figure}
+
+Once the normalization constraint in (\ref{normalization}) has been applied,
+the remaining inequality constraints for the minimization problem in
+(\ref{minimization_problem}) to (\ref{nonnegative}) form a triangular
+hyper-pyramid in a space of dimension $n_c-1$.
+See Figure \ref{config1}.
+Stating this as a general constrained optimization problem, we have:
+\begin{equation}
+	\min_{\vec x} | E \vec x - \vec f |^2
+	\label{minimization2}
+\end{equation}
+subject to:
+\begin{equation}
+	G \vec x \ge \vec h
+	\label{inequality2}
+\end{equation}
+where $\vec x$ is a vector of length $n_c-1$ 
+and $G$ is a $[n_c \times n_c-1]$ matrix.
+
+Suppose we transform this into a new problem by interpolating between the
+$n_c$ vertices of the hyper-pyramid.
+First, we find the vertices by solving:
+\begin{equation}
+	G_k \vec x_k = \lbrace h_i | i \ne k \rbrace
+\end{equation}
+where $\vec x_k$ is the $k$th vertex of the hyper-pyramid and
+we define $G_k$ as the matrix formed by ommitting the $k$th row of $G$.
+
+We can locate any point inside the hyper-pyrmaid as follows:
+\begin{equation}
+	x^*_i = \vec x_k + \sum_i \gamma_i (\vec x_i - \vec x_k) | ~ i \ne k
+\end{equation}
+where $k$ is an arbitrary index 
+and $\vec \gamma = \lbrace \gamma_i \rbrace$ has the same properties as a probability:
+\begin{eqnarray}
+	\sum_i \gamma_i & = & 1 \\
+	\vec \gamma & \ge & \vec 0
+\end{eqnarray}
+In other words, any minimization problem of the form of (\ref{minimization2})
+and (\ref{nonnegative}) can be transformed into a problem of the same form
+as (\ref{minimization_problem}) to (\ref{nonnegative}).
+
+The first line of attack in solving constrained minimization problems of the
+type we are discussing here are the Karesh-Kuhn-Tucker (KKT) conditions
+which generalize Lagrange multipliers to inequality constraints
+\citep{Lawson_Hanson1995,Boyd_Vandenberghe2004}.
+For the minimization problem in (\ref{minimization_problem})-(\ref{nonnegative}), the KKT conditions translate to:
+\begin{equation}
+	Q^T Q \vec p - Q^T \vec r + \lambda = \vec \mu
+\end{equation}
+where:
+\begin{equation}
+	\vec \mu \ge \vec 0
+\end{equation}
+and:
+\begin{eqnarray}
+	\mu_i = 0 & \iff & p_i > 0 \\
+	\mu_i > 0 & \iff & p_i = 0
+\end{eqnarray}
+or more succinctly:
+\begin{equation}
+	\mu_i p_i = 0 ~ | ~ i = 1..n_c
+\end{equation}
+
+Another important property of the problem is that it is completely {\it convex}.
+A {\it convex function}, $c$, has the following property:
+\begin{equation}
+	c \left \lbrace \gamma \vec x_0 + (1 - \gamma) \vec x_2 \right \rbrace
+	\le \gamma c(\vec x_1) + (1 - \gamma) c(\vec x_2)
+\end{equation}
+where $0 \le \gamma \le 1$ is a  coefficient.
+Meanwhile, in a {\it convex set}, $C$:
+\begin{equation}
+	\vec x_1 \in C \land \vec x_2 \in C \rightarrow 
+\left \lbrace \gamma \vec x_1 + (1 - \gamma) \vec x_2 \right \rbrace \in C
+\end{equation}
+\citep{Boyd_Vandenberghe2004}.
+In a convex optimization problem, there can only be one extremum, moreover
+simple, gradient descent algorithms should always eventually reach it.
+Both the convexity property and the KKT conditions are used in the 
+\citet{Lawson_Hanson1995} solution to inequality constrained least
+squares problems.
+See Section \ref{Lawson_Hanson}, below.
+
+
+
+\subsection{Zadrozny solution}
+
+\citet{Zadrozny2001} describes the following, iterative method of solving
 for the probabilities using an arbitrary coding matrix:
 
 \begin{itemize}
 	\item For each $i=1, 2, ..., k$:
 			$\tilde p_i := \frac{\sum_j n_j a_{ji} \tilde r_j}{\sum_j n_j a_{ji}}$
-	\item $T = \sum_i \tilde p_i$; $\tilde p_i := \tilde p_i/T$
+	\item $T := \sum_i \tilde p_i$; $\tilde p_i := \tilde p_i/T$
 	\item $\tilde r_j := \sum_i a_{ji} \tilde p_i/\sum_i |a_{ji}|$
+	\item Repeat until convergence.
 \end{itemize}
-The technique minimizes the weighted Kullback-Leibler distance rather between actual and calculated
+where $n_j$ is the number of training samples in the $j$th class.
+The technique minimizes the weighted Kullback-Leibler distance between actual and calculated
 binary probabilities:
 \begin{equation}
 	l(\vec x) = \sum_{i} n_i r_i \left [ \log \frac{r_i-1}{\tilde r_i-1} - \log \frac{1-r_i}{1-\tilde r_i} \right ]
 \end{equation}
 as opposed to the usual Euclidean distance.
 The method supplies probability estimates roughly as accurate as the others described here,
-however convergence is too slow to be useful.
-
-\subsection{Digression on quadratic optimization}
-
-Before constructing a general method of solving the constrained minimzation problem in
-(\ref{minimization_problem})-(\ref{nonnegative}), we need two general principles.
-The first are the Karesh-Kuhn-Tucker conditions \citep{Boyd_Vandenbergh2004,Lawson_Hanson1995}.
-These are the equivalent of Lagrange multipliers for inequality constraints.
-Consider the cost function, $C(\vec x)$, subject to a set of equality and inequality constraints:
-\begin{eqnarray}
-	f_i(\vec x) & = & 0 | ~ i=1..n_f \\
-	g_i(\vec x) & \ge & 0 | ~ i=1..n_g
-\end{eqnarray}
-Then the following conditions must be true:
-\begin{equation}
-	\nabla C + \sum_i \lambda_i \nabla f_i = \sum_i \mu_i \nabla g
-\end{equation}
-where $\lbrace \lambda_i \rbrace$ are the Lagrange multipliers while
-$\lbrace \mu_i \rbrace$ are the {\it slack variables}.
-The slack variables are themselves constrained:
-\begin{equation}
-	\mu_i \ge 0
-\end{equation}
-and:
-\begin{eqnarray}
-	\mu_i = 0 & \iff & g_i > 0 \\
-	\mu_i > 0 & \iff & g_i = 0 
-\end{eqnarray}
-or more succinctly:
-\begin{equation}
-	\mu_i g_i = 0
-\end{equation}
-The KKT conditions are the basis for many solution methods for constrained optimization
-problems.
-Suppose we have the minimization problem:
-\begin{equation}
-	\min_{\vec x} | Q^T Q \vec x - \vec b |
-\end{equation}
-as follows:
-\begin{eqnarray}
-	E \vec p & = & \vec f \\
-	G \vec p & \ge & \vec h
-\end{eqnarray}
-then the KKT conditions translate to:
-\begin{equation}
-	Q^T Q \vec p + \vec \lambda E = \vec \mu G + Q^T \vec r
-\end{equation}
-
-The second principle is that of {\it convexity}.
-The cost function we need to solve has the following, 
-convexity property:
-\begin{equation}
-	\gamma C(\vec x_1) + (1 - \gamma) C(\vec x_2) \le C(\gamma \vec x_1 + (1 - \gamma) \vec x_2)
-\end{equation}
-where $0 \le \gamma \le 1$ is a  coefficient.
-Similarly, if $\vec x_1$ and $\vec x_2$ are both admissable,
-that is they fall within the constraints, then so too
-does $\gamma \vec x_1 + (1 - \gamma) \vec x_2$.
-In fact the constraints form a triangular hyper-pyramid in
-the solution space.
-
-The above two properties are used in the iterative, Lawson and Hanson 
-solution, below.
-
+however our tests indicate that convergence is too slow to be useful.
 
 \subsection{Lawson and Hanson solution}
 
+\label{Lawson_Hanson}
+
 \citet{Lawson_Hanson1995} describe an iterative solution to the following
-inequality constrained least squares problem:
+inequality constrained least-squares problem:
 \begin{equation}
-	\min_{\vec x} | Q \vec x - \vec b |
+	\min_{\vec x} | E \vec x - \vec f |
 \end{equation}
 subject to:
 \begin{equation}
 	\vec x > \vec 0
 \end{equation}
-where $\vec 0$ is a vector of all zeroes.
+where $E$ is an $[m \times n]$ matrix
+and $\vec 0$ is a vector of all zeroes.
 
-[plug in solution and 
+The solution is divided into a set $P$ containing the indices of 
+all the non-zero values and a set $Z$ containing the indices of the 
+zero values.
+The algorithm is as follows:
+\begin{enumerate}
+	\item Set $P := \emptyset$; $Z:=1..n$
+	\item Compute the $n$-vector $\vec \mu := E^T(\vec f - E \vec x)$.
+	\item If the set $Z$ is empty or if $\mu_j \le 0$ for all $j \in Z$ go to Step 12.
+	\item Find an index $t \in Z$ such that $\mu_i = \max \lbrace \mu_i: j \in Z \rbrace$.
+	\item Move the index $t$ from set $Z$ to set $P$
+	\item Solve the least squares problem $\min_{\vec z} | E_P \vec z - \vec f |$ where $E_P$=$\lbrace \vec e^{(j)} | j \in P \rbrace$ (columns of $E$ whose corresponding indices are in $P$).
+	\item If $z_j > 0$ for all $j \in P$, set $\vec x:= \vec z$ and go to STep 2.
+	\item Find an index $q \in P$ such that $q = \arg \min_j \lbrace x_j/(x_j - z_j): ~z_j \le 0;~ j \in P \rbrace$.
+	\item Set $\alpha := x_q/(x_q - z_q)$
+	\item Set $\vec x := \vec x + \alpha(\vec z - \vec x)$
+	\item Move from set $P$ to set $Z$ all indices $j \in P$ for which $x_j = 0$. Go to step 6.
+	\item The computation is completed.
+\end{enumerate}
+
+There are two loops to the algorithm. In the first loop, a new index is added
+to the non-zero set in each iteration.
+So long as the solution doesn't go out-of-bounds, this continues until all
+the indices are added to the set $P$.
+In the second loop, if it's found that one of the variables has gone out-of-bounds,
+then the solution is adjusted to the nearest point in-bounds between the old solution
+and the new.
 
 \citet{Lawson_Hanson1995} describe several methods of combining
 equality constraints such as the normalization constraint
-in (\ref{normalization}) with the inequality constrained
-least squares problem in (\ref{gen_least_squares})
-and (\ref{inequality2}).
+in (\ref{normalization}) with the above constrained
+least squares problem.
 The most obvious is to repeat the variable substition
-described in Equations ( ) to ( ) until the excluded
+described in Equations (\ref{reduce_dimension1}) to (\ref{reduce_dimension2}) until the excluded
 probability is less-than-or-equal to $p_k\le 1$.
 
 
-
-
 \section{Decision trees}
+
+\label{hierarchical}
 
 The most obvious method of dividing up a multi-class problem into binary
 classifiers is hierarchically using a {\it decision tree} 
@@ -586,7 +602,7 @@ classifiers is hierarchically using a {\it decision tree}
 In this method, the classes are first divided into two partitions, then
 those partitions are each divided into two partitions and so on until only
 one class remains. The classification scheme is hierarchical, with all the
-losing classes being excluded from the consideration at each step.
+losing classes being excluded from consideration at each step.
 Only the conditional probability of the winning class is calculated as the
 product of all the returned conditional probabilities of the binary
 classifiers.
@@ -594,8 +610,8 @@ classifiers.
 Decision trees have the advantage that they are fast since on average they
 require only $\log_2 n_c$ classifications and there is no need to solve a 
 constrained matrix inverse. On the other hand, because there is less
-information being taken into consideration, they can be less
-accurate [citation].
+information being taken into consideration, they may be less
+accurate.
 
 Interestingly, the same partitions created for a decision tree can also
 be used in a non-hierarchical scheme
@@ -636,6 +652,8 @@ This is the tree version of one-versus-one.
 In a DDAG, there are multiple paths to the same node.
 
 \subsection{Empirically designed trees}
+
+\label{empirical}
 
 \begin{figure}
 	\includegraphics[width=0.9\textwidth]{landclasstree.eps}
@@ -800,71 +818,38 @@ surface-classification problem with the key as follows:
 
 We wish to test a synthesis of the ideas contained in this review on some real
 datasets.
-To this end, we will test five different datasets using three configurations 
-solved using two methods each--the ``standard'', proven method and
-the general solution given in Section \ref{orthogonal}.
-The configurations are: one-vs-one, an arbitray tree, and a tree generated
+To this end, we will test eight different datasets using six configurations 
+solved using four different methods.
+The configurations are: one-vs-one, one-vs.-rest, orthogonal partioning,
+``adjacent'' partitioning (see below), an arbitray tree, and a tree generated
 from a bottom-up dendrogram using the Hausdorf metric.
+The solution methods are: constrained least squares as described
+in Section \ref{Lawson_Hanson}, matrix inverse which is specific to one-vs.-one,
+the iterative method designed orthogonal partitioning 
+(see Section \ref{orthogonal}), and recursively which is appropriate
+only for hierarchical or tree-based configurations.
 
 The control language allows us to represent any type of multi-class 
 configuration relatively succinctly, including different parameters
 used for the binary classifiers.
-Here are sample ``control files'' for the ``shuttle'' dataset (see below).
-One-vs.-one:
+To illustrate the operation of the empirical partitioning, here are
+control files for the shuttle dataset.
+The arbitrary, balanced tree is as follows:
 \begin{verbatim}
-shuttle_1v1-00 0 / 1;
-shuttle_1v1-01 0 / 2;
-shuttle_1v1-02 0 / 3;
-shuttle_1v1-03 0 / 4;
-shuttle_1v1-04 0 / 5;
-shuttle_1v1-05 0 / 6;
-shuttle_1v1-06 1 / 2;
-shuttle_1v1-07 1 / 3;
-shuttle_1v1-08 1 / 4;
-shuttle_1v1-09 1 / 5;
-shuttle_1v1-10 1 / 6;
-shuttle_1v1-11 2 / 3;
-shuttle_1v1-12 2 / 4;
-shuttle_1v1-13 2 / 5;
-shuttle_1v1-14 2 / 6;
-shuttle_1v1-15 3 / 4;
-shuttle_1v1-16 3 / 5;
-shuttle_1v1-17 3 / 6;
-shuttle_1v1-18 4 / 5;
-shuttle_1v1-19 4 / 6;
-shuttle_1v1-20 5 / 6;
-{
-  0
-  1
-  2
-  3
-  4
-  5
-  6
-}
-\end{verbatim}
-; arbitrary hierarchical:
-\begin{verbatim}
-shuttle/shuttle_hier
-{
-  shuttle/shuttle_hier.00
-  {
+shuttle/shuttle_hier {
+  shuttle/shuttle_hier.00 {
     0
-    shuttle/shuttle_hier.00.01
-    {
+    shuttle/shuttle_hier.00.01 {
       1
       2
     }
   }
-  shuttle/shuttle_hier.01
-  {
-    shuttle/shuttle_hier.01.00
-    {
+  shuttle/shuttle_hier.01 {
+    shuttle/shuttle_hier.01.00 {
       3
       4
     }
-    shuttle/shuttle_hier.01.01
-    {
+    shuttle/shuttle_hier.01.01 {
       5
       6
     }
@@ -872,20 +857,15 @@ shuttle/shuttle_hier
 }
 
 \end{verbatim}
-; and empirical hierarchical:
+
+While the empirically-designed tree is:
 \begin{verbatim}
-shuttle/shuttle_emp
-{
-  shuttle/shuttle_emp.00
-  {
-    shuttle/shuttle_emp.00.00
-    {
-      shuttle/shuttle_emp.00.00.00
-      {
-        shuttle/shuttle_emp.00.00.00.00
-        {
-          shuttle/shuttle_emp.00.00.00.00.00
-          {
+shuttle/shuttle_emp {
+  shuttle/shuttle_emp.00  {
+    shuttle/shuttle_emp.00.00 {
+      shuttle/shuttle_emp.00.00.00 {
+        shuttle/shuttle_emp.00.00.00.00 {
+          shuttle/shuttle_emp.00.00.00.00.00 {
             2
             1
           }
@@ -901,6 +881,26 @@ shuttle/shuttle_emp
 }
 \end{verbatim}
 
+\begin{table}
+	\caption{Class distribution in the shuttle dataset.}
+	\label{shuttle_dist}
+	\begin{center}
+	\begin{tabular}{|ll|}
+		\hline
+		class & number \\
+		\hline
+		0 & 45586 \\
+		1 & 50 \\
+		2 & 171 \\
+		3 & 8903 \\
+		4 & 3267 \\
+		5 & 10 \\
+		6 & 13 \\
+		\hline
+	\end{tabular}
+	\end{center}
+\end{table}
+
 \begin{figure}
 	\includegraphics[width=\textwidth]{shuttle_tree.eps}
 	\caption{Multiclass decision trees for the shuttle dataset. 
@@ -908,8 +908,10 @@ shuttle/shuttle_emp
 \end{figure}
 
 Note that the shuttle dataset is very unbalanced, 
-hence  the tree looks more like a chain: see Figure \ref{shuttle_tree}.
-To solve the hierarchical models using the method in Section \ref{orthogonal}, hierarchical models were first translated to non-hierarchical.
+as listed in Table \ref{shuttle_dist},
+hence  the empirically-designed tree looks more like a chain
+as illustrated in Figure \ref{shuttle_tree}.
+To solve the hierarchical models using least-squares, hierarchical models were first translated to non-hierarchical, as discussed in Section \ref{hierarchical}.
 The above, for instance, becomes:
 \begin{verbatim}
 shuttle/shuttle_emp 0 1 2 3 4 5 / 6;
@@ -921,7 +923,30 @@ shuttle/shuttle_emp.00.00.00.00.00 0 / 1;
 { 2 1 6 5 3 4 0}
 \end{verbatim}
 
-
+The ``adjacent'' partitioning is as follows:
+\begin{verbatim}
+shuttle_adj-00 0 / 1 2 3 4 5 6;
+shuttle_adj-00 0 1 / 2 3 4 5 6;
+shuttle_adj-00 0 1 2 / 3 4 5 6;
+shuttle_adj-00 0 1 2 3 / 4 5 6;
+shuttle_adj-00 0 1 2 3 4 / 5 6;
+shuttle_adj-00 0 1 2 3 4 5 / 6;
+{0 1 2 3 4 5 6}
+\end{verbatim}
+with corresponding coding matrix:
+\begin{equation}
+A = 
+\begin{bmatrix}
+-1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+-1 & -1 & 1 & 1 & 1 & 1 & 1 \\
+-1 & -1 & -1 & 1 & 1 & 1 & 1 \\
+-1 & -1 & -1 & -1 & 1 & 1 & 1 \\
+-1 & -1 & -1 & -1 & -1 & 1 & 1 \\
+-1 & -1 & -1 & -1 & -1 & -1 & 1 \\
+\end{bmatrix}
+	\label{adjacent}
+\end{equation}
+The rational for using it will be explained in Section \ref{results}, below.
 
 \subsection{Data and software}
 
@@ -929,27 +954,36 @@ shuttle/shuttle_emp.00.00.00.00.00 0 / 1;
 	\caption{Summary of datasets used in the analysis}\label{datasets}
 	\begin{tabular}{|l|lllll|}
 	\hline
-	Name & $D$ & Type & $n_c$ & $N$ & Reference \\\hline
-	shuttle & 9 & float & 7 & 58000 & {\small \citep{King_etal1995}}\\
-	sat & 36 & float & 6 & 6435 & {\small \citep{King_etal1995}}\\
-	segment & 19 & float & 7 & 2310 & {\small \citep{King_etal1995}} \\
+	Name & $D$ & Type & $n_c$ & $N$ & Reference \\\hline \hline
 	letter &  16 & integer & 26 & 20000 & {\small \citep{Frey_Slate1991}}\\
 	pendigits & 16 & integer & 10 & 10992 & {\small \citep{Alimoglu1996}}\\
 	usps & 256 & float & 10 & 9292 & {\small \citep{Hull1994}}\\
+	segment & 19 & float & 7 & 2310 & {\small \citep{King_etal1995}} \\
+	sat & 36 & float & 6 & 6435 & {\small \citep{King_etal1995}}\\
+	urban & 147 & float & 9 & 675 & {\small \citep{Johnson2013}} \\
+	shuttle & 9 & float & 7 & 58000 & {\small \citep{King_etal1995}}\\
+	humidity & 7 & float & 8 & 8600$^*$ & {\small \citep{Mills2009}} \\
 	\hline
 \end{tabular}
+	\vspace{1 ex}
+
+	\raggedright $^*$ Humidity dataset has been sub-sampled to keep training times reasonable.
 \end{table}
 
 The datasets tested are as follows: 
-the ``sat'' dataset is a satellite land-classification problem;
-the ``segment'' dataset is a pattern-based image classification problem;
-the ``shuttle'' dataset predicts different flight configurations on the
-space shuttle \citep{Michie_etal1994, King_etal1995};
 ``pendigits'' and ``usps'' are both digit recognition problems 
 \citep{Alimoglu1996, Hull1994};
-finally, the ``letter'' dataset is another text-recognition problem 
+the ``letter'' dataset is another text-recognition problem 
 that classifies letters rather than numbers 
-\citep{Frey_Slate1991}.
+\citep{Frey_Slate1991};
+the ``segment'' dataset is a pattern-based image classification problem;
+the ``sat'' dataset is a satellite land-classification problem;
+the ``shuttle'' dataset predicts different flight configurations on the
+space shuttle \citep{Michie_etal1994, King_etal1995};
+the ``urban'' dataset is another pattern-recognition dataset for urban land cover
+\citep{Johnson2013};
+and the ``humidity'' dataset classifies humidity values based on satellite
+radiometry \citep{Mills2009}.
 The characteristics of each dataset are summarized in Table \ref{datasets}.
 
 The base binary classifier used to test the ideas in this paper is a 
@@ -970,6 +1004,9 @@ command.
 Control files are used to train the binary classifiers and then
 to make predictions using the \verb/multi_borders/ and \verb/classify_m/
 commands, respectively.
+Before making predictions, the binary classifiers were unified to eliminate
+duplicate support vectors using the \verb/mbh2mbm/ command, thus improving
+efficiency.
 LibAGF may be downloaded at: \url{https://github.com/peteysoft/libmsci}.
 
 To evaluate the conditional probabilities we use the Brier score
@@ -979,9 +1016,94 @@ B=\sqrt{\frac{1}{n} \sum_{i=1}^{n} \sum_{j=1}^{n_c} \left ( \tilde p_{ij} - \del
 \end{equation}
 where $n$ is the number of test samples.
 
+\begin{table}
+	\caption{Key for Tables \ref{training1} through \ref{Brier4}.}\label{key}
+	\begin{tabular}{|lll|}
+		\hline
+		term & meaning & cross-ref. \\
+		\hline\hline
+		config. & configuration of multiclass partitioning & Equation (\ref{mapping}) \\
+		method & solution method for computing probabilities & Equation (\ref{maximum_likelihood}) \\
+		\hline
+		1 vs. 1 & one-versus-one partitioning & Section \ref{one_vs_one} \\
+		1 vs. rest & one-versus-the-rest partitioning & Section \ref{one_vs_rest} \\
+		ortho. & orthogonal coding & Section \ref{orthogonal} \\
+		adj. & adjacent partitioning & Equation (\ref{adjacent}) \\
+		hier. & ``hierarchical'' or decision-tree partitioning & Section \ref{hierarchical} \\
+		emp. & empirically-designed decision-tree & Section \ref{empirical} \\
+		\hline
+		lsq. & Lawson and Hanson constrained least-squares & Section \ref{Lawson_Hanson} \\
+		inv. & matrix inverse solution & Section \ref{one_vs_one} \\
+		iter. & iterative solution for orthogonal codes & Section \ref{orthogonal} \\
+		rec. & recursive ascent of decision-tree & Section \ref{hierarchical} \\
+		\hline
+	\end{tabular}
+\end{table}
+
+
 \section{Results and discussion}
 
-\input{results2018_08_24.tex}
+\label{results}
+
+\input{results2018_09_06.tex}
+
+Results are shown Tables \ref{training1} through \ref{Brier4} with the
+key given in Table \ref{key}.
+If we take the results for these eight datasets as being representative,
+there are several conclusions that can be made.
+The first is that despite the seeming complexity of the problem, a 
+``one-size-fits-all'' approach seems perfectly adequate for most datasets.
+Moreover, this approach is the one-versus-one method,
+which we should note is used exclusively in LIBSVM \citep{Chang_Lin2011}.
+One-vs.-one has other advantages such as the simplicity of solution:
+a standard linear solver such as Gaussian elimination,
+QR decomposition or SVD is sufficient,
+as opposed to a complex, iterative scheme.
+
+On the other hand, the partitioning used does not even appear all that
+critical in most cases.
+Even a sub-optimal method, such as the ``adjacent'' partioning, which makes
+little sense for datasets in which the classes have no ordering,
+gives up relatively little accuracy to more sensible methods on most datasets.
+For the urban dataset it is actually superior, suggesting that there is
+some kind of ordering to the classes which are: trees, grass, soil, concrete,
+asphalt, buildings, cars, pools, shadows.
+If classification speed is critical, a hierarchical approach will trade 
+off accuracy to save some compute cycles with 
+$O(\log n_c)$ performance instead of $O(n_c^2)$.
+Accuracy lost is again quite dependent on the dataset.
+
+Not only can sub-optimal partitionings produce reasonable results, 
+but approximate solution methods can also be used without much penalty.
+For instance, the iterative method for orthogonal coding matrices
+outlined in \citet{Mills2017}, when applied as a general method
+actually gives up very little in accuracy,
+even though it is not optimal in the least-squares sense.
+(These results are not shown.)
+
+Further, a data-dependent design can provide a small but significant
+increase in accuracy.
+An interesting side-effect of having empirically-designed partitioning is
+that it improved both training and classificaton speed.
+Unfortunately the approach used here isn't able to match the one-versus-one 
+arrangement in accuracy but
+this does not preclude cleverer schemes producing larger gains.
+
+Finally, some datasets may have special characteristics that can be exploited
+to produce more accurate results through the multi-class configuration.
+While this was the original thesis behind this paper,
+only one example was found in this group eight datasets, 
+namely the humidity dataset.
+Because the classes are a discretized continuous variable, they have an
+ordering. As such, it is detrimental to split up consecutive classes more
+than absolutely necessary and the ``adjacent'' partitioning is the most
+accurate. Meanwhile, the one-vs.-rest configuration performs abysimally while
+the one-vs.-one performs well enough, but worse than all the other methods
+save one.
+The excellent performance of the adjacent configuration for the urban
+dataset suggests it might be worth searching for an ordering to the classes.
+This could be done using inter-set distance in a manner similar to the empirical hierarchical method.
+
 
 \bibliography{../agf_bib,multi2,../svm_accel/svm_accel,../pwl}
 
