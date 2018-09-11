@@ -1,0 +1,26 @@
+urban_emp {
+  urban_emp.00 {
+    urban_emp.00.00 {
+      urban_emp.00.00.00 {
+        urban_emp.00.00.00.00 {
+          urban_emp.00.00.00.00.00 {
+            urban_emp.00.00.00.00.00.00 {
+              SOIL
+              GRASS
+            }
+            TREES 
+          }
+          urban_emp.00.00.00.00.01 {
+            SHADOWS
+            ASPHALT
+          }
+        }
+        CARS
+      }
+      POOLS
+    }
+    BUILDINGS
+  }
+  CONCRETE
+}
+

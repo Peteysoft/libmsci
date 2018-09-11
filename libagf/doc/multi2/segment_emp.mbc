@@ -1,0 +1,19 @@
+segment_emp {
+  segment_emp.00 {
+    segment_emp.00.00 {
+      segment_emp.00.00.00 {
+        segment_emp.00.00.00.00 {
+          segment_emp.00.00.00.00.00 {
+            PATH
+            BRICKFACE
+          }
+          GRASS
+        }
+        WINDOW
+      }
+      SKY
+    }
+    FOLIAGE
+  }
+  CEMENT
+}

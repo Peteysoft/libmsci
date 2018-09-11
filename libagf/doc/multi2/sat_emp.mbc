@@ -1,0 +1,16 @@
+sat/sat_emp {
+  sat/sat_emp.00 {
+    sat/sat_emp.00.00 {
+      sat/sat_emp.00.00.00 {
+        sat/sat_emp.00.00.00.00 {
+          VERY DAMP GREY SOIL
+          DAMP GREY SOIL
+        }
+        RED SOIL
+      }
+      GREY SOIL
+    }
+    STUBBLE
+  }
+  COTTON CROP
+}

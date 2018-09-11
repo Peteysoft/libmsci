@@ -7,9 +7,13 @@
 \usepackage{natbib}
 \usepackage{url}
 
+\usepackage{boxedminipage}
+
 \bibliographystyle{apa}
 
-\newenvironment{eqnnon}{\begin{equation}}{\end{equation}}
+\newenvironment{eqnnon}{\begin{equation*}}{\end{equation*}}
+
+\newenvironment{eqnarraynon}{\begin{eqnarray*}}{\end{eqnarray*}}
 
 \begin{document}
 
@@ -35,6 +39,9 @@ Numerical results indicate that while
 a one-size-fits-all solution consisting of one-versus-one 
 is appropriate for most datasets,
 a minority will benefit from a more customized approach.
+The techniques discussed in this paper allow for a large variety of multi-class
+configurations and solution methods to be tested so as to optimize 
+classification accuracy, accuracy of conditional probabilities and speed.
 
 \tableofcontents
 
@@ -83,9 +90,9 @@ set of binary classifiers,
 each returning a {\it decision function}, $r_i(\vec x)$.
 In this paper we assume that the decision function 
 returns estimates of the difference in conditional probabilities:
-\begin{equation}
+\begin{eqnnon}
 	r_i(\vec x) \approx p_i(+1|\vec x) - p_i(-1|\vec x)
-\end{equation}
+\end{eqnnon}
 where $p_i(c|\vec x)$ is the conditional probability of the $i$th
 binary classifier.
 The decision function is trained using the same type of ordered pairs as
@@ -112,8 +119,8 @@ $C_i^- \subset \lbrace 1..n_c \rbrace$ is the set of classes that map to $-1$.
 
 And second, once we have partitioned the classes
 and trained the binary classifers,
-how do we solve for the conditional probabilities, $P(c|\vec x)$?
-The class of the test point is determined through maximum likelihood:
+how do we solve for the multi-class conditional probabilities, $P(c|\vec x)$?
+The class of the test point may be estimated through maximum likelihood:
 \begin{equation}
 	c(\vec x)=\arg \max_i P(i | \vec x)
 	\label{maximum_likelihood}
@@ -160,14 +167,14 @@ binary classifier. If the value is $0$, the $j$th class label is excluded.
 \citep{Dietterich_Bakiri1995,Windeatt_Ghaderi2002}
 
 The non-zero elements of $A$ are:
-\begin{eqnarray}
+\begin{eqnarraynon}
 	a_{ic_{ik}^-} & = & -1 | ~k = [1..n_{c_i^-}]\\
 a_{ic_{ik}^+} & = & +1 | ~k=[1..n_{c_i^+}]
-\end{eqnarray}
+\end{eqnarraynon}
 
 %We can relate the multi-class probabilities to the output of the 
 %binary classifiers as follows:
-We can rewrite Equation (\ref{decision_function}) using the decision
+We can rewrite Equation (\ref{decision_function}) using the coding 
 matrix as follows:
 \begin{equation}
 	\frac{\sum_{j=1}^{n_c} a_{ij} p_j}{\sum_{j=1}^{n_c} |a_{ij}| p_j} = r_i
@@ -249,9 +256,9 @@ harder to enforce and details  will be left to a later section.
 In many other texts \citep{Allwein_etal2000, Hsu_Lin2002, Dietterich_Bakiri1995},
 the class of the test point is determined by how close $\vec r$
 is to each of the columns in $A$:
-\begin{equation}
+\begin{eqnnon}
 	c = \arg \min_i |\vec a^{(i)} - \vec r|^2
-\end{equation}
+\end{eqnnon}
 where $\vec a^{(i)}$ is the $i$th column of $A$.
 For the norm, $||$, Hamming distance is
 frequently used, which is the number of bits that must be changed
@@ -259,9 +266,9 @@ in a binary number in order for it to match another binary number.
 This assumes that each decision function returns only one of two values: 
 $r_i \in \lbrace -1, +1 \rbrace$.
 If the coding matrix is strict, then:
-\begin{equation}
+\begin{eqnnon}
 	|\vec a^{(j)} - \vec r| = \sum_i \delta_{a_{ij} r_i}
-\end{equation}
+\end{eqnnon}
 where $\delta$ is the Kronecker delta.
 \citet{Allwein_etal2000} 
 tailor the matric on the basis of the binary classifier used, each of which
@@ -271,17 +278,17 @@ will return a different type of continuous decision function
 Here we are assuming that the decision functions return an approximation of the 
 difference in conditional probabilities of the binary classifier.
 In this case a more natural choice of metric is the Euclidian. Expanding:
-\begin{equation}
+\begin{eqnnon}
 	c = \arg \min_i \left \lbrace |\vec a^{(i)}|^2 - 2 \vec a^{(i)} \cdot \vec r + |\vec r|^2 \right \rbrace
-\end{equation}
+\end{eqnnon}
 The length of $\vec r$ is independent of $i$, hence it can be eliminated from the expression.
 For the strict case, the length of each column will also be constant at $|\vec a^{(i)}|=\sqrt{n_p}$.
 Even for the non-strict case, we would expect the column lengths to be close for typical coding 
 matricesr; for instance, the column lengths are equal in the one-versus-one case.
 Eliminating these two terms produces a {\it voting} solution:
-\begin{equation}
+\begin{eqnnon}
 	c = \arg \max A^T \vec r
-\end{equation}
+\end{eqnnon}
 That is, if the sign of $r_i$ matches the $i$th element of the column, then a vote is cast 
 in proportion to the size of $r_i$ for the class label corresponding to the column number.
 
@@ -312,7 +319,7 @@ Common coding matrices include ``one-versus-the-rest'' in which
 we take each class and train it against the rest of the
 classes.
 For $n_c=4$ it works out to:
-\begin{equation}
+\begin{eqnnon}
 A = 
 \begin{bmatrix}
 1 & -1 & -1 & -1 \\
@@ -320,18 +327,17 @@ A =
 -1 & -1 & 1 & -1 \\
 -1 & -1 & -1 & 1
 \end{bmatrix}
-\end{equation}
+\end{eqnnon}
 or in the general case:
-\begin{equation}
+\begin{eqnnon}
 	a_{ij}=2 \delta_{ij}-1
-\end{equation}
-where $\delta$ is the Kronecker delta.
+\end{eqnnon}
 
 Probabilities for the one-versus-the-rest can be solved for directly by
 simply writing out one side of the equation:
-\begin{equation}
+\begin{eqnnon}
 	p_i = (r_i + 1)/2
-\end{equation}
+\end{eqnnon}
 The normalization constraint, (\ref{normalization}), can be enforced 
 through the use of a Lagrange multiplier. See next section.
 
@@ -341,7 +347,7 @@ through the use of a Lagrange multiplier. See next section.
 
 In a ``one-versus-one'' solution, we train each class against
 every other class. For $n_c=4$:
-\begin{equation}
+\begin{eqnnon}
 A = 
 \begin{bmatrix}
 -1 & 1 & 0 & 0 \\
@@ -351,24 +357,24 @@ A =
 0 & -1 & 0 & 1 \\
 0 & 0 & -1 & 1
 \end{bmatrix}
-\end{equation}
+\end{eqnnon}
 The one-versus-one solution is used in LIBSVM \citep{Chang_Lin2011}.
 
 Consider the following rearrangement of (\ref{non_hier}):
-\begin{eqnarray}
+\begin{eqnarraynon}
 	Q \vec p & = & \vec 0 \\
 	q_{ij} & = & a_{ij} - r_i |a_{ij}|
-\end{eqnarray}
+\end{eqnarraynon}
 We can include the normalization constraint, (\ref{normalization}), via
 a Lagrange multiplier:
-\begin{equation}
+\begin{eqnnon}
 	\min_{\vec p, \lambda} \left \lbrace | Q \vec p |^2 + \lambda(\vec 1 \cdot \vec p - 1) \right \rbrace
-\end{equation}
+\end{eqnnon}
 which produces the following linear system:
-\begin{eqnarray}
+\begin{eqnarraynon}
 	2 \sum_k q_{ki} q_{kj} p_j + \lambda & = & 0 \\
 	\sum_j p_j & = & 1
-\end{eqnarray}
+\end{eqnarraynon}
 It can be shown that with this solution for a 1-vs-1 coding matrix,
 inequality constraints in (\ref{nonnegative}) are always satisfied
 \citep{Wu_etal2004}.
@@ -410,7 +416,7 @@ the optimal coding matrix will be orthogonal, $A^T A = n_p I$, where $I$ is
 the $[n_c\times n_c]$ identity matrix. 
 Orthogonal coding matrices 
 are not hard to construct for certain class sizes, for instance:
-\begin{equation}
+\begin{eqnnon}
 A = 
 \begin{bmatrix}
 1 & -1 & -1 & -1 \\
@@ -418,7 +424,7 @@ A =
 -1 & -1 & -1 & 1 \\
 -1 & -1 & 1 & -1
 \end{bmatrix}
-\end{equation}
+\end{eqnnon}
 \citet{Mills2017} provides a fast, simple and elegant iterative solution for solving
 for conditional probabilities when using a ``strict'' orthogonal coding matrix.
 
@@ -430,6 +436,7 @@ for conditional probabilities when using a ``strict'' orthogonal coding matrix.
 
 \begin{figure}
 	\includegraphics[width=0.9\textwidth]{config1.eps}
+	\caption{Solving for the multi-class conditional probabilities with three clases.}
 	\label{config1}
 \end{figure}
 
@@ -438,7 +445,7 @@ the remaining inequality constraints for the minimization problem in
 (\ref{minimization_problem}) to (\ref{nonnegative}) form a triangular
 hyper-pyramid in a space of dimension $n_c-1$.
 See Figure \ref{config1}.
-Stating this as a general constrained optimization problem, we have:
+Stating this as a more general constrained optimization problem, we have:
 \begin{equation}
 	\min_{\vec x} | E \vec x - \vec f |^2
 	\label{minimization2}
@@ -452,62 +459,62 @@ where $\vec x$ is a vector of length $n_c-1$
 and $G$ is a $[n_c \times n_c-1]$ matrix.
 
 Suppose we transform this into a new problem by interpolating between the
-$n_c$ vertices of the hyper-pyramid.
+vertices of the hyper-pyramid.
 First, we find the vertices by solving:
-\begin{equation}
+\begin{eqnnon}
 	G_k \vec x_k = \lbrace h_i | i \ne k \rbrace
-\end{equation}
+\end{eqnnon}
 where $\vec x_k$ is the $k$th vertex of the hyper-pyramid and
 we define $G_k$ as the matrix formed by ommitting the $k$th row of $G$.
 
 We can locate any point inside the hyper-pyrmaid as follows:
-\begin{equation}
-	x^*_i = \vec x_k + \sum_i \gamma_i (\vec x_i - \vec x_k) | ~ i \ne k
-\end{equation}
+\begin{eqnnon}
+	x^*_i = \sum_i \gamma_i \vec x_i
+\end{eqnnon}
 where $k$ is an arbitrary index 
 and $\vec \gamma = \lbrace \gamma_i \rbrace$ has the same properties as a probability:
-\begin{eqnarray}
+\begin{eqnarraynon}
 	\sum_i \gamma_i & = & 1 \\
 	\vec \gamma & \ge & \vec 0
-\end{eqnarray}
+\end{eqnarraynon}
 In other words, any minimization problem of the form of (\ref{minimization2})
 and (\ref{nonnegative}) can be transformed into a problem of the same form
-as (\ref{minimization_problem}) to (\ref{nonnegative}).
+as (\ref{minimization_problem}) to (\ref{nonnegative}) and vice versa.
 
 The first line of attack in solving constrained minimization problems of the
 type we are discussing here are the Karesh-Kuhn-Tucker (KKT) conditions
 which generalize Lagrange multipliers to inequality constraints
 \citep{Lawson_Hanson1995,Boyd_Vandenberghe2004}.
 For the minimization problem in (\ref{minimization_problem})-(\ref{nonnegative}), the KKT conditions translate to:
-\begin{equation}
+\begin{eqnnon}
 	Q^T Q \vec p - Q^T \vec r + \lambda = \vec \mu
-\end{equation}
+\end{eqnnon}
 where:
-\begin{equation}
+\begin{eqnnon}
 	\vec \mu \ge \vec 0
-\end{equation}
+\end{eqnnon}
 and:
-\begin{eqnarray}
+\begin{eqnarraynon}
 	\mu_i = 0 & \iff & p_i > 0 \\
 	\mu_i > 0 & \iff & p_i = 0
-\end{eqnarray}
+\end{eqnarraynon}
 or more succinctly:
-\begin{equation}
+\begin{eqnnon}
 	\mu_i p_i = 0 ~ | ~ i = 1..n_c
-\end{equation}
+\end{eqnnon}
 
 Another important property of the problem is that it is completely {\it convex}.
 A {\it convex function}, $c$, has the following property:
-\begin{equation}
+\begin{eqnnon}
 	c \left \lbrace \gamma \vec x_0 + (1 - \gamma) \vec x_2 \right \rbrace
 	\le \gamma c(\vec x_1) + (1 - \gamma) c(\vec x_2)
-\end{equation}
+\end{eqnnon}
 where $0 \le \gamma \le 1$ is a  coefficient.
 Meanwhile, in a {\it convex set}, $C$:
-\begin{equation}
+\begin{eqnnon}
 	\vec x_1 \in C \land \vec x_2 \in C \rightarrow 
 \left \lbrace \gamma \vec x_1 + (1 - \gamma) \vec x_2 \right \rbrace \in C
-\end{equation}
+\end{eqnnon}
 \citep{Boyd_Vandenberghe2004}.
 In a convex optimization problem, there can only be one extremum, moreover
 simple, gradient descent algorithms should always eventually reach it.
@@ -525,17 +532,17 @@ for the probabilities using an arbitrary coding matrix:
 
 \begin{itemize}
 	\item For each $i=1, 2, ..., k$:
-			$\tilde p_i := \frac{\sum_j n_j a_{ji} \tilde r_j}{\sum_j n_j a_{ji}}$
-	\item $T := \sum_i \tilde p_i$; $\tilde p_i := \tilde p_i/T$
-	\item $\tilde r_j := \sum_i a_{ji} \tilde p_i/\sum_i |a_{ji}|$
+			Set $\tilde p_i := \frac{\sum_j n_j a_{ji} \tilde r_j}{\sum_j n_j a_{ji}}$
+	\item Set $T := \sum_i \tilde p_i$; Set $\tilde p_i := \tilde p_i/T$
+	\item Set $\tilde r_j := \sum_i a_{ji} \tilde p_i/\sum_i |a_{ji}|$
 	\item Repeat until convergence.
 \end{itemize}
 where $n_j$ is the number of training samples in the $j$th class.
 The technique minimizes the weighted Kullback-Leibler distance between actual and calculated
 binary probabilities:
-\begin{equation}
+\begin{eqnnon}
 	l(\vec x) = \sum_{i} n_i r_i \left [ \log \frac{r_i-1}{\tilde r_i-1} - \log \frac{1-r_i}{1-\tilde r_i} \right ]
-\end{equation}
+\end{eqnnon}
 as opposed to the usual Euclidean distance.
 The method supplies probability estimates roughly as accurate as the others described here,
 however our tests indicate that convergence is too slow to be useful.
@@ -546,13 +553,13 @@ however our tests indicate that convergence is too slow to be useful.
 
 \citet{Lawson_Hanson1995} describe an iterative solution to the following
 inequality constrained least-squares problem:
-\begin{equation}
+\begin{eqnnon}
 	\min_{\vec x} | E \vec x - \vec f |
-\end{equation}
+\end{eqnnon}
 subject to:
-\begin{equation}
+\begin{eqnnon}
 	\vec x > \vec 0
-\end{equation}
+\end{eqnnon}
 where $E$ is an $[m \times n]$ matrix
 and $\vec 0$ is a vector of all zeroes.
 
@@ -567,7 +574,7 @@ The algorithm is as follows:
 	\item Find an index $t \in Z$ such that $\mu_i = \max \lbrace \mu_i: j \in Z \rbrace$.
 	\item Move the index $t$ from set $Z$ to set $P$
 	\item Solve the least squares problem $\min_{\vec z} | E_P \vec z - \vec f |$ where $E_P$=$\lbrace \vec e^{(j)} | j \in P \rbrace$ (columns of $E$ whose corresponding indices are in $P$).
-	\item If $z_j > 0$ for all $j \in P$, set $\vec x:= \vec z$ and go to STep 2.
+	\item If $z_j > 0$ for all $j \in P$, set $\vec x:= \vec z$ and go to Step 2.
 	\item Find an index $q \in P$ such that $q = \arg \min_j \lbrace x_j/(x_j - z_j): ~z_j \le 0;~ j \in P \rbrace$.
 	\item Set $\alpha := x_q/(x_q - z_q)$
 	\item Set $\vec x := \vec x + \alpha(\vec z - \vec x)$
@@ -587,17 +594,17 @@ and the new.
 equality constraints such as the normalization constraint
 in (\ref{normalization}) with the above constrained
 least squares problem.
-The most obvious is to repeat the variable substition
+The most obvious is to repeat the variable substitution
 described in Equations (\ref{reduce_dimension1}) to (\ref{reduce_dimension2}) until the excluded
 probability is less-than-or-equal to $p_k\le 1$.
 
 
-\section{Decision trees}
+\section{Decision-trees}
 
 \label{hierarchical}
 
 The most obvious method of dividing up a multi-class problem into binary
-classifiers is hierarchically using a {\it decision tree} 
+classifiers is hierarchically using a {\it decision-tree} 
 \citep{Cheong_etal2004, Lee_Oh2003}.
 In this method, the classes are first divided into two partitions, then
 those partitions are each divided into two partitions and so on until only
@@ -613,11 +620,11 @@ constrained matrix inverse. On the other hand, because there is less
 information being taken into consideration, they may be less
 accurate.
 
-Interestingly, the same partitions created for a decision tree can also
+Interestingly, the same partitions created for a decision-tree can also
 be used in a non-hierarchical scheme
 to solve for all of the conditional probabilities. Consider the following
 coding matrix for instance:
-\begin{equation}
+\begin{eqnnon}
 A = 
 \begin{bmatrix}
 -1 & -1 & -1 & -1 & 1 & 1 & 1 & 1 \\
@@ -628,7 +635,7 @@ A =
 0 & 0 & 0 & 0 & -1 & 1 & 0 & 0 \\
 0 & 0 & 0 & 0 & 0 & 0 & -1 & 1
 \end{bmatrix}
-\end{equation}
+\end{eqnnon}
 While there are only seven rows for eight classes, 
 once we add in the constraint in (\ref{normalization}) the system becomes 
 fully determined.
@@ -667,10 +674,10 @@ This is illustrated in Figure \ref{landclasstree}.
 
 In this case we have prior knowledge of how the classes are related to one another.
 On the other hand the classes may be too abstract to have any knowledge without examining the actual training data.
-Many different methods of empirically designing both decision trees and coding matrices have been shown in the literature.
+Many different methods of empirically designing both decision-trees and coding matrices have been shown in the literature.
 \citet{Cheong_etal2004}, for instance, use a self-organizing-map (SOM)
 \citep{Kohonen2000} to visualize the relationship between the classes while
-\citet{Lee_Oh2003} use a genetic algorithm to optimize the decision tree.
+\citet{Lee_Oh2003} use a genetic algorithm to optimize the decision-tree.
 
 \citet{Benabdeslem_Bennani2006} design the tree by measuring the distance between
 the classes and building a dendrogram.
@@ -679,47 +686,48 @@ This seems the most straightforward approach and is interesting in that it reduc
 Consider the problem above: it stands to reason that the field and forest classes would be much more strongly separated than either of the sub-classes within.
 That is the {\it interclass distance} between field and forest is larger.
 
-How does one measure the interclass distance? Fundamentally this is a the distance between two sets and there are many methods of measuring this.
+How does one measure the interclass distance? Fundamentally this is a distance measure between two sets and there are many methods of determining it.
 We could notate this as follows:
-\begin{eqnarray}
+\begin{eqnarraynon}
 	D_{ij} & = & \mathfrak D \left \lbrace P(\vec x|i),~P(\vec x|j) \right \rbrace \\
 	       & \approx & D\left (\lbrace \vec x_k|~y_k=i \rbrace,~\lbrace \vec x_k|~y_k=j\rbrace \right )
-\end{eqnarray}
+\end{eqnarraynon}
 where $\mathfrak D$ is a distance operator between two distributions and $D$ is a distance operator between two sets.
 
 Consider the square of the distance between the means of the two classes divided by their standard deviations. Let:
-\begin{equation}
+\begin{eqnnon}
 	\vec \mu_i = \frac{1}{n_i} \sum_{k|y_k=i} \vec x_k
-\end{equation}
-be the mean of the $i$th class where $n_i$ is the number of instances of that class, while:
-\begin{equation}
+\end{eqnnon}
+be the mean of the $i$th class distribution where $n_i$ is the number of instances of that class, while:
+\begin{eqnnon}
 	\sigma_i = \frac{1}{n_i-1}\sqrt{\sum_{k|y_k=i}|\vec x_k - \vec \mu_i|^2}
-\end{equation}
-then let the distance between the two classes be:
-\begin{equation}
+\end{eqnnon}
+is the standard deviation.
+Then let the distance between the two classes be:
+\begin{eqnnon}
 	D_{ij}=\frac{|\vec \mu_j - \vec \mu_i |^2}{\sqrt{\sigma_i \sigma_j}}
-\end{equation}
+\end{eqnnon}
 That is, the closer the centers of the two classes, the shorter the distance, while the wider each class is, the farther the distance.
 	
 This would work well if each of the classes is quite distinct and clustered around a strong center.
 But for more diffuse classes, especially those with multiple centers, it would make more sense to use a metric designed specifically for sets rather than this somewhat crude adaptation of a vector metric.
 In this regard, the Hausdorff metric seems tailor-made for this application.
 
-For a pair of finite sets such as training samples from a pair of classes,
-the Hausdorff distance works out to \citep{Ott1993, Gulick1992}:
-\begin{equation}
-D_{Hij} = \max \left \lbrace \min_k \max_l | \vec x_k - \vec x_l|~,~\min_l \max_k | \vec x_k - \vec x_l| ~ ;~y_k=i;~y_l=j \right \rbrace
-\end{equation}
+For training samples from a pair of classes---two finite sets---the Hausdorff distance works out to \citep{Ott1993, Gulick1992}:
+\begin{eqnnon}
+D_{Hij} = \max \left \lbrace \min_k | \vec x_k - \vec x_l|~,~\min_l | \vec x_k - \vec x_l| ~ ;~y_k=i;~y_l=j \right \rbrace
+\end{eqnnon}
 
 \section{Unifying framework}
 
 Since there are many ways of solving the multi-class classification problem,
-we presenti here a descriptive control language that unifies many of the ideas
+we present here a descriptive control language that unifies many of the ideas
 presented in the previous sections.
 This is not a "one-size-fits-all" solution, but rather a means of specifying
 a particular partitioning that best suits the problem at hand.
 This partitioning could be arrived at either through prior knowledge, 
-or empirically by measuring the distance between the classes, for instance.
+or empirically by measuring the distance between the classes, for instance--or
+by simply exhaustively testing different configurations.
 
 In Backus-Naur form (BNF) the control language looks like this:
 
@@ -799,8 +807,8 @@ as in the following, nine-class example:
   }
 \end{verbatim}
 
-To demonstrate how this feature might be useful, the above another hypothetical 
-surface-classification problem with the key as follows:
+The above demonstrates how the feature might be useful
+on a hypothetical surface-classification problem with the key as follows:
 
 \begin{tabular}{ll}
 	0 & Deciduous forest \\
@@ -836,20 +844,20 @@ To illustrate the operation of the empirical partitioning, here are
 control files for the shuttle dataset.
 The arbitrary, balanced tree is as follows:
 \begin{verbatim}
-shuttle/shuttle_hier {
-  shuttle/shuttle_hier.00 {
+shuttle_hier {
+  shuttle_hier.00 {
     0
-    shuttle/shuttle_hier.00.01 {
+    shuttle_hier.00.01 {
       1
       2
     }
   }
-  shuttle/shuttle_hier.01 {
-    shuttle/shuttle_hier.01.00 {
+  shuttle_hier.01 {
+    shuttle_hier.01.00 {
       3
       4
     }
-    shuttle/shuttle_hier.01.01 {
+    shuttle_hier.01.01 {
       5
       6
     }
@@ -860,12 +868,12 @@ shuttle/shuttle_hier {
 
 While the empirically-designed tree is:
 \begin{verbatim}
-shuttle/shuttle_emp {
-  shuttle/shuttle_emp.00  {
-    shuttle/shuttle_emp.00.00 {
-      shuttle/shuttle_emp.00.00.00 {
-        shuttle/shuttle_emp.00.00.00.00 {
-          shuttle/shuttle_emp.00.00.00.00.00 {
+shuttle_emp {
+  shuttle_emp.00  {
+    shuttle_emp.00.00 {
+      shuttle_emp.00.00.00 {
+        shuttle_emp.00.00.00.00 {
+          shuttle_emp.00.00.00.00.00 {
             2
             1
           }
@@ -903,7 +911,7 @@ shuttle/shuttle_emp {
 
 \begin{figure}
 	\includegraphics[width=\textwidth]{shuttle_tree.eps}
-	\caption{Multiclass decision trees for the shuttle dataset. 
+	\caption{Multiclass decision-trees for the shuttle dataset. 
 	In (a) we rank them mechanically whereas in (b) the tree is a dendrogram based on the Hausdorff distance between each class.}\label{shuttle_tree}
 \end{figure}
 
@@ -914,12 +922,12 @@ as illustrated in Figure \ref{shuttle_tree}.
 To solve the hierarchical models using least-squares, hierarchical models were first translated to non-hierarchical, as discussed in Section \ref{hierarchical}.
 The above, for instance, becomes:
 \begin{verbatim}
-shuttle/shuttle_emp 0 1 2 3 4 5 / 6;
-shuttle/shuttle_emp.00 0 1 2 3 4 / 5;
-shuttle/shuttle_emp.00.00 0 1 2 3 / 4;
-shuttle/shuttle_emp.00.00.00 0 1 2 / 3;
-shuttle/shuttle_emp.00.00.00.00 0 1 / 2;
-shuttle/shuttle_emp.00.00.00.00.00 0 / 1;
+shuttle_emp 0 1 2 3 4 5 / 6;
+shuttle_emp.00 0 1 2 3 4 / 5;
+shuttle_emp.00.00 0 1 2 3 / 4;
+shuttle_emp.00.00.00 0 1 2 / 3;
+shuttle_emp.00.00.00.00 0 1 / 2;
+shuttle_emp.00.00.00.00.00 0 / 1;
 { 2 1 6 5 3 4 0}
 \end{verbatim}
 
@@ -934,7 +942,7 @@ shuttle_adj-00 0 1 2 3 4 5 / 6;
 {0 1 2 3 4 5 6}
 \end{verbatim}
 with corresponding coding matrix:
-\begin{equation}
+\begin{eqnnon}
 A = 
 \begin{bmatrix}
 -1 & 1 & 1 & 1 & 1 & 1 & 1 \\
@@ -945,7 +953,7 @@ A =
 -1 & -1 & -1 & -1 & -1 & -1 & 1 \\
 \end{bmatrix}
 	\label{adjacent}
-\end{equation}
+\end{eqnnon}
 The rational for using it will be explained in Section \ref{results}, below.
 
 \subsection{Data and software}
@@ -976,7 +984,7 @@ The datasets tested are as follows:
 the ``letter'' dataset is another text-recognition problem 
 that classifies letters rather than numbers 
 \citep{Frey_Slate1991};
-the ``segment'' dataset is a pattern-based image classification problem;
+the ``segment'' dataset is a pattern-based image-classification problem;
 the ``sat'' dataset is a satellite land-classification problem;
 the ``shuttle'' dataset predicts different flight configurations on the
 space shuttle \citep{Michie_etal1994, King_etal1995};
@@ -1011,9 +1019,9 @@ LibAGF may be downloaded at: \url{https://github.com/peteysoft/libmsci}.
 
 To evaluate the conditional probabilities we use the Brier score
 \citep{Brier1950, Jolliffe_Stephenson2003}:
-\begin{equation}
+\begin{eqnnon}
 B=\sqrt{\frac{1}{n} \sum_{i=1}^{n} \sum_{j=1}^{n_c} \left ( \tilde p_{ij} - \delta_{jy_i} \right )^2}
-\end{equation}
+\end{eqnnon}
 where $n$ is the number of test samples.
 
 \begin{table}
@@ -1047,6 +1055,103 @@ where $n$ is the number of test samples.
 
 \input{results2018_09_06.tex}
 
+\begin{figure}[htp]
+	\begin{boxedminipage}{\textwidth}
+		\begin{small}
+		\begin{verbatim}
+segment_emp {
+  segment_emp.00 {
+    segment_emp.00.00 {
+      segment_emp.00.00.00 {
+        segment_emp.00.00.00.00 {
+          segment_emp.00.00.00.00.00 {
+            PATH
+            BRICKFACE
+          }
+          GRASS
+        }
+        WINDOW
+      }
+      SKY
+    }
+    FOLIAGE
+  }
+  CEMENT
+}
+		\end{verbatim}
+		\end{small}
+	\end{boxedminipage}
+	\caption{Control file for a multi-class decision-tree designed empirically for the segment dataset. Image type is used for the class labels.}
+	\label{segment}
+\end{figure}
+
+\begin{figure}[htp]
+	\begin{boxedminipage}{\textwidth}
+		\begin{small}
+		\begin{verbatim}
+pendigits_emp {
+  pendigits_emp.00 {
+    pendigits_emp.00.00 {
+      pendigits_emp.00.00.00 {
+        pendigits_emp.00.00.00.00 {
+          pendigits_emp.00.00.00.00.00 {
+            pendigits_emp.00.00.00.00.00.00 {
+              pendigits_emp.00.00.00.00.00.00.00 {
+                7
+                2
+              }
+              3
+            }
+            1
+          }
+          pendigits_emp.00.00.00.00.01 {
+            8
+            5
+          }
+        }
+        9
+      }
+      4
+    }
+    6
+  }
+  0
+}
+		\end{verbatim}
+		\end{small}
+	\end{boxedminipage}
+	\caption{Control file for a multi-class decision-tree designed empirically for the pendigits dataset.}
+	\label{pendigits}
+\end{figure}
+
+\begin{figure}[htp]
+	\begin{boxedminipage}{\textwidth}
+		\begin{small}
+		\begin{verbatim}
+sat_emp {
+  sat_emp.00 {
+    sat_emp.00.00 {
+      sat_emp.00.00.00 {
+        sat_emp.00.00.00.00 {
+          VERY DAMP GREY SOIL
+          DAMP GREY SOIL
+        }
+        RED SOIL
+      }
+      GREY SOIL
+    }
+    STUBBLE
+  }
+  COTTON CROP
+}
+		\end{verbatim}
+		\end{small}
+	\end{boxedminipage}
+	\caption{Control file for a multi-class decision-tree designed empirically for the sat dataset. Surface-type is used for the class labels.}
+	\label{sat}
+\end{figure}
+
+
 Results are shown Tables \ref{training1} through \ref{Brier4} with the
 key given in Table \ref{key}.
 If we take the results for these eight datasets as being representative,
@@ -1060,7 +1165,7 @@ a standard linear solver such as Gaussian elimination,
 QR decomposition or SVD is sufficient,
 as opposed to a complex, iterative scheme.
 
-On the other hand, the partitioning used does not even appear all that
+Further, the partitioning used does not even appear all that
 critical in most cases.
 Even a sub-optimal method, such as the ``adjacent'' partioning, which makes
 little sense for datasets in which the classes have no ordering,
@@ -1081,18 +1186,33 @@ actually gives up very little in accuracy,
 even though it is not optimal in the least-squares sense.
 (These results are not shown.)
 
-Further, a data-dependent design can provide a small but significant
-increase in accuracy.
-An interesting side-effect of having empirically-designed partitioning is
-that it improved both training and classificaton speed.
+A data-dependent decision-tree design can provide a small but significant
+increase in accuracy over a more arbitrary tree.
+An interesting side-effect is
+that it can also improve both training and classificaton speed.
+Strangely, the technique worked better for the character recognition datasets than
+the image classification datasets.
+The groupings found did not always correspond with what might be
+expected from intuition.
+In a pattern-recognition dataset, it might not always be clear  
+how different image types should be related anyway, as in
+the segment dataset, Figure \ref{segment}.
+For another example, the control file for the pendigits dataset is shown in Figure \ref{pendigits}.
+We can see how 8 and 5 might be related, but it is harder to
+understand how 3 and 1 are related to 7 and 2.
+On the other hand, the arrangement might turn out almost exactly
+expected as in the sat dataset, Figure \ref{sat}.
+This is also the only patter-recognition dataset for which the method worked.
+
 Unfortunately the approach used here isn't able to match the one-versus-one 
 arrangement in accuracy but
 this does not preclude cleverer schemes producing larger gains.
+Using similar techniques, \citet{Benabdeslem_Bennani2006} and \citet{Zhou_etal2008} are both able to beat one-vs.-one, but only by a narrow margin.
 
 Finally, some datasets may have special characteristics that can be exploited
 to produce more accurate results through the multi-class configuration.
 While this was the original thesis behind this paper,
-only one example was found in this group eight datasets, 
+only one example was found in this group of eight datasets, 
 namely the humidity dataset.
 Because the classes are a discretized continuous variable, they have an
 ordering. As such, it is detrimental to split up consecutive classes more
@@ -1101,8 +1221,15 @@ accurate. Meanwhile, the one-vs.-rest configuration performs abysimally while
 the one-vs.-one performs well enough, but worse than all the other methods
 save one.
 The excellent performance of the adjacent configuration for the urban
-dataset suggests it might be worth searching for an ordering to the classes.
+dataset suggests that searching for an ordering to the classes might be a
+useful strategy for improving accuracy.
 This could be done using inter-set distance in a manner similar to the empirical hierarchical method.
+
+Since the results are a fairly mixed bag, it would be useful to
+have a framework and toolset with which to explore different methods of
+building up multi-class classification models so as to optimize classification
+accuracy, accuracy of conditional probabilities and speed.
+This is is what we have tried to lay out in this paper.
 
 
 \bibliography{../agf_bib,multi2,../svm_accel/svm_accel,../pwl}
