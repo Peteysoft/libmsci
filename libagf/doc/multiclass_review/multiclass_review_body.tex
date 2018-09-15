@@ -1,57 +1,10 @@
-\documentclass{article}
-
-\usepackage{amsmath}
-\usepackage{amsfonts}
-\usepackage[dvips]{graphicx}
-
-\usepackage{natbib}
-\usepackage{url}
-
-\usepackage{boxedminipage}
-
-\bibliographystyle{apa}
-
-\newenvironment{eqnnon}{\begin{equation*}}{\end{equation*}}
-
-\newenvironment{eqnarraynon}{\begin{eqnarray*}}{\end{eqnarray*}}
-
-\begin{document}
-
-
-\title{Solving for multi-class: a survey and synthesis}
-
-\author{Peter Mills\\\textit{peteymills@hotmail.com}}
-
-\maketitle
-
-\section*{Abstract}
-
-We review the most common methods of solving for multi-class from binary
-and generalize them to a common framework.
-Since conditional probabilties are useful both for quantifying the accuracy of
-an estimate and for calibration purposes, 
-these are a required part of the solution.
-There is some indication that the best solution for multi-class classification
-is dependent on the particular dataset.
-As such, we are particularly interested in data-driven solution design, 
-whether based on a priori considerations or empirical examination of the data.
-Numerical results indicate that while
-a one-size-fits-all solution consisting of one-versus-one 
-is appropriate for most datasets,
-a minority will benefit from a more customized approach.
-The techniques discussed in this paper allow for a large variety of multi-class
-configurations and solution methods to be tested so as to optimize 
-classification accuracy, accuracy of conditional probabilities and speed.
-
-\tableofcontents
-
 \section{Introduction}
 
 Many statistical classifiers can only discriminate between two classes.
 Common examples include linear classifiers such as perceptrons and
 logistic regression classifiers \citep{Michie_etal1994} as well as extensions
 of these methods such as support vector machines (SVM) \citep{Mueller_etal2001} and 
-piecewise linear classifiers \citep{Mills2018, Bagirov2005}.
+piecewise linear classifiers \citep{Bagirov2005,Mills2018}.
 There are many possible ways of extending a binary classifier to deal
 with multi-class classification and the options increase exponentially
 with the class labels.
@@ -59,7 +12,7 @@ Moreover, the best method may well depend on the type of problem
 \citep{Dietterich_Bakiri1995,Allwein_etal2000}.
 
 The goal of this paper is not only to provide a summary of the
-best methods of solving for multiclass, but to synthesize
+best methods of solving for multi-class, but to synthesize
 these ideas into a comprehensive framework whereby a multi-class problem
 can be solved using a broad array of configurations for the binary
 classifiers. 
@@ -101,13 +54,12 @@ which for convenience are chosen as either $-1$ or $+1$,
 that is, $y_{ij} \in \lbrace -1, +1 \rbrace$.
 
 The problem under consideration in this review is, first,
-how can we partition the classes, $\lbrace y_i \rbrace$, for each binary
-classifier?
+how to partition the classes, $\lbrace y_i \rbrace$, for each binary classifier?
 That is we want to create a mapping of the form:
 \begin{equation}
 	y_{ij} (y_j) = \left \lbrace  \begin{array}{lr}
--1 & | y_j \in C_i^+ \\
-+1 & | y_j \in C_i^-
+-1 & |~ y_j \in C_i^+ \\
++1 & |~ y_j \in C_i^-
 \end{array}
 	\right . \label{mapping}
 \end{equation}
@@ -187,6 +139,9 @@ $\vec r=\lbrace r_i| i=[1..n_p]\rbrace$
 is the vector of decision functions,
 and
 $n_p$ is the number of partitions.
+Note that the coding matrix used here is transposed relative to the usual
+convention in the literature since this is the more natural layout when 
+solving for the probabilities.
 
 Some rearrangement shows that
 we can solve for the probabilities, $\vec p$, via matrix inversion:
@@ -209,7 +164,7 @@ Because the decision functions, $\vec r$, are not estimated perfectly,
 the final probabilities may need to be constrained and the inverse
 problem solved via minimization:
 \begin{equation}
-	\vec p = \arg \min_{\vec v} | Q \vec v - \vec r | \label{minimization_problem}
+	\vec p = \arg \min_{\vec v} | Q \vec v - \vec r |^2 \label{minimization_problem}
 \end{equation}
 subject to:
 \begin{eqnarray}
@@ -228,8 +183,9 @@ equation:
 	Q^T Q \vec p = Q^T \vec r
 	\label{normal_equation}
 \end{equation}
+This also takes care of the over-determined case, $n_b > n_c$.
 Because the binary probability estimates in $\vec r$ are rarely perfect, however,
-in many cases the constraints in (\ref{normalization}) and (\ref{nonnegative}) will not be satisfied. 
+in many cases the constraints in (\ref{normalization}) and (\ref{nonnegative}) will be violated. 
 Therefore, for most applications, either the results will need to be adjusted, likely reducing accuracy, or the problem constrained.
 
 It is straightforward to incorporate the normalization constraint in (\ref{normalization}) into the problem. 
@@ -239,7 +195,8 @@ obvious is to write one probability in terms of the others:
 	p_k = 1 - \sum_{i|i \ne k} p_i
 	\label{reduce_dimension1}
 \end{equation}
-And solve the following, reduced dimensional linear system:
+where $k$ is an index between $1$ and $n_c$,
+and solve the following, reduced-dimensional linear system:
 \begin{equation}
 	\sum_j (q_{ij} - q_{ik} ) p_j = r_i - q_{ik}
 	\label{reduce_dimension2}
@@ -375,6 +332,7 @@ which produces the following linear system:
 	2 \sum_k q_{ki} q_{kj} p_j + \lambda & = & 0 \\
 	\sum_j p_j & = & 1
 \end{eqnarraynon}
+where $\vec 1$ is a vector of all ones.
 It can be shown that with this solution for a 1-vs-1 coding matrix,
 inequality constraints in (\ref{nonnegative}) are always satisfied
 \citep{Wu_etal2004}.
@@ -383,12 +341,34 @@ inequality constraints in (\ref{nonnegative}) are always satisfied
 for support vector machines (SVM) than either
 error-correcting codes or one-vs.-the-rest.
 
+\subsection{Exhaustive codes}
+
+An {\it exhaustive} coding matrix is a strict coding matrix which is 
+exactly as it sounds: every possible permutation of rows is listed.
+Again for $n_c=4$:
+\begin{eqnnon}
+A = 
+\begin{bmatrix}
+-1 & 1 & 1 & 1 \\
+1 & -1 & 1 & 1 \\
+-1 & -1 & 1 & 1 \\
+1 & 1 & -1 & 1 \\
+-1 & 1 & -1 & 1 \\
+1 & -1 & -1 & 1 \\
+-1 & -1 & -1 & 1 \\
+\end{bmatrix}
+\end{eqnnon}
+This of course is just like counting in binary except zero is ommitted and
+we only count half way so as eliminate redundant combinations.
+A disadvantage of exhaustive codes is that they become very large for large
+numbers of classes, making them slow.
+
 \subsection{Error correcting codes}
 
 Another common coding matrix is simply an arbitrary one: this is commonly
 known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
 This is often random, but may also be carefully designed 
-\citep{Crammer_Singer2002}.
+\citep{Crammer_Singer2002,Zhou_etal2008}.
 In principle this covers all the earliers cases, however in practice the
 term can also refer more specifically to a random coding matrix.
 We cover the solution of the general case, which includes a random
@@ -413,7 +393,7 @@ for a factor of -1 are degenerate.
 In other words, 
 %if the number of rows is equal to the number of classes, 
 the optimal coding matrix will be orthogonal, $A^T A = n_p I$, where $I$ is
-the $[n_c\times n_c]$ identity matrix. 
+the $[n_c\times n_c]$ identity matrix and $n_p \ge n_c$. 
 Orthogonal coding matrices 
 are not hard to construct for certain class sizes, for instance:
 \begin{eqnnon}
@@ -425,6 +405,9 @@ A =
 -1 & -1 & 1 & -1
 \end{bmatrix}
 \end{eqnnon}
+For an orthogonal coding matrix, the voting solution will be equivalent to the
+unconstrained least-squares solution.
+Using this property,
 \citet{Mills2017} provides a fast, simple and elegant iterative solution for solving
 for conditional probabilities when using a ``strict'' orthogonal coding matrix.
 
@@ -435,7 +418,8 @@ for conditional probabilities when using a ``strict'' orthogonal coding matrix.
 \subsection{General comments}
 
 \begin{figure}
-	\includegraphics[width=0.9\textwidth]{config1.eps}
+	\includegraphics[width=0.9\textwidth]{../multi2/config1.eps}
+	%\includegraphics[width=0.9\textwidth]{config1.eps}
 	\caption{Solving for the multi-class conditional probabilities with three clases.}
 	\label{config1}
 \end{figure}
@@ -447,32 +431,30 @@ hyper-pyramid in a space of dimension $n_c-1$.
 See Figure \ref{config1}.
 Stating this as a more general constrained optimization problem, we have:
 \begin{equation}
-	\min_{\vec x} | E \vec x - \vec f |^2
+	\min_{\vec z} | E \vec z - \vec f |^2
 	\label{minimization2}
 \end{equation}
 subject to:
 \begin{equation}
-	G \vec x \ge \vec h
+	G \vec z \ge \vec h
 	\label{inequality2}
 \end{equation}
-where $\vec x$ is a vector of length $n_c-1$ 
-and $G$ is a $[n_c \times n_c-1]$ matrix.
+where $\vec z$ is a vector of length $n_c-1$ 
+and $G$ is an $[n_c \times n_c-1]$ matrix.
 
 Suppose we transform this into a new problem by interpolating between the
 vertices of the hyper-pyramid.
-First, we find the vertices by solving:
+First, we find the vertices by solving the following linear system:
 \begin{eqnnon}
-	G_k \vec x_k = \lbrace h_i | i \ne k \rbrace
+	\sum_j g_{ij} z_{kj} = h_i ~ | ~ i \ne k
 \end{eqnnon}
-where $\vec x_k$ is the $k$th vertex of the hyper-pyramid and
-we define $G_k$ as the matrix formed by ommitting the $k$th row of $G$.
+where $\vec z_k$ is the $k$th vertex of the hyper-pyramid.
 
 We can locate any point inside the hyper-pyrmaid as follows:
 \begin{eqnnon}
-	x^*_i = \sum_i \gamma_i \vec x_i
+	x^*_i = \sum_i \gamma_i \vec z_i
 \end{eqnnon}
-where $k$ is an arbitrary index 
-and $\vec \gamma = \lbrace \gamma_i \rbrace$ has the same properties as a probability:
+where $\vec \gamma$ has the same properties as a probability:
 \begin{eqnarraynon}
 	\sum_i \gamma_i & = & 1 \\
 	\vec \gamma & \ge & \vec 0
@@ -506,14 +488,14 @@ or more succinctly:
 Another important property of the problem is that it is completely {\it convex}.
 A {\it convex function}, $c$, has the following property:
 \begin{eqnnon}
-	c \left \lbrace \gamma \vec x_0 + (1 - \gamma) \vec x_2 \right \rbrace
-	\le \gamma c(\vec x_1) + (1 - \gamma) c(\vec x_2)
+	c \left \lbrace \gamma \vec z_0 + (1 - \gamma) \vec z_2 \right \rbrace
+	\le \gamma c(\vec z_1) + (1 - \gamma) c(\vec z_2)
 \end{eqnnon}
 where $0 \le \gamma \le 1$ is a  coefficient.
 Meanwhile, in a {\it convex set}, $C$:
 \begin{eqnnon}
-	\vec x_1 \in C \land \vec x_2 \in C \rightarrow 
-\left \lbrace \gamma \vec x_1 + (1 - \gamma) \vec x_2 \right \rbrace \in C
+	\vec z_1 \in C \land \vec z_2 \in C \rightarrow 
+\left \lbrace \gamma \vec z_1 + (1 - \gamma) \vec z_2 \right \rbrace \in C
 \end{eqnnon}
 \citep{Boyd_Vandenberghe2004}.
 In a convex optimization problem, there can only be one extremum, moreover
@@ -522,7 +504,6 @@ Both the convexity property and the KKT conditions are used in the
 \citet{Lawson_Hanson1995} solution to inequality constrained least
 squares problems.
 See Section \ref{Lawson_Hanson}, below.
-
 
 
 \subsection{Zadrozny solution}
@@ -554,31 +535,31 @@ however our tests indicate that convergence is too slow to be useful.
 \citet{Lawson_Hanson1995} describe an iterative solution to the following
 inequality constrained least-squares problem:
 \begin{eqnnon}
-	\min_{\vec x} | E \vec x - \vec f |
+	\min_{\vec z} | E \vec z - \vec f |^2
 \end{eqnnon}
 subject to:
 \begin{eqnnon}
-	\vec x > \vec 0
+	\vec z > \vec 0
 \end{eqnnon}
 where $E$ is an $[m \times n]$ matrix
 and $\vec 0$ is a vector of all zeroes.
 
-The solution is divided into a set $P$ containing the indices of 
+The solution is divided into a set $N$ containing the indices of 
 all the non-zero values and a set $Z$ containing the indices of the 
 zero values.
 The algorithm is as follows:
 \begin{enumerate}
-	\item Set $P := \emptyset$; $Z:=1..n$
-	\item Compute the $n$-vector $\vec \mu := E^T(\vec f - E \vec x)$.
+	\item Set $N := \emptyset$; $Z:=1..n$
+	\item Compute the $n$-vector $\vec \mu := E^T(\vec f - E \vec z)$.
 	\item If the set $Z$ is empty or if $\mu_j \le 0$ for all $j \in Z$ go to Step 12.
 	\item Find an index $t \in Z$ such that $\mu_i = \max \lbrace \mu_i: j \in Z \rbrace$.
-	\item Move the index $t$ from set $Z$ to set $P$
-	\item Solve the least squares problem $\min_{\vec z} | E_P \vec z - \vec f |$ where $E_P$=$\lbrace \vec e^{(j)} | j \in P \rbrace$ (columns of $E$ whose corresponding indices are in $P$).
-	\item If $z_j > 0$ for all $j \in P$, set $\vec x:= \vec z$ and go to Step 2.
-	\item Find an index $q \in P$ such that $q = \arg \min_j \lbrace x_j/(x_j - z_j): ~z_j \le 0;~ j \in P \rbrace$.
-	\item Set $\alpha := x_q/(x_q - z_q)$
-	\item Set $\vec x := \vec x + \alpha(\vec z - \vec x)$
-	\item Move from set $P$ to set $Z$ all indices $j \in P$ for which $x_j = 0$. Go to step 6.
+	\item Move the index $t$ from set $Z$ to set $N$
+	\item Solve the least squares problem $\min_{\vec z^*} | E_N \vec z^* - \vec f |$ where $E_N$=$\lbrace \vec e^{(j)} | j \in N \rbrace$ (columns of $E$ whose corresponding indices are in $N$).
+	\item If $z_j^* > 0$ for all $j \in N$, set $\vec z:= \vec z^*$ and go to Step 2.
+	\item Find an index $q \in N$ such that $q = \arg \min_j \lbrace z_j/(z_j - z_j^*): ~z_j^* \le 0;~ j \in N \rbrace$.
+	\item Set $\alpha := z_q/(z_q - z_q^*)$
+	\item Set $\vec z := \vec z + \alpha(\vec z^* - \vec z)$
+	\item Move from set $N$ to set $Z$ all indices $j \in N$ for which $z_j = 0$. Go to step 6.
 	\item The computation is completed.
 \end{enumerate}
 
@@ -604,7 +585,7 @@ probability is less-than-or-equal to $p_k\le 1$.
 \label{hierarchical}
 
 The most obvious method of dividing up a multi-class problem into binary
-classifiers is hierarchically using a {\it decision-tree} 
+classifiers is hierarchically using a {\it decision tree} 
 \citep{Cheong_etal2004, Lee_Oh2003}.
 In this method, the classes are first divided into two partitions, then
 those partitions are each divided into two partitions and so on until only
@@ -620,7 +601,7 @@ constrained matrix inverse. On the other hand, because there is less
 information being taken into consideration, they may be less
 accurate.
 
-Interestingly, the same partitions created for a decision-tree can also
+Interestingly, the same partitions created for a decision tree can also
 be used in a non-hierarchical scheme
 to solve for all of the conditional probabilities. Consider the following
 coding matrix for instance:
@@ -674,10 +655,10 @@ This is illustrated in Figure \ref{landclasstree}.
 
 In this case we have prior knowledge of how the classes are related to one another.
 On the other hand the classes may be too abstract to have any knowledge without examining the actual training data.
-Many different methods of empirically designing both decision-trees and coding matrices have been shown in the literature.
+Many different methods of empirically designing both decision trees and coding matrices have been shown in the literature.
 \citet{Cheong_etal2004}, for instance, use a self-organizing-map (SOM)
 \citep{Kohonen2000} to visualize the relationship between the classes while
-\citet{Lee_Oh2003} use a genetic algorithm to optimize the decision-tree.
+\citet{Lee_Oh2003} use a genetic algorithm to optimize the decision tree.
 
 \citet{Benabdeslem_Bennani2006} design the tree by measuring the distance between
 the classes and building a dendrogram.
@@ -911,7 +892,7 @@ shuttle_emp {
 
 \begin{figure}
 	\includegraphics[width=\textwidth]{shuttle_tree.eps}
-	\caption{Multiclass decision-trees for the shuttle dataset. 
+	\caption{Multiclass decision trees for the shuttle dataset. 
 	In (a) we rank them mechanically whereas in (b) the tree is a dendrogram based on the Hausdorff distance between each class.}\label{shuttle_tree}
 \end{figure}
 
@@ -1030,20 +1011,20 @@ where $n$ is the number of test samples.
 		\hline
 		term & meaning & cross-ref. \\
 		\hline\hline
-		config. & configuration of multiclass partitioning & Equation (\ref{mapping}) \\
+		config. & configuration of multi-class partitioning & Equation (\ref{mapping}) \\
 		method & solution method for computing probabilities & Equation (\ref{maximum_likelihood}) \\
 		\hline
 		1 vs. 1 & one-versus-one partitioning & Section \ref{one_vs_one} \\
 		1 vs. rest & one-versus-the-rest partitioning & Section \ref{one_vs_rest} \\
 		ortho. & orthogonal coding & Section \ref{orthogonal} \\
 		adj. & adjacent partitioning & Equation (\ref{adjacent}) \\
-		hier. & ``hierarchical'' or decision-tree partitioning & Section \ref{hierarchical} \\
-		emp. & empirically-designed decision-tree & Section \ref{empirical} \\
+		hier. & ``hierarchical'' or decision tree partitioning & Section \ref{hierarchical} \\
+		emp. & empirically-designed decision tree & Section \ref{empirical} \\
 		\hline
 		lsq. & Lawson and Hanson constrained least-squares & Section \ref{Lawson_Hanson} \\
 		inv. & matrix inverse solution & Section \ref{one_vs_one} \\
 		iter. & iterative solution for orthogonal codes & Section \ref{orthogonal} \\
-		rec. & recursive ascent of decision-tree & Section \ref{hierarchical} \\
+		rec. & recursive ascent of decision tree & Section \ref{hierarchical} \\
 		\hline
 	\end{tabular}
 \end{table}
@@ -1081,7 +1062,7 @@ segment_emp {
 		\end{verbatim}
 		\end{small}
 	\end{boxedminipage}
-	\caption{Control file for a multi-class decision-tree designed empirically for the segment dataset. Image type is used for the class labels.}
+	\caption{Control file for a multi-class decision tree designed empirically for the segment dataset. Image type is used for the class labels.}
 	\label{segment}
 \end{figure}
 
@@ -1120,7 +1101,7 @@ pendigits_emp {
 		\end{verbatim}
 		\end{small}
 	\end{boxedminipage}
-	\caption{Control file for a multi-class decision-tree designed empirically for the pendigits dataset.}
+	\caption{Control file for a multi-class decision tree designed empirically for the pendigits dataset.}
 	\label{pendigits}
 \end{figure}
 
@@ -1147,7 +1128,7 @@ sat_emp {
 		\end{verbatim}
 		\end{small}
 	\end{boxedminipage}
-	\caption{Control file for a multi-class decision-tree designed empirically for the sat dataset. Surface-type is used for the class labels.}
+	\caption{Control file for a multi-class decision tree designed empirically for the sat dataset. Surface-type is used for the class labels.}
 	\label{sat}
 \end{figure}
 
@@ -1175,7 +1156,7 @@ some kind of ordering to the classes which are: trees, grass, soil, concrete,
 asphalt, buildings, cars, pools, shadows.
 If classification speed is critical, a hierarchical approach will trade 
 off accuracy to save some compute cycles with 
-$O(\log n_c)$ performance instead of $O(n_c^2)$.
+$~O(n_c)$ performance (for SVM) instead of $O(n_c^2)$.
 Accuracy lost is again quite dependent on the dataset.
 
 Not only can sub-optimal partitionings produce reasonable results, 
@@ -1186,7 +1167,7 @@ actually gives up very little in accuracy,
 even though it is not optimal in the least-squares sense.
 (These results are not shown.)
 
-A data-dependent decision-tree design can provide a small but significant
+A data-dependent decision tree design can provide a small but significant
 increase in accuracy over a more arbitrary tree.
 An interesting side-effect is
 that it can also improve both training and classificaton speed.
@@ -1200,14 +1181,24 @@ the segment dataset, Figure \ref{segment}.
 For another example, the control file for the pendigits dataset is shown in Figure \ref{pendigits}.
 We can see how 8 and 5 might be related, but it is harder to
 understand how 3 and 1 are related to 7 and 2.
-On the other hand, the arrangement might turn out almost exactly
+On the other hand, the arrangement might turn out very much as
 expected as in the sat dataset, Figure \ref{sat}.
-This is also the only patter-recognition dataset for which the method worked.
+This is also the only pattern-recognition dataset for which the method 
+worked as intended.
 
 Unfortunately the approach used here isn't able to match the one-versus-one 
-arrangement in accuracy but
+configuration in accuracy but
 this does not preclude cleverer schemes producing larger gains.
-Using similar techniques, \citet{Benabdeslem_Bennani2006} and \citet{Zhou_etal2008} are both able to beat one-vs.-one, but only by a narrow margin.
+Using similar techniques, \citet{Benabdeslem_Bennani2006} and \citet{Zhou_etal2008} are both able to beat one-vs.-one, but only by narrow margins.
+
+Interestingly, solving hierarchical configurations via least-squares by
+converting them to non-hierarchical error-correcting codes is marginally more
+accurate than solving them recursively, 
+both for the classes and the probabilities.
+Presumably, the greater information content contained in all $n_c-1$ partitions
+versus only $\log n_c$, on average, accounts for this.
+There is a speed penalty, of course, with roughly $O(n_c \log n_c)$ performance 
+for the least-squares solution.
 
 Finally, some datasets may have special characteristics that can be exploited
 to produce more accurate results through the multi-class configuration.
@@ -1229,10 +1220,5 @@ Since the results present a somewhat mixed bag, it would be useful to
 have a framework and toolset with which to explore different methods of
 building up multi-class classification models so as to optimize classification
 accuracy, accuracy of conditional probabilities and speed.
-This is is what we have tried to lay out in this paper.
-
-
-\bibliography{../agf_bib,multi2,../svm_accel/svm_accel,../pwl}
-
-\end{document}
+This is what we have layed out in this paper.
 
