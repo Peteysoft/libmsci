@@ -498,8 +498,8 @@ Meanwhile, in a {\it convex set}, $C$:
 \left \lbrace \gamma \vec z_1 + (1 - \gamma) \vec z_2 \right \rbrace \in C
 \end{eqnnon}
 \citep{Boyd_Vandenberghe2004}.
-In a convex optimization problem, there can only be one extremum, moreover
-simple, gradient descent algorithms should always eventually reach it.
+The convexity property means that any local minima is also a global minima,
+moreover simple, gradient descent algorithms should always eventually reach it.
 Both the convexity property and the KKT conditions are used in the 
 \citet{Lawson_Hanson1995} solution to inequality constrained least
 squares problems.
@@ -509,13 +509,14 @@ See Section \ref{Lawson_Hanson}, below.
 \subsection{Zadrozny solution}
 
 \citet{Zadrozny2001} describes the following, iterative method of solving
-for the probabilities using an arbitrary coding matrix:
+for the probabilities using an arbitrary coding matrix, starting with a 
+guess for the approximated probabilities, $\lbrace \tilde p_i \rbrace$:
 
 \begin{itemize}
-	\item For each $i=1, 2, ..., k$:
-			Set $\tilde p_i := \frac{\sum_j n_j a_{ji} \tilde r_j}{\sum_j n_j a_{ji}}$
-	\item Set $T := \sum_i \tilde p_i$; Set $\tilde p_i := \tilde p_i/T$
 	\item Set $\tilde r_j := \sum_i a_{ji} \tilde p_i/\sum_i |a_{ji}|$
+	\item For each $i=1, 2, ..., k$:
+			Set $\tilde p_i := \tilde p_i \frac{\sum_j n_j a_{ji} r_j}{\sum_j n_j a_{ji} \tilde r_j}$
+	\item Set $T := \sum_i \tilde p_i$; Set $\tilde p_i := \tilde p_i/T$
 	\item Repeat until convergence.
 \end{itemize}
 where $n_j$ is the number of training samples in the $j$th class.
@@ -1004,6 +1005,10 @@ To evaluate the conditional probabilities we use the Brier score
 B=\sqrt{\frac{1}{n} \sum_{i=1}^{n} \sum_{j=1}^{n_c} \left ( \tilde p_{ij} - \delta_{jy_i} \right )^2}
 \end{eqnnon}
 where $n$ is the number of test samples.
+Meanwhile, we use the uncertainty coefficient to evaluate classification skill.
+This is a measure based on Shannon's channel capacity \citep{Shannon} and
+has a number of advantages over simple fraction correct or ``accuracy''. 
+\citep{Press_etal1992,Mills2011}.
 
 \begin{table}
 	\caption{Key for Tables \ref{training1} through \ref{Brier4}.}\label{key}
@@ -1135,6 +1140,10 @@ sat_emp {
 
 Results are shown Tables \ref{training1} through \ref{Brier4} with the
 key given in Table \ref{key}.
+For each result, ten trials were performed with individually randomized 
+test data comprising 30\% of the total.
+Error bars are the standard deviations.
+
 If we take the results for these eight datasets as being representative,
 there are several conclusions that can be made.
 The first is that despite the seeming complexity of the problem, a 
