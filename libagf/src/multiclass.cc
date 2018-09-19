@@ -204,7 +204,7 @@ namespace libagf {
   void multiclass<real, cls_t>::set_solve_type(int ct) {
     switch (ct) {
       case (0):
-        solve_class=&solve_class_constrained2<real, real>;
+        solve_class=&solve_class_nnls3<real, real>;
         break;
       case (1):
         solve_class=&solve_class_scratch<real, real>;
@@ -226,7 +226,7 @@ namespace libagf {
         solve_class=&solve_class_renorm<real>;
         break;
       case (7):
-        solve_class=&solve_class_constrained1<real, real>;
+        solve_class=&solve_class_constrained2<real, real>;
         break;
       case (8):
         solve_class=&solve_class_vote_pdf2<real, real>;
@@ -238,25 +238,29 @@ namespace libagf {
         solve_class=&solve_class_Zadrozny<real, real>;
         break;
       case (11):
-        solve_class=&solve_class_interior<real, real>;
-        break;
-      case (12):
-        solve_class=&solve_class_peaked<real, real>;
-        break;
-      case (13):
-        solve_class=&solve_class_kkt_iter<real, real>;
-        break;
-      case (14):
-        solve_class=&solve_class_nnls<real, real>;
-        break;
-      case (15):
-        solve_class=&solve_class_nnls2<real, real>;
+        solve_class=&solve_class_constrained1<real, real>;
         break;
       case (16):
+	//backwards compatibility with orthogonal trials:
         solve_class=&solve_class_nnls3<real, real>;
         break;
+      case (102):
+        solve_class=&solve_class_peaked<real, real>;
+        break;
+      case (103):
+        solve_class=&solve_class_kkt_iter<real, real>;
+        break;
+      case (104):
+        solve_class=&solve_class_nnls<real, real>;
+        break;
+      case (105):
+        solve_class=&solve_class_nnls2<real, real>;
+        break;
+      case (106):
+        solve_class=&solve_class_interior<real, real>;
+        break;
       default:
-        solve_class=&solve_class_constrained2<real, real>;
+        solve_class=&solve_class_nnls3<real, real>;
         break;
     }
   }

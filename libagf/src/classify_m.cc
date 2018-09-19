@@ -68,8 +68,7 @@ int main(int argc, char *argv[]) {
     fprintf(helpfs, "                  must always be specified explicitly)\n");
     fprintf(helpfs, "  -u          model (borders) data is not normalized\n");
     fprintf(helpfs, "  -Q          how to solve for probabilities in non-hierarchical scheme: [0]\n");
-    fprintf(helpfs, "                0 = constrained inverse 1 [default]\n");
-    fprintf(helpfs, "                      (may not produce an optimal estimate in all cases)\n");
+    fprintf(helpfs, "                0 = Lawson and Hanson solution [default]\n");
     fprintf(helpfs, "                1 = basic linear least squares\n");
     fprintf(helpfs, "                2 = voting from probabilities\n");
     fprintf(helpfs, "                3 = voting from class labels\n");
@@ -77,12 +76,14 @@ int main(int argc, char *argv[]) {
     fprintf(helpfs, "                5 = least squares with normalization constraint 2\n");
     fprintf(helpfs, "                      (appropriate for 1 vs. 1)\n");
     fprintf(helpfs, "                6 = least squares with renormalization\n");
-    fprintf(helpfs, "                7 = constrained inverse 2\n");
-    fprintf(helpfs, "                      (may be extremely inefficient (NP) for some cases)\n");
+    fprintf(helpfs, "                7 = constrained inverse 1\n");
+    fprintf(helpfs, "                      (may not produce an optimal estimate in all cases)\n");
     fprintf(helpfs, "                8 = voting from pdf with renormalization\n");
     fprintf(helpfs, "                      (designed for orthogonal coding matrices)\n");
     fprintf(helpfs, "                9 = one versus the rest\n");
     fprintf(helpfs, "                10= iterative method by Zadrozny\n");
+    fprintf(helpfs, "                11 = constrained inverse 2\n");
+    fprintf(helpfs, "                      (may be extremely inefficient (NP) for some cases)\n");
     fprintf(helpfs, "  -C          no class data\n");
     fprintf(helpfs, "  -E missing  (in combination with -M) value for missing data\n");
     fprintf(helpfs, "  -H          no header\n");
