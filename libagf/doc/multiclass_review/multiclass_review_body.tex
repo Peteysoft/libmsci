@@ -7,7 +7,7 @@ of these methods such as support vector machines (SVM) \citep{Mueller_etal2001} 
 piecewise linear classifiers \citep{Bagirov2005,Mills2018}.
 There are many possible ways of extending a binary classifier to deal
 with multi-class classification and the options increase exponentially
-with the class labels.
+with the number of class labels.
 Moreover, the best method may well depend on the type of problem
 \citep{Dietterich_Bakiri1995,Allwein_etal2000}.
 
@@ -16,7 +16,7 @@ best methods of solving for multi-class, but to synthesize
 these ideas into a comprehensive framework whereby a multi-class problem
 can be solved using a broad array of configurations for the binary
 classifiers. 
-In particular, we require that any algorithm solve 
+In addition, we require that any algorithm solve 
 for the multi-class conditional probabilities.
 These are useful both for gauging the accuracy of a result and for various
 forms of recalibration \citep{Jolliffe_Stephenson2003,Fawcett2006,Mills2009,Mills2011}.
@@ -72,7 +72,7 @@ $C_i^- \subset \lbrace 1..n_c \rbrace$ is the set of classes that map to $-1$.
 And second, once we have partitioned the classes
 and trained the binary classifers,
 how do we solve for the multi-class conditional probabilities, $P(c|\vec x)$?
-The class of the test point may be estimated through maximum likelihood:
+The class of the test point may then be estimated through maximum likelihood:
 \begin{equation}
 	c(\vec x)=\arg \max_i P(i | \vec x)
 	\label{maximum_likelihood}
@@ -109,11 +109,11 @@ the $i$th partition
 
 It's more natural (and considerably simpler) to describe the problem using a
 {\it coding matrix}, $A$, 
-which is structured such that
+which is structured such that each element,
 $a_{ij} \in \lbrace -1, 0, 1 \rbrace$, 
 where $i$ enumerates the binary classifier and
 $j$ enumerates the class of the multi-class problem.
-In other words, if $a_{ij}$ is $-1$/$+1$, we would assign each of the $j$th class
+If $a_{ij}$ is $-1$/$+1$, we would assign each of the $j$th class
 labels in the training data a value of $-1$/$+1$ when training the $i$th
 binary classifier. If the value is $0$, the $j$th class label is excluded.
 \citep{Dietterich_Bakiri1995,Windeatt_Ghaderi2002}
@@ -155,7 +155,8 @@ we can solve for the probabilities, $\vec p$, via matrix inversion:
 Note that $Q$ reduces to $A$ if $A$ contains no zeroes \citep{Kong_Dietterich1997}.
 The case of a coding matrix that contains no zeroes, that is all the partitions divide up all the
 classes rather than a subset, will be called the {\it strict} case.
-From a computational perspective, in the strict case,
+From a computational perspective,
+in the strict case,
 $Q$ must be regenerated for every new test point or value of $\vec r$ 
 whereas in the non-strict case, $A$ can be inverted or decomposed and then
 applied to every subsequent value of $\vec r$.
@@ -317,7 +318,7 @@ A =
 \end{eqnnon}
 The one-versus-one solution is used in LIBSVM \citep{Chang_Lin2011}.
 
-Consider the following rearrangement of (\ref{non_hier}):
+Consider the following variation of (\ref{non_hier}):
 \begin{eqnarraynon}
 	Q \vec p & = & \vec 0 \\
 	q_{ij} & = & a_{ij} - r_i |a_{ij}|
@@ -343,8 +344,8 @@ error-correcting codes or one-vs.-the-rest.
 
 \subsection{Exhaustive codes}
 
-An {\it exhaustive} coding matrix is a strict coding matrix which is 
-exactly as it sounds: every possible permutation of rows is listed.
+An {\it exhaustive} coding matrix is a strict coding matrix in which
+every possible permutation is listed.
 Again for $n_c=4$:
 \begin{eqnnon}
 A = 
@@ -358,20 +359,20 @@ A =
 -1 & -1 & -1 & 1 \\
 \end{bmatrix}
 \end{eqnnon}
-This of course is just like counting in binary except zero is ommitted and
-we only count half way so as eliminate redundant combinations.
-A disadvantage of exhaustive codes is that they become very large for large
-numbers of classes, making them slow.
+This is like counting in binary except zero is ommitted and
+we only count half way so as to eliminate degenerate partitions.
+A disadvantage of exhaustive codes is that they become exponentially larger 
+for more classes, making them slow.
 
 \subsection{Error correcting codes}
 
-Another common coding matrix is simply an arbitrary one: this is commonly
+Another common coding matrix is an arbitrary one: this is commonly
 known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
-This is often random, but may also be carefully designed 
+It can be random, but may also be carefully designed 
 \citep{Crammer_Singer2002,Zhou_etal2008}.
-In principle this covers all the earliers cases, however in practice the
+In principle this case covers all the earliers ones, however in practice the
 term can also refer more specifically to a random coding matrix.
-We cover the solution of the general case, which includes a random
+We cover the solution of the general case, which includes any random
 matrix, in Section \ref{general_case_solution}, below.
 
 \subsection{Orthogonal codes}
@@ -382,7 +383,7 @@ To maximize the accuracy of an error-correcting coding matrix,
 \citet{Allwein_etal2000} and \citet{Windeatt_Ghaderi2002} show that
 the distance between each of the columns, $| \vec a^{(i)} - \vec a^{(j)} |$, 
 should be as large as possible,
-where $\vec a^({i})$ is the $i$th column of the matrix $A$ and $i \ne j$. 
+where $\vec a^{(i)}$ is the $i$th column of the matrix $A$ and $i \ne j$. 
 If we take the upright brackets once again to be a
 Euclidian metric and assume that $A$ is ``strict'' then this 
 reduces to minimizing the absolute value of the dot product,
@@ -415,12 +416,19 @@ for conditional probabilities when using a ``strict'' orthogonal coding matrix.
 
 \label{general_case_solution}
 
+We are interested here in a general method of solving for all the probabilities
+multi-class classification based on error-correcting codes.
+Ideally, this would be an exact solution to the constrained least-squares problem
+in Equations (\ref{minimization_problem})-(\ref{nonnegative}) but might also
+minimize some other cost function.
+Approximate solutions might be useful as well.
+
 \subsection{General comments}
 
 \begin{figure}
 	\includegraphics[width=0.9\textwidth]{../multi2/config1.eps}
 	%\includegraphics[width=0.9\textwidth]{config1.eps}
-	\caption{Solving for the multi-class conditional probabilities with three clases.}
+	\caption{Solving for the multi-class conditional probabilities with three classes.}
 	\label{config1}
 \end{figure}
 
@@ -460,7 +468,7 @@ where $\vec \gamma$ has the same properties as a probability:
 	\vec \gamma & \ge & \vec 0
 \end{eqnarraynon}
 In other words, any minimization problem of the form of (\ref{minimization2})
-and (\ref{nonnegative}) can be transformed into a problem of the same form
+and (\ref{inequality2}) can be transformed into a problem of the same form
 as (\ref{minimization_problem}) to (\ref{nonnegative}) and vice versa.
 
 The first line of attack in solving constrained minimization problems of the
@@ -604,8 +612,8 @@ accurate.
 
 Interestingly, the same partitions created for a decision tree can also
 be used in a non-hierarchical scheme
-to solve for all of the conditional probabilities. Consider the following
-coding matrix for instance:
+to solve for all of the conditional probabilities. 
+Consider the following coding matrix for instance:
 \begin{eqnnon}
 A = 
 \begin{bmatrix}
@@ -624,7 +632,7 @@ fully determined.
 
 \subsection{Variations}
 
-There are many variations on the method. \citet{Ramanan_etal2007} for instance train a 
+There are many variations on the method. \citet{Ramanan_etal2007} train a 
 one-versus-the-rest model at each level of the tree so that if the ``one''
 class is returned, the lower levels of the tree are short circuited
 and this class is selected for the final result. Otherwise, the one class
@@ -646,6 +654,7 @@ In a DDAG, there are multiple paths to the same node.
 
 \begin{figure}
 	\includegraphics[width=0.9\textwidth]{landclasstree.eps}
+	\caption{Diagram of hierarchical or decision tree multi-class classification using a hypothetical surface-classification problem.}
 	\label{landclasstree}
 \end{figure}
 
@@ -663,7 +672,7 @@ Many different methods of empirically designing both decision trees and coding m
 
 \citet{Benabdeslem_Bennani2006} design the tree by measuring the distance between
 the classes and building a dendrogram.
-\citet{Zhou_etal2008} use a similar method to design a coding matrix.
+%\citet{Zhou_etal2008} use a similar method to design a coding matrix.
 This seems the most straightforward approach and is interesting in that it reduces a very large problem involving probabilities into a much smaller one.
 Consider the problem above: it stands to reason that the field and forest classes would be much more strongly separated than either of the sub-classes within.
 That is the {\it interclass distance} between field and forest is larger.
@@ -815,7 +824,7 @@ The configurations are: one-vs-one, one-vs.-rest, orthogonal partioning,
 from a bottom-up dendrogram using the Hausdorf metric.
 The solution methods are: constrained least squares as described
 in Section \ref{Lawson_Hanson}, matrix inverse which is specific to one-vs.-one,
-the iterative method designed orthogonal partitioning 
+the iterative method designed for orthogonal partitioning 
 (see Section \ref{orthogonal}), and recursively which is appropriate
 only for hierarchical or tree-based configurations.
 
@@ -894,7 +903,7 @@ shuttle_emp {
 \begin{figure}
 	\includegraphics[width=\textwidth]{shuttle_tree.eps}
 	\caption{Multiclass decision trees for the shuttle dataset. 
-	In (a) we rank them mechanically whereas in (b) the tree is a dendrogram based on the Hausdorff distance between each class.}\label{shuttle_tree}
+	In (a) we build the tree in a rigid pattern whereas in (b) the tree is a dendrogram based on the Hausdorff distance between each class.}\label{shuttle_tree}
 \end{figure}
 
 Note that the shuttle dataset is very unbalanced, 
@@ -978,13 +987,13 @@ The characteristics of each dataset are summarized in Table \ref{datasets}.
 
 The base binary classifier used to test the ideas in this paper is a 
 support vector machine (SVM) \citep{Mueller_etal2001}.
-We use the LIBSVM \citep{Chang_Lin2011} to perform the training
+We use LIBSVM \citep{Chang_Lin2011} to perform the training
 using the \verb/svm-train/ command.
 LIBSVM is a simple yet powerful library for SVM that implements multiple
 kernel types and includes two different regularization methods.
 It was developed by Chih-Chung Chang and Chih-Hen Lin of the National
-Taiwan University in Taipei.
-LIBSVM can be downloaded at: \url{https://www.csie.ntu.edu.tw/~cjlin/libsvm}.
+Taiwan University in Taipei
+and can be downloaded at: \url{https://www.csie.ntu.edu.tw/~cjlin/libsvm}.
 
 Everything else was done using the libAGF library \citep{Mills2011,Mills2018}
 which includes extensive codes for generalized multi-class classification.
@@ -1009,6 +1018,11 @@ Meanwhile, we use the uncertainty coefficient to evaluate classification skill.
 This is a measure based on Shannon's channel capacity \citep{Shannon} and
 has a number of advantages over simple fraction correct or ``accuracy''. 
 \citep{Press_etal1992,Mills2011}.
+If we treat the classifier as a noisy channel, with each classification a
+single symbol, the true class entering at the transmitter and the estimated
+class coming out at the receiver,
+then the uncertainty coefficient is the channel capacity divided by the
+entropy per symbol.
 
 \begin{table}
 	\caption{Key for Tables \ref{training1} through \ref{Brier4}.}\label{key}

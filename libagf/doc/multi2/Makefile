@@ -2,11 +2,8 @@ BIBFILE = ../agf_bib.bib
 
 SOURCE1 = binary_class_map.eps config1.eps rhist.eps sample_roc.eps skillvsr0.eps
 
-SOURCE2 = landclasstree.eps shuttle_tree.eps results.tex results2018_09_06.tex
-
 all:
 	make TARGET=constrained SOURCE="$(SOURCE1)" constrained.pdf
-	make TARGET=multiclass_review SOURCE="$(SOURCE2)" multiclass_review.pdf
 	make TARGET=calibration SOURCE="$(SOURCE1)" calibration.pdf
 
 clean:

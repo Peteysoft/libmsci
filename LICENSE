@@ -16,7 +16,12 @@ libAGF:
 
 libAGF multi-class classification:
 
-  Peter Mills (2014). "Multi-borders classification." arxiv:1404.4095.
+  Peter Mills (2018). "Solving for multi-class: a survey and synthesis." arxiv:1809.05929.
+
+libAGF borders acceleration:
+
+  Peter Mills (2018). "Accelerating kernel classifiers through borders mapping."
+  Journal of Real-Time Image Processing, doi:10.1007/s11554-018-0769-9.
 
 ctraj contour advection:
 
@@ -26,8 +31,8 @@ ctraj contour advection:
 
 ctraj PC proxy:
 
-  Peter Mills (2012). "Principal component proxy tracer analysis." 
-  arxiv:1202.1999
+  Peter Mills (2018). "PC proxy: A method for dynamical tracer interpolation."
+  Environmental Fluid Mechanics, doi:10.1007/s10652-018-9615-7.
 
 ctraj tracer:
 

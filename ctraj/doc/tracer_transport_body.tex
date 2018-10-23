@@ -32,7 +32,7 @@ then it is an approximate solution to the following differential equation:
 \end{eqnl}
 where $q$ is the {\it tracer mixing ratio}, $\vec x$ is spatial position and the velocity, $\vec v$, is given:
 \begin{eqnl}
-	\frac{\mathrm d \vec x}{\mathrm d t} = \vec v
+	\frac{\mathrm d \vec x}{\mathrm d t} = \vec v(\vec x, ~ t)
 \end{eqnl}
 In this case, $\vec r$ is a discrete approximation of $q$:
 \begin{eqnl}
@@ -258,7 +258,11 @@ as in (\ref{initial_error_vector}), we can also show:
 
 Finally, by defining $\Phi^{-1}(\vec x,~t,~\Delta t)$ as,
 \begin{eqnl}
-\Phi^{-1}[\Phi(\vec x_0,~t_0,~\Delta t),~t_0,~\Delta t]=\vec x_0
+\Phi^{-1}[\Phi(\vec x_0,~t_0,~\Delta t),~t_0+\Delta t,~\Delta t]=\vec x_0
+\end{eqnl}
+or, more simply,
+\begin{eqnl}
+	\Phi^{-1}(\vec x_0,~t_0,~\Delta t)=\Phi(\vec x_0,~t_0,~-\Delta t))
 \end{eqnl}
 we can show:
 \begin{eqnl}
@@ -592,8 +596,9 @@ This is known as Liouville Theorem \citep{Thornton2003}.
 
 The result generalizes to the time-dependent case since the solution can
 always be decomposed as an infinite product of infinitessimally small 
-integrations of the evolution matrix each with eigenvalue zero.
-Like the eigenvalues, the Lyapunov exponents will also sum to zero:
+integrations of the evolution matrix each with determinant of one.
+Like the eigenvalues of the evolution matrix, 
+the Lyapunov exponents will also sum to zero:
 \begin{eqanl}
 |R| =	|U||S||V^T| & = & 1 \\
 	\prod_i s_i & = & 1 \\
