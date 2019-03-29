@@ -15,7 +15,6 @@
 // Vx = Vx_0 exp(Lt)
 //
 
-//for an example of how to use the solver, see test_lode
 
 namespace libpetey {
 
