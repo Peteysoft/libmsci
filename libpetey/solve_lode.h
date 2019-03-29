@@ -12,7 +12,7 @@
 //uses eigenvalue decomposition:
 // dx/dt = V^{-1} L V x
 // d(Vx)/dt = L V x
-// Vx = Vx_0 exp(Lt)
+// Vx = V^{-1} exp(Lt) V x_0
 //
 
 
