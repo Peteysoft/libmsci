@@ -5,6 +5,18 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_matrix_complex_double.h>
 
+//solves systems of linear ordinary differential equations of the following form:
+// dx/dt = A x
+//where a is a matrix, x is a vector, and t is a scalar
+
+//uses eigenvalue decomposition:
+// dx/dt = V^{-1} L V x
+// d(Vx)/dt = L V x
+// Vx = Vx_0 exp(Lt)
+//
+
+//for an example of how to use the solver, see test_lode
+
 namespace libpetey {
 
   //performs the eigenvalue decomposition: A=v*eval*vinv
