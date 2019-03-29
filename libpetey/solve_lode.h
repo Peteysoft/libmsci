@@ -12,8 +12,9 @@
 //uses eigenvalue decomposition:
 // dx/dt = V^{-1} L V x
 // d(Vx)/dt = L V x
-// Vx = V^{-1} exp(Lt) V x_0
-//
+// Vx = exp(Lt) V x_0
+// x = V^{-1} exp(Lt) V x_0
+
 
 
 namespace libpetey {
