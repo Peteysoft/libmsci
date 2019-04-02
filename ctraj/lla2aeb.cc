@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
     fprintf(docfs, "\n");
     fprintf(docfs, "options:\n");
     ctraj_optargs(docfs, "nrxydV?", 1);
-    if (flags[0]) {
+    if (flags[1]) {
       tracer->help(docfs);
     }
     fprintf(docfs, "\n");

@@ -3,7 +3,7 @@
 
 Many methods of statistical classication can only discriminate between two classes. 
 Examples include lineear classifiers such as perceptrons and logistic regression \citep{Michie_etal1994}, 
-piecewise linear classifiers \citep{Herman_Yeung1992,Mills2011},
+piecewise linear classifiers \citep{Herman_Yeung1992,Mills2018},
 as well as support vector machines \citep{kernel_intro}.
 There are many ways of generalizing binary classification to 
 multi-class.
@@ -64,14 +64,16 @@ In vector notation:
 \begin{equation}
 	A^T \vec p = \vec r \label{inverse}
 \end{equation}
+This result derives from the fact that the class probabilities are
+additive \citep{Kong_Dietterich1997}.
 The more general case where a class can be excluded, that is the coding 
 may include zeroes, $a_{ij} \in \lbrace -1, 0, +1\rbrace$,
-will not be addressed here.
+will not be addressed here. 
 
 Note that this assumes that the binary decision functions, $\vec r$,
 estimate the conditional probabilities perfectly.
 In practice
-there are a set of constrainsts that must be enforced
+there are a set of constraints that must be enforced
 because $\vec p$ is only allowed to take on certain values.
 Thus, we wish to solve the following minimization problem:
 \begin{equation}
@@ -129,7 +131,7 @@ More formally, let $\vec 1$ be a vector of all $1$'s:
 		\item if $\vec p_i \cdot \vec 1 \ne 1$ then 
 		$\vec p_{i+1} := \vec p_i + (\vec p_i \cdot \vec 1 - 1)/m_i$
 		\item let $K$ be the set of $k$ such that $p_{i+1,k} < 0$
-		\item for each $k$ in $K$:
+		\item for each $k \in K$:
 		\begin{itemize}
 			\item $p_k:=0$
 			\item Remove $k$ from the problem
@@ -138,6 +140,8 @@ More formally, let $\vec 1$ be a vector of all $1$'s:
 		\item $i:=i+1$
 	\end{itemize}
 \end{itemize}
+
+%\input{orthogonal_algorithm.tex}
 
 Note that resultant direction vectors for each step form an orthogonal set.
 For instance, suppose $m_0=4$ and after enforcing the normalization constraint,
@@ -156,6 +160,8 @@ More generally, consider the following sequence of vectors:
 		\end{array} \right .
 \end{eqnnon}
 where $i \in [1, m]$ and $j \in [1, m]$. \citep{Boyd_Vandenberghe2004}
+A nice feature of this method, in addition to being fast,
+is that it is divided into two stages: a solution stage and a normalization stage.
 
 \section{Constructing the coding matrix}
 
@@ -199,7 +205,8 @@ $n=4t$ exist,
 and it is still unproven that examples exist for all values of $t$
 \citep{Hedayat_Wallis1978}.
 A very simple, recursive method exists to generate matrices of size $n=t^2$ 
-\citep{Hedayat_Wallis1978} but without the properties in (\ref{restriction}).
+\citep{Hedayat_Wallis1978} but cannot be made to have the property in (\ref{restriction}): 
+the matrix includes a both a row and column of only ones.
 Such a matrix will include a ``harmonic series'' of the same type as in
 (\ref{harmonic}).
 
@@ -230,10 +237,10 @@ if they are to be efficiently applied to problems with a large number of classes
 
 \section{Results}
 
-\begin{table}
+\begin{table*}
 \caption{Solution time, uncertainty coefficient and Brier score for six different datasets using random and orthogonal error-correcting codes.}\label{class_results}
 \input{orthogonal_results2018_08_14.tex}
-\end{table}
+\end{table*}
 
 Orthogonal error-correcting codes were tested on six different datasets:
 two for digit recognition--``pendigits'' \citep{Alimoglu1996} and
@@ -243,7 +250,7 @@ dataset--``sat''; a similar dataset for image recognition--``segment'';
 and a dataset for vehicle recognition--``vehicle'' \citep{Siebert1987}.
 The last four are borrowed from the ``statlog'' project \citep{King_etal1995,Michie_etal1994}.
 
-The method was compared with random error-correcting codes using using the same
+The method was compared with random error-correcting codes using the same
 number of codes or matrix rows, $m$.
 Random codes were solved using a constrained linear least squares method based
 on the Karesh-Kuhn-Tucker conditions \citep{Lawson_Hanson1995}.
@@ -253,6 +260,11 @@ Partitions were trained separately then combined by finding the union of
 sets of support vectors for each partition.
 By indexing into the combined list of support vectors, the algorithms are
 optimized in both space and time \citep{Chang_Lin2011}.
+
+The same parameters were used for both the random and orthogonal codes and 
+for all partitions.
+All datasets were trained using  ``radial basis function'' (Gaussian)
+kernels of differing widths.
 
 Results are shown in Table \ref{class_results}.
 Confidence limits represent standard deviations over 20 trials using
@@ -268,7 +280,7 @@ which is root-mean-square
 error measured against the truth of the class as a 0 or 1 value
 \citep{Brier1950,Jolliffe_Stephenson2003}.
 
-For most of the datasets, orthogonal coding matrices provide a small but
+For all of the datasets tested, orthogonal coding matrices provide a small but
 significant improvement over random coding matrices in both classification
 accuracy and in the accuracy of the conditional probabilities.
 This is in line with the literature as in \citet{Dietterich_Bakiri1995,Windeatt_Ghaderi2002}.

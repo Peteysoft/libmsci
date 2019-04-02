@@ -44,3 +44,5 @@ The correctness of Eq. (6) is questionable. It clearly cannot be true in general
   Mills 2009, Section 4.2, Equations (21) and (22). You are correct, it's not 
   true in general: the samples must be distributed according to the prior
   probability, P(x), as the derivation should make clear.
+
+- have switched to Brier score; my method has no advantages over this

@@ -1,0 +1,17 @@
+\begin{algorithmic}
+  \STATE $i:=0$
+  \STATE $m_0:=m$
+  \WHILE {$\exists k \, p_{ik} < 0$ \OR $\vec p_i \cdot \vec 1 \ne 1$}
+    \IF{$\vec p_i \cdot \vec 1 \ne 1$} 
+      \STATE{$\vec p_{i+1} := \vec p_i + (\vec p_i \cdot \vec 1 -1)/m_i$}
+    \ENDIF
+    \STATE let $K$ be the set of $k$ such that $p_{i+1, k} < 0$
+    \FORALL{$k \in K$}
+       \STATE $p_k:=0$
+       \STATE Remove $k$ from the problem
+    \ENDFOR
+    \STATE $m_{i+1}:=m_i-|K|$
+    \STATE $i:=i+1$
+  \ENDWHILE 
+\end{algorithmic}
+

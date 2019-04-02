@@ -1,0 +1,29 @@
+Re: Solving for multi-class using orthogonal coding matrices
+by Peter Mills, M.Sc.
+Submitted to Pattern Recognition Letters
+
+
+Dear Mr. Mills,
+
+Our Editors have carefully considered your paper and decided not to proceed with further review and consideration
+for publication. Below please find comments from the
+Associate Editor who handled this paper.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Editor's comments:
+
+The experimental part of the paper is rather weak and very small in scope. Given that the topic considered is a well studied one, it is necessary to have enough empirical evidence so that there is a statistical basis to draw a definitive conclusion about progress with respect to the state of the art.
+
+The references in the paper is also dated and a stronger connection need to be made to recent progress on this topic.
+
+The technical quality of the paper is clearly below PR Letters standards to be sent out for external review.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Pattern Recognition Letters is a letters journal, the only one in our field. This means that it is a venue for short, significant, high quality novel work and where the review process is quick, but rigorous. We receive more than 1000 papers per year and we can publish only a small fraction of them. However, the reviewer pool is limited and as you know is completely voluntary. To use the services of our expert reviewers in a judicious manner, every PRL submission undergoes a triage process, where the editor in chief and/or an associate editor who is subject matter expert determine if the paper is of sufficient quality and novel enough to send it for full review. If it has clear deficiencies in terms of novelty or experiments or connection to the state of the art or quality of language, it is rejected without review. Any paper that undergoes the full review process is typically allowed only one round of revision. This process is similar to what is in place at many top letters journals in other fields.
+
+Thank you for giving us the opportunity to consider your work.
+
+
+Yours sincerely,
+
+Editorial Office of Pattern Recognition Letters

@@ -9,7 +9,7 @@ extern "C" {int yylex(void);}
 #include "sparse_calc_defs.h"
 
 using namespace sparse_calc;
-#include "sparse_calc.tab.h"
+#include "sc_parse.tab.h"
 
 #undef YY_INPUT
 #define YY_INPUT(b, r, ms) (r=my_input(b, ms))
@@ -22,23 +22,13 @@ int my_input(char *b, int ms) {
   if (scalc_istream!=NULL) {
     if (fgets(b, ms, scalc_istream)==NULL) {
       fclose(scalc_istream);
-      if (sc_stream_stack.pop(scalc_istream)<0) {
-        if (sc_scriptflag) return 0;
-        scalc_istream=NULL;
-      }
-      strcpy(b, "\n");
-      //if running script from command line, end parsing:
-      len=1;
+      len=0;
     } else {
       len=strlen(b);
-      if (sc_firstpass==1) {
-        if (sc_stringbuf!=NULL) delete [] sc_stringbuf;
-        strncpy(line, b, len);
-        sc_stringbuf=line;
-        sc_buflen=len;
-      } else {
-        delete [] line;
-      }
+      if (sc_stringbuf!=NULL) delete [] sc_stringbuf;
+      strncpy(line, b, len);
+      sc_stringbuf=line;
+      sc_buflen=len;
     }
   } else {
 
@@ -131,48 +121,8 @@ ne {
 }
 
 {STRING} {
-  FILE *fs;
-  char **line;
-  int id;
-  int err;
-  long n;
-  char *fname;
-  string_petey symbol(yytext);
-  time_t moddate;
-  int vt;
-
-  id=funtab.lookup(symbol);
-  if (id>=0) {
-    yylval.id=-SC_N_RESERVED-id;
-    return SUBROUTINE;
-  }
-
-  id=symtab.lookup(symbol);
-  //printf("id of the symbol, %s, is %d\n", yytext, id);
-
-  if (id < 0) {
-    yylval.symbol=new char[strlen(yytext)+1];
-    strcpy(yylval.symbol, yytext);
+    yylval.sc_var=new sc_type_literal(yytext);
     return SYMBOL;
-  } else {
-    vt=abs(vartyp[id]);
-    if (vt==SC_SPARSE_T || 
-		vt==SC_SPARSE_ARRAY_T || 
-		vt==SC_FULL_T) {
-      yylval.id=id;
-      delete [] fname;
-      return MATRIX;
-    } else if (vt==SC_VECTOR_T) {
-      yylval.id=id;
-      return VECTOR;
-    } else if (vt==SC_SCALAR_T) {
-      yylval.scalar=scaltab[id];
-      return SCALAR;
-    } else {
-      yylval.symbol=new char[strlen(yytext)+1];
-      strcpy(yylval.symbol, yytext);
-      return SYMBOL;
-    }
   }
           
 };

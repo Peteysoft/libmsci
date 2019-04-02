@@ -58,7 +58,7 @@ Other random issues:
 - The license of the code should be clearly stated in the package.
   The copyright notice "All rights reserved" included in many files
   is clearly not valid for open source.
--> should fix this...
+-> fixed
 
 Based on these observations it is clear that the submission does not
 meet the standard required for publication in JMLR MLOSS track, and I

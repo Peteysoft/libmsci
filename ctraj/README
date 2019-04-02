@@ -94,12 +94,11 @@ ecmwf2ds.sh:	Downloads ECMWF data from the data server and converts it to
 		ECMWF.
 
 pc_proxy:	For "principal-component proxy" tracer analysis.
-		PC-proxy is a new method for dynamical reconstruction of
+		PC-proxy is a method for dynamical reconstruction of
 		long-lived tracers such as ozone.  For an explanation, please
-		see the paper, "Principal component proxy tracer analysis,"
-		arxiv:1202.1999.
-		Please reference this paper if you use PC-proxy in
-		your work.  A peer-reviewed article is currently in the works.
+		see the paper, "PC Proxy: a method for dynamical tracer 
+		reconstruction" (Mills 2018). Please reference this paper if 
+		you use PC-proxy in your work.
 pc_proxy_predict:	PC-proxy reconstruction of multiple fields.
 proxy_tracer:	More traditional proxy tracer reconstruction (doesn't work).
 
@@ -208,7 +207,7 @@ scripts/pc_proxy/
 Tests the PC Proxy algorithm on both a simulated dataset and on actual ozone
 measurements from the Polar Ozone and Aerosol Measurement (POAM) III instrument.
 Compares results from the latter with a series of sonde measurements.
-See the paper, "Principal component proxy tracer analysis." arxiv:1202.1999v1.
+See Mills (2018).
 
 scripts/space_filling/
 Fills up a lot of space on your hard-drive.  Eats a lot of CPU cycles as well.
@@ -343,11 +342,11 @@ D. G. Dritschel (1988), "Contour surgery: a topological reconnection scheme for 
 
 Peter Mills (2009), "Isoline retrieval: An optimal sounding method for validation of advected contours." Computers & Geosciences 35 (11): 2020-2031.
 
-Peter Mills (2011), "Principal component proxy tracer analysis." arxiv:1202.1999.
+Peter Mills (2018), "PC proxy: a method for dynamical tracer reconstruction." Environmental Fluid Mechanics 18 (6): 1533-1558.
 
 William H. Press and Saul A. Teukolsky and William T. Vetterling and Brian P. Flannery (1992), Numerical Recipies in C, 2nd ed. Cambridge University Press.
 
 		--------------
 
-Developer: Peter Mills (petey@peteysoft.org)
+Developer: Peter Mills (peteymills@hotmail.com)
 

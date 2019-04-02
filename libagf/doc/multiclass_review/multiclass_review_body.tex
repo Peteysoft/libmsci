@@ -3,7 +3,7 @@
 Many statistical classifiers can only discriminate between two classes.
 Common examples include linear classifiers such as perceptrons and
 logistic regression classifiers \citep{Michie_etal1994} as well as extensions
-of these methods such as support vector machines (SVM) \citep{Mueller_etal2001} and 
+to these methods such as support vector machines (SVM) \citep{Mueller_etal2001} and 
 piecewise linear classifiers \citep{Bagirov2005,Mills2018}.
 There are many possible ways of extending a binary classifier to deal
 with multi-class classification and the options increase exponentially
@@ -18,8 +18,14 @@ can be solved using a broad array of configurations for the binary
 classifiers. 
 In addition, we require that any algorithm solve 
 for the multi-class conditional probabilities.
-These are useful both for gauging the accuracy of a result and for various
-forms of recalibration \citep{Jolliffe_Stephenson2003,Fawcett2006,Mills2009,Mills2011}.
+There are two reasons for this.
+The first is that they provide useful information
+in addition to class estimates,
+for instance, gauging the accuracy of a result, as well as for recalibration
+purposes \citep{Mills2009}.
+The second is that the mathematical relationship between binary class
+probabilities and multi-class probabilities is unique and
+derives rigorously from probability theory.
 
 \subsection{Definition of the problem}
 
@@ -91,7 +97,8 @@ In {\it non-hierarchical} multi-class classification, we solve for the
 classes or probabilities of the multi-class problem all at once:
 all the binary classifiers are used in the solution and the result of
 one binary classifier does not determine the use of any of the others.
-Using the notation provided in Section \ref{description}, 
+Using the notation provided in Section \ref{description},
+and the laws of probability,
 we can write a system of equations relating
 the multi-class conditional probabilities to the decision
 functions:
@@ -105,7 +112,7 @@ $c_{ij}^+ \in C_i^+$,
 $n_i^-$ is the number of class labels on the negative side of
 the $i$th partition,
 and $n_i^+$ is the number of class labels on the positive side of
-the $i$th partition
+the $i$th partition.
 
 It's more natural (and considerably simpler) to describe the problem using a
 {\it coding matrix}, $A$, 
@@ -158,10 +165,11 @@ classes rather than a subset, will be called the {\it strict} case.
 From a computational perspective,
 in the strict case,
 $Q$ must be regenerated for every new test point or value of $\vec r$ 
-whereas in the non-strict case, $A$ can be inverted or decomposed and then
-applied to every subsequent value of $\vec r$.
+whereas in the non-strict case, in may be possible to first find an inverse or
+decomposition of $A$ which is subsequently
+applied to every value of $\vec r$.
 
-Because the decision functions, $\vec r$, are not estimated perfectly,
+Because the decision functions, $\vec r$, are not estimated perfectly, however,
 the final probabilities may need to be constrained and the inverse
 problem solved via minimization:
 \begin{equation}
@@ -172,9 +180,11 @@ subject to:
 	\sum_{i=1}^{n_c} p_i & = & 1 \label{normalization}\\
 	\vec p & \ge & \vec 0 \label{nonnegative}
 \end{eqnarray}
-where straight brackets, $||$, denotes a vector norm which  
-in this case is the Euclidian or $L^2$ norm and
-$\vec 0$ is a vector of all zeroes.
+where 
+$\vec 0$ is a vector of all zeroes and
+the straight brackets, $||$, denote a vector norm which  
+in this case is the Euclidian or $L^2$ norm.
+Other cost functions can of course be substituted: see Section \ref{Zadrozny}.
 
 \subsection{Basic inverse solution}
 
@@ -214,9 +224,10 @@ harder to enforce and details  will be left to a later section.
 In many other texts \citep{Allwein_etal2000, Hsu_Lin2002, Dietterich_Bakiri1995},
 the class of the test point is determined by how close $\vec r$
 is to each of the columns in $A$:
-\begin{eqnnon}
+\begin{equation}
 	c = \arg \min_i |\vec a^{(i)} - \vec r|^2
-\end{eqnnon}
+	\label{distance_based_decoding}
+\end{equation}
 where $\vec a^{(i)}$ is the $i$th column of $A$.
 For the norm, $||$, Hamming distance is
 frequently used, which is the number of bits that must be changed
@@ -228,10 +239,16 @@ If the coding matrix is strict, then:
 	|\vec a^{(j)} - \vec r| = \sum_i \delta_{a_{ij} r_i}
 \end{eqnnon}
 where $\delta$ is the Kronecker delta.
+
 \citet{Allwein_etal2000} 
 tailor the matric on the basis of the binary classifier used, each of which
 will return a different type of continuous decision function 
 (that doesn't represent the difference in conditional probabilities).
+Note that there are numerous other functions besides Hamming distance,
+Euclidean distance or a dot product (see below) that can be used in place of the 
+norm in Equation (\ref{distance_based_decoding}).
+\citet{Escalera_etal2010} explore thirteen different ones and find that on
+some datasets, the choice of loss function can make a large difference.
 
 Here we are assuming that the decision functions return an approximation of the 
 difference in conditional probabilities of the binary classifier.
@@ -255,7 +272,9 @@ is especially appropriate if each $r_i$ returns only $-1$ or $+1$.
 The LIBSVM libary, for instance, uses a one-versus-one arrangement with a voting
 solution if probabilities are not required \citep{Chang_Lin2011}.
 The disadvantage of a voting solution is
-that it does not return estimates of the probabilities.
+that, except in special circumstances such as an orthogonal coding matrix
+(see Section \ref{orthogonal}, below), it does not return calibrated
+estimates of the probabilities.
 
 \section{Common coding matrices}
 
@@ -337,6 +356,8 @@ where $\vec 1$ is a vector of all ones.
 It can be shown that with this solution for a 1-vs-1 coding matrix,
 inequality constraints in (\ref{nonnegative}) are always satisfied
 \citep{Wu_etal2004}.
+This means that it can be solved with any standard matrix solver,
+without any need of complex, quadratic programming algorithms.
 
 \citet{Hsu_Lin2002} find that the one-vs.-one method is more accurate
 for support vector machines (SVM) than either
@@ -362,14 +383,15 @@ A =
 This is like counting in binary except zero is ommitted and
 we only count half way so as to eliminate degenerate partitions.
 A disadvantage of exhaustive codes is that they become exponentially larger 
-for more classes, making them slow.
+for more classes, making them slow moreover intractable for very large
+numbers of classes.
 
 \subsection{Error correcting codes}
 
 Another common coding matrix is an arbitrary one: this is commonly
 known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
 It can be random, but may also be carefully designed 
-\citep{Crammer_Singer2002,Zhou_etal2008}.
+\citep{Crammer_Singer2002, Zhou_etal2008, Zhong_Cheriet2013, Rocha_Goldenstein2014}.
 In principle this case covers all the earliers ones, however in practice the
 term can also refer more specifically to a random coding matrix.
 We cover the solution of the general case, which includes any random
@@ -396,14 +418,18 @@ In other words,
 the optimal coding matrix will be orthogonal, $A^T A = n_p I$, where $I$ is
 the $[n_c\times n_c]$ identity matrix and $n_p \ge n_c$. 
 Orthogonal coding matrices 
-are not hard to construct for certain class sizes, for instance:
+are not hard to construct for certain numbers of rows, for instance:
 \begin{eqnnon}
 A = 
 \begin{bmatrix}
-1 & -1 & -1 & -1 \\
--1 & 1 & 1 & 1 \\
--1 & -1 & -1 & 1 \\
--1 & -1 & 1 & -1
+	-1 & -1 & -1 & 1 & 1 & -1 & -1 & -1 \\
+	-1 & -1 & 1 & -1 & -1 & -1 & 1 & -1 \\
+	1 & -1 & -1 & -1 & -1 & 1 & -1 & -1 \\
+	-1 & -1 & 1 & -1 & 1 & 1 & -1 & 1 \\
+	1 & -1 & 1 & 1 & -1 & -1 & -1 & 1 \\
+	1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 \\
+	-1 & 1 & 1 & 1 & -1 & 1 & -1 & -1 \\
+	-1 & 1 & -1 & -1 & -1 & -1 & -1 & 1 
 \end{bmatrix}
 \end{eqnnon}
 For an orthogonal coding matrix, the voting solution will be equivalent to the
@@ -426,8 +452,8 @@ Approximate solutions might be useful as well.
 \subsection{General comments}
 
 \begin{figure}
-	\includegraphics[width=0.9\textwidth]{../multi2/config1.eps}
-	%\includegraphics[width=0.9\textwidth]{config1.eps}
+	\includegraphics[width=1\textwidth]{../multi2/config1.eps}
+	%\includegraphics[width=1\textwidth]{config1.eps}
 	\caption{Solving for the multi-class conditional probabilities with three classes.}
 	\label{config1}
 \end{figure}
@@ -511,10 +537,23 @@ moreover simple, gradient descent algorithms should always eventually reach it.
 Both the convexity property and the KKT conditions are used in the 
 \citet{Lawson_Hanson1995} solution to inequality constrained least
 squares problems.
-See Section \ref{Lawson_Hanson}, below.
+
+The literature on constrained optimization is often quite dense and 
+intimidating, however this relatively simple, linear least-squares problem with 
+linear constraints should require little more than geometry and linear algebra.
+Such is the case for the Lawson and Hanson solution which is described
+in Section \ref{Lawson_Hanson}, below.
+A lot of newer work on the subject is concerned with creating highly
+efficient methods
+for problems with very large numbers of variables \citep{Mueller_etal2001}.
+This is not a concern for us here as the problems are miniscule by comparison
+and solving for the probabilties, even when fully constrained, is only a
+tiny fraction of the total computation.
 
 
 \subsection{Zadrozny solution}
+
+\label{Zadrozny}
 
 \citet{Zadrozny2001} describes the following, iterative method of solving
 for the probabilities using an arbitrary coding matrix, starting with a 
@@ -541,6 +580,11 @@ however our tests indicate that convergence is too slow to be useful.
 
 \label{Lawson_Hanson}
 
+\begin{figure}
+  \includegraphics[width=1\textwidth]{Lawson_Hanson}
+	\caption{Diagram illustrating iterative solution scheme for Lawson and Hanson constrained least squares.}\label{Lawson_Hanson_fig}
+\end{figure}
+
 \citet{Lawson_Hanson1995} describe an iterative solution to the following
 inequality constrained least-squares problem:
 \begin{eqnnon}
@@ -548,10 +592,9 @@ inequality constrained least-squares problem:
 \end{eqnnon}
 subject to:
 \begin{eqnnon}
-	\vec z > \vec 0
+	\vec z \ge \vec 0
 \end{eqnnon}
-where $E$ is an $[m \times n]$ matrix
-and $\vec 0$ is a vector of all zeroes.
+where $E$ is an $[m \times n]$ matrix.
 
 The solution is divided into a set $N$ containing the indices of 
 all the non-zero values and a set $Z$ containing the indices of the 
@@ -579,14 +622,15 @@ the indices are added to the set $P$.
 In the second loop, if it's found that one of the variables has gone out-of-bounds,
 then the solution is adjusted to the nearest point in-bounds between the old solution
 and the new.
+The process is illustrated in Figure \ref{Lawson_Hanson_fig}.
 
 \citet{Lawson_Hanson1995} describe several methods of combining
 equality constraints such as the normalization constraint
 in (\ref{normalization}) with the above constrained
 least squares problem.
-The most obvious is to repeat the variable substitution
+The simplest is to repeat the variable substitution
 described in Equations (\ref{reduce_dimension1}) to (\ref{reduce_dimension2}) until the excluded
-probability is less-than-or-equal to $p_k\le 1$.
+probability is less-than-or-equal to one: $p_k\le 1$.
 
 
 \section{Decision-trees}
@@ -603,6 +647,17 @@ losing classes being excluded from consideration at each step.
 Only the conditional probability of the winning class is calculated as the
 product of all the returned conditional probabilities of the binary
 classifiers.
+
+Let $1k_1k_2k_3...$ be a binary number enumerating the binary classifier
+where $k_j$ is the returned class at the $j$th level of the tree.
+Then $c_{1k_1k_2k_3...}$ is the final class at the $1k_1k_2k_3...$th terminal
+node.
+Recalling the notation established in Section \ref{description}, 
+the conditional probability is:
+\begin{eqnnon}
+	P(c_{1k_1k_2k_3k_4...}|\vec x) = p_1(k_1|\vec x) p_{1k_1}(k_2|\vec x) p_{1k_1k_2}(k_3|\vec x)p_{1k_1k_2k_3}(k_4|\vec x)...
+\end{eqnnon}
+Here we assume that the binary classifiers return either zero or one.
 
 Decision trees have the advantage that they are fast since on average they
 require only $\log_2 n_c$ classifications and there is no need to solve a 
@@ -653,7 +708,7 @@ In a DDAG, there are multiple paths to the same node.
 \label{empirical}
 
 \begin{figure}
-	\includegraphics[width=0.9\textwidth]{landclasstree.eps}
+	\includegraphics[width=1\textwidth]{landclasstree.eps}
 	\caption{Diagram of hierarchical or decision tree multi-class classification using a hypothetical surface-classification problem.}
 	\label{landclasstree}
 \end{figure}
@@ -677,7 +732,9 @@ This seems the most straightforward approach and is interesting in that it reduc
 Consider the problem above: it stands to reason that the field and forest classes would be much more strongly separated than either of the sub-classes within.
 That is the {\it interclass distance} between field and forest is larger.
 
-How does one measure the interclass distance? Fundamentally this is a distance measure between two sets and there are many methods of determining it.
+How does one measure the interclass distance? 
+This is a metric applied to a pair of sets and there are many 
+possible methods of constructing it.
 We could notate this as follows:
 \begin{eqnarraynon}
 	D_{ij} & = & \mathfrak D \left \lbrace P(\vec x|i),~P(\vec x|j) \right \rbrace \\
@@ -702,12 +759,19 @@ That is, the closer the centers of the two classes, the shorter the distance, wh
 	
 This would work well if each of the classes is quite distinct and clustered around a strong center.
 But for more diffuse classes, especially those with multiple centers, it would make more sense to use a metric designed specifically for sets rather than this somewhat crude adaptation of a vector metric.
-In this regard, the Hausdorff metric seems tailor-made for this application.
+In this regard, the Hausdorff metric seems tailor-made for the application.
 
 For training samples from a pair of classes---two finite sets---the Hausdorff distance works out to \citep{Ott1993, Gulick1992}:
 \begin{eqnnon}
 D_{Hij} = \max \left \lbrace \min_k | \vec x_k - \vec x_l|~,~\min_l | \vec x_k - \vec x_l| ~ ;~y_k=i;~y_l=j \right \rbrace
 \end{eqnnon}
+
+It stands to reason that error-correcting codes may also be designed in a data-dependent fashion.
+Since the number of combinations to optimize amongst becomes very large for this problem, there 
+are also a large number of approaches to choose between.
+As such, it lies beyond the scope of this introductory article while the reader is invited to
+consult recent literature on the subject: 
+\citet{Crammer_Singer2002, Zhou_etal2008, Zhong_Cheriet2013, Rocha_Goldenstein2014}.
 
 \section{Unifying framework}
 
@@ -813,6 +877,10 @@ on a hypothetical surface-classification problem with the key as follows:
 	8 & Marsh
 \end{tabular}
 
+This is not abstract theorizing as
+such a scheme has been successfully applied in a non-data-dependent fashion
+in a very recent paper \citep{Zhou_etal2019}.
+
 \section{Numerical trials}
 
 We wish to test a synthesis of the ideas contained in this review on some real
@@ -910,7 +978,8 @@ Note that the shuttle dataset is very unbalanced,
 as listed in Table \ref{shuttle_dist},
 hence  the empirically-designed tree looks more like a chain
 as illustrated in Figure \ref{shuttle_tree}.
-To solve the hierarchical models using least-squares, hierarchical models were first translated to non-hierarchical, as discussed in Section \ref{hierarchical}.
+To solve the hierarchical models using least-squares, they were first translated to non-hierarchical error-correcting codes, 
+as discussed in Section \ref{hierarchical}.
 The above, for instance, becomes:
 \begin{verbatim}
 shuttle_emp 0 1 2 3 4 5 / 6;
@@ -933,7 +1002,7 @@ shuttle_adj-00 0 1 2 3 4 5 / 6;
 {0 1 2 3 4 5 6}
 \end{verbatim}
 with corresponding coding matrix:
-\begin{eqnnon}
+\begin{equation}
 A = 
 \begin{bmatrix}
 -1 & 1 & 1 & 1 & 1 & 1 & 1 \\
@@ -944,7 +1013,7 @@ A =
 -1 & -1 & -1 & -1 & -1 & -1 & 1 \\
 \end{bmatrix}
 	\label{adjacent}
-\end{eqnnon}
+\end{equation}
 The rational for using it will be explained in Section \ref{results}, below.
 
 \subsection{Data and software}
@@ -1202,8 +1271,8 @@ In a pattern-recognition dataset, it might not always be clear
 how different image types should be related anyway, as in
 the segment dataset, Figure \ref{segment}.
 For another example, the control file for the pendigits dataset is shown in Figure \ref{pendigits}.
-We can see how 8 and 5 might be related, but it is harder to
-understand how 3 and 1 are related to 7 and 2.
+We can see how `8' and `5' might be related, but it is harder to
+understand how `3' and `1' are related to '7' and 2.
 On the other hand, the arrangement might turn out very much as
 expected as in the sat dataset, Figure \ref{sat}.
 This is also the only pattern-recognition dataset for which the method 
@@ -1212,7 +1281,7 @@ worked as intended.
 Unfortunately the approach used here isn't able to match the one-versus-one 
 configuration in accuracy but
 this does not preclude cleverer schemes producing larger gains.
-Using similar techniques, \citet{Benabdeslem_Bennani2006} and \citet{Zhou_etal2008} are both able to beat one-vs.-one, but only by narrow margins.
+Using similar techniques, \citet{Benabdeslem_Bennani2006} and \citet{Zhou_etal2008} are both able to beat one-vs.-one, although only by narrow margins.
 
 Interestingly, solving hierarchical configurations via least-squares by
 converting them to non-hierarchical error-correcting codes is marginally more
@@ -1226,14 +1295,15 @@ for the least-squares solution.
 Finally, some datasets may have special characteristics that can be exploited
 to produce more accurate results through the multi-class configuration.
 While this was the original thesis behind this paper,
-only one example was found in this group of eight datasets, 
-namely the humidity dataset.
+only one example was found in this group of eight datasets: 
+the humidity dataset.
 Because the classes are a discretized continuous variable, they have an
 ordering. As such, it is detrimental to split up consecutive classes more
 than absolutely necessary and the ``adjacent'' partitioning is the most
 accurate. Meanwhile, the one-vs.-rest configuration performs abysimally while
 the one-vs.-one performs well enough, but worse than all the other methods
 save one.
+
 The excellent performance of the adjacent configuration for the urban
 dataset suggests that searching for an ordering to the classes might be a
 useful strategy for improving accuracy.
@@ -1243,5 +1313,5 @@ Since the results present a somewhat mixed bag, it would be useful to
 have a framework and toolset with which to explore different methods of
 building up multi-class classification models so as to optimize classification
 accuracy, accuracy of conditional probabilities and speed.
-This is what we have layed out in this paper.
+This is what we have lain out in this paper.
 

@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 				//(upper or lower triangular?)
 
   opt_args.Qtype=0;
-  err=agf_parse_command_opts(argc, argv, "Q:GnS:Yy:", &opt_args);
+  err=agf_parse_command_opts(argc, argv, "Q:GnS:Yy:P", &opt_args);
   if (err!=0) exit(err);
 
   if (argc<1) {
@@ -50,6 +50,7 @@ int main(int argc, char **argv) {
     fprintf(docfs, "  nrow = number of rows\n");
     fprintf(docfs, "  -G   = \"strict\" flag: all classes are included in each partition\n");
     fprintf(docfs, "  -Y   = top row of orthognal coding matrix is implicitly all ones\n");
+    fprintf(docfs, "  -P   = print out straight coding matrix\n");
     exit(0);
   }
 
@@ -200,7 +201,10 @@ int main(int argc, char **argv) {
 
   if (opt_args.Qtype > 0 && opt_args.Qtype!=6) {
     //if (opt_args.Qtype==5 || (opt_args.Qtype==8 && opt_args.Yflag)) {
-    //print_matrix(stdout, coding_matrix, nrow, n);
+    if (opt_args.Pflag) {
+      print_matrix(stdout, coding_matrix, nrow, n);
+      printf("\n");
+    }
     if (opt_args.Qtype==9 && opt_args.Yflag) {
       print_control_nonhier(stdout, coding_matrix+1, nrow-1, n, name, label);
     } else {

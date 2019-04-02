@@ -509,8 +509,8 @@ Daily averaged wind and temperature data was used to drive the advection model.
 
 \begin{figure}
   \begin{flushright}
-    %\includegraphics[angle=90,width=0.9\textwidth]{ozone_sonde_stations}
-    \includegraphics[width=0.9\textwidth]{ozone_sonde_stations}
+    \includegraphics[angle=90,width=0.9\textwidth]{ozone_sonde_stations}
+    %\includegraphics[width=0.9\textwidth]{ozone_sonde_stations}
     \caption{Locations of ozone sonde launch stations}
     \label{ozone_sonde_stations}
   \end{flushright}
@@ -531,19 +531,19 @@ towards the equator.
 \section{Numerical preliminaries}
 
 \begin{figure}
-  %\begin{tabular}{cccc}
-  %  \includegraphics[angle=-90,width=0.23\textwidth]{svr4} &
-  %  \includegraphics[angle=-90,width=0.23\textwidth]{svr3} &
-  %  \includegraphics[angle=-90,width=0.23\textwidth]{svr2} &
-  %  \includegraphics[angle=-90,width=0.23\textwidth]{svr1} \\
-  %  a. Right SV 1 & c. Right SV 2 & e. Right SV 3 & g. Right SV 4 \\
-  %  \includegraphics[angle=-90,width=0.23\textwidth]{svl4} &
-  %  \includegraphics[angle=-90,width=0.23\textwidth]{svl3} &
-  %  \includegraphics[angle=-90,width=0.23\textwidth]{svl2} &
-  %  \includegraphics[angle=-90,width=0.23\textwidth]{svl1} \\
-  %  b. Left SV 1 & d. Left SV 2 & f. Left SV 3 & h. Left SV 4
-  %\end{tabular}
-  \includegraphics[width=1\textwidth]{sample_sv}
+  \begin{tabular}{cccc}
+    \includegraphics[angle=-90,width=0.23\textwidth]{svr4} &
+    \includegraphics[angle=-90,width=0.23\textwidth]{svr3} &
+    \includegraphics[angle=-90,width=0.23\textwidth]{svr2} &
+    \includegraphics[angle=-90,width=0.23\textwidth]{svr1} \\
+    a. Right SV 1 & c. Right SV 2 & e. Right SV 3 & g. Right SV 4 \\
+    \includegraphics[angle=-90,width=0.23\textwidth]{svl4} &
+    \includegraphics[angle=-90,width=0.23\textwidth]{svl3} &
+    \includegraphics[angle=-90,width=0.23\textwidth]{svl2} &
+    \includegraphics[angle=-90,width=0.23\textwidth]{svl1} \\
+    b. Left SV 1 & d. Left SV 2 & f. Left SV 3 & h. Left SV 4
+  \end{tabular}
+  %\includegraphics[width=1\textwidth]{sample_sv}
   \caption{An example of the singular vectors derived from a discrete transport map.
   Sixty day integration started on August 1 1998 on the 500 K isentrop driven by NCEP wind fields.}
   \label{sample_SV}
@@ -581,10 +581,10 @@ of one 1.2 hours.}\label{tcorr}
 \begin{figure}
 \begin{tabular}{ll}
 a. Tracer & b. First PC\\
-%\includegraphics[angle=-90,width=0.45\textwidth]{passive1997_12_01} &
-\includegraphics[width=0.45\textwidth]{passive1997_12_01} &
-%\includegraphics[angle=-90,width=0.45\textwidth]{firstpc1997_12_01}
-\includegraphics[width=0.45\textwidth]{firstpc1997_12_01}
+\includegraphics[angle=-90,width=0.45\textwidth]{passive1997_12_01} &
+%\includegraphics[width=0.45\textwidth]{passive1997_12_01} &
+\includegraphics[angle=-90,width=0.45\textwidth]{firstpc1997_12_01}
+%\includegraphics[width=0.45\textwidth]{firstpc1997_12_01}
 \end{tabular}
 \caption{Comparison of a simulated tracer (a.) and the first principal
 component (b.) for the same time integration.
@@ -670,11 +670,11 @@ a given lead time--see Figure \ref{lyap_spec}.
 \begin{figure}
   %crude and inappropriate (like me) but does the job:
   \begin{tabular}{l}
-    %\includegraphics[angle=-90,width=0.9\linewidth]{classic_O3_1998_10_01} \\
-    \includegraphics[width=0.9\linewidth]{classic_O3_1998_10_01} \\
+    \includegraphics[angle=-90,width=0.9\linewidth]{classic_O3_1998_10_01} \\
+    %\includegraphics[width=0.9\linewidth]{classic_O3_1998_10_01} \\
     a. Classic proxy tracer \\
-    %\includegraphics[angle=-90,width=0.9\linewidth]{pc_O3_1998_10_01} \\
-    \includegraphics[width=0.9\linewidth]{pc_O3_1998_10_01} \\
+    \includegraphics[angle=-90,width=0.9\linewidth]{pc_O3_1998_10_01} \\
+    %\includegraphics[width=0.9\linewidth]{pc_O3_1998_10_01} \\
     b. PC proxy
   \end{tabular}
   \caption{Sample globally reconstructed ozone fields on the 500 K isentrop for October 1, 1998. Units are parts-per-million by volume (ppmv).}

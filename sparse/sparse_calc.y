@@ -363,7 +363,7 @@ help:
   | HELP DELETE DELIM {
       printf("\n$ delete \"<variable>\"\n");
       printf("  - Deletes <variable> so that it may be redefined.\n");
-      printf("  - Data file is deleted on exit unless variable redefined.\n\n");
+      printf("  - If variable is left undefined, the corresponding data file is deleted on exit.\n\n");
     }
   | HELP SYMBOL DELIM {
       printf("\n%s is neither a defined variable nor a reserved word\n\n", $2);

@@ -23,11 +23,13 @@
 %% This template has no review option
 %% 
 %% Use the options `twocolumn,final' to obtain the final layout
-\documentclass[times,twocolumn,final,authoryear]{elsarticle}
+\documentclass[twocolumn,final,authoryear]{elsarticle}
+
+%\documentclass[authoryear,preprint,review,12pt]{elsarticle}
 
 %% Stylefile to load PR Letters template
 %\usepackage{prletters}
-\usepackage{framed,multirow}
+%\usepackage{framed,multirow}
 %\usepackage{framed}
 
 %% The amssymb package provides various useful mathematical symbols
@@ -38,9 +40,11 @@
 % If you are not loading colors or url, then these are
 % not required.
 \usepackage{url}
-\usepackage{xcolor}
-\definecolor{newcolor}{rgb}{.8,.349,.1}
+%\usepackage{xcolor}
+%\definecolor{newcolor}{rgb}{.8,.349,.1}
 
+%number/don't number equations not used in the text:
+\newenvironment{eqnnon}{\begin{equation*}}{\end{equation*}}
 
 \journal{Pattern Recognition Letters}
 
@@ -66,13 +70,12 @@
 \vskip1pc
 
 
-{\bf Please save a copy of this file, complete and upload as the 
-``Confirmation of Authorship'' file.}
-
 \vskip1pc
 
 As corresponding author 
-I, \underline{\hphantom{\hspace*{7cm}}}, 
+I, 
+	%\underline{\hphantom{\hspace*{7cm}}}, 
+	\underline{Peter Mills}, 
 hereby confirm on behalf of all authors that:
 
 \vskip1pc
@@ -103,7 +106,7 @@ reported  and have \underline {read} and \underline {approved} the
 submitted  manuscript. 
 \end{enumerate}
 
-Signature\underline{\hphantom{\hspace*{7cm}}} Date\underline{\hphantom{\hspace*{4cm}}} 
+Signature\underline{Peter Mills} Date\underline{\today} 
 \vskip1pc
 
 \rule{\textwidth}{2pt}
@@ -147,36 +150,29 @@ arxiv:1801.09055
 \begin{table*}[!t]
 \ifpreprint\else\vspace*{-15pc}\fi
 
-\section*{Research Highlights (Required)}
-
-To create your highlights, please type the highlights against each
-\verb+\item+ command. 
+\section*{Research Highlights}
 
 \vskip1pc
 
 \fboxsep=6pt
 \fbox{
 \begin{minipage}{.95\textwidth}
-It should be short collection of bullet points that convey the core
-findings of the article. It should  include 3 to 5 bullet points
-(maximum 85 characters, including spaces, per bullet point.)  
 \vskip1pc
 \begin{itemize}
 
  \item An orthogonal coding matrix is optimal for error-correcting codes
 	 when solving for multi-class from binary.
 
- \item An orthogonal coding matrix greatly simplifies the calculation of
-	conditional probabilities.
-
  \item Orthogonal coding matrices were tested on six different datasets and
-	 shown to be competitive with an existing technique.
+	 shown to be more accurate than random codes for all six datasets
+		for both the classes and the probabilities.
 
- \item Probabilities were validated based on a corrollary of Bayes
-	 theorem and the definition of probability.
+ \item An orthogonal coding matrix greatly simplifies the calculation of
+	conditional probabilities making the calculation significantly faster.
 
- \item Orthogonal coding matrices are simple and elegant and have the 
-	 potential for efficient multi-class classification.
+  \item Orthogonal error-correcting-codes are simple and elegant and suggest
+	  new directions in the search for
+	  faster and more efficient multi-class classification methods.
 
 \end{itemize}
 \vskip1pc
@@ -196,20 +192,19 @@ findings of the article. It should  include 3 to 5 bullet points
 
 \begin{frontmatter}
 
-	\title{Solving for multi-class with orthogonal coding matrices}
+	\title{Solving for multi-class using orthogonal coding matrices}
 
-\author[1]{Peter \snm{Mills}\corref{cor1}} 
-\cortext[cor1]{Corresponding author: 
-Tel.: +1-613-833-3022;}  
+\author{Peter Mills}
+
+\address{1159 Meadowlane\\Cumberland ON\\K4C 1C3\\Canada}
 \ead{peteymills@hotmail.com}
 
-\address[1]{1159 Meadowland, Cumberland ON, K4C 1C3, Canada}
 
-\received{1 May 2013}
-\finalform{10 May 2013}
-\accepted{13 May 2013}
-\availableonline{15 May 2013}
-\communicated{S. Sarkar}
+%\received{1 May 2013}
+%\finalform{10 May 2013}
+%\accepted{13 May 2013}
+%\availableonline{15 May 2013}
+%\communicated{S. Sarkar}
 
 
 \begin{abstract}
@@ -217,8 +212,7 @@ Tel.: +1-613-833-3022;}
 \end{abstract}
 
 \begin{keyword}
-\MSC 41A05\sep 41A10\sep 65D05\sep 65D17
-\KWD Keyword1\sep Keyword2\sep Keyword3
+multi-class classification\sep error-correcting-codes\sep conditional probabilities \sep support vector machines \sep constrained linear least squares
 
 %% MSC codes here, in the form: \MSC code \sep code
 %% or \MSC[2008] code \sep code (2000 is the default)
@@ -230,8 +224,15 @@ Tel.: +1-613-833-3022;}
 
 \input{orthogonal_body.tex}
 
-\bibliographystyle{model2-names}
-\bibliography{../agf_bib,../pwl.bib,../svm_accel/svm_accel.bib}
+\section*{Acknowledgements}
+
+Thanks to Chih-Chung Chan and Chih-Jen Lin of the National Taiwan University
+for data from the LIBSVM archive and also to David Aha and the curators of
+the UCI Machine Learning Repository for statistical classification datasets.
+
+\bibliographystyle{elsarticle-harv}
+\bibliography{../agf_bib,../pwl.bib,../svm_accel/svm_accel.bib,orthogonal}
+%\bibliography{agf_bib,pwl,svm_accel,orthogonal}
 
 \end{document}
 
