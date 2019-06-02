@@ -18,21 +18,23 @@ can be solved using a broad array of configurations for the binary
 classifiers. 
 In addition, we require that any algorithm solve 
 for the multi-class conditional probabilities.
-There are two reasons for this.
-The first is that they provide useful information
+There are three reasons for this.
+First, they provide useful information
 in addition to class estimates,
-for instance, gauging the accuracy of a result, as well as for recalibration
+for instance, for gauging the accuracy of a result, as well as for recalibration
 purposes \citep{Mills2009}.
-The second is that the mathematical relationship between binary class
+Second, the mathematical relationship between binary class
 probabilities and multi-class probabilities is unique and
 derives rigorously from probability theory.
+And finally, many binary classifiers that return continuous decision functions
+are easy to re-calibrate so that they more closely resemble probabilities.
 
 \subsection{Definition of the problem}
 
 \label{description}
 
 In a statistical classication problem we are given a set of ordered pairs, 
-$\lbrace \vec x_j : y_j \rbrace$, of {\it training data},
+$\lbrace (\vec x_j,~ y_j) \rbrace$, of {\it training data},
 where the vector, $\vec x_j$, is the location of the {\it sample} in 
 the {\it feature space},
 $y_j \in [1..n_c]$ is the class of the sample,
@@ -50,11 +52,22 @@ each returning a {\it decision function}, $r_i(\vec x)$.
 In this paper we assume that the decision function 
 returns estimates of the difference in conditional probabilities:
 \begin{eqnnon}
-	r_i(\vec x) \approx p_i(+1|\vec x) - p_i(-1|\vec x)
+	r_i(\vec x) \approx P_i(+1|\vec x) - P_i(-1|\vec x)
 \end{eqnnon}
-where $p_i(c|\vec x)$ is the conditional probability of the $i$th
+where $P_i(c|\vec x)$ is the conditional probability of the $i$th
 binary classifier.
-The decision function is trained using the same type of ordered pairs as
+The binary classifier is treated as a ``black box'' so that one of any type,
+be that a SVM, linear perceptron, decision tree or logistic classifier may be 
+slotted in.
+
+For binary classifiers that do not return estimates of the conditional
+probabilities, but nonetheless return a continuous decision function,
+there are various methods of recalibrating the decision function
+so that it more closely resembles a probability 
+\citep{Zadrozny_Elkan2002,Jolliffe_Stephenson2003,Niculescu_Caruana2005}.
+A common, simple, and effective method is logistic regression \citep{Platt1999}.
+
+The binary classifier is trained using the same type of ordered pairs as
 above except that the classes can only take on one of two values,
 which for convenience are chosen as either $-1$ or $+1$, 
 that is, $y_{ij} \in \lbrace -1, +1 \rbrace$.
@@ -64,8 +77,8 @@ how to partition the classes, $\lbrace y_i \rbrace$, for each binary classifier?
 That is we want to create a mapping of the form:
 \begin{equation}
 	y_{ij} (y_j) = \left \lbrace  \begin{array}{lr}
--1 & |~ y_j \in C_i^+ \\
-+1 & |~ y_j \in C_i^-
+-1, & ~ y_j \in C_i^+ \\
++1, & ~ y_j \in C_i^-
 \end{array}
 	\right . \label{mapping}
 \end{equation}
@@ -119,16 +132,16 @@ It's more natural (and considerably simpler) to describe the problem using a
 which is structured such that each element,
 $a_{ij} \in \lbrace -1, 0, 1 \rbrace$, 
 where $i$ enumerates the binary classifier and
-$j$ enumerates the class of the multi-class problem.
+$j$ enumerates the class of the multi-class problem
+\citep{Dietterich_Bakiri1995,Windeatt_Ghaderi2002}.
 If $a_{ij}$ is $-1$/$+1$, we would assign each of the $j$th class
 labels in the training data a value of $-1$/$+1$ when training the $i$th
 binary classifier. If the value is $0$, the $j$th class label is excluded.
-\citep{Dietterich_Bakiri1995,Windeatt_Ghaderi2002}
 
 The non-zero elements of $A$ are:
 \begin{eqnarraynon}
-	a_{ic_{ik}^-} & = & -1 | ~k = [1..n_{c_i^-}]\\
-a_{ic_{ik}^+} & = & +1 | ~k=[1..n_{c_i^+}]
+	a_{ic_{ik}^-} & = & -1 , ~k = 1..n_{c_i^-}\\
+a_{ic_{ik}^+} & = & +1 , ~k=1..n_{c_i^+}
 \end{eqnarraynon}
 
 %We can relate the multi-class probabilities to the output of the 
@@ -146,6 +159,7 @@ $\vec r=\lbrace r_i| i=[1..n_p]\rbrace$
 is the vector of decision functions,
 and
 $n_p$ is the number of partitions.
+For future brevity, the test point, $\vec x$, has been omitted from the problem. 
 Note that the coding matrix used here is transposed relative to the usual
 convention in the literature since this is the more natural layout when 
 solving for the probabilities.
@@ -159,8 +173,8 @@ we can solve for the probabilities, $\vec p$, via matrix inversion:
 	\label{matrix_equation2}
 \end{eqnarray}
 %and $\delta$ is the Kronecker delta.
-Note that $Q$ reduces to $A$ if $A$ contains no zeroes \citep{Kong_Dietterich1997}.
-The case of a coding matrix that contains no zeroes, that is all the partitions divide up all the
+Note that $Q$ reduces to $A$ if $A$ contains no zeros \citep{Kong_Dietterich1997}.
+The case of a coding matrix that contains no zeros, that is all the partitions divide up all the
 classes rather than a subset, will be called the {\it strict} case.
 From a computational perspective,
 in the strict case,
@@ -181,7 +195,7 @@ subject to:
 	\vec p & \ge & \vec 0 \label{nonnegative}
 \end{eqnarray}
 where 
-$\vec 0$ is a vector of all zeroes and
+$\vec 0$ is a vector of all zeros and
 the straight brackets, $||$, denote a vector norm which  
 in this case is the Euclidian or $L^2$ norm.
 Other cost functions can of course be substituted: see Section \ref{Zadrozny}.
@@ -337,7 +351,7 @@ A =
 \end{eqnnon}
 The one-versus-one solution is used in LIBSVM \citep{Chang_Lin2011}.
 
-Consider the following variation of (\ref{non_hier}):
+Consider the following rearrangement of (\ref{non_hier}):
 \begin{eqnarraynon}
 	Q \vec p & = & \vec 0 \\
 	q_{ij} & = & a_{ij} - r_i |a_{ij}|
@@ -407,7 +421,7 @@ the distance between each of the columns, $| \vec a^{(i)} - \vec a^{(j)} |$,
 should be as large as possible,
 where $\vec a^{(i)}$ is the $i$th column of the matrix $A$ and $i \ne j$. 
 If we take the upright brackets once again to be a
-Euclidian metric and assume that $A$ is ``strict'' then this 
+Euclidian metric and assume that $A$ is ``strict'' (that is with no zeros) then this 
 reduces to minimizing the absolute value of the dot product,
 $|\vec a^{(i)} \cdot \vec a^{(j)}|$.
 The absolute value is used because a pair of columns that are the same except 
@@ -649,15 +663,15 @@ product of all the returned conditional probabilities of the binary
 classifiers.
 
 Let $1k_1k_2k_3...$ be a binary number enumerating the binary classifier
-where $k_j$ is the returned class at the $j$th level of the tree.
+where $k_j \in \lbrace 0,~1 \rbrace$ is the returned class at the $j$th level of the tree.
+Note that here we assume that the returned class is either zero or one.
 Then $c_{1k_1k_2k_3...}$ is the final class at the $1k_1k_2k_3...$th terminal
 node.
 Recalling the notation established in Section \ref{description}, 
 the conditional probability is:
 \begin{eqnnon}
-	P(c_{1k_1k_2k_3k_4...}|\vec x) = p_1(k_1|\vec x) p_{1k_1}(k_2|\vec x) p_{1k_1k_2}(k_3|\vec x)p_{1k_1k_2k_3}(k_4|\vec x)...
+	P(c_{1k_1k_2k_3k_4...}|\vec x) = P_1(k_1|\vec x) P_{1k_1}(k_2|\vec x) P_{1k_1k_2}(k_3|\vec x)P_{1k_1k_2k_3}(k_4|\vec x)...
 \end{eqnnon}
-Here we assume that the binary classifiers return either zero or one.
 
 Decision trees have the advantage that they are fast since on average they
 require only $\log_2 n_c$ classifications and there is no need to solve a 
@@ -669,7 +683,7 @@ Interestingly, the same partitions created for a decision tree can also
 be used in a non-hierarchical scheme
 to solve for all of the conditional probabilities. 
 Consider the following coding matrix for instance:
-\begin{eqnnon}
+\begin{equation}
 A = 
 \begin{bmatrix}
 -1 & -1 & -1 & -1 & 1 & 1 & 1 & 1 \\
@@ -680,7 +694,10 @@ A =
 0 & 0 & 0 & 0 & -1 & 1 & 0 & 0 \\
 0 & 0 & 0 & 0 & 0 & 0 & -1 & 1
 \end{bmatrix}
-\end{eqnnon}
+	\label{hierarchical_code}
+\end{equation}
+The same binary classifiers could be used for this error-correcting code
+as for a symmetric, hierarchical multi-class classifier.
 While there are only seven rows for eight classes, 
 once we add in the constraint in (\ref{normalization}) the system becomes 
 fully determined.
@@ -733,14 +750,14 @@ Consider the problem above: it stands to reason that the field and forest classe
 That is the {\it interclass distance} between field and forest is larger.
 
 How does one measure the interclass distance? 
-This is a metric applied to a pair of sets and there are many 
-possible methods of constructing it.
+This is a metric applied to a pair of distributions in the feature space
+and there are many possible methods of constructing it.
 We could notate this as follows:
 \begin{eqnarraynon}
 	D_{ij} & = & \mathfrak D \left \lbrace P(\vec x|i),~P(\vec x|j) \right \rbrace \\
 	       & \approx & D\left (\lbrace \vec x_k|~y_k=i \rbrace,~\lbrace \vec x_k|~y_k=j\rbrace \right )
 \end{eqnarraynon}
-where $\mathfrak D$ is a distance operator between two distributions and $D$ is a distance operator between two sets.
+where $\mathfrak D$ is a distance operator between two distributions and $D$ is a distance operator between two sets of points.
 
 Consider the square of the distance between the means of the two classes divided by their standard deviations. Let:
 \begin{eqnnon}
@@ -758,10 +775,11 @@ Then let the distance between the two classes be:
 That is, the closer the centers of the two classes, the shorter the distance, while the wider each class is, the farther the distance.
 	
 This would work well if each of the classes is quite distinct and clustered around a strong center.
-But for more diffuse classes, especially those with multiple centers, it would make more sense to use a metric designed specifically for sets rather than this somewhat crude adaptation of a vector metric.
+But for more diffuse classes, especially those with multiple centers, it would make more sense to use a metric designed specifically for sets of points rather than this somewhat crude adaptation of a vector metric.
 In this regard, the Hausdorff metric seems tailor-made for the application.
+The Hausdorff metric measures the distance between two subsets in a metric space, which is one way to conceptualize the training data.
 
-For training samples from a pair of classes---two finite sets---the Hausdorff distance works out to \citep{Ott1993, Gulick1992}:
+For training samples from a pair of classes---two finite sets of points---the Hausdorff distance works out to \citep{Ott1993, Gulick1992}:
 \begin{eqnnon}
 D_{Hij} = \max \left \lbrace \min_k | \vec x_k - \vec x_l|~,~\min_l | \vec x_k - \vec x_l| ~ ;~y_k=i;~y_l=j \right \rbrace
 \end{eqnnon}
@@ -802,9 +820,27 @@ It may also be the class value returned
 from a top level partition in the hierarchy in which case it's value is absolute.
 $<$TWOCLASS$>$ is a binary classification model.
 This could either be the name of model that has already been trained or it
-could be a list of options or specifications used to train said model.
+could be a list of options or specifications used to train said model
 
-For example, a one-versus-one specification for four classes would look like
+For example, the hierarchical multi-class classifier that uses the same
+binary classifiers as would the error-correcting code descibed by 
+(\ref{hierarchical_code}) would be represented in the control language
+as follows:
+
+\begin{verbatim}
+Row1 {
+  Row2 {
+    Row3 {0 1}
+    Row4 {2 3}
+  }
+  Row5 {
+    Row6 {4 5}
+    Row7 {6 7}
+  }
+}
+\end{verbatim}
+
+A one-versus-one specification for four classes would look like
 this:
 
 \begin{verbatim}

@@ -1,0 +1,155 @@
+
+Comments for the Author:
+
+Reviewer #1: This paper studies a range of approaches to solving multiclass learning problems by reducing to a series of binary classification problems.  The paper reviews methods for deciding on a multiclass prediction based on the predictions of the binary classifiers; for creating a coding matrix; and for classes arranged in a hierarchy.  The paper also runs some experiments comparing some of the methods.
+
+As a review, I found the paper somewhat disappointing.  First, by the standards of machine learning, a field that is moving very fast, this paper focuses mainly on older work.  Also, it mainly considers methods based on a coding matrix, as studied by Dietterich and Bakiri, Allwein et al., and others.  It does not consider, for instance, some of the other sophisticated techniques that have been studied, such as the "error-correcting tournaments" and other multiclass-to-binary reductions of Beygelzimer, Langford, et al.  It also does not consider methods for handling an extremely large number of classes, an increasingly important problem.
+
+R: What's the utility of having a large number of classes? Even for discretized continuous variables, anything over 100 classes would likely be over-kill.
+
+Furthermore, the paper does not review at all the theory of multiclass learning, which is fairly well-developed.  Without theoretical guidance, it seems rather difficult to compare the various approaches presented in the paper.
+
+R: OK.
+
+The paper claims to propose a "unifying framework", which seems to refer to a proposed descriptive control language in section 6.  It was not entirely clear to me what the purpose was of this language, and I did not find it so helpful for providing a unified understanding of approaches to multiclass learning.
+
+R: This control language is used liberally in the last three sections to describe the configuration of multi-class classifiers both to specify a new and interesting configuration and to show how the empirical methods designed the classifiers.
+
+I had a great deal of trouble with the paper's presentation.  I found the mathematical content especially lacking in precision and clarity.  Some detailed examples are given below for parts of the paper.
+
+A fair fraction of the paper is focused on optimization methods, such as on page 4 and most of section 4.  I did not see the point of discussing these methods given that the optimization problems being considered are so standard, and could be solved using any number of standard and general techniques.
+
+R: This is why the paper is framed as a "review paper." Much of the literature in this area is quite dense and focuses on much more difficult problems. The purpose is to expound a method that's simple and that works and to make the problem easily comprehensible.
+
+For an overview and unification of approaches, I am not convinced that this paper adds much compared to others that have already been published, such as "On the Decoding Process in Ternary Error-Correcting Output Codes" by Escalera, Pujol, and Radeva (in PAMI).
+
+R: That's rich. My paper actually anticipates this work as I've pointed out in the latest revision.
+
+
+More detailed comments:
+
+p.1, l.39: There actually do exist standard, multiclass generalizations of logistic regression.
+
+R: The point of this work is that it treats the binary classifier as a "black box" so that different ones may be substituted. I shall add that to the manuscript.
+
+p.2, l.15: What does the notation {x:y} mean?
+
+R: This was a common notation used by my highschool and university instructors for an ordered pair. It should be clear from the context: "given a set of ordered pairs..." Perhaps the notation is obsolete now. Wikipedia uses brackets and commas like vectors so I've substituted this in the latest revision.
+
+p.2, l.23: "...we have a set of binary classifiers..."  What does this mean?  Where do they come from?  Have they been learned?  Or do they belong to a large space of candidate functions?
+
+R: I'm really not sure how to respond to this.
+
+p.2, l.28: It seems a bit restrictive to assume that the binary classifier returns an estimate of this particular difference.  What are examples of algorithms that do this?  Further, the approach seems strongly based on assuming that we have classifiers of this type.  It would be more natural to assume that the predictors return some kind of "score" that might or might not be of this form.
+
+R: It's straightforward to convert the "score" into a probability. This has been added.
+
+p.2, l.30: It is not clear or precise what p_i(c|x) means.  Is this an estimated/predicted probability or an actual probability?  And of what?  The text says this is the conditional probability of a classifier.  But a classifier is something that makes predictions, so what does this mean?
+
+R: There is a symbol overlap here. I've changed it to uppercase to make it less ambiguous.
+
+p.2, l.33: What is y_ij?  Also, why is y_ij in {-1,+1} at l.33, but seems to be a function (of y_j) at l.38.  Not clear what is going on.
+
+R: How is this problematic?
+
+p.2, l.40-43: I expect the transformation that is being referred to will only be understandable to experts at this point.
+
+R: I have used a fairly standard notation here. The vertical bars it seems are a non-standard, however. I have now substituted commas as these appear more usual.
+
+eq.(2): I'm not sure I would say that this is actually maximum likelihood.  In any case, what is P?  Earlier, it was the true conditional distribution of c given x.
+
+R: "the classes are distributed according to an unknown conditional distribution, P(c|x)..." Perhaps there should be a separate symbol for the estimated and actual distribution, but it doesn't seem necessary since the actual distribution is not known and is not used anywhere else but right at the beginning.
+
+eq.(3): Isn't the denominator equal to 1?
+
+R: No. Only if the coding matrix contains no zeros. (This is actually explained further down.)
+
+p.3, l.14: Very unclear what is meant by the c_ij's.  This suggests that c_ij- is an arbitrary element of C_i-.  It seems instead that what is meant is that these form an enumeration of elements of C_i-.  This could be written more clearly as sum_{c in C_i-} P(c|x), etc.
+
+R: There's a reason why we abandon this notation for a coding matrix. For completeness, this treatments is used because it generalizes to the hierarchical case.
+
+p.3, l.20: This is confusing since earlier j was an example, now it's a class.  (Earlier, c was a class.)  In any case, this paragraph is not clearly explained.
+
+R: One problem with modern mathematical notation is that, except for subscript variables in sums and products, there is no notion of "scoping." You can only tell by the context. Yes, we use the same variables to mean different things but these are subscripts so I would not be too bothered by it.
+
+p.3, l.23: Did Dietterich and Bakiri use codes with 0's?
+
+R: The citation is meant to reference the whole paragraph. It has been moved.
+
+p.3, l.27: What does the vertical bar "|" mean here?  Also, what is c_i- and what is n_{c_i-}?
+
+R: Again, I realize this notation is non-standard. I have replaced them with commas
+
+eq.(4): What happened to x?  In general, the math would be clearer if there were more consistency in the use of indices.  
+
+
+R: x is still there. We just don't feel like writing it everywhere. This allows us to focus directly on the problem at hand, which, once r has been worked out, does not otherwise depend on x. It is common "notational shorthand" in most mathematical work.
+
+Also why does this equation hold for ternary codes (with 0's)?  What assumption is being made about r_i?
+
+R: Normality condition is probably what you're missing (Equation (8) in this manuscript.) Perhaps I should move it further up.
+
+p.5, l.27: "more natural choice of metric is the Euclidian" -- why?
+
+R: This should be clear from Section 3.5.
+
+p.5, l.45: "if each ri returns only -1 or +1" -- isn't this equivalent to what was just above?
+
+R: r_i is meant to return a difference in conditional probabilities. This was made clear from the outset.
+
+p.8, l.9: Although the introduction of absolute value gets explained, it is not technically correct to say that "minimizing the absolute value of the dot product" is equivalent to maximizing the Euclidean distance between columns.
+
+R: It is if there are no zeros in the coding matrix. Perhaps I should make this more explicit.
+
+p.11, l.7-11: This is not at all clear.
+
+R: Read the paper by Zadrozny. The method doesn't seem to work very well anyway but it's included to show that there are alternatives to least squares minimization.
+
+p.11, l.17: What is x?  Why doesn't it appear on the right side?  Is this being minimized for all x?
+
+R: This was cribbed from the paper by Zadrozny, but x means the same as it does every where else. The x's are left out from the right side for brevity (the r_i's all depend on x).
+
+Section 4.3: I could not understand the point of reviewing this algorithm.  Why not just use any number of standard and general techniques?
+
+R: explained above...
+
+Section 5: Where does this tree come from?
+
+R: Huh?
+
+p.13, l.9: What does it mean for k_j to be a "returned class"?  Are there only two classes now?  Returned by what?
+
+R: Yeah, this probably isn't explained well enough but in any case, a formal, mathematical treatment probably isn't the best way to explain this method and I've just included the equation for completeness and my own satisfaction since it's so simple and succinct. The better explanation is in words: see first paragraph.
+
+p.13, l.26: What is this matrix?  How does it relate to the surrounding discussion?
+
+R: I've explained it in Section 6.
+
+Section 5.2: It seems like a lot of assumptions are suddenly being made about what kind of data we are dealing with.  These should be discussed explicitly.
+
+R: Not sure if this is what you mean but I've tried to be more precise in my description. The Hausdorff metric measures the distance between subsets of a metric space, which is one way to conceptualize the training data.
+
+
+Reviewer #2: This paper reviewed common methods for multi-class problems from binary and generalize them to a common framework. Experimental comparison between different methods has also been performed to evaluate their effectives.
+
+The review for methods dealing with multi-class problems is important. However, I have several concerns are listed below.
+
+1.      This paper only reviewed conventional machine learning methods for dealing with multi-class problems, while popular deep learning methods that can directly handle multi-class problems are not mentioned at all. This problem has seriously reduced the value of this article. Note that various popular deep learning methods have been proposed and have shown superiority in comparison to conventional methods. As a review paper, I think it is not proper to dierectly ignore deep learning methods.
+
+R: As I've explained above, the binary classifier is meant to be a "black box" so that any type can be slotted in.
+
+2.      Even for conventional machine learning methods, the author only reviewed very old methods, while many recent works for multi-class problems are not mentioned at all. The following lists several examples:
+[1] Improved deep metric learning with multi-class n-pair loss objective, NIPS 2016.
+[2] A Unified View on Multi-class Support Vector Classification. JMLR 2016.
+[3] Joint binary classifier learning for ECOC-based multi-class classification. IEEE TPAMI 2016.
+[4] Multi-Class Optimal Margin Distribution Machine. ICML 2017.
+[5] Dynamic ensemble selection for multi-class classification with one-class classifiers. PR 2018.
+[6] Data-dependent Generalization Bounds for Multi-class Classification. TMI 2019.
+
+R: I will review these papers and if they are relevant, include them in the latest revision. Most of them don't look very relevant.
+
+3.      For the experiments, the dataset used in this paper is very old and the samples size is not large. It could be better to validate different methods on large datasets.
+
+R: The experiments are not meant to be exhaustive but more "proof-of-concept." 58000 samples isn't large enough? The humidity dataset originally had 10 times the number but the algorithms (not my own) were choking on them.
+
+

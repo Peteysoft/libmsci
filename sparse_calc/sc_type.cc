@@ -611,32 +611,35 @@ sc_t * sc_mat_t<scalar_t>::sub (sc_t *sub1, sc_t *sub2) {
 
   mat->dimensions(m, n);
 
-  switch (t) {
-    //extract a row:
-    case (SC_SCALAR_T):
-      sc_vec_t<scalar_t> *r1;
-      ind=((sc_scal_t<scalar_t> *) sub)->value;
-      if (ind<0 || ind>=sub->m) {
-        fprintf(stderr, "Scalar subscript (%d) of matrix out-of-range\n", ind);
-        result=NULL;
-        break;
+  if (t1==SC_SCALAR_T && t2==SC_SCALAR_T) {
+    sc_scal_t *r1;
+    r1=new sc_scal_t
+    r1->value=(*mat)(sc_scal_t *(sub1)->value, sc_scal_t *(sub1)->value);
+    result=r1;
+  } else if (t1==SC_VECTOR_T && t2=SC_VECTOR_T) {
+    sc_vec_t *r1;
+    sc_vec_t *s1=sc_vec_t *(sub1);
+    sc_vec_t *s2=sc_vec_t *(sub2);
+    if (s1->n != s2->n) {
+      fprintf(stderr, "Type mismatch: vector subscripts don't agree in size [%d] vs. [%d]\n", s1->n, s2->n);
+      result=NULL;
+    }
+    r1=new sc_vec_t(s1->n);
+    for (int i=0; i<s1->n; i++) {
+      if (s1->data[i]<0 || s1->data[i]>=m) {
+        fprintf(stderr, "First vector subscript (sub1[%d]=%d) of [%d, %d] matrix out-of-range\n", m, n, i, s1->data);
+        continue;
       }
-      r1=new sc_vec_t<scalar_t>(n);
-      mat->get_row(ind, r1->data);
-      result=r1;
-      break;
-    //subscript with vector:
-    case(SC_VECTOR_T):
-      fprintf(stderr, "Vector subscripting of rows not yet supported.  Sorry\n");
-      result=NULL;
-    //type mismatch:
-    case(SC_FULL_T):
-    case(SC_SPARSE_T):
-    case(SC_SPARSE_ARRAY_T):
-    case(SC_LIST_T):
-    default:
-      fprintf(stderr, "Type mismatch: only scalar or vector subscripts allowed\n");
-      result=NULL;
+      if (s2->data[i]<0 || s2->data[i]>=n) {
+        fprintf(stderr, "Second vector subscript (sub2[%d]=%d) of [%d, %d] matrix out-of-range\n", m, n, i, s1->data);
+        continue;
+      }
+      r1[i]=(*mat)(s1->data[i], s2->data[i]);
+    }
+    result=r1;
+  } else {
+    fprintf(stderr, "Type mismatch: only scalar or vector subscripts allowed\n");
+    result=NULL;
   }
 
   return result;
