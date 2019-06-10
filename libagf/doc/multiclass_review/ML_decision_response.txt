@@ -9,11 +9,12 @@ R: What's the utility of having a large number of classes? Even for discretized 
 
 Furthermore, the paper does not review at all the theory of multiclass learning, which is fairly well-developed.  Without theoretical guidance, it seems rather difficult to compare the various approaches presented in the paper.
 
-R: OK.
+R: OK. I use probability theory to derive the results. How much more 
+"theoretical" do you want me to get? Also, can I get a reference please because I have no idea what you're talking about.
 
 The paper claims to propose a "unifying framework", which seems to refer to a proposed descriptive control language in section 6.  It was not entirely clear to me what the purpose was of this language, and I did not find it so helpful for providing a unified understanding of approaches to multiclass learning.
 
-R: This control language is used liberally in the last three sections to describe the configuration of multi-class classifiers both to specify a new and interesting configuration and to show how the empirical methods designed the classifiers.
+R: This control language is used liberally in the last three sections to describe the configuration of multi-class classifiers both to specify a new and interesting configuration and to show how the empirical methods designed the classifiers. It is also used, in the latest revision, to explain your question about the conversion of a hierarchical multi-class classifier into an error-correcting code. It seems to me to have a good deal of utility.
 
 I had a great deal of trouble with the paper's presentation.  I found the mathematical content especially lacking in precision and clarity.  Some detailed examples are given below for parts of the paper.
 
@@ -58,7 +59,7 @@ R: I have used a fairly standard notation here. The vertical bars it seems are a
 
 eq.(2): I'm not sure I would say that this is actually maximum likelihood.  In any case, what is P?  Earlier, it was the true conditional distribution of c given x.
 
-R: "the classes are distributed according to an unknown conditional distribution, P(c|x)..." Perhaps there should be a separate symbol for the estimated and actual distribution, but it doesn't seem necessary since the actual distribution is not known and is not used anywhere else but right at the beginning.
+R: "the classes are distributed according to an unknown conditional distribution, P(c|x)..." Perhaps there should be a separate symbol for the estimated and actual distribution, but it doesn't seem necessary since the actual distribution is not known and is used nowhere else but the very beginning.
 
 eq.(3): Isn't the denominator equal to 1?
 
@@ -87,7 +88,7 @@ R: x is still there. We just don't feel like writing it everywhere. This allows 
 
 Also why does this equation hold for ternary codes (with 0's)?  What assumption is being made about r_i?
 
-R: Normality condition is probably what you're missing (Equation (8) in this manuscript.) Perhaps I should move it further up.
+R: Normality condition is probably what you're missing (Equation (8) in this manuscript.) It appears on the same pages in my pdf of the manuscript.
 
 p.5, l.27: "more natural choice of metric is the Euclidian" -- why?
 
@@ -95,7 +96,7 @@ R: This should be clear from Section 3.5.
 
 p.5, l.45: "if each ri returns only -1 or +1" -- isn't this equivalent to what was just above?
 
-R: r_i is meant to return a difference in conditional probabilities. This was made clear from the outset.
+R: r_i is meant to return a difference in conditional probabilitie and hence continuous. This was made clear from the outset.
 
 p.8, l.9: Although the introduction of absolute value gets explained, it is not technically correct to say that "minimizing the absolute value of the dot product" is equivalent to maximizing the Euclidean distance between columns.
 
@@ -115,7 +116,7 @@ R: explained above...
 
 Section 5: Where does this tree come from?
 
-R: Huh?
+R: I don't understand the question. Which tree?
 
 p.13, l.9: What does it mean for k_j to be a "returned class"?  Are there only two classes now?  Returned by what?
 
@@ -123,7 +124,7 @@ R: Yeah, this probably isn't explained well enough but in any case, a formal, ma
 
 p.13, l.26: What is this matrix?  How does it relate to the surrounding discussion?
 
-R: I've explained it in Section 6.
+R: I've explained it in Section 6. I've added a paragraph the spells out the equivalent tree using the control language.
 
 Section 5.2: It seems like a lot of assumptions are suddenly being made about what kind of data we are dealing with.  These should be discussed explicitly.
 
@@ -150,6 +151,6 @@ R: I will review these papers and if they are relevant, include them in the late
 
 3.      For the experiments, the dataset used in this paper is very old and the samples size is not large. It could be better to validate different methods on large datasets.
 
-R: The experiments are not meant to be exhaustive but more "proof-of-concept." 58000 samples isn't large enough? The humidity dataset originally had 10 times the number but the algorithms (not my own) were choking on them.
+R: The experiments are not meant to be exhaustive but are mainly for demonstration purposes. 58000 samples isn't large enough? The humidity dataset originally had 10 times as many samples as used here but the algorithms (not my own) were choking on them.
 
 

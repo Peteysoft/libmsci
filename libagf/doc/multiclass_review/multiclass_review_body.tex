@@ -23,6 +23,10 @@ First, they provide useful information
 in addition to class estimates,
 for instance, for gauging the accuracy of a result, as well as for recalibration
 purposes \citep{Mills2009}.
+Consider a discretized regression problem: unlike in traditional regression
+which provides only a confidence limit on the result,
+having the class probabilities on hand will give some idea of the
+shape of the distribution.
 Second, the mathematical relationship between binary class
 probabilities and multi-class probabilities is unique and
 derives rigorously from probability theory.
@@ -41,7 +45,7 @@ $y_j \in [1..n_c]$ is the class of the sample,
 $n_c$ is the number of classes,
 and the classes are
 distributed according to an unknown conditional distribution,
-$P(c | \vec x)$ with $c \in [1..n_c]$ the class label and $\vec x$ the location
+$P(c | \vec x)$ with $c \in [1..n_c]$ the {\it class label} and $\vec x$ the location
 in feature space.
 
 Given an arbitrary {\it test point}, $\vec x$, 
@@ -73,7 +77,7 @@ which for convenience are chosen as either $-1$ or $+1$,
 that is, $y_{ij} \in \lbrace -1, +1 \rbrace$.
 
 The problem under consideration in this review is, first,
-how to partition the classes, $\lbrace y_i \rbrace$, for each binary classifier?
+how to partition the class labels used in each binary classifier?
 That is we want to create a mapping of the form:
 \begin{equation}
 	y_{ij} (y_j) = \left \lbrace  \begin{array}{lr}
@@ -91,6 +95,7 @@ $C_i^- \subset \lbrace 1..n_c \rbrace$ is the set of classes that map to $-1$.
 And second, once we have partitioned the classes
 and trained the binary classifers,
 how do we solve for the multi-class conditional probabilities, $P(c|\vec x)$?
+
 The class of the test point may then be estimated through maximum likelihood:
 \begin{equation}
 	c(\vec x)=\arg \max_i P(i | \vec x)
@@ -131,8 +136,8 @@ It's more natural (and considerably simpler) to describe the problem using a
 {\it coding matrix}, $A$, 
 which is structured such that each element,
 $a_{ij} \in \lbrace -1, 0, 1 \rbrace$, 
-where $i$ enumerates the binary classifier and
-$j$ enumerates the class of the multi-class problem
+where $i$ once again enumerates the binary classifier while
+$j$ now enumerates the class of the multi-class problem
 \citep{Dietterich_Bakiri1995,Windeatt_Ghaderi2002}.
 If $a_{ij}$ is $-1$/$+1$, we would assign each of the $j$th class
 labels in the training data a value of $-1$/$+1$ when training the $i$th
@@ -164,8 +169,8 @@ Note that the coding matrix used here is transposed relative to the usual
 convention in the literature since this is the more natural layout when 
 solving for the probabilities.
 
-Some rearrangement shows that
-we can solve for the probabilities, $\vec p$, via matrix inversion:
+Some rearrangement (keeping in mind that the probabilities should sum to one)
+shows that we can solve for the probabilities, $\vec p$, via matrix inversion:
 \begin{eqnarray}
 	Q \vec p & = & \vec r \label{basic_system}\\
 	%q_{ij} & = & a_{ij} + \delta(a_{ij}) r_i \\
@@ -235,7 +240,7 @@ harder to enforce and details  will be left to a later section.
 
 \subsection{Voting solution}
 
-In many other texts \citep{Allwein_etal2000, Hsu_Lin2002, Dietterich_Bakiri1995},
+In many other texts \citep{Allwein_etal2000,Hsu_Lin2002,Dietterich_Bakiri1995},
 the class of the test point is determined by how close $\vec r$
 is to each of the columns in $A$:
 \begin{equation}
@@ -262,18 +267,20 @@ Note that there are numerous other functions besides Hamming distance,
 Euclidean distance or a dot product (see below) that can be used in place of the 
 norm in Equation (\ref{distance_based_decoding}).
 \citet{Escalera_etal2010} explore thirteen different ones and find that on
-some datasets, the choice of loss function can make a large difference.
+some datasets, the choice of loss function can make a significant difference.
 
 Here we are assuming that the decision functions return an approximation of the 
 difference in conditional probabilities of the binary classifier.
-In this case a more natural choice of metric is the Euclidian. Expanding:
+In this case a more natural choice of metric is the Euclidian
+since it reduces to Equation (\ref{matrix_equation2} in the limiting
+case of an orthogonal, strict coding matrix. Expanding:
 \begin{eqnnon}
 	c = \arg \min_i \left \lbrace |\vec a^{(i)}|^2 - 2 \vec a^{(i)} \cdot \vec r + |\vec r|^2 \right \rbrace
 \end{eqnnon}
 The length of $\vec r$ is independent of $i$, hence it can be eliminated from the expression.
 For the strict case, the length of each column will also be constant at $|\vec a^{(i)}|=\sqrt{n_p}$.
 Even for the non-strict case, we would expect the column lengths to be close for typical coding 
-matricesr; for instance, the column lengths are equal in the one-versus-one case.
+matrices; for instance, the column lengths are equal in the one-versus-one case.
 Eliminating these two terms produces a {\it voting} solution:
 \begin{eqnnon}
 	c = \arg \max A^T \vec r
@@ -363,7 +370,7 @@ a Lagrange multiplier:
 \end{eqnnon}
 which produces the following linear system:
 \begin{eqnarraynon}
-	2 \sum_k q_{ki} q_{kj} p_j + \lambda & = & 0 \\
+	2 \sum_k q_{ki} \sum_j q_{kj} p_j + \lambda & = & 0 \\
 	\sum_j p_j & = & 1
 \end{eqnarraynon}
 where $\vec 1$ is a vector of all ones.
@@ -405,7 +412,7 @@ numbers of classes.
 Another common coding matrix is an arbitrary one: this is commonly
 known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
 It can be random, but may also be carefully designed 
-\citep{Crammer_Singer2002, Zhou_etal2008, Zhong_Cheriet2013, Rocha_Goldenstein2014}.
+\citep{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013,Rocha_Goldenstein2014}.
 In principle this case covers all the earliers ones, however in practice the
 term can also refer more specifically to a random coding matrix.
 We cover the solution of the general case, which includes any random
@@ -450,14 +457,14 @@ For an orthogonal coding matrix, the voting solution will be equivalent to the
 unconstrained least-squares solution.
 Using this property,
 \citet{Mills2017} provides a fast, simple and elegant iterative solution for solving
-for conditional probabilities when using a ``strict'' orthogonal coding matrix.
+for conditional probabilities when using a ``strict'', orthogonal coding matrix.
 
 \section{Solving for all the probabilities in the general case}
 
 \label{general_case_solution}
 
 We are interested here in a general method of solving for all the probabilities
-multi-class classification based on error-correcting codes.
+in multi-class classification based on error-correcting codes.
 Ideally, this would be an exact solution to the constrained least-squares problem
 in Equations (\ref{minimization_problem})-(\ref{nonnegative}) but might also
 minimize some other cost function.
@@ -487,7 +494,7 @@ subject to:
 	G \vec z \ge \vec h
 	\label{inequality2}
 \end{equation}
-where $\vec z$ is a vector of length $n_c-1$ 
+where $\vec z$ is a vector of dimension $n_c-1$ 
 and $G$ is an $[n_c \times n_c-1]$ matrix.
 
 Suppose we transform this into a new problem by interpolating between the
@@ -611,7 +618,7 @@ subject to:
 where $E$ is an $[m \times n]$ matrix.
 
 The solution is divided into a set $N$ containing the indices of 
-all the non-zero values and a set $Z$ containing the indices of the 
+all the non-zero values in $\vec z$ and a set $Z$ containing the indices of the 
 zero values.
 The algorithm is as follows:
 \begin{enumerate}
@@ -644,7 +651,7 @@ in (\ref{normalization}) with the above constrained
 least squares problem.
 The simplest is to repeat the variable substitution
 described in Equations (\ref{reduce_dimension1}) to (\ref{reduce_dimension2}) until the excluded
-probability is less-than-or-equal to one: $p_k\le 1$.
+probability is greater-than-or-equal to zero: $p_k\ge 0$.
 
 
 \section{Decision-trees}
@@ -653,7 +660,7 @@ probability is less-than-or-equal to one: $p_k\le 1$.
 
 The most obvious method of dividing up a multi-class problem into binary
 classifiers is hierarchically using a {\it decision tree} 
-\citep{Cheong_etal2004, Lee_Oh2003}.
+\citep{Cheong_etal2004,Lee_Oh2003}.
 In this method, the classes are first divided into two partitions, then
 those partitions are each divided into two partitions and so on until only
 one class remains. The classification scheme is hierarchical, with all the
@@ -710,9 +717,10 @@ class is returned, the lower levels of the tree are short circuited
 and this class is selected for the final result. Otherwise, the one class
 is left out of subsequent analysis. This is less a new method than simply
 a means of shaping the tree appropriate to datasets with unbalanced
-numbers of classes, for instance the ``Shuttle'' dataset \citep{King_etal1995}.
+numbers of classes, for instance the ``shuttle'' dataset \citep{King_etal1995}:
+see Section \ref{data_and_software}.
 
-In a decision directed acyclic graph (DDAG), 
+In a decision-directed acyclic graph (DDAG), 
 rather than testing one group against another, 
 each node of the tree tests one class against another \citep{Platt_etal2000}. 
 The losing class is excluded from subsequent analysis. 
@@ -732,7 +740,7 @@ In a DDAG, there are multiple paths to the same node.
 
 Consider the following land-classification problem: you have remote-sensing measurements of four surface types: corn field, wheat field, evergreen forest and deciduous forest.
 How do you divide up the tree to best classify the measurements into one of these four surface types?
-A priori, it would make the most sense to first divide them by their more general grouping: field versus forest and then, once you have field, classify by type of field, or if you have forest, classify by the type of forest.
+Withou examining the actual training data, it would make the most sense to first divide them by their more general grouping: field versus forest and then, once you have field, classify by type of field, or if you have forest, classify by the type of forest.
 This is illustrated in Figure \ref{landclasstree}.
 
 In this case we have prior knowledge of how the classes are related to one another.
@@ -779,7 +787,7 @@ But for more diffuse classes, especially those with multiple centers, it would m
 In this regard, the Hausdorff metric seems tailor-made for the application.
 The Hausdorff metric measures the distance between two subsets in a metric space, which is one way to conceptualize the training data.
 
-For training samples from a pair of classes---two finite sets of points---the Hausdorff distance works out to \citep{Ott1993, Gulick1992}:
+For training samples from a pair of classes---two finite sets of points---the Hausdorff distance works out to \citep{Ott1993,Gulick1992}:
 \begin{eqnnon}
 D_{Hij} = \max \left \lbrace \min_k | \vec x_k - \vec x_l|~,~\min_l | \vec x_k - \vec x_l| ~ ;~y_k=i;~y_l=j \right \rbrace
 \end{eqnnon}
@@ -789,14 +797,14 @@ Since the number of combinations to optimize amongst becomes very large for this
 are also a large number of approaches to choose between.
 As such, it lies beyond the scope of this introductory article while the reader is invited to
 consult recent literature on the subject: 
-\citet{Crammer_Singer2002, Zhou_etal2008, Zhong_Cheriet2013, Rocha_Goldenstein2014}.
+\citet{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013,Rocha_Goldenstein2014}.
 
 \section{Unifying framework}
 
 Since there are many ways of solving the multi-class classification problem,
 we present here a descriptive control language that unifies many of the ideas
 presented in the previous sections.
-This is not a "one-size-fits-all" solution, but rather a means of specifying
+This is not a ``one-size-fits-all'' solution, but rather a means of specifying
 a particular partitioning that best suits the problem at hand.
 This partitioning could be arrived at either through prior knowledge, 
 or empirically by measuring the distance between the classes, for instance--or
@@ -819,25 +827,37 @@ In this case it's value is relative, that is local to the non-hierarchical model
 It may also be the class value returned
 from a top level partition in the hierarchy in which case it's value is absolute.
 $<$TWOCLASS$>$ is a binary classification model.
-This could either be the name of model that has already been trained or it
-could be a list of options or specifications used to train said model
+This could either be the name of a model that has already been trained or it
+could be a list of options or specifications used to train a new model.
 
-For example, the hierarchical multi-class classifier that uses the same
-binary classifiers as would the error-correcting code descibed by 
-(\ref{hierarchical_code}) would be represented in the control language
-as follows:
+For example, the coding matrix in (\ref{hierarchical_code})
+would be represented in the control language as follows:
 
 \begin{verbatim}
-Row1 {
-  Row2 {
-    Row3 {0 1}
-    Row4 {2 3}
+  Row1 0 1 2 3 / 4 5 6 7;
+  Row2 0 1 / 2 3;
+  Row3 0 / 1;
+  Row4 2 / 3;
+  Row5 4 5 / 6 7;
+  Row6 4 / 5;
+  Row7 6 / 7;
+  {0 1 2 3 4 5 6 7}
+\end{verbatim}
+
+Meanwhile, the exact same binary classifiers can be used in
+a decision tree: 
+
+\begin{verbatim}
+  Row1 {
+    Row2 {
+      Row3 {0 1}
+      Row4 {2 3}
+    }
+    Row5 {
+      Row6 {4 5}
+      Row7 {6 7}
+    }
   }
-  Row5 {
-    Row6 {4 5}
-    Row7 {6 7}
-  }
-}
 \end{verbatim}
 
 A one-versus-one specification for four classes would look like
@@ -864,7 +884,9 @@ like this:
   {0 1 2 3}
 \end{verbatim}
 
-A hierarchical specification might look like this:
+A hierarchical specification
+equivalent to the configuration represented in Figure \ref{landclasstree}
+might be represented as follows:
 
 \begin{verbatim}
   TreeVsField {
@@ -915,7 +937,7 @@ on a hypothetical surface-classification problem with the key as follows:
 
 This is not abstract theorizing as
 such a scheme has been successfully applied in a non-data-dependent fashion
-in a very recent paper \citep{Zhou_etal2019}.
+in a recent paper \citep{Zhou_etal2019}.
 
 \section{Numerical trials}
 
@@ -928,8 +950,8 @@ The configurations are: one-vs-one, one-vs.-rest, orthogonal partioning,
 from a bottom-up dendrogram using the Hausdorf metric.
 The solution methods are: constrained least squares as described
 in Section \ref{Lawson_Hanson}, matrix inverse which is specific to one-vs.-one,
-the iterative method designed for orthogonal partitioning 
-(see Section \ref{orthogonal}), and recursively which is appropriate
+the iterative method designed for orthogonal partitioning,
+and recursively which is appropriate
 only for hierarchical or tree-based configurations.
 
 The control language allows us to represent any type of multi-class 
@@ -1054,6 +1076,8 @@ The rational for using it will be explained in Section \ref{results}, below.
 
 \subsection{Data and software}
 
+\label{data_and_software}
+
 \begin{table}
 	\caption{Summary of datasets used in the analysis}\label{datasets}
 	\begin{tabular}{|l|lllll|}
@@ -1076,14 +1100,14 @@ The rational for using it will be explained in Section \ref{results}, below.
 
 The datasets tested are as follows: 
 ``pendigits'' and ``usps'' are both digit recognition problems 
-\citep{Alimoglu1996, Hull1994};
+\citep{Alimoglu1996,Hull1994};
 the ``letter'' dataset is another text-recognition problem 
 that classifies letters rather than numbers 
 \citep{Frey_Slate1991};
 the ``segment'' dataset is a pattern-based image-classification problem;
 the ``sat'' dataset is a satellite land-classification problem;
 the ``shuttle'' dataset predicts different flight configurations on the
-space shuttle \citep{Michie_etal1994, King_etal1995};
+space shuttle \citep{Michie_etal1994,King_etal1995};
 the ``urban'' dataset is another pattern-recognition dataset for urban land cover
 \citep{Johnson2013};
 and the ``humidity'' dataset classifies humidity values based on satellite
@@ -1101,7 +1125,7 @@ Taiwan University in Taipei
 and can be downloaded at: \url{https://www.csie.ntu.edu.tw/~cjlin/libsvm}.
 
 Everything else was done using the libAGF library \citep{Mills2011,Mills2018}
-which includes extensive codes for generalized multi-class classification.
+which includes extensive codes for generalized, multi-class classification.
 These codes interface seamlessly with LIBSVM and provide for automatic
 generation of multiple types of control file using the \verb/print_control/
 command.
@@ -1114,14 +1138,14 @@ efficiency.
 LibAGF may be downloaded at: \url{https://github.com/peteysoft/libmsci}.
 
 To evaluate the conditional probabilities we use the Brier score
-\citep{Brier1950, Jolliffe_Stephenson2003}:
+\citep{Brier1950,Jolliffe_Stephenson2003}:
 \begin{eqnnon}
 B=\sqrt{\frac{1}{n} \sum_{i=1}^{n} \sum_{j=1}^{n_c} \left ( \tilde p_{ij} - \delta_{jy_i} \right )^2}
 \end{eqnnon}
 where $n$ is the number of test samples.
 Meanwhile, we use the uncertainty coefficient to evaluate classification skill.
 This is a measure based on Shannon's channel capacity \citep{Shannon} and
-has a number of advantages over simple fraction correct or ``accuracy''. 
+has a number of advantages over simple fraction correct or ``accuracy''
 \citep{Press_etal1992,Mills2011}.
 If we treat the classifier as a noisy channel, with each classification a
 single symbol, the true class entering at the transmitter and the estimated
@@ -1268,7 +1292,7 @@ there are several conclusions that can be made.
 The first is that despite the seeming complexity of the problem, a 
 ``one-size-fits-all'' approach seems perfectly adequate for most datasets.
 Moreover, this approach is the one-versus-one method,
-which we should note is used exclusively in LIBSVM \citep{Chang_Lin2011}.
+which we should note is used in LIBSVM exclusively \citep{Chang_Lin2011}.
 One-vs.-one has other advantages such as the simplicity of solution:
 a standard linear solver such as Gaussian elimination,
 QR decomposition or SVD is sufficient,
@@ -1319,7 +1343,7 @@ configuration in accuracy but
 this does not preclude cleverer schemes producing larger gains.
 Using similar techniques, \citet{Benabdeslem_Bennani2006} and \citet{Zhou_etal2008} are both able to beat one-vs.-one, although only by narrow margins.
 
-Interestingly, solving hierarchical configurations via least-squares by
+Solving hierarchical configurations via least-squares by
 converting them to non-hierarchical error-correcting codes is marginally more
 accurate than solving them recursively, 
 both for the classes and the probabilities.
@@ -1336,7 +1360,7 @@ the humidity dataset.
 Because the classes are a discretized continuous variable, they have an
 ordering. As such, it is detrimental to split up consecutive classes more
 than absolutely necessary and the ``adjacent'' partitioning is the most
-accurate. Meanwhile, the one-vs.-rest configuration performs abysimally while
+accurate. Meanwhile, the one-vs.-rest configuration performs poorly while
 the one-vs.-one performs well enough, but worse than all the other methods
 save one.
 

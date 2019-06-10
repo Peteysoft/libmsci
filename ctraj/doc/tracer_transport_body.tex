@@ -791,6 +791,7 @@ iff (\ref{ortho_eigen}).
 %it uses more than matrix algebra anyway so we'll leave it out:
 
 \ifdefined\interesting
+
 \section{Volume deformation versus the transport map}
 
 Since the deformation matrices,
@@ -803,11 +804,11 @@ Since $\delta \left [\Phi(\vec x_0) - \vec x \right ]=\delta \left [\vec x_0 - \
 we can derive (\ref{inverse_deformation_matrix}) from
 (\ref{tracer_map_continuous}) and (\ref{tracer_map_continuous3}) by taking 
 the gradient of $q$:
-\begin{eqanl}
-	\nabla_{\vec x} q & = & - \int_V \vec \delta^\prime \left [\vec x_0 - \Phi^{-1}(\vec x) \right ] q_0 (\vec x_0) 
+\begin{eqnarray}
+	\nabla_{\vec x} q & = & - \int_V \vec \delta^\prime \left [\vec x_0 - \Phi^{-1}(\vec x) \right ] q_0 (\vec x_0) \label{HfromQ1}
 	\mathrm d \vec x_0 \cdot \nabla_{\vec x} \Phi^{-1} \\
-	& = & - \nabla_{\vec x_0} q_0 \cdot H^\prime
-\end{eqanl}
+	& = & - \nabla_{\vec x_0} q_0 \cdot H^\prime \label{HfromQ2}
+\end{eqnarray}
 where $\vec \delta^\prime$ is the generalized vector derivative of the 
 Dirac delta function.
 
@@ -837,6 +838,16 @@ For the non-diffusive case, $Q$ is a rotation and therefore orthogonal.
 We construct the inverse by simply reversing the roles of the variables:
 $Q^{-1}(\vec x, \vec x_0) = Q(\vec x_0, \vec x)$, 
 the equivalent of the matrix transpose in the discrete case.
+
+Consider the equivalent derivation in Equations (\ref{HfromQ1})-(\ref{HfromQ2})
+for the inverse transport map:
+\begin{eqanl}
+	\nabla_{\vec x_0} q_0 & = & \int_V \vec \delta^\prime \left [\vec x_0 - \Phi(\vec x) \right ] q (\vec x)
+	\mathrm d \vec x \cdot \nabla_{\vec x_0} \Phi \\
+	& = & - \nabla_{\vec x} q \cdot H 
+\end{eqanl}
+(I'm not sure why this is significant but I'm pretty sure it is.)
+
 
 Of particular interest in the diffusive case
 is what happens to these maps in the limit as time

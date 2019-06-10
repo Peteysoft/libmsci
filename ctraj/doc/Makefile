@@ -17,7 +17,7 @@ manual.pdf: description.tex manual.tex grid_example.ps semi_Lagrangian.ps tracer
 
 
 tracer_transport$(JOURNAL).pdf: tracer_transport$(JOURNAL).tex tracer.bib tt_cover_graphic.ps tt_symbol_list.tex tracer_transport_body.tex
-	make tracer_tranport$(JOURNAL).pdf TARGET=tracer_transport$(JOURNAL) JOURNAL=
+	make tracer_transport$(JOURNAL).pdf TARGET=tracer_transport$(JOURNAL) JOURNAL=
 
 $(TARGET).pdf: $(TARGET).tex
 	latex $(TARGET)
