@@ -121,18 +121,11 @@ we can write a system of equations relating
 the multi-class conditional probabilities to the decision
 functions:
 \begin{equation}
-	r_i(\vec x) = \frac{\sum_{j=1}^{n_i^+} P(c_{ij}^+|\vec x) - \sum_{j=1}^{n_{i}^-} P(c_{ij}^-|\vec x)}{\sum_{j=1}^{n_i^-} P(c_{ij}^-|\vec x) + \sum_{j=1}^{n_i^+} P(c_{ij}^+|\vec x)}
+	r_i(\vec x) = \frac{\sum_{j \in C_i^+1} P(j|\vec x) - \sum_{j \in C_i^-} P(j|\vec x)}{\sum_{j \in C_i^-} P(j|\vec x) + \sum_{j \in C_i^+} P(j|\vec x)}
 	\label{decision_function}
 \end{equation}
-where 
-$c_{ij}^- \in C_i^-$,
-$c_{ij}^+ \in C_i^+$,
-$n_i^-$ is the number of class labels on the negative side of
-the $i$th partition,
-and $n_i^+$ is the number of class labels on the positive side of
-the $i$th partition.
 
-It's more natural (and considerably simpler) to describe the problem using a
+It's more natural to describe the problem using a
 {\it coding matrix}, $A$, 
 which is structured such that each element,
 $a_{ij} \in \lbrace -1, 0, 1 \rbrace$, 
@@ -143,10 +136,13 @@ If $a_{ij}$ is $-1$/$+1$, we would assign each of the $j$th class
 labels in the training data a value of $-1$/$+1$ when training the $i$th
 binary classifier. If the value is $0$, the $j$th class label is excluded.
 
-The non-zero elements of $A$ are:
+The elements of $A$ are:
 \begin{eqnarraynon}
-	a_{ic_{ik}^-} & = & -1 , ~k = 1..n_{c_i^-}\\
-a_{ic_{ik}^+} & = & +1 , ~k=1..n_{c_i^+}
+	a_{ij} = \left \lbrace  \begin{array}{rr}
+-1, & ~ j \in C_i^- \\
++1, & ~ j \in C_i^+ \\
+		0, & \mathrm{otherwise}
+	\end{array} \right .
 \end{eqnarraynon}
 
 %We can relate the multi-class probabilities to the output of the 
@@ -192,15 +188,14 @@ Because the decision functions, $\vec r$, are not estimated perfectly, however,
 the final probabilities may need to be constrained and the inverse
 problem solved via minimization:
 \begin{equation}
-	\vec p = \arg \min_{\vec v} | Q \vec v - \vec r |^2 \label{minimization_problem}
+	\min_{\vec p} | Q \vec p - \vec r |^2 \label{minimization_problem}
 \end{equation}
 subject to:
 \begin{eqnarray}
-	\sum_{i=1}^{n_c} p_i & = & 1 \label{normalization}\\
-	\vec p & \ge & \vec 0 \label{nonnegative}
+	\sum_i p_i & = & 1 \label{normalization}\\
+	p_i & \ge & 0 \label{nonnegative}
 \end{eqnarray}
 where 
-$\vec 0$ is a vector of all zeros and
 the straight brackets, $||$, denote a vector norm which  
 in this case is the Euclidian or $L^2$ norm.
 Other cost functions can of course be substituted: see Section \ref{Zadrozny}.
@@ -826,7 +821,7 @@ It may be one of the class values in a partition in a non-hierarchical model.
 In this case it's value is relative, that is local to the non-hierarchical model.
 It may also be the class value returned
 from a top level partition in the hierarchy in which case it's value is absolute.
-$<$TWOCLASS$>$ is a binary classification model.
+$<$TWOCLASS$>$ is a binary classifier.
 This could either be the name of a model that has already been trained or it
 could be a list of options or specifications used to train a new model.
 
