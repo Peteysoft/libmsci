@@ -95,18 +95,19 @@ ne {
 };
 
 {STRING} {
-    sc_type_base * var=sc_var_lookup(yytext);
-    if (var==NULL) {
-      yylval.var=new sc_type_literal(yytext);
-      return VARIABLE;
-    } else {
-      yylval.var=var;
-      if (sc_type_of(var) == SUBROUTINE) {
-        return SUBROUTINE;
-      } else {
-        return VARIABLE;
-      }
-    }
+  sc_fun_t *fun=sc_fun_lookup(yytext);
+  if (fun!=NULL) {
+    yylval.fun=fun;
+    return SUBROUTINE;
+  }
+
+  sc_type_base * var=sc_var_lookup(yytext);
+  if (var==NULL) {
+    yylval.var=new sc_type_literal(yytext);
+    return VARIABLE;
+  } else {
+    yylval.var=var;
+    return VARIABLE;
   }
           
 };
@@ -180,7 +181,7 @@ ne {
 [0-9]+\.[0-9]* |
 [0-9]+[eE]\-?[0-9]+ | 
 [0-9]+\.[0-9]*[eE]-?[0-9]+ {
-  yylval.var=new sc_scalar_t(yytext);
+  yylval.var=new sc_type_scalar(yytext);
   return VARIABLE;
 };
 

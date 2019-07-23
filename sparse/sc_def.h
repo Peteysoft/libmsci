@@ -53,8 +53,6 @@ int sc_state_destroy(sc_state_struct *state);
 
 //look up a variable and return it:
 sc_type_base * sc_var_lookup(sc_state_struct *state, sc_type_literal *name);
-//create a new variable:
-int sc_var_new(sc_state_struct *state, sc_type_literal *name, int typecode);
 //assign an existing expression to a variable:
 int sc_var_assign(sc_state_struct *state, sc_type_literal *name, sc_type_base *var);
 

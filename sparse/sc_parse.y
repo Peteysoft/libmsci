@@ -224,7 +224,7 @@ expression:
       }
     }
   | expression GT expression {
-      $$=*$1 > *$3;
+      $$=$1->gt($3);
       delete $1;
       delete $3;
       if ($$==NULL) {
@@ -233,7 +233,7 @@ expression:
       }
     }
   | expression LT expression {
-      $$=*$1 < *$3;
+      $$=$1->lt($3);
       delete $1;
       delete $3;
       if ($$==NULL) {
@@ -242,7 +242,7 @@ expression:
       }
     }
   | expression GE expression {
-      $$=*$1 >= *$3;
+      $$=$1->ge($3);
       delete $1;
       delete $3;
       if ($$==NULL) {
@@ -251,7 +251,7 @@ expression:
       }
     }
   | expression LE expression {
-      $$=*$1 <= *$3;
+      $$=$1->le($3);
       delete $1;
       delete $3;
       if ($$==NULL) {
@@ -260,7 +260,16 @@ expression:
       }
     }
   | expression EQ expression {
-      $$=*$1 == *$3;
+      $$=$1->eq($3);
+      delete $1;
+      delete $3;
+      if ($$==NULL) {
+        yyerror("Syntax error\n");
+        YYERROR;
+      }
+    }
+  | expression NE expression {
+      $$=$1->eq($3);
       delete $1;
       delete $3;
       if ($$==NULL) {
@@ -287,7 +296,7 @@ expression:
       }
     }
   | expression CPROD expression {
-      $$=$1->cprod($3);
+      $$=$1->multiply_all($3);
       delete $1;
       delete $3;
       if ($$ == NULL) {

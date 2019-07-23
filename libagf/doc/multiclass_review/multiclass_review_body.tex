@@ -125,7 +125,7 @@ functions:
 	\label{decision_function}
 \end{equation}
 
-It's more natural to describe the problem using a
+It's simpler and more natural to describe the problem using a
 {\it coding matrix}, $A$, 
 which is structured such that each element,
 $a_{ij} \in \lbrace -1, 0, 1 \rbrace$, 
@@ -192,11 +192,13 @@ problem solved via minimization:
 \end{equation}
 subject to:
 \begin{eqnarray}
-	\sum_i p_i & = & 1 \label{normalization}\\
-	p_i & \ge & 0 \label{nonnegative}
+	\vec 1 \cdot p_i & = 1 \label{normalization}\\
+	\vec p & \ge & \vec 0 \label{nonnegative}
 \end{eqnarray}
 where 
-the straight brackets, $||$, denote a vector norm which  
+$\vec 0$ is a vector of all zeros,
+$\vec 1$ is a vector of all ones,
+and the straight brackets, $||$, denote a vector norm which  
 in this case is the Euclidian or $L^2$ norm.
 Other cost functions can of course be substituted: see Section \ref{Zadrozny}.
 
@@ -368,7 +370,6 @@ which produces the following linear system:
 	2 \sum_k q_{ki} \sum_j q_{kj} p_j + \lambda & = & 0 \\
 	\sum_j p_j & = & 1
 \end{eqnarraynon}
-where $\vec 1$ is a vector of all ones.
 It can be shown that with this solution for a 1-vs-1 coding matrix,
 inequality constraints in (\ref{nonnegative}) are always satisfied
 \citep{Wu_etal2004}.
@@ -735,7 +736,7 @@ In a DDAG, there are multiple paths to the same node.
 
 Consider the following land-classification problem: you have remote-sensing measurements of four surface types: corn field, wheat field, evergreen forest and deciduous forest.
 How do you divide up the tree to best classify the measurements into one of these four surface types?
-Withou examining the actual training data, it would make the most sense to first divide them by their more general grouping: field versus forest and then, once you have field, classify by type of field, or if you have forest, classify by the type of forest.
+Without examining the actual training data, it would make the most sense to first divide them by their more general grouping: field versus forest and then, once you have field, classify by type of field, or if you have forest, classify by the type of forest.
 This is illustrated in Figure \ref{landclasstree}.
 
 In this case we have prior knowledge of how the classes are related to one another.

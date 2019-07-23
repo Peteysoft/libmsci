@@ -24,6 +24,8 @@ sc_state_init(sc_state_struct *state) {
   flist[id]=& sc_builtin_list;
   id=state->funtab.add("cat");
   flist[id]=& sc_builtin_cat;
+  id=state->funtab.add("size");
+  flist[id]=& sc_builtin_size;
   id=state->funtab.add("delete");
   flist[id]=& sc_builtin_delete;
 
@@ -92,9 +94,6 @@ sc_type_base * sc_var_lookup(sc_state_struct *state, sc_literal *name) {
 
   long id=state->vartab.lookup(name);
   if (id == -1) {
-    fprintf("Variable, %s, not defined\n", (char *) name);	//does this
-    								//cause a
-								//memory leak?
     var=NULL;
   } else if (state->vartype[id] == SCALAR_T || state->vartype[id] == LITERAL_T) {
     var=vlist[id];
@@ -142,3 +141,24 @@ sc_fun_t sc_fun_lookup(sc_state_struct *state, sc_literal *name) {
   }
   return fun;
 }
+
+int sc_type_of(sc_type_base *var) {
+  int type;
+  if (typeid(*var) == typeid(sc_scalar)) {
+    type=SCALAR_T;
+  } else if (typeid(*var) == typeid(sc_literal)) {
+    type=LITERAL_T;
+  } else if (typeid(*var) == typeid(sc_type_full)) {
+    type=FULL_T;
+  } else if (typeid(*var) == typeid(sc_sparse)) {
+    type=SPARSE_T;
+  } else if (typeid(*var) == typeid(sc_sparse_array)) {
+    type=SPARSE_ARRAY_T;
+  } else if (typeid(*var) == typeid(sc_list)) {
+    type=LIST_T;
+  } else {
+    type=-1;
+  }
+  return type;
+}
+

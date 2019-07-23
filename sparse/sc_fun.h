@@ -11,6 +11,7 @@
   sc_type_base *sc_builtin_sparse_array(sc_state_struct *state, sc_list * args);
   sc_type_base *sc_builtin_list(sc_state_struct *state, sc_list *arg);
   sc_type_base *sc_builtin_cat(sc_state_struct *state, sc_list *arg);
+  sc_type_base *sc_builtin_size(sc_state_struct *state, sc_list *arg);
   sc_type_base *sc_builtin_delete(sc_state_struct *state, sc_list *arg);
 
   //I/O:
