@@ -20,7 +20,6 @@ sparse_array<index_t, real, sparse_t>::sparse_array() {
   sparse_a=NULL;
 }
 
-//fuck fuck fuck fuck fuck fuck fuck...
 template <class index_t, class scalar, class sparse_t>
 sparse_array<index_t, scalar, sparse_t>::sparse_array(matrix_base<index_t, scalar> *other) {
   if (typeid(*other) == typeid(sparse_t)) {
@@ -36,7 +35,6 @@ sparse_array<index_t, scalar, sparse_t>::sparse_array(matrix_base<index_t, scala
 };
 
 /*	
-//fuck (fuck (fuck (fuck (....
 template <class index_t, class scalar, class sparse_t>
 sparse_array<index_t, scalar> & sparse_array<index_t, scalar>::operator = (matrix_base<index_t, scalar, sparse_t> &other) {
   if (typeid(other) == typeid(sparse<index_t, scalar>)) {

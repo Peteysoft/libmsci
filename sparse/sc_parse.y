@@ -21,7 +21,7 @@ using namespace sparse_calc;
 %}
 
 %union {
-  sc_type_base * sc_var;
+  sc_type_base * var;
   sc_fun_t sc_fun;
 }
 
@@ -53,14 +53,10 @@ using namespace sparse_calc;
 %token LE
 %token EQ
 
+%token <var> SYMBOL
+%token <var> LITERAL
 
-%token <sc_var> SYMBOL
-%token <sc_var> LITERAL
-
-%token <sc_var> SCALAR
-%token <sc_var> MATRIX
-%token <sc_var> VECTOR
-%token <sc_var> LIST
+%token <var> VARIABLE
 %token <sc_fun> SUBROUTINE
 
 %left GT LT GE LE EQ
@@ -71,68 +67,94 @@ using namespace sparse_calc;
 %left LEFT_BRAC
 %nonassoc UMINUS
 
+%type <var> expression
+%type <var> list
+%type <var> list_expression
+%type <var> call
+
 %%
 
 statement_list: statement | statement_list statement;
 
 statement: 
-	| assignment
-	| command
-	| DELIM
-	| error DELIM {
-		  yyclearin;
-		  yyerrok;
-		};
+  | assignment
+  | call DELIM {
+      delete $1;
+    }
+  | DELIM
+  | error DELIM {
+    yyclearin;
+    yyerrok;
+  };
 
-LIST: 
+assignment:
+  SYMBOL LEFT_SUB expression RIGHT_SUB ASSIGN expression {
+      sc_type_base * lval=sc_var_lookup(&sc_state, $1);
+      if (lval==NULL) {
+        yyerror("Variable undefined\n");
+        YYERROR;
+        //(looks like a memory leak...)
+      }
+      lval->subscript_assign($3, $6);
+      delete $3;
+      delete $6;
+      sc_var_assign($1, lval);
+      delete lval;
+      delete $1;
+    }
+  | SYMBOL LEFT_SUB expression COMMA expression RIGHT_SUB ASSIGN expression {
+      sc_type_base * lval=sc_var_lookup($1);
+      if (lval==NULL) {
+        yyerror("Variable undefined\n");
+        YYERROR;
+      }
+      lval->subscript_assign($3, $5, $8);
+      delete $3;
+      delete $5;
+      delete $8;
+      sc_var_assign($1, lval);
+      delete lval;
+      delete $1;
+    }
+  | SYMBOL ASSIGN expression {
+      sc_var_assign(&sc_state, $1, $3);
+    };
+
+call:
+  SYMBOL list_expression {
+    $$=sc_call_user_fun(&sc_state, $1, $2);
+    delete $1;
+    delete $2;
+    }
+  | SUBROUTINE list_expression {
+    $$=(*$1)(&sc_state, $2);
+    delete $1;
+    delete $2;
+  };
+
+list_expression:
+  LEFT_BRAC RIGHT_BRAC {
+      $$=new sc_type_list();
+    }
+  | LEFT_BRAC list RIGHT_BRAC {
+      $$=$2;
+  };
+
+list:
   expression {
       $$=new sc_type_list();
-      $$->push($1);
+      $$->multiply($1);
     }
-  | LIST COMMA expression {
-      $1->push($3);
+  | list COMMA expression {
+      $1->multiply($3);
       $$=$1;
     };
 
-command:
-  SUBROUTINE LEFT_BRAC LIST RIGHT_BRAC DELIM {
-      sc_list_base *result=(*$1)($3);
-      delete $3;
-      if (result==NULL) {
-        yyerror("Error in user function\n");
-        YYERROR;
-      }
-      delete result;
-    }
-  | SYMBOL LEFT_BRAC LIST RIGHT_BRAC DELIM {
-      sc_list_base *result;
-      int err=sc_call_func($1, $3, result);
-      delete $1;
-      delete $3;
-      if (err!=0) {
-        yyerror("Error in user function\n");
-        YYERROR;
-      }
-      if (result!=NULL) delete result;
-    };
-
-SUBROUTINE:
-  SYMBOL {
-      $$=sc_fun_lookup($1);
-      delete $1;
-      if ($$==NULL) {
-        yyerror("Syntax error\n");
-        YYERROR;
-      }
-    };
-
-
 expression:
-  SYMBOL {
-      $$=sc_var_lookup($1);
-      delete $1;
-    } 
-  | LIST {
+  VARIABLE {
+      $$=$1;
+    }
+  | list_expression {
       $$=$1;
     }
   | LEFT_BRAC expression RIGHT_BRAC {
@@ -152,23 +174,8 @@ expression:
         YYERROR;
       }
     }
-  | SUBROUTINE LEFT_BRAC LIST RIGHT_BRAC {
-      $$=(*$1) ($3);
-      delete $1;
-      delete $3;
-      if ($$==NULL) {
-        yyerror("Syntax error\n");
-        YYERROR;
-      }
-    }
-  | SYMBOL LEFT_BRAC LIST RIGHT_BRAC DELIM {
-      int err=sc_call_func($1, $3, $$);
-      delete $1;
-      delete $3;
-      if (err!=0) {
-        yyerror("Error in user function\n");
-        YYERROR;
-      }
+  | call {
+      $$=$1;
     }
   | expression MINUS expression {
       $3->negate();
@@ -279,6 +286,15 @@ expression:
         YYERROR;
       }
     }
+  | expression CPROD expression {
+      $$=$1->cprod($3);
+      delete $1;
+      delete $3;
+      if ($$ == NULL) {
+        yyerror("Syntax error\n");
+        YYERROR;
+      }
+    }
   | expression LEFT_SUB expression RIGHT_SUB {
       $$=$1->subscript($3);
       delete $3;
@@ -297,40 +313,16 @@ expression:
         yyerror("Syntax error\n");
         YYERROR;
       }
-    };
-
-assignment:
-  SYMBOL LEFT_SUB expression RIGHT_SUB ASSIGN expression {
-      sc_type_base * lval=sc_var_lookup($1);
-      if (lval==NULL) {
-        yyerror("Variable undefined\n");
-        YYERROR;
-        //(looks like a memory leak...)
-      }
-      lval->subscript_assign($3, $6);
-      delete $3;
-      delete $6;
-      sc_var_assign($1, lval);
-      delete lval;
-      delete $1;
     }
-  | SYMBOL LEFT_SUB expression COMMA expression RIGHT_SUB ASSIGN expression {
-      sc_type_base * lval=sc_var_lookup($1);
-      if (lval==NULL) {
-        yyerror("Variable undefined\n");
+  | expression LEFT_BRAC expression RIGHT_BRAC {
+      $$=$1->get_element($3)
+      delete $3;
+      delete $1;
+      if ($$==NULL) {
+        yyerror("Syntax error\n");
         YYERROR;
       }
-      lval->subscript_assign($3, $5, $8);
-      delete $3;
-      delete $5;
-      delete $8;
-      sc_var_assign($1, lval);
-      delete lval;
-      delete $1;
-    }
-  | SYMBOL ASSIGN expression {
-      sc_var_assign($1, $3);
-    };
+  };
 
 
 %%

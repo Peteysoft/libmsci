@@ -64,77 +64,56 @@ STRING	[a-zA-Z][a-zA-Z0-9\._]*
 
 [\t ]+ ;
 
-subroutine {return SUBROUTINE_T;}
-vector {return VECTOR_T;}
-full {
-    yylval.id=SC_FULL_T;
-    return MATRIX_T;
-  };
-sparse {
-    yylval.id=SC_SPARSE_T;
-    return MATRIX_T;
-  };
-sparse_array {
-    yylval.id=SC_SPARSE_ARRAY_T;
-    return MATRIX_T;
-  };
-
 gt {
   yylval.id=-SC_N_RESERVED-funtab.lookup(yytext);
-  return COMPARATOR;
+  return GT;
 };
 
 ge {
   yylval.id=-SC_N_RESERVED-funtab.lookup(yytext);
-  return COMPARATOR;
+  return GE;
 };
 
 lt {
   yylval.id=-SC_N_RESERVED-funtab.lookup(yytext);
-  return COMPARATOR;
+  return LT;
 };
 
 le {
   yylval.id=-SC_N_RESERVED-funtab.lookup(yytext);
-  return COMPARATOR;
+  return LE;
 };
 
 eq {
   yylval.id=-SC_N_RESERVED-funtab.lookup(yytext);
-  return COMPARATOR;
+  return EQ;
 };
 
 ne {
   yylval.id=-SC_N_RESERVED-funtab.lookup(yytext);
-  return COMPARATOR;
+  return NE;
 };
 
-^[ \t]*{STRING} {
-  id=funtab.lookup(yytext);
-  if (id>=0) {
-    yylval.id=-SC_N_RESERVED-id;
-    return SUBROUTINE;
-  }
-  yylval.symbol=new char[strlen(yytext)+1];
-  strcpy(yylval.symbol, yytext);
-  return SYMBOL;
-}
-
 {STRING} {
-    yylval.sc_var=new sc_type_literal(yytext);
-    return SYMBOL;
+    sc_type_base * var=sc_var_lookup(yytext);
+    if (var==NULL) {
+      yylval.var=new sc_type_literal(yytext);
+      return VARIABLE;
+    } else {
+      yylval.var=var;
+      if (sc_type_of(var) == SUBROUTINE) {
+        return SUBROUTINE;
+      } else {
+        return VARIABLE;
+      }
+    }
   }
           
 };
 
 \"[^\n^\"]+\" {
-  int len;
-  len=strlen(yytext)-1;
-  //copy, stripping the quotation marks:
-  yylval.literal=new char[len];
-  strncpy(yylval.symbol, yytext+1, len-1);
-  yylval.literal[len-1]='\0';
-  return LITERAL;
+  yylval.var=new sc_type_literal(yytext);
+  return VARIABLE;
 };
 
 \( {
@@ -150,7 +129,6 @@ ne {
 };
 
 \^ {
-  yylval.id=-SC_N_RESERVED-funtab.lookup(yytext);
   return POW;
 }
 
@@ -163,32 +141,26 @@ ne {
 };
 
 \+ {
-  yylval.id=-SC_N_RESERVED-funtab.lookup(yytext);
   return PLUS;
 };
 
 \- {
-  yylval.id=-SC_N_RESERVED-funtab.lookup(yytext);
   return MINUS;
 };
 
 \* {
-  yylval.id=-SC_N_RESERVED-funtab.lookup(yytext);
   return PROD;
 };
 
 \# {
-  yylval.id=-SC_N_RESERVED-funtab.lookup(yytext);
   return CPROD;
 };
 
 \/ {
-  yylval.id=-SC_N_RESERVED-funtab.lookup(yytext);
   return QUOTIENT;
 };
 
 \% {
-  yylval.id=-SC_N_RESERVED-funtab.lookup(yytext);
   return MOD;
 };
 
@@ -201,7 +173,6 @@ ne {
 };
 
 \: {
-  yylval.id=funtab.lookup(yytext);
   return RANGE;
 };
 
@@ -209,18 +180,18 @@ ne {
 [0-9]+\.[0-9]* |
 [0-9]+[eE]\-?[0-9]+ | 
 [0-9]+\.[0-9]*[eE]-?[0-9]+ {
-  yylval.scalar=atof(yytext);
-  return CONSTANT;
+  yylval.var=new sc_scalar_t(yytext);
+  return VARIABLE;
 };
 
-\$[0-9]+ {
-  long id;
-  id=symtab.lookup(yytext);
-  if (id<0) {
-    id=symtab.add(yytext);
-    vartyp[id]=SC_PARAMETER_T;
+\$_ {
+  sc_type_base *var=sc_var_lookup(&sc_state, yytext);
+  if (var==NULL) {
+    yyerror("Parameter not defined\n");
+    return ERROR;
   }
-  return PARAMETER;
+  yylval.var=var;
+  return VARIABLE;
 };
 
 \n {
