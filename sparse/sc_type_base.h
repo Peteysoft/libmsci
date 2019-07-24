@@ -10,16 +10,20 @@ class sc_type_base {
     //Part I: functions that don't return another sc type:
 
     //I/O:
-    virtual int read(FILE *fs);
-    virtual int write(me);
+    virtual int load(FILE *fs);
+    virtual int write(FILE *fs);
 
-    virtual int scan(sc_type_literal *fname);
-    virtual int print(sc_type_literal *fname);
+    virtual int scan(FILE *fs);
+    virtual int print(FILE *fs);
 
+    //informational:
     virtual int nel();
+    virtual int typeof();
 
     //type conversion:
     virtual char * operator();
+    virtual double operator();
+
 
     //Part II: returns another sc type:
 
@@ -55,9 +59,9 @@ class sc_type_base {
     //only works for literals:
     virtual sc_type_base *cat(sc_type_base *other);
 
-    //only works for vectors (?):
-    virtual sc_type_base *distribute(sc_type_literal *op);
-    virtual sc_type_base *distribute(sc_type_literal *op, sc_type_base *other);
+    //vectors, lists and sparse_arrays:
+    virtual sc_type_base *map(sc_type_literal *op);
+    virtual sc_type_base *map(sc_type_literal *op, sc_type_base *other);
 
     //subscripting:
     //for matrices and lists:
@@ -68,7 +72,7 @@ class sc_type_base {
     virtual sc_type_base *subscript_assign(sc_type_base *sub1, sc_type_base *sub2);
 
     //for lists and sparse arrays:
-    virtual sc_type_base *get_element(sc_type_base *el);
+    virtual sc_type_base *get_el(sc_type_base *el);
 
 };
 

@@ -26,6 +26,7 @@
   sc_type_base *sc_builtin_solve(sc_state_struct *state, sc_list *arg);
   sc_type_base *sc_builtin_evd(sc_state_struct *state, sc_list *arg);
   sc_type_base *sc_builtin_svd(sc_state_struct *state, sc_list *arg);
+  sc_type_base *sc_builtin_map(sc_state_struct *state, sc_list *arg);
 
   //system:
   sc_type_base *sc_builtin_com(sc_state_struct *state, sc_list *arg);

@@ -59,11 +59,11 @@ int sc_var_assign(sc_state_struct *state, sc_type_literal *name, sc_type_base *v
 //look up a function and return it:
 sc_fun_t sc_fun_lookup(sc_state_struct *state, sc_type_literal *name);
 
-//variable type code:
-int sc_type_of(sc_type_base *var);
-
 //read in a variable from a file:
 sc_type_base *sc_read_var(sc_literal *name, int type);
+
+//call a user function:
+sc_type_base * sc_call_user_fun(sc_state_struct *state, sc_literal *name, sc_list *arg);
 
 
 #endif

@@ -79,7 +79,7 @@ statement_list: statement | statement_list statement;
 statement: 
   | assignment
   | call DELIM {
-      delete $1;
+      if ($1 != NULL) delete $1;
     }
   | DELIM
   | error DELIM {
@@ -122,14 +122,18 @@ assignment:
 
 call:
   SYMBOL list_expression {
-    $$=sc_call_user_fun(&sc_state, $1, $2);
-    delete $1;
-    delete $2;
+      $$=sc_call_user_fun(&sc_state, $1, $2);
+      delete $1;
+      delete $2;
     }
   | SUBROUTINE list_expression {
-    $$=(*$1)(&sc_state, $2);
-    delete $1;
-    delete $2;
+      $$=(*$1)(&sc_state, $2);
+      delete $1;
+      if ($$ != $2) delete $2;
+      if ($$==NULL) {
+        yyerror("Syntax error\n");
+        YYERROR;
+      }
   };
 
 list_expression:

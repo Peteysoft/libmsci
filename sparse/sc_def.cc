@@ -42,6 +42,8 @@ sc_state_init(sc_state_struct *state) {
   flist[id]=& sc_builtin_evd;
   id=state->funtab.add("svd");
   flist[id]=& sc_builtin_svd;
+  id=state->funtab.add("map");
+  flist[id]=& sc_builtin_map;
 
   //system:
   id=state->funtab.add("sys");
@@ -71,13 +73,9 @@ sc_type_base * sc_read_var(sc_literal *name, int type) {
       var=new sc_type_vector(name);
       break;
     FULL_T:
-      var=new sc_type_full(name);
-      break;
     SPARSE_T:
-      var=new sc_type_sparse(name);
-      break;
     SPARSE_ARRAY_T:
-      var=new sc_type_sparse_array(name);
+      var=new sc_type_matrix(name, type);
       break;
     LIST_T:
       var=new sc_type_list(name);
@@ -105,7 +103,7 @@ sc_type_base * sc_var_lookup(sc_state_struct *state, sc_literal *name) {
 }
 
 int sc_var_assign(sc_state_struc *state, sc_type_literal *name, sc_type_base *var) {
-  int type=sc_type_of(var);
+  int type=var->typeof();
   long id=state->vartab.lookup(name);
   if (id == -1) {
     id=state->vartab.lookup(name);
@@ -142,23 +140,4 @@ sc_fun_t sc_fun_lookup(sc_state_struct *state, sc_literal *name) {
   return fun;
 }
 
-int sc_type_of(sc_type_base *var) {
-  int type;
-  if (typeid(*var) == typeid(sc_scalar)) {
-    type=SCALAR_T;
-  } else if (typeid(*var) == typeid(sc_literal)) {
-    type=LITERAL_T;
-  } else if (typeid(*var) == typeid(sc_type_full)) {
-    type=FULL_T;
-  } else if (typeid(*var) == typeid(sc_sparse)) {
-    type=SPARSE_T;
-  } else if (typeid(*var) == typeid(sc_sparse_array)) {
-    type=SPARSE_ARRAY_T;
-  } else if (typeid(*var) == typeid(sc_list)) {
-    type=LIST_T;
-  } else {
-    type=-1;
-  }
-  return type;
-}
 
