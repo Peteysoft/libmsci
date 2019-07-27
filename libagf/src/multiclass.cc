@@ -259,6 +259,9 @@ namespace libagf {
       case (106):
         solve_class=&solve_class_interior<real, real>;
         break;
+      case (200):
+	solve_class=&solve_class_nnls4<real, real>;
+        break;
       default:
         solve_class=&solve_class_nnls3<real, real>;
         break;

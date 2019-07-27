@@ -33,7 +33,7 @@ LD_OPTIONS = -L$(GSL_LIB) -L$(LIB_PATH) -L. \
 		-lpetey$(OPT_VER) -lgsl -lgslcblas -l$(FORTRAN_RUNTIME) #-L/usr/lib/ncurses -lcurses
 
 #CFLAGS = $(OPT_VER) -I$(GSL_INCLUDE) -I$(INCLUDE_PATH) -Wno-deprecated #-O2 -g
-CFLAGS = $(OPT_VER) -I$(GSL_INCLUDE) -I$(INCLUDE_PATH)
+CFLAGS = $(OPT_VER) -I$(GSL_INCLUDE) -I$(INCLUDE_PATH) -g
 
 #---------------------------------------------------------------------#
 #                      End modifiable macros                          #

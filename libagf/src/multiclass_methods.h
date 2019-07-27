@@ -105,6 +105,9 @@ namespace libagf {
   template <typename code_t, typename real>
   void solve_class_nnls3(code_t **a, int m, int n, real *r, real *p);
 
+  template <typename code_t, typename real>
+  void solve_class_nnls4(code_t **a, int m, int n, real *r, real *p);
+
 }
 
 #endif

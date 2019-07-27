@@ -10,12 +10,14 @@
 
 namespace libpetey {
 
+  //sorts data with n elements in ascending order:
   template <class dt>
   void heapsort_inplace(dt *data, long n);
 
   template <class dt>
   long * heapsort(dt *data, long n);
 
+  //returns integers indexing into the array:
   template <class dt>
   void heapsort(dt *data, long *ind, long n);
 

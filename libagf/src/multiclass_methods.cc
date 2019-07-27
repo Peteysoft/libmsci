@@ -10,6 +10,7 @@
 #include "gsl_util.h"
 #include "constrained.h"
 #include "randomize.h"
+#include "peteys_tmpl_lib.h"
 #include "full_util.h"
 #include "multiclass_methods.h"
 
@@ -1007,6 +1008,8 @@ namespace libagf {
     atp=allocate_matrix<double>(n-1, m);
     ran=randomize(n);
     //try each variable in turn to set the equality constraint:
+    //(ought to check which, if any, probability set to 0 is furthest
+    //out-of-bounds and use that...)
     for (int i=0; i<n; i++) {
       double x_i;
       sub=ran[i];
@@ -1044,6 +1047,102 @@ namespace libagf {
     delete_matrix(at);
 
     delete [] ran;
+
+    if (failflag) {
+      fprintf(stderr, "solve_class_nnls3: failed to find solution\n");
+      assert(failflag==0);
+    }
+
+  }
+
+  //someday I might get this thing working...
+  template <typename code_t, typename real>
+  void solve_class_nnls4(code_t **a0, int m, int n, real *r, real *p) {
+    double **at;		//full problem matrix row major ordering
+    double **atp;   	//equality constrained problem matrix row major
+    double b[m];        //solution vector
+    double bp[m];       //solution vector for equality constrained problem
+    double x[n-1];        //variables
+    double rnorm;       //Euclidean norm of residual vector
+    double w[n-1];        //slack variables
+    double zz[m];       //working space
+    int32_t index[n-1];   //more working space
+    long sind[n-1];	//indices to sorted slack variables
+    long sub;		//variable to exclude
+    tree_lg<long> tried;            //previously excluded variables
+    int32_t mode;       //error code: 1=success; 2=bad dimensions; 3=max iter exceeded
+    int32_t nm1=n-1;    //rows in equality constrained problem
+    int failflag=1;	//make sure everything worked OK
+
+    //set the problem matrix:
+    at=allocate_matrix<double>(n, m);
+    for (int i=0; i<m; i++) {
+      for (int j=0; j<n; j++) {
+        if (a0[i][j]==0) {
+          at[j][i]=r[i];
+        } else {
+          at[j][i]=a0[i][j];
+        }
+      }
+      b[i]=r[i];
+    }
+    //print_matrix(stdout, ata, n, n);
+    atp=allocate_matrix<double>(n-1, m);
+
+    //here we try this:
+    //(ought to check which, if any, probability set to 0 is furthest
+    //out-of-bounds and use that...)
+    sub=ranu()*n;
+    tried.add_member(sub);
+    for (int i=0; i<n; i++) {
+      double x_i;
+      for (int j=0; j<sub; j++) {
+        for (int k=0; k<m; k++) atp[j][k]=at[j][k]-at[sub][k];
+      }
+      for (int j=sub+1; j<n; j++) {
+        for (int k=0; k<m; k++) atp[j-1][k]=at[j][k]-at[sub][k];
+      }
+      for (int j=0; j<m; j++) bp[j]=b[j]-at[sub][j];
+
+      nnls_(atp[0], &m, &m, &nm1, bp, x, &rnorm, w, zz, index, &mode);
+
+      x_i=1;
+      for (int j=0; j<sub; j++) x_i-=x[j];
+      for (int j=sub+1; j<n; j++) x_i-=x[j-1];
+      //if the excluded variable obeys the inequality constraint,
+      //set probabily results and exit:
+      if (x_i >= 0) {
+        for (int j=0; j<sub; j++) p[j]=x[j];
+        for (int j=sub+1; j<n; j++) p[j]=x[j-1];
+        p[sub]=x_i;
+	failflag=0;
+        break;
+      }
+
+      //either should work:
+      //heapsort(x, sind, n-1);
+      heapsort(w, sind, n-1);
+      //correct indices:
+      for (int j=0; j<n-1; j++) if (sind[j]>sub) sind[j]++;
+      failflag=1;
+      for (int j=0; j<n-1; j++) {
+        sub=sind[n-j-2];
+        if (tried.nel() != tried.add_member(sub)) {
+          failflag=0;
+          break;
+	}
+      }
+      if (failflag) break;
+
+      if (mode!=1) {
+        fprintf(stderr, "solve_class_nnls3: warning, nnls routine failed to converge\n");
+        continue;
+      }
+      //printf("exit code=%d\n", mode);
+    }
+      
+    delete_matrix(atp);
+    delete_matrix(at);
 
     if (failflag) {
       fprintf(stderr, "solve_class_nnls3: failed to find solution\n");
@@ -1116,6 +1215,10 @@ namespace libagf {
 
   template void solve_class_nnls3<float, float>(float **, int, int, float *, float *);
   template void solve_class_nnls3<double, double>(double **, int, int, double *, double *);
+
+  template void solve_class_nnls4<float, float>(float **, int, int, float *, float *);
+  template void solve_class_nnls4<double, double>(double **, int, int, double *, double *);
+
 }
 
 #endif

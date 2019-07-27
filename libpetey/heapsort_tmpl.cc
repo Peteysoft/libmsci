@@ -10,6 +10,7 @@ void heapsort_inplace(dt *data, long n) {
 //		to sort user defined data types (obviously) by defining '>'
 //		(greater than) and '<' (less than) operators for the desired
 //		class.
+//		Sorts in ascending order.
 //
 //		This version performs an in-place sort, requiring no extra
 //		storage.
@@ -26,6 +27,7 @@ void heapsort_inplace(dt *data, long n) {
 //
 // history:	Created 2003-2-23 based on a heapsort function in IDL which
 //		in turn was loosely based on that in Numerical Recipes.
+//		2019-07-27 PM: added "in ascending order" to documentation.
 //
 //************************************************************************
 
@@ -90,6 +92,7 @@ void heapsort(dt *data, long *ind, long n) {
 //		to sort user defined data types (obviously) by defining '>'
 //		(greater than) and '<' (less than) operators for the desired
 //		class.
+//		Sorts in ascending order.
 //
 //		This version an array of longword integers giving the indices
 //		of the sorted array, while leaving the original array untouched.
@@ -108,6 +111,7 @@ void heapsort(dt *data, long *ind, long n) {
 //		in turn was loosely based on that in Numerical Recipes.
 //		2004-1-21 PM: created new version that takes indices as argument
 //				instead of returning them.
+//		2019-07-27 PM: added "in ascending order" to documentation.
 //
 //************************************************************************
 
