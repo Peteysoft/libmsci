@@ -204,7 +204,7 @@ namespace libagf {
   void multiclass<real, cls_t>::set_solve_type(int ct) {
     switch (ct) {
       case (0):
-        solve_class=&solve_class_nnls3<real, real>;
+        solve_class=&solve_class_nnls4<real, real>;
         break;
       case (1):
         solve_class=&solve_class_scratch<real, real>;
@@ -260,10 +260,10 @@ namespace libagf {
         solve_class=&solve_class_interior<real, real>;
         break;
       case (200):
-	solve_class=&solve_class_nnls4<real, real>;
+	solve_class=&solve_class_nnls3<real, real>;
         break;
       default:
-        solve_class=&solve_class_nnls3<real, real>;
+        solve_class=&solve_class_nnls4<real, real>;
         break;
     }
   }

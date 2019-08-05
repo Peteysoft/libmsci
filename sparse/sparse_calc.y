@@ -37,7 +37,7 @@ using namespace sparse_calc;
 %token PRINT PATH HELP SYSTEM COMMENT DELETE RUN
 %token SQRT SIN COS TAN LOG
 %token SCALAR_T VECTOR_T
-%token IDENTITY TRANSPOSE EVD SVD SOLVE INVERT EMPTY READ SIZE SUM SAVE
+%token IDENTITY TRANSPOSE EVD SVD SOLVE INVERT EMPTY READ SIZE SUM SAVE ASL
 %token ALL
 
 %token <scalar> SCALAR
@@ -1292,6 +1292,17 @@ matrix_exp: MATRIX {
         YYERROR;
       }
     }
+  | ASL LEFT_BRAC matrix_exp COMMA scalar_exp COMMA scalar_exp RIGHT_BRAC {
+      if (matrix_type($3)==SPARSE_ARRAY_T) {
+        sparse_array_t *sa=(sparse_array_t *) $3;
+        sa->asl_transform($5, $7);
+        $$=sa;
+      } else {
+        yyerror("Syntax error");
+        delete $3;
+        YYERROR;
+      }
+  };
 
 scalar_exp: SCALAR {$$=$1;}
   | LEFT_BRAC scalar_exp RIGHT_BRAC {$$=$2;}

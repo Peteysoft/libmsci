@@ -4,14 +4,14 @@
 
 # optimization version:
 OPT_VER = -g
-EXE_EXT=.exe
+#EXE_EXT=.exe
 
 # compilers:
 CC = g++
 F77 = gfortran
 
 # paths for binaries and include files:
-BASE_PATH = /home/lenovo
+BASE_PATH = /home/peter
 #BASE_PATH=/mnt/sdc1/home2/pete
 LIB_PATH = $(BASE_PATH)/lib
 INCLUDE_PATH = $(BASE_PATH)/include
@@ -27,13 +27,13 @@ LIBARPACK=arpack_x86
 LIBLEX=fl
 
 # location of gsl library (should really have to link it but we do anyway...):
-GSL_LIB = /use/local
+GSL_LIB = /usr/local
 
 # compiler directives:
 CFLAGS = -Wno-deprecated -I$(INCLUDE_PATH) $(OPT_VER) -D FLEADING_UNDERSCORES= \
 		-D FTRAILING_UNDERSCORES=_
 FFLAGS = -I$(INCLUDE_PATH) $(OPT_VER) #-fno-underscoring
-LD_FLAGS = $(LIBNAME) -L$(LIB_PATH) -lpetey$(OPT_VER) -L$(ARPATH) -l$(LIBARPACK) -l$(FORTRAN_RUNTIME) -L$(GSL_LIB) -lgsl -lgslcblas
+LD_FLAGS = $(LIBNAME) -L$(LIB_PATH) -lpetey$(OPT_VER) -L$(ARPATH) -l$(LIBARPACK) -l$(FORTRAN_RUNTIME) -L$(GSL_LIB) -lgsl -lgslcblas 
 
 # lex:
 LEX=flex -I
@@ -41,7 +41,7 @@ LEX=flex -I
 YY=bison
 
 # location of readline libary:
-READLINE_LIB=$(LIB_PATH)
+READLINE_LIB=/usr/local/readline-master
 
 # linker options for sparse_calc:
 INT_UTIL_LDF = -L$(READLINE_LIB) -l$(LIBLEX) -lreadline -lncurses

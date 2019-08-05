@@ -72,9 +72,9 @@ double ** cc_arsvd(int32_t n,
 	const char which[2], int32_t maxiter, double tol) {
   double ev[nev];
   double **v;
-  v=new double*[nev];
+  v=new double*[ncv];
   v[0]=new double[ncv*n];
-  for (int32_t i=1; i<nev; i++) v[i]=v[0]+i*n;
+  for (int32_t i=1; i<ncv; i++) v[i]=v[0]+i*n;
   FORTRAN_FUNC(darsvd)(&n, &nev, &ncv, v[0], ev, &maxiter, &tol, which,
 		(void *) parm);
   for (int32_t i=0; i<nev; i++) eval[i]=ev[i];

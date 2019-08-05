@@ -12,6 +12,8 @@ ZGRIDFILE=confidence.cpt
 WORKPATH=animation_frames
 #WORKPATH=/work/patmills/ctraj_work/animation_frames
 
+PREFIX="gmt "
+
 while getopts '0:I:C:N:O:p:r:F:w:x:y:z:acgH' DUM
 do
   case $DUM in
@@ -117,13 +119,13 @@ RANGE2="0/360/-90/90"
 
 #generate colour palette:
 extract_field -x $NLON -y $NLAT $EXT_OPT $TRACER 0 | gen_zgrid $ZOPTS > $ZGRIDFILE
-makecpt -T$ZGRIDFILE > $PALETTE
+${PREFIX}makecpt -T$ZGRIDFILE > $PALETTE
 
 for ((INDEX=$I0; INDEX<=$IF; INDEX+=$STRIDE)); do
   FRAME1=$BASE.$INDEX
   FRAME=$FRAME1.ps
 
-  psbasemap -R${RANGE} -J${PROJ} -K -Bg30 > ${FRAME}
+  ${PREFIX}psbasemap -R${RANGE} -J${PROJ} -K -Bg30 > ${FRAME}
 
   DLON=$((360/$NLON))
   DLAT=$((180/($NLAT-1)))
@@ -133,11 +135,11 @@ for ((INDEX=$I0; INDEX<=$IF; INDEX+=$STRIDE)); do
   ORIENT=-ZBLx
 
   extract_field -x $NLON -y $NLAT $EOPTS $TRACER $INDEX | xyz2grd -R$RANGE2 -I$DLON/$DLAT $ORIENT -G$GRDFILE
-  grdimage $GRDFILE -R$RANGE -J$PROJ -C$PALETTE -O -K >> $FRAME;
+  ${PREFIX}grdimage $GRDFILE -R$RANGE -J$PROJ -C$PALETTE -O -K >> $FRAME;
 
-  bev2xy $CONTOUR $INDEX | psxy -R$RANGE -J$PROJ -W2,black -O -K >> $FRAME;
+  ${PREFIX}bev2xy $CONTOUR $INDEX | psxy -R$RANGE -J$PROJ -W2,black -O -K >> $FRAME;
 
-  pscoast -R$RANGE -J$PROJ -Dl -W -O >> $FRAME
+  ${PREFIX}pscoast -R$RANGE -J$PROJ -Dl -W -O >> $FRAME
 
   LIST="$LIST $FRAME1.gif"
   convert -background white $FRAME $FRAME1.gif

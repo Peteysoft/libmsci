@@ -128,6 +128,8 @@ cos {return COS;}
 tan {return TAN;}
 log {return LOG;}
 
+asl {return ASL;}
+
 {STRING} {
   FILE *fs;
   char **line;

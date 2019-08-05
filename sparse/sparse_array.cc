@@ -497,7 +497,7 @@ long sparse_array<index_t, real, sparse_t>::cel(real val, index_t i, index_t j) 
 template <class index_t, class real, class sparse_t>
 void sparse_array<index_t, real, sparse_t>::asl_transform(real m, real b) {
   for (long i=0; i<nsparse; i++) sparse_a[i]->sl_transform(m, b);
-  reverse();
+  //reverse();
 }
 
 

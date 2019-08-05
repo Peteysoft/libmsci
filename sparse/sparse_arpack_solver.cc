@@ -17,16 +17,16 @@ int sparse_svd_solver(sparse_t &A, real *b, real *x, int32_t nev, int32_t ncv,
   index_t m, n;
   sparse_t *AT;
   sparse_t *A2;
-  real **u, **v;
+  //right singular vectors:
+  real **v;
   real *s;		//singular values
-  real *eval1, *eval2;
-  real sum;
+  real *eval1;
+  real *xp, *y;		//intermediate vectors
   index_t k1, k2;
 
   A.dimensions(m, n);
 
   eval1=new real[nev];
-  eval2=new real[nev];
   s=new real[nev];
 
   //get the right singular vectors:
@@ -36,41 +36,20 @@ int sparse_svd_solver(sparse_t &A, real *b, real *x, int32_t nev, int32_t ncv,
 
   v=cc_arsvd(n, nev, ncv, eval1, A2, "LM", maxiter, tol);
 
-  //get the right singular vectors:
-  //(is this faster or better than just multiplying through with A?)
-  //delete A2;
-  //A2=AT->mat_mult(&A);
-  //v=cc_arsvd(n, nev, ncv, eval2, A2);
-
-  //multiply through to get the left sinular vectors:
-  //get the singular values by averaging the eigenvalues:
-  //(are they in the same order??)
-  u=allocate_matrix<real, index_t>(nev, m);
+  // x = V S^-2 V^T A^T b
+  xp=A.vect_mult(b);
+  y=vector_mult(v, xp, nev, n);
   for (index_t i=0; i<nev; i++) {
     printf("%g\n", eval1[i]);
-    A.vect_mult(v[i], u[i]);
-    //s[i]=sqrt(eval1[i]);
-    for (index_t j=0; j<m; j++) u[i][j]/=eval1[i];
+    y[i]/=eval1[i];
   }
+  left_vec_mult(y, v, nev, n);
 
-  for (index_t i=0; i<n; i++) {
-    x[i]=0;
-    for (index_t j=0; j<nev; j++) {
-      sum=0;
-      for (index_t k=0; k<m; k++) {
-        sum+=u[j][k]*b[k];
-      }
-      //x[i]+=sum*v[j][i]/s[j];
-      x[i]+=sum*v[j][i];
-    }
-  }
-
-  delete [] u[0];
-  delete [] u;
+  delete [] xp;
+  delete [] y;
   delete [] v[0];
   delete [] v;
   delete [] eval1;
-  delete [] eval2;
   delete [] s;
   delete AT;
   delete A2;

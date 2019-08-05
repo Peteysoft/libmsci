@@ -179,9 +179,9 @@ int main(int argc, char *argv[]) {
     } else {
       n=ceil(vfield->get_tind((char *) optarg[6])-tind1);
     }
-    n/=tstep;
+    n/=abs(tstep);
   } else if (flag[3]==0) {
-    n=(vfield->maxt()-tind1)/tstep;
+    n=(vfield->maxt()-tind1)/abs(tstep);
   }
 
   outfile=new char[strlen(argv[1])+1];

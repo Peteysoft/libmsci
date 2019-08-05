@@ -719,21 +719,24 @@ namespace libpetey {
     }
     
     template <class index_t, class data_t>
-    void sparse<index_t, data_t>::sl_transform(data_t m, data_t b) {
+    void sparse<index_t, data_t>::sl_transform(data_t k, data_t b) {
       index_t n1;
-      long ind=-1;
+      long ind;
       sparse_el<index_t, data_t> search_blank;
     
+      for (long i=0; i<nel; i++) matrix[i].value*=k;
       update();
-    
       if (n>m) n1=m; else n1=n;
-      for (long i=0; i<nel; i++) matrix[i].value*=m;
       for (index_t i=0; i<n1; i++) {
         search_blank.i=i;
         search_blank.j=i;
-        ind=bin_search(matrix, nel, search_blank, ind);
+	search_blank.value=0;
+        ind=bin_search(matrix, nel, search_blank, -1);
+        if (ind == -1 || ind >= nel) continue;
+	if (search_blank != matrix[ind]) continue;
         matrix[ind].value+=b;
       }
+      update();
     }
     
     //convert to a full matrix:

@@ -3,8 +3,9 @@ SHELL=/bin/bash
 #file paths:
 #VFIELD_TGRID=sixhour
 VFIELD_TGRID=oneday
-DATA_PATH = /cygdrive/e/data/ncep/$(VFIELD_TGRID)
 #DATA_PATH = /home/Peter/data/ncep/oneday
+#DATA_PATH = /cygdrive/e/data/ncep/$(VFIELD_TGRID)
+DATA_PATH = /home/peter/data/ncep_data/daily/plev
 VFIELD_PATH=.
 #to make it easier to clone this directory:
 MASTER=.

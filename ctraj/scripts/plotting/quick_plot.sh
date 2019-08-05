@@ -26,8 +26,11 @@ NZ=21
 #line thickness for line plots:
 THICK=2
 
+#go through gmt "master" command:
+PREFIX="gmt "
+
 #command for contour plotting:
-CONTOUR=grdimage
+CONTOUR=${PREFIX}grdimage
 
 #plot continents using lines?
 LFLAG=1
@@ -60,7 +63,7 @@ while getopts 'c:F:g:h:I:J:R:T:V:W:x:X:y:Y:z:HLqS' ARG; do
       ;;
     J) PROJ=$OPTARG
       ;;
-    L) CONTOUR=grdcontour
+    L) CONTOUR=${PREFIX}grdcontour
        LFLAG=0
       ;;
     q) QFLAG=1
@@ -150,8 +153,8 @@ ZGRIDFILE=$BASE.zgrid;
 if test -z $OUTFILE; then OUTFILE="$BASE.$INDEX.tmp.ps"; fi
 
 echo $QFLAG
-echo "psbasemap -R${RANGE} -J${PROJ} -Bg30$TITLE -K > ${OUTFILE}"
-psbasemap -R${RANGE} -J${PROJ} -Bg30 -K > ${OUTFILE}
+echo "${PREFIX}psbasemap -R${RANGE} -J${PROJ} -Bg30$TITLE -K > ${OUTFILE}"
+${PREFIX}psbasemap -R${RANGE} -J${PROJ} -Bg30 -K > ${OUTFILE}
 
 echo $QFLAG
 
@@ -162,8 +165,8 @@ fi
 
 if [[ $VTYPE -eq 0 && $LFLAG -eq 0 ]]
 then
-  echo "pscoast -R${RANGE} -J${PROJ} -G220 -Dl -K -O >> ${OUTFILE}"
-  pscoast -R${RANGE} -J${PROJ} -G220 -Dl -K -O >> ${OUTFILE}
+  echo "---${PREFIX}pscoast -R${RANGE} -J${PROJ} -G220 -Dl -K -O >> ${OUTFILE}---"
+  #${PREFIX}pscoast -R${RANGE} -J${PROJ} -G220 -Dl -K -O >> ${OUTFILE}
 fi
 
 if test $QFLAG; then
@@ -180,33 +183,37 @@ if test $QFLAG; then
     echo "gen_zgrid $ZOPTS > $ZGRIDFILE"
     gen_zgrid $ZOPTS > $ZGRIDFILE
     echo "makecpt -T$ZGRIDFILE > $PALETTE"
-    makecpt -T$ZGRIDFILE > $PALETTE
+    ${PREFIX}makecpt -T$ZGRIDFILE > $PALETTE
   fi
 
   echo "xyz2grd -R$RANGE2 -I$DLON/$DLAT $ORIENT -G$GRDFILE"
-  xyz2grd -R$RANGE2 -I$DLON/$DLAT $ORIENT -G$GRDFILE
+  ${PREFIX}xyz2grd -R$RANGE2 -I$DLON/$DLAT $ORIENT -G$GRDFILE
   echo "$CONTOUR $GRDFILE -R$RANGE -J$PROJ -C$PALETTE -O -K >> $OUTFILE;"
   $CONTOUR $GRDFILE -R$RANGE -J$PROJ -C$PALETTE -O -K >> $OUTFILE;
 else
   #plot single contour:
   if test $SFLAG; then
-    echo "psxy -R${RANGE} -J${PROJ} -Sc${THICK}p -O -K >> ${OUTFILE};"
-    psxy -R${RANGE} -J${PROJ} -Sc${THICK}p -O -K >> ${OUTFILE};
+    echo "${PREFIX}psxy -R${RANGE} -J${PROJ} -Sc${THICK}p -O -K >> ${OUTFILE};"
+    ${PREFIX}psxy -R${RANGE} -J${PROJ} -Sc${THICK}p -O -K >> ${OUTFILE};
   else
-    echo "psxy -R${RANGE} -J${PROJ} -W$THICK,black -O -K >> ${OUTFILE};"
-    psxy -R${RANGE} -J${PROJ} -W$THICK,black -O -K >> ${OUTFILE};
+    echo "${PREFIX}psxy -R${RANGE} -J${PROJ} -W$THICK,black -O -K >> ${OUTFILE};"
+    ${PREFIX}psxy -R${RANGE} -J${PROJ} -W$THICK,black -O -K >> ${OUTFILE};
   fi
 fi
 
-# reinforce grid lines:
-echo "psbasemap -R${RANGE} -J${PROJ} -K -O -Bg30 >> ${OUTFILE}"
-psbasemap -R${RANGE} -J${PROJ} -K -O -Bg30 >> ${OUTFILE}
 
 #add coastlines:
 if [[ $VTYPE -eq 0 && $LFLAG -eq 1 ]]
 then
-  echo "pscoast -R${RANGE} -J${PROJ} -Dl -W -O >> ${OUTFILE}"
-  pscoast -R${RANGE} -J${PROJ} -Dl -W -O >> ${OUTFILE}
+  echo "${PREFIX}psbasemap -R${RANGE} -J${PROJ} -O -Bg30 >> ${OUTFILE}"
+  ${PREFIX}psbasemap -R${RANGE} -J${PROJ} -O -Bg30 >> ${OUTFILE}
+  #${PREFIX}psbasemap -R${RANGE} -J${PROJ} -K -O -Bg30 >> ${OUTFILE}
+  echo "----${PREFIX}pscoast -R${RANGE} -J${PROJ} -Dl -W -O >> ${OUTFILE}----"
+  #${PREFIX}pscoast -R${RANGE} -J${PROJ} -Dl -W -O >> ${OUTFILE}
+else
+  # reinforce grid lines:
+  echo "${PREFIX}psbasemap -R${RANGE} -J${PROJ} -O -Bg30 >> ${OUTFILE}"
+  ${PREFIX}psbasemap -R${RANGE} -J${PROJ} -O -Bg30 >> ${OUTFILE}
 fi
 
 #clean up:

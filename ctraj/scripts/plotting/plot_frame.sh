@@ -10,7 +10,7 @@ YLEN=180
 
 VTYPE=0
 
-CONTOUR=grdimage
+PREFIX="gmt "
 
 while getopts 'c:F:g:h:I:J:n:r:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
   case $ARG in
@@ -32,8 +32,7 @@ while getopts 'c:F:g:h:I:J:n:r:R:T:V:W:x:X:y:Y:z:HLq' ARG; do
     # options to pass to "quick_plot":
     J) PFOPTS="$PFOPTS -J $OPTARG"
       ;;
-    L) CONTOUR=grdcontour
-       PFOPTS="$PFOPTS -L"
+    L) PFOPTS="$PFOPTS -L"
       ;;
     n) EXT_OPT="$EXT_OPT -n $OPTARG"
       ;;
@@ -152,7 +151,7 @@ if test $QFLAG; then
     echo "extract_field -x $NLON -y $NLAT $EXT_OPT $INFILE $INDEX | gen_zgrid $ZOPTS > $ZGRIDFILE"
     extract_field -x $NLON -y $NLAT $EXT_OPT $INFILE $INDEX | gen_zgrid $ZOPTS > $ZGRIDFILE
     echo "makecpt -T$ZGRIDFILE > $PALETTE"
-    makecpt -T$ZGRIDFILE > $PALETTE
+    ${PREFIX}makecpt -T$ZGRIDFILE > $PALETTE
   fi
 
   echo "extract_field -x $NLON -y $NLAT $EXT_OPT $INFILE $INDEX | quick_plot.sh -q -c $PALETTE $PFOPTS $OUTFILE"
