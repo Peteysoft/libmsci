@@ -4,6 +4,9 @@
 #include <stdio.h>
 
 namespace libagf {
+  template <class vector_t>
+  int check_coding_row(vector_t &coding_row, int n);
+
   //calculate hausdorff metric between each pair of classes:
   template <class real, class cls_t>
   real * class_triangle(real **x, cls_t *cls, int n, int D);
@@ -26,7 +29,7 @@ namespace libagf {
   template <typename scalar>
   scalar ** random_coding_matrix(int ncls, int &ntrial, int strictflag=0);
   template <typename scalar>
-  scalar ** orthogonal_coding_matrix(int ncls, int ncode);
+  scalar ** orthogonal_coding_matrix(int ncls, int ncode, int strictflag=0);
   template <typename scalar>
   scalar ** exhaustive_coding_matrix(int ncls);
   template <typename scalar>
@@ -36,7 +39,7 @@ namespace libagf {
   template <typename scalar>
   scalar ** ortho_coding_matrix_greedy(int m, int n, int toprow1=0);
   template <typename scalar>
-  scalar ** ortho_coding_matrix_brute_force(int ncls);
+  scalar ** ortho_coding_matrix_brute_force(int m, int n, int flag);
   template <typename scalar>
   scalar ** hierarchical_nonhierarchical(int ncls);
 

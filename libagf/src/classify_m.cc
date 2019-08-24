@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 
   opt_args.Qtype=-1;
   opt_args.algtype=0;
-  errcode=agf_parse_command_opts(argc, argv, "O:a:Q:w:c:nuMCHE:Ky:Z", &opt_args);
+  errcode=agf_parse_command_opts(argc, argv, "O:a:Q:w:c:nuMCHE:Ky:ZG", &opt_args);
   if (errcode==FATAL_COMMAND_OPTION_PARSE_ERROR) return errcode;
 
   //parse the command line arguments:
@@ -137,6 +137,8 @@ int main(int argc, char *argv[]) {
   if (classifier->load(fs, opt_args.Qtype)==PARAMETER_OUT_OF_RANGE) {
     delete classifier;
     rewind(fs);
+    //use linear classifiers:
+    if (opt_args.Gflag) opt_args.Zflag=5;
     //otherwise use control file:
     classifier=new multiclass_hier<real_a, cls_ta>(fs,		//file stream  
 		opt_args.Qtype,			//method to solve for prob.

@@ -226,15 +226,34 @@ namespace libagf {
     }
   }
 
+  //a couple of helper functions:
   template <class vector_t>
-  int check_coding_row(vector_t &coding_row, int n, int nt=-1) {
+  void random_coding_row2(vector_t &coding_row, int n, int nt) {
+    int ind, sub;
+    for (int i=0; i<n; i++) coding_row[i]=0;
+    for (int i=0; i<nt; i++) {
+      ind=ranu()*(n-i);
+      sub=0;
+      for (int j=0; j<ind; j++) {
+        for (; sub<n && coding_row[sub]!=0; sub++);
+	sub++;
+      }
+      for (; sub<n && coding_row[sub]!=0; sub++);
+      coding_row[sub]=2*int(ranu()*2)-1;
+      //printf("%d:%d ", sub, coding_row[sub]);
+    }
+    //printf("\n");
+  }
+
+  template <class vector_t>
+  int check_coding_row(vector_t &coding_row, int n) {
     int c1flag=0;
     int c2flag=0;
     for (int i=0; i<n; i++) {
       if (coding_row[i]==-1) c1flag++;
       if (coding_row[i]==1) c2flag++;
     }
-    if (c1flag > 0 && c2flag > 0 && (nt<0 || c1flag+c2flag==nt)) return 1;
+    if (c1flag > 0 && c2flag > 0 ) return 1;
     return 0;
   }
 
@@ -319,18 +338,26 @@ namespace libagf {
   //- no attempt to keep track of trials
   //- not halting
   template <typename scalar>
-  scalar **orthogonal_coding_matrix(int ncls, int nrow) {
+  scalar **orthogonal_coding_matrix(int ncls, int nrow, int nt) {
     scalar **result_t;
     scalar **result;
     scalar dprod;
     int notdone;
+    int flag;
+
+    if (nt==-1) flag=1; else flag=0;
 
     result_t=allocate_matrix<scalar>(ncls, nrow);
 
     for (int i=0; i<ncls; i++) {
       do {
+        notdone=1;
+	if (nt < 0) {
+          random_coding_row(result_t[i], nrow, flag);
+	} else {
+          random_coding_row2(result_t[i], nrow, nt);
+	}
         notdone=0;
-        random_coding_row(result_t[i], nrow, 1);
 	for (int j=0; j<i; j++) {
 	  dprod=0;
 	  for (int k=0; k<nrow; k++) dprod+=result_t[i][k]*result_t[j][k];
@@ -340,7 +367,7 @@ namespace libagf {
 	  }
 	}
       } while (notdone);
-      print_matrix(stdout, result_t, ncls, nrow);
+      //print_matrix(stdout, result_t, ncls, nrow);
     }
     result=matrix_transpose(result_t, ncls, nrow);
     delete_matrix(result_t);
@@ -549,9 +576,10 @@ namespace libagf {
   //(greedy, not brute force... brute force down below...)
   template <typename scalar>
   scalar ** ortho_coding_matrix_greedy(int m, int n, int toprow1) {
+    const int MAXBITS=sizeof(int)*8;
     long *trial;
     //bit_array *tobits;
-    bitset<sizeof(int)*8> *tobits;
+    bitset<MAXBITS> *tobits;
     scalar **coding_matrix;
     int nfilled;
     int nperm;
@@ -562,8 +590,8 @@ namespace libagf {
     coding_matrix[0]=new scalar[m*n];
     for (int i=1; i<m; i++) coding_matrix[i]=coding_matrix[0]+n*i;
 
-    if (n>8*sizeof(long)-1) {
-      fprintf(stderr, "Size must be %d or less\n", 8*sizeof(long)-1);
+    if (n>MAXBITS-1) {
+      fprintf(stderr, "Size must be %d or less\n", MAXBITS-1);
       throw(PARAMETER_OUT_OF_RANGE);
     }
 
@@ -634,85 +662,57 @@ namespace libagf {
 
   //need to design a more efficient version of this...
   template <typename scalar>
-  scalar ** ortho_coding_matrix_brute_force(int n) {
-    long *trial;
-    //bit_array *tobits;
-    bitset<sizeof(int)*8> *tobits;
+  scalar ** ortho_coding_matrix_brute_force(int m, int n, int flag) {
+    int base;
+    int coef;
+    int failflag;
+    scalar dprod, nplus, nminus;
     scalar **coding_matrix;
-    int nfilled;
-    int nperm;
-    int loc[n];
-    int i;
-    int dprod;
 
-    nperm=pow(2, n);
+    assert(m <= n);
 
-    coding_matrix=new scalar *[n];
-    coding_matrix[0]=new scalar[n*n];
-    for (int i=1; i<n; i++) coding_matrix[i]=coding_matrix[0]+n*i;
-
-    if (n>8*sizeof(long)-1) {
-      fprintf(stderr, "Size must be %d or less\n", 8*sizeof(long)-1);
-      throw(PARAMETER_OUT_OF_RANGE);
+    if (flag) {
+      base=2;
+      coef=2;
+    } else {
+      base=3;
+      coef=1;
     }
 
-    trial=randomize(nperm);
-    loc[0]=0;
+    coding_matrix=new scalar *[m];
+    coding_matrix[0]=new scalar[m*n];
+    for (int i=1; i<m; i++) coding_matrix[i]=coding_matrix[0]+n*i;
 
-    for (i=0; i<n; i++) {
-      if (i>0) loc[i]=loc[i-1]+1;
-      for (loc[i]=0; loc[i]<nperm; loc[i]++) {
-        if (trial[loc[i]]==0 || trial[loc[i]]==nperm-1) continue;
-        tobits=new bitset<sizeof(i)*8>(trial[loc[i]]);
-        for (long j=0; j<n; j++) {
-          coding_matrix[i][j]=2*(long) (*tobits)[j]-1;
-          //printf("%d ", (int32_t) (*tobits)[j]);
+    for (int i=0; i<m; i++) {
+      //generate new row:
+      failflag=1;
+      do {
+        nplus=0;
+	nminus=0;
+        for (int j=0; j<n; j++) {
+          coding_matrix[i][j]=coef*(int) (ranu()*base)-1;
+	  printf("%d ", coding_matrix[i][j]);
+	  if (coding_matrix[i][j] < 0) nplus++;
+	  if (coding_matrix[i][j] > 0) nminus++;
         }
-        delete tobits;
-        dprod=0;
+	printf("\n");
+	if (nplus==0 || nminus==0) continue;
+        failflag=0;
+        //check to see if it fits:
         for (int j=0; j<i; j++) {
           dprod=0;
           for (int k=0; k<n; k++) {
             dprod+=coding_matrix[i][k]*coding_matrix[j][k];
           }
-          if (dprod!=0) break;
+          if (dprod != 0) {
+            failflag=1;
+            break;
+          }
         }
-        if (dprod==0) {
-          break;
-          //for (int j=0; j<n; j++) printf("%3d", coding_matrix[nfilled][j]);
-          //printf("\n");
-        } 
-      }
-      if (dprod!=0 && loc[i]==nperm) {
-        if (i==0) goto finish;
-        i--;
-      }
+      } while (failflag);
     }
-
-    finish:
-	
-      if (i<n) coding_matrix[i]=NULL;
-      delete [] trial;
 
     return coding_matrix;
-
-    //debugging output:
-    nfilled=i;
-    for (int i=0; i<nfilled; i++) {
-      for (int j=0; j<n; j++) printf("%2d ", coding_matrix[i][j]);
-      printf("\n");
-    }
-    printf("\n");
-
-    for (int i=0; i<nfilled; i++) {
-      for (int j=0; j<nfilled; j++) {
-        int temp=0;
-        for (int k=0; k<n; k++) temp+=coding_matrix[i][k]*coding_matrix[j][k];
-        printf("%3d ", temp);
-      }
-      printf("\n");
-    }
-    printf("\n");
 
   }
 
@@ -915,13 +915,13 @@ namespace libagf {
   template float ** ortho_coding_matrix_greedy<float>(int, int, int);
   template double ** ortho_coding_matrix_greedy<double>(int, int, int);
 
-  template int ** ortho_coding_matrix_brute_force<int>(int);
-  template float ** ortho_coding_matrix_brute_force<float>(int);
-  template double ** ortho_coding_matrix_brute_force<double>(int);
+  template int ** ortho_coding_matrix_brute_force<int>(int, int, int);
+  template float ** ortho_coding_matrix_brute_force<float>(int, int, int);
+  template double ** ortho_coding_matrix_brute_force<double>(int, int, int);
 
-  template int ** orthogonal_coding_matrix<int>(int, int);
-  template float ** orthogonal_coding_matrix<float>(int, int);
-  template double ** orthogonal_coding_matrix<double>(int, int);
+  template int ** orthogonal_coding_matrix<int>(int, int, int);
+  template float ** orthogonal_coding_matrix<float>(int, int, int);
+  template double ** orthogonal_coding_matrix<double>(int, int, int);
 
   template int ** hierarchical_nonhierarchical<int>(int);
   template float ** hierarchical_nonhierarchical<float>(int);

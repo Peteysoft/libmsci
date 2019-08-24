@@ -127,6 +127,7 @@ OBJECT_FILES = 	agf_metric2$(OPT_VER).o \
 		direct_classifier$(OPT_VER).o \
 		svmkernel$(OPT_VER).o \
 		svm2class$(OPT_VER).o \
+		linearclassifier$(OPT_VER).o \
 		svm_multi$(OPT_VER).o \
 		batch_borders$(OPT_VER).o \
 		solve_cond_prob$(OPT_VER).o
@@ -151,6 +152,7 @@ INCLUDE_FILES = agf_util.h \
 		agf2class.h \
 		svmkernel.h \
 		svm2class.h \
+		linearclassifier.h \
 		svm_multi.h \
 		direct_classifier.h \
 		multi_parse.h \

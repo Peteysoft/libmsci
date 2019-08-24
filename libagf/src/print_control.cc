@@ -168,8 +168,63 @@ int main(int argc, char **argv) {
       dum->class_list(label);
       break;
     case(10):
-      coding_matrix=ortho_coding_matrix_brute_force<int>(n);
-      nrow=n;
+      //should move this mess into the function...
+      int bflag;
+      int np;
+      if (argc>1) {
+        nrow=atoi(argv[1]);
+	if (argc>2) np=atoi(argv[2]); else np=-1;
+      } else {
+        nrow=4*((n-1)/4+1);
+      }
+      codet=NULL;
+      //do {
+      //  if (codet!=NULL) delete_matrix(codet);
+        codet=orthogonal_coding_matrix<int>(n, nrow, np);
+        //pile brute force upon brute force:
+        //(making sure there are classes on both sides of the fence...)
+        //print_matrix(stdout, coding_matrix, nrow, n);
+	//*** doesn't check for repeats ...
+        for (int i=0; i<nrow; i++) {
+          for (int j=0; j<i; j++) {
+            bflag=1;
+            for (int k=0; k<n; k++) {
+              if (codet[i][k] != codet[j][k]) {
+                bflag=0;
+	        break;
+	      }
+              if (bflag) break;
+            }
+            if (bflag) break;
+          }
+          for (int j=0; j<i; j++) {
+            bflag=1;
+            for (int k=0; k<n; k++) {
+              if (codet[i][k] !=  - codet[j][k]) {
+                bflag=0;
+	        break;
+              }
+              if (bflag) break;
+            }
+	    if (bflag) break;
+	  }
+	/* dumb idea: destroys orthogonality property...
+	  if (bflag=0 || check_coding_row(codet[i], n)==0) {
+            bflag=0;
+	    break;
+	  }
+        }
+      } while (bflag==0);
+	*/
+	//remove bad rows:
+        if (bflag=0 || check_coding_row(codet[i], n)==0) {
+          nrow--;
+	  //delete [] codet[i];
+	  for (int j=i; j<nrow; j++) codet[j]=codet[j+1];
+	  i--;
+	}
+      }
+      coding_matrix=codet;
       break;
     case(11):
       nrow=4*((n-1)/4+1);

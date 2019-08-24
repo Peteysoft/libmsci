@@ -89,7 +89,7 @@ namespace libagf {
     //param.sigcode=sigcode;	//sigmoid function
     //need to set this with parameter later:
     param.prefix=prefix;	//path to data files
-    param.Zflag=Zflag;		//use in house SVM codes
+    param.Zflag=Zflag;		//use in house SVM or liblinear codes
 
     param.infs=fs;		//input stream for control file
     param.lineno=0;		//keep track of line number

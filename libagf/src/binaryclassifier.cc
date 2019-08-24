@@ -35,6 +35,9 @@ namespace libagf {
       case(4):
         result=new binaryclassifier<real, cls_t>(name);
 	break;
+      case(5):
+        result=new linearclassifier<real, cls_t>(name);
+	break;
       default:
         result=new borders_classifier<real, cls_t>(name);
 	break;

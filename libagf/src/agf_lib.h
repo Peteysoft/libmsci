@@ -30,6 +30,7 @@
 #include "direct_classifier.h"
 #include "svmkernel.h"
 #include "svm2class.h"
+#include "linearclassifier.h"
 #include "svm_multi.h"
 #include "multiclass.h"
 #include "multiclass_hier.h"
