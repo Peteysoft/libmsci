@@ -7,7 +7,8 @@ DATAPATH=../datasets
 VER=shuttle
 
 #which method are we using?
-METHOD=svm
+#METHOD=svm
+METHOD=lin
 #METHOD=agf
 
 #fraction of data to use for training:
@@ -56,6 +57,17 @@ SVMOPT_letter=-c 50 -h 0
 SVMOPT_humidity=-h 0 -c 50
 
 OPTIONS_svm=$(SVMOPT_$(VER))
+
+#options for lib-linear:
+LINOPT_segment=-c 50
+LINOPT_shuttle=-c 200
+LINOPT_pendigits=-c 200
+LINOPT_sat=-c 200
+LINOPT_usps=-c 50
+LINOPT_vehicle=-c 50
+LINOPT_humidity=-c 20
+
+OPTIONS_lin=$(LINOPT_$(VER))
 
 OPTIONS=$(OPTIONS_$(METHOD))
 
@@ -117,15 +129,15 @@ SUBSAMPLE=subsample_special
 TRAINCOMMAND_svm=multi_borders -M -- svm-train -+ "-b 1 $(OPTIONS)" \
 		$(CONTROL) $(TRAIN).svm $(BASE).$(TYPE) $(MODEL).0; \
 		mbh2mbm -Z $(MODEL).0 $(MODEL)
-TRAINCOMMAND_linear=multi_borders -M -- lin-train -+ "-b 1 $(OPTIONS)" \
-		$(CONTROL) $(TRAIN).svm $(BASE).$(TYPE) $(MODEL).0; \
-		mbh2mbm -Z $(MODEL).0 $(MODEL)
+TRAINCOMMAND_lin=multi_borders -M -- lin-train -+ "-s 0 -B 1 $(OPTIONS)" \
+		$(CONTROL) $(TRAIN).svm $(BASE).$(TYPE) $(MODEL)
 TRAINCOMMAND_agf=multi_borders $(OPTIONS) $(CONTROL) $(TRAIN) $(BASE).$(TYPE) $(MODEL)
 TRAINCOMMAND=$(TRAINCOMMAND_$(METHOD))
 
 #TESTCOMMAND_svm=classify_m -Q $(CODE) -M -O "svm-predict -b 1" \
 #		$(MODEL) $(TEST).svm $(RESULT).svmout
 TESTCOMMAND_svm=classify_m -Z -Q $(CODE) $(MODEL) $(TEST).vec $(RESULT) > $(RESULT).txt
+TESTCOMMAND_lin=classify_m -G -Q $(CODE) $(MODEL) $(TEST).vec $(RESULT) > $(RESULT).txt
 TESTCOMMAND_agf=classify_m -Q $(CODE) $(MODEL) $(TEST).vec $(RESULT) > $(RESULT).txt
 TESTCOMMAND=$(TESTCOMMAND_$(METHOD))
 
@@ -182,12 +194,12 @@ stats:
 		make $(STATFILE); \
 	done
 
-#$(STATFILE): $(BASE).1v1.txt $(BASE).ecc.txt $(BASE).ortho.txt
-$(STATFILE): $(BASE).ecc.txt $(BASE).ortho.txt
-	#grep -o "[0-9]*\.[0-9]*" $(BASE).tst.1v1.tm | sed '1q;d' | tr -d '\n' >> $(STATFILE)
-	#echo -n " " >> $(STATFILE)
-	#grep -o "[0-9]*\.[0-9]*" $(BASE).tst.1v1.tm | sed '2q;d' | tr -d '\n' >> $(STATFILE)
-	#echo -n " " >> $(STATFILE)
+$(STATFILE): $(BASE).1v1.txt $(BASE).ecc.txt $(BASE).ortho.txt
+#$(STATFILE): $(BASE).ecc.txt $(BASE).ortho.txt
+	grep -o "[0-9]*\.[0-9]*" $(BASE).tst.1v1.tm | sed '1q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	grep -o "[0-9]*\.[0-9]*" $(BASE).tst.1v1.tm | sed '2q;d' | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
 	grep -o "[0-9]*\.[0-9]*" $(BASE).tst.ecc.tm | sed '1q;d' | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
 	grep -o "[0-9]*\.[0-9]*" $(BASE).tst.ecc.tm | sed '2q;d' | tr -d '\n' >> $(STATFILE)
@@ -196,17 +208,18 @@ $(STATFILE): $(BASE).ecc.txt $(BASE).ortho.txt
 	echo -n " " >> $(STATFILE)
 	grep -o "[0-9]*\.[0-9]*" $(BASE).tst.ortho.tm | sed '2q;d' | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	#cls_comp_stats -Hb $(TEST).cls $(BASE).1v1 | tr -d '\n' >> $(STATFILE)
-	#echo -n " " >> $(STATFILE)
+	cls_comp_stats -Hb $(TEST).cls $(BASE).1v1 | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
 	cls_comp_stats -Hb $(TEST).cls $(BASE).ecc | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
 	cls_comp_stats -Hb $(TEST).cls $(BASE).ortho | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
-	#validate_probabilities -BH $(TEST).cls $(BASE).1v1.txt | tr -d '\n' >> $(STATFILE)
-	#echo -n " " >> $(STATFILE)
-	validate_probabilities -BH $(TEST).cls $(BASE).ecc.txt | tr -d '\n' >> $(STATFILE)
-	#validate_probabilities -BH $(TEST).cls $(BASE).ecc.txt >> $(STATFILE)
+	validate_probabilities -BH $(TEST).cls $(BASE).1v1.txt | tr -d '\n' >> $(STATFILE)
 	echo -n " " >> $(STATFILE)
+	validate_probabilities -BH $(TEST).cls $(BASE).ecc.txt | tr -d '\n' >> $(STATFILE)
+	echo -n " " >> $(STATFILE)
+	#validate_probabilities -BH $(TEST).cls $(BASE).ecc.txt >> $(STATFILE)
+	#echo -n " " >> $(STATFILE)
 	validate_probabilities -BH $(TEST).cls $(BASE).ortho.txt >> $(STATFILE)
 
 #performing classifications:

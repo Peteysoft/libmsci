@@ -1,4 +1,5 @@
 #include <string.h>
+#include <math.h>
 
 #include "read_ascii_all.h"
 #include "error_codes.h"
@@ -18,6 +19,7 @@ namespace libagf {
     this->calcoef[1]=0.5;
     this->order=1;
     header=NULL;
+    this->sigmoid_func=NULL;
   }
 
   template <typename real, typename cls_t>
@@ -32,6 +34,7 @@ namespace libagf {
     this->calcoef[1]=0.5;
     this->order=1;
     header=NULL;
+    this->sigmoid_func=&tanh;
 
     fs=fopen(fname, "r");
     if (fs==NULL) {
@@ -69,15 +72,11 @@ namespace libagf {
     char **substr=NULL;
     int nsub;
     int label1, label2;
-    float bias;
-    int nparam;         //ncls*(ncls-1)/2: number of binary classifiers
-    char format[12];    //format code
-    char fcode[4];      //floating point format code
+    double bias;
+    double offset1;
+    double *w;
     int lineno=0;
     int nhead=0;
-
-    get_format_code<real>(fcode);
-    sprintf(format, "%%%s%%n", fcode);
 
     //this->mat=NULL;
     //this->b=NULL;
@@ -90,9 +89,9 @@ namespace libagf {
       if (substr!=NULL) delete [] substr;
       line=fget_line(fs, 1);
       lineno++;
-      nhead++;
       header[nhead]=new char[strlen(line)+1];
-      strcpy(header[lineno], line);
+      strcpy(header[nhead], line);
+      nhead++;
       substr=split_string_destructive(line, nsub);
       //printf("svm2class: nsub=%d\n", nsub);
       //for (int i=0; i<nsub; i++) printf("%s ", substr[i]);
@@ -115,6 +114,7 @@ namespace libagf {
 	delete [] header [nhead];
       } else if (strcmp(substr[0], "nr_feature")==0) {
         this->D=atoi(substr[1]);
+        this->D1=this->D;
 	nhead--;
 	delete [] header[nhead];
       } else if (strcmp(substr[0], "bias")==0) {
@@ -129,12 +129,14 @@ namespace libagf {
     } while (feof(fs)==0);
     header[nhead]=NULL;
     coef=new real[this->D];
+    w=new double[this->D];
     for (int i=0; i<this->D; i++) {
-      fscanf(fs, fcode, coef+i);	//should add some error catch stuff...
+      fscanf(fs, "%lg", w+i);		//should add some error catch stuff...
+      coef[i]=w[i];
     }
-    fscanf(fs, fcode, &offset);
-    if (bias!=-1) offset*=bias; else offset=0;
-    if (label1==1 && label2==0) {
+    fscanf(fs, "%lg", &offset1);
+    if (bias!=-1) offset=offset1*bias; else offset=0;
+    if (label1==0 && label2==1) {
       for (int i=0; i<this->D; i++) coef[i]=-coef[i];
       offset=-offset;
     }
@@ -143,14 +145,21 @@ namespace libagf {
 
   template <typename real, typename cls_t>
   int linearclassifier<real, cls_t>::save(FILE *fs) {
+    char format[12];    //format code
+    char fcode[4];      //floating point format code
+    get_format_code<real>(fcode);
+    sprintf(format, "%%%s", fcode);
     for (int i=0; header[i]!=NULL; i++) fprintf(fs, "%s\n", header[i]);
     fprintf(fs, "nr_class %d\n", this->ncls);
     fprintf(fs, "label 0 1\n");
     fprintf(fs, "nr_feature %d\n", this->D);
     fprintf(fs, "bias 1\n");
     fprintf(fs, "w\n");
-    for (int i=0; i<this->D; i++) fprintf(fs, "%g\n", coef[i]);
-    fprintf(fs, "%g", offset);
+    for (int i=0; i<this->D; i++) {
+      fprintf(fs, format, coef[i]);
+      fprintf(fs, "\n");
+    }
+    fprintf(fs, format, offset);
     return 0;
   }
 
