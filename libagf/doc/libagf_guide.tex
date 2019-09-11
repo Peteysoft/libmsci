@@ -362,9 +362,11 @@ Two-class classification by training a model:
 Multi-class classification using a series of class-borders:
 
 \begin{tabular}{ll}
+\verb/print_control/ & 	Prints out control files for standard multi-class schemes.\\
 \verb/multi_borders/ & 	Trains a multi-class model based on a control file.\\
 \verb/classify_m/: & Performs classifications using model output from \verb/multi_borders/.\\
-\verb/svm_accelerate/: & Trains a multi-borders model from a native LIBSVM model.
+\verb/svm_accelerate/: & Trains a multi-borders model from a native LIBSVM model.\\
+	\verb/mbh2mbm/: & Compiles separate binary files into ``all-in-one'' model. \\
 \end{tabular}
 
   Multi-borders classification represents a significant step forward with this library.  The operation of these programs, called from the command line using \verb/multi_borders/ and \verb/classify_m/ is quite involved and is described in detail in Section, \ref{MULTI_BORDERS_CLASSIFICATION}, MULTI-BORDERS CLASSIFICATION.
@@ -833,7 +835,8 @@ In the Landsat directory there are a number of scripts for performing surface cl
 \nocite{Kohonen2000}
 \nocite{Michie_etal1994}
 \nocite{Terrell_Scott1992}
-\nocite{Mills2014}
+\nocite{Mills2018}
+\nocite{Mills2018a}
 \nocite{Mueller_etal2001}
 
 \addcontentsline{toc}{section}{BIBLIOGRAPHY}

@@ -104,7 +104,7 @@ comments:
          - do you think the title sounds right?
          - why 'we' if you are only one?
 
-R: It's either that or the passive voice. We know how much the grammarians hate the passive voice...
+R: It's either that or the passive voice. It's well known how much the grammarians hate the passive voice...
 
          - the paper is in parts a bit sloppy and
            more like a technical report ('constrainsts' - aspell?)

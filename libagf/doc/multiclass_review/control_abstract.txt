@@ -1,0 +1,25 @@
+Many of the best statistical classification algorithms are binary classifiers,
+that is they can only distinguish between one of two classes.
+The number of possible ways of generalizing binary classification to
+multi-class increases exponentially with the number of classes.
+There is some indication that the best method of doing so will depend on the
+dataset. 
+As such, we are particularly interested in data-driven solution design, 
+whether based on
+prior considerations or on empirical examination of the data.
+Here we deomonstrate how a recursive control language can be used to describe
+a multitude of different partitioning stategies in multi-class classification,
+including those in most common use.
+We use it both to manually construct new partitioning configurations as well 
+as to examine those that have been mechanically designed.
+Eight different strategies are tested on eight different datasets using
+both support vector machines (SVM) as well as logistic regression
+as the base binary classifiers.
+Numerical tests suggest that a one-size-fits-all solution consisting of 
+one-versus-one is appropriate for most datasets
+however one dataset benefitted from the techniques applied in this paper.
+The best solution exploited a property of the dataset to produce
+an uncertainty coefficient 36\% higher (0.016 absolute gain) than one-vs.-one.
+Adaptive solutions that empirically examined the data also produced gains
+over one-vs.-one.
+

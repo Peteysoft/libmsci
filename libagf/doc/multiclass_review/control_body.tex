@@ -11,9 +11,9 @@ with the number of class labels.
 Moreover, the best method may well depend on the type of problem
 \citep{Dietterich_Bakiri1995,Allwein_etal2000}.
 
-The goal of this paper is not only to provide a summary of the
-best methods of solving for multi-class, but to synthesize
-these ideas into a comprehensive framework whereby a multi-class problem
+In this paper we provide a summary of the most common methods of solving for 
+multi-class and show how a descriptive control language can be used to 
+generalize them whereby a multi-class problem
 can be solved using a broad array of configurations for the binary
 classifiers. 
 In addition, we require that any algorithm solve 
@@ -76,7 +76,7 @@ above except that the classes can only take on one of two values,
 which for convenience are chosen as either $-1$ or $+1$, 
 that is, $y_{ij} \in \lbrace -1, +1 \rbrace$.
 
-The problem under consideration in this review is, first,
+The problem under consideration is, first,
 how to partition the class labels used in each binary classifier?
 That is we want to create a mapping of the form:
 \begin{equation}
@@ -200,7 +200,7 @@ $\vec 0$ is a vector of all zeros,
 $\vec 1$ is a vector of all ones,
 and the straight brackets, $||$, denote a vector norm which  
 in this case is the Euclidian or $L^2$ norm.
-Other cost functions can of course be substituted: see Section \ref{Zadrozny}.
+Other cost functions can of course be substituted \citep{Zadrozny2001}.
 
 \subsection{Basic inverse solution}
 
@@ -405,14 +405,38 @@ numbers of classes.
 
 \subsection{Error correcting codes}
 
+\begin{figure}
+  \includegraphics[width=1\textwidth]{Lawson_Hanson}
+	\caption{Diagram illustrating iterative solution scheme for Lawson and Hanson constrained linear least squares.}\label{Lawson_Hanson_fig}
+\end{figure}
+
 Another common coding matrix is an arbitrary one: this is commonly
 known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
 It can be random, but may also be carefully designed 
 \citep{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013,Rocha_Goldenstein2014}.
 In principle this case covers all the earliers ones, however in practice the
 term can also refer more specifically to a random coding matrix.
-We cover the solution of the general case, which includes any random
-matrix, in Section \ref{general_case_solution}, below.
+To solve the general case, we use quadratic programming \citet{Boyd_Vandenberghe2004}.
+The literature in the subject can be quite dense and intimidating, so
+no attempt to address the problem will be made here. 
+There do exist, however, standard algorithms
+for versions of the minimization problem in 
+(\ref{minimization_problem})-(\ref{nonnegative})
+such as that provided by 
+\citet{Lawson_Hanson1995} for instance. 
+Moreover, the iterative algorithm shown in \citet{Lawson_Hanson1995}
+is quite straightforward and is essentially geometrical in nature.
+A minimal example is illustrated in Figure \ref{Lawson_Hanson_fig}.
+
+Briefly, the algorithm works by solving a reduced version of Equation
+(\ref{normal_equation}) starting with only one row.
+Rows are added one-by-one with those 
+corresponding to the variables least likely to push the
+solution out-of-bounds being added first.
+If one or more variables is found to be out-of-bounds,
+then the solution is adjusted so that it sits on the furthest constraint
+boundary relative to the variable between the old solution and the new,
+out-of-bounds variables are removed, and the process is repeated.
 
 \subsection{Orthogonal codes}
 
@@ -454,200 +478,6 @@ unconstrained least-squares solution.
 Using this property,
 \citet{Mills2017} provides a simple iterative solution for solving
 for conditional probabilities when using a ``strict'', orthogonal coding matrix.
-
-\section{Solving for all the probabilities in the general case}
-
-\label{general_case_solution}
-
-We are interested here in a general method of solving for all the probabilities
-in multi-class classification based on error-correcting codes.
-Ideally, this would be an exact solution to the constrained least-squares problem
-in Equations (\ref{minimization_problem})-(\ref{nonnegative}) but might also
-minimize some other cost function.
-Approximate solutions might be useful as well.
-
-\subsection{General comments}
-
-\begin{figure}
-	\includegraphics[width=1\textwidth]{../multi2/config1.eps}
-	%\includegraphics[width=1\textwidth]{config1.eps}
-	\caption{Solving for the multi-class conditional probabilities with three classes.}
-	\label{config1}
-\end{figure}
-
-Once the normalization constraint in (\ref{normalization}) has been applied,
-the remaining inequality constraints for the minimization problem in
-(\ref{minimization_problem}) to (\ref{nonnegative}) form a triangular
-hyper-pyramid in a space of dimension $n_c-1$.
-See Figure \ref{config1}.
-Stating this as a more general constrained optimization problem, we have:
-\begin{equation}
-	\min_{\vec z} | E \vec z - \vec f |^2
-	\label{minimization2}
-\end{equation}
-subject to:
-\begin{equation}
-	G \vec z \ge \vec h
-	\label{inequality2}
-\end{equation}
-where $\vec z$ is a vector of dimension $n_c-1$ 
-and $G$ is an $[n_c \times n_c-1]$ matrix.
-
-Suppose we transform this into a new problem by interpolating between the
-vertices of the hyper-pyramid.
-First, we find the vertices by solving the following linear system:
-\begin{eqnnon}
-	\sum_j g_{ij} z_{kj} = h_i ~ | ~ i \ne k
-\end{eqnnon}
-where $\vec z_k$ is the $k$th vertex of the hyper-pyramid.
-
-We can locate any point inside the hyper-pyrmaid as follows:
-\begin{eqnnon}
-	x^*_i = \sum_i \gamma_i \vec z_i
-\end{eqnnon}
-where $\vec \gamma$ has the same properties as a probability:
-\begin{eqnarraynon}
-	\sum_i \gamma_i & = & 1 \\
-	\vec \gamma & \ge & \vec 0
-\end{eqnarraynon}
-In other words, any minimization problem of the form of (\ref{minimization2})
-and (\ref{inequality2}) can be transformed into a problem of the same form
-as (\ref{minimization_problem}) to (\ref{nonnegative}) and vice versa.
-
-The first line of attack in solving constrained minimization problems of the
-type we are discussing here are the Karesh-Kuhn-Tucker (KKT) conditions
-which generalize Lagrange multipliers to inequality constraints
-\citep{Lawson_Hanson1995,Boyd_Vandenberghe2004}.
-For the minimization problem in (\ref{minimization_problem})-(\ref{nonnegative}), the KKT conditions translate to:
-\begin{eqnnon}
-	Q^T Q \vec p - Q^T \vec r + \lambda = \vec \mu
-\end{eqnnon}
-where:
-\begin{eqnnon}
-	\vec \mu \ge \vec 0
-\end{eqnnon}
-and:
-\begin{eqnarraynon}
-	\mu_i = 0 & \iff & p_i > 0 \\
-	\mu_i > 0 & \iff & p_i = 0
-\end{eqnarraynon}
-or more succinctly:
-\begin{eqnnon}
-	\mu_i p_i = 0 ~ | ~ i = 1..n_c
-\end{eqnnon}
-
-Another important property of the problem is that it is completely {\it convex}.
-A {\it convex function}, $c$, has the following property:
-\begin{eqnnon}
-	c \left \lbrace \gamma \vec z_0 + (1 - \gamma) \vec z_2 \right \rbrace
-	\le \gamma c(\vec z_1) + (1 - \gamma) c(\vec z_2)
-\end{eqnnon}
-where $0 \le \gamma \le 1$ is a  coefficient.
-Meanwhile, in a {\it convex set}, $C$:
-\begin{eqnnon}
-	\vec z_1 \in C \land \vec z_2 \in C \rightarrow 
-\left \lbrace \gamma \vec z_1 + (1 - \gamma) \vec z_2 \right \rbrace \in C
-\end{eqnnon}
-\citep{Boyd_Vandenberghe2004}.
-The convexity property means that any local minima is also a global minima,
-moreover simple, gradient descent algorithms should always eventually reach it.
-Both the convexity property and the KKT conditions are used in the 
-\citet{Lawson_Hanson1995} solution to inequality constrained least
-squares problems.
-
-The literature on constrained optimization is often quite dense and 
-intimidating, however this relatively simple, linear least-squares problem with 
-linear constraints should require little more than geometry and linear algebra.
-Such is the case for the Lawson and Hanson solution which is described
-in Section \ref{Lawson_Hanson}, below.
-A lot of newer work on the subject is concerned with creating highly
-efficient methods
-for problems with very large numbers of variables \citep{Mueller_etal2001}.
-This is not a concern for us here as the problems are miniscule by comparison
-and solving for the probabilties, even when fully constrained, is only a
-tiny fraction of the total computation.
-
-
-\subsection{Zadrozny solution}
-
-\label{Zadrozny}
-
-\citet{Zadrozny2001} describes the following, iterative method of solving
-for the probabilities using an arbitrary coding matrix, starting with a 
-guess for the approximated probabilities, $\lbrace \tilde p_i \rbrace$:
-
-\begin{itemize}
-	\item Set $\tilde r_j := \sum_i a_{ji} \tilde p_i/\sum_i |a_{ji}|$
-	\item For each $i=1, 2, ..., k$:
-			Set $\tilde p_i := \tilde p_i \frac{\sum_j n_j a_{ji} r_j}{\sum_j n_j a_{ji} \tilde r_j}$
-	\item Set $T := \sum_i \tilde p_i$; Set $\tilde p_i := \tilde p_i/T$
-	\item Repeat until convergence.
-\end{itemize}
-where $n_j$ is the number of training samples in the $j$th class.
-The technique minimizes the weighted Kullback-Leibler distance between actual and calculated
-binary probabilities:
-\begin{eqnnon}
-	l(\vec x) = \sum_{i} n_i r_i \left [ \log \frac{r_i-1}{\tilde r_i-1} - \log \frac{1-r_i}{1-\tilde r_i} \right ]
-\end{eqnnon}
-as opposed to the usual Euclidean distance.
-The method supplies probability estimates roughly as accurate as the others described here,
-however our tests indicate that convergence is too slow to be useful.
-
-\subsection{Lawson and Hanson solution}
-
-\label{Lawson_Hanson}
-
-\begin{figure}
-  \includegraphics[width=1\textwidth]{Lawson_Hanson}
-	\caption{Diagram illustrating iterative solution scheme for Lawson and Hanson constrained least squares.}\label{Lawson_Hanson_fig}
-\end{figure}
-
-\citet{Lawson_Hanson1995} describe an iterative solution to the following
-inequality constrained least-squares problem:
-\begin{eqnnon}
-	\min_{\vec z} | E \vec z - \vec f |^2
-\end{eqnnon}
-subject to:
-\begin{eqnnon}
-	\vec z \ge \vec 0
-\end{eqnnon}
-where $E$ is an $[m \times n]$ matrix.
-
-The solution is divided into a set $N$ containing the indices of 
-all the non-zero values in $\vec z$ and a set $Z$ containing the indices of the 
-zero values.
-The algorithm is as follows:
-\begin{enumerate}
-	\item Set $N := \emptyset$; $Z:=1..n$
-	\item Compute the $n$-vector $\vec \mu := E^T(\vec f - E \vec z)$.
-	\item If the set $Z$ is empty or if $\mu_j \le 0$ for all $j \in Z$ go to Step 12.
-	\item Find an index $t \in Z$ such that $\mu_i = \max \lbrace \mu_i: j \in Z \rbrace$.
-	\item Move the index $t$ from set $Z$ to set $N$
-	\item Solve the least squares problem $\min_{\vec z^*} | E_N \vec z^* - \vec f |$ where $E_N$=$\lbrace \vec e^{(j)} | j \in N \rbrace$ (columns of $E$ whose corresponding indices are in $N$).
-	\item If $z_j^* > 0$ for all $j \in N$, set $\vec z:= \vec z^*$ and go to Step 2.
-	\item Find an index $q \in N$ such that $q = \arg \min_j \lbrace z_j/(z_j - z_j^*): ~z_j^* \le 0;~ j \in N \rbrace$.
-	\item Set $\alpha := z_q/(z_q - z_q^*)$
-	\item Set $\vec z := \vec z + \alpha(\vec z^* - \vec z)$
-	\item Move from set $N$ to set $Z$ all indices $j \in N$ for which $z_j = 0$. Go to step 6.
-	\item The computation is completed.
-\end{enumerate}
-
-There are two loops to the algorithm. In the first loop, a new index is added
-to the non-zero set in each iteration.
-So long as the solution doesn't go out-of-bounds, this continues until all
-the indices are added to the set $P$.
-In the second loop, if it's found that one of the variables has gone out-of-bounds,
-then the solution is adjusted to the nearest point in-bounds between the old solution
-and the new.
-The process is illustrated in Figure \ref{Lawson_Hanson_fig}.
-
-\citet{Lawson_Hanson1995} describe several methods of combining
-equality constraints such as the normalization constraint
-in (\ref{normalization}) with the above constrained
-least squares problem.
-The simplest is to repeat the variable substitution
-described in Equations (\ref{reduce_dimension1}) to (\ref{reduce_dimension2}) until the excluded
-probability is greater-than-or-equal to zero: $p_k\ge 0$.
 
 
 \section{Decision-trees}
@@ -704,25 +534,6 @@ as for a symmetric, hierarchical multi-class classifier.
 While there are only seven rows for eight classes, 
 once we add in the constraint in (\ref{normalization}) the system becomes 
 fully determined.
-
-\subsection{Variations}
-
-There are many variations on the method. \citet{Ramanan_etal2007} train a 
-one-versus-the-rest model at each level of the tree so that if the ``one''
-class is returned, the lower levels of the tree are short circuited
-and this class is selected for the final result. Otherwise, the one class
-is left out of subsequent analysis. This is less a new method than simply
-a means of shaping the tree appropriate to datasets with unbalanced
-numbers of classes, for instance the ``shuttle'' dataset \citep{King_etal1995}:
-see Section \ref{data_and_software}.
-
-In a decision-directed acyclic graph (DDAG), 
-rather than testing one group against another, 
-each node of the tree tests one class against another \citep{Platt_etal2000}. 
-The losing class is excluded from subsequent analysis. 
-The previous paragraph describes the ``tree'' version of the one-versus-the-rest. 
-This is the tree version of one-versus-one. 
-In a DDAG, there are multiple paths to the same node.
 
 \subsection{Empirically designed trees}
 
@@ -795,7 +606,7 @@ As such, it lies beyond the scope of this introductory article while the reader 
 consult recent literature on the subject: 
 \citet{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013,Rocha_Goldenstein2014}.
 
-\section{Unifying framework}
+\section{Recursive control language}
 
 Since there are many ways of solving the multi-class classification problem,
 we present here a descriptive control language that unifies many of the ideas
@@ -937,15 +748,15 @@ in a recent paper \citep{Zhou_etal2019}.
 
 \section{Numerical trials}
 
-We wish to test a synthesis of the ideas contained in this review on some real
-datasets.
+We wish to test the ideas laid out in the earlier sections of this paper 
+on some real datasets.
 To this end, we will test eight different datasets using six configurations 
 solved using four different methods.
 The configurations are: one-vs-one, one-vs.-rest, orthogonal partioning,
 ``adjacent'' partitioning (see below), an arbitray tree, and a tree generated
 from a bottom-up dendrogram using the Hausdorf metric.
-The solution methods are: constrained least squares as described
-in Section \ref{Lawson_Hanson}, matrix inverse which is specific to one-vs.-one,
+The solution methods are: constrained least squares \citep{Lawson_Hanson1995},
+matrix inverse which is specific to one-vs.-one,
 the iterative method designed for orthogonal partitioning,
 and recursively which is appropriate
 only for hierarchical or tree-based configurations.
@@ -1110,7 +921,7 @@ and the ``humidity'' dataset classifies humidity values based on satellite
 radiometry \citep{Mills2009}.
 The characteristics of each dataset are summarized in Table \ref{datasets}.
 
-The base binary classifier used to test the ideas in this paper is a 
+The base binary classifier used through-out is a 
 support vector machine (SVM) \citep{Mueller_etal2001}.
 We use LIBSVM \citep{Chang_Lin2011} to perform the training
 using the \verb/svm-train/ command.
@@ -1165,7 +976,7 @@ entropy per symbol.
 		hier. & ``hierarchical'' or decision tree partitioning & Section \ref{hierarchical} \\
 		emp. & empirically-designed decision tree & Section \ref{empirical} \\
 		\hline
-		lsq. & Lawson and Hanson constrained least-squares & Section \ref{Lawson_Hanson} \\
+		lsq. & Lawson and Hanson constrained least-squares & \citep{Lawson_Hanson1995} \\
 		inv. & matrix inverse solution & Section \ref{one_vs_one} \\
 		iter. & iterative solution for orthogonal codes & Section \ref{orthogonal} \\
 		rec. & recursive ascent of decision tree & Section \ref{hierarchical} \\
@@ -1369,5 +1180,5 @@ Since the results present a somewhat mixed bag, it would be useful to
 have a framework and toolset with which to explore different methods of
 building up multi-class classification models so as to optimize classification
 accuracy, accuracy of conditional probabilities and speed.
-This is what we have lain out in this paper.
+This is what we have laid out in this paper.
 

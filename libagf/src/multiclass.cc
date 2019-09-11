@@ -176,6 +176,7 @@ namespace libagf {
     }
 
     sol_time=0;
+    ntest=0;
 
     return 0;
   }
@@ -191,7 +192,7 @@ namespace libagf {
     if (pol!=NULL) delete [] pol;
 
     fname=getenv("SOL_TIME");
-    if (fname!=NULL) {
+    if (fname!=NULL && ntest > 0) {
       fs=fopen(fname, "a");
       fprintf(fs, "%g\n", (float) sol_time/CLOCKS_PER_SEC);
       fclose(fs);
@@ -242,7 +243,7 @@ namespace libagf {
         break;
       case (16):
 	//backwards compatibility with orthogonal trials:
-        solve_class=&solve_class_nnls3<real, real>;
+        solve_class=&solve_class_nnls4<real, real>;
         break;
       case (102):
         solve_class=&solve_class_peaked<real, real>;
@@ -292,8 +293,9 @@ namespace libagf {
   template <typename real, typename cls_t>
   cls_t multiclass<real, cls_t>::classify(real *x, real *p, real *praw) {
     real r[nmodel];
-    real pt=0;
+    //real pt=0;
 
+    ntest++;
     for (int i=0; i<nmodel; i++) {
       r[i]=twoclass[i]->R(x, praw);
       //printf("%12.6g", r[i]);

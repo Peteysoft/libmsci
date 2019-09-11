@@ -6,25 +6,27 @@
 int main(int argc, char **argv) {
   FILE *fs=stdin;
   FILE *outfs=stdout;
-  int ncol=10;		//total number of columns
+  int nfield=100;		//number of columns
+  int ncol=3;		//total number of fields
   char name[11];
   char line[MAXLL];
-  float data[ncol];	//data read in from file
-  float std[ncol];	//standard deviations
+  float data[nfield];	//data read in from file
+  float std[nfield];	//standard deviations
   int ind;		//index of extremum
   float ext;		//extremum
 
-  ncol=atof(argv[1]);
+  nfield=atof(argv[1]);
+  ncol=atof(argv[2]);
 
   //fscanf(fs, "%10", name);
-  for (int i=0; i<ncol; i++) fscanf(fs, "%g", data+i);
+  for (int i=0; i<nfield; i++) fscanf(fs, "%g", data+i);
   //fgets(line, MAXLL, fs);
-  for (int i=0; i<ncol; i++) fscanf(fs, "%g", std+i);
+  for (int i=0; i<nfield; i++) fscanf(fs, "%g", std+i);
   //fgets(line, MAXLL, fs);
   //print out name of dataset:
-  if (argc>=3) fprintf(outfs, "%s", argv[2]);
+  if (argc>=4) fprintf(outfs, "%s", argv[3]);
 
-  for (int i=0; i<ncol; i++) {
+  for (int i=0; i<nfield; i++) {
     float val=data[i];
     float sd=std[i];
     fprintf(outfs, " & $");
@@ -33,8 +35,12 @@ int main(int argc, char **argv) {
     if (sd>0) fprintf(outfs, "\\pm%9.2g", sd);
     if (ind==i) fprintf(outfs, "}");
     fprintf(outfs, "$");
+    if ((i+1) % ncol == 0) {
+      fprintf(outfs, "\\\\\n");
+      //if (argc>=4) fprintf(outfs, " & ");
+    }
   }
-  fprintf(outfs, "\\\\\n");
+  //fprintf(outfs, "\\\\\n");
 
   fclose(outfs);
 

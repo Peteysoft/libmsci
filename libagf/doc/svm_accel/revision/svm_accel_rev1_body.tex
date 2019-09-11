@@ -652,14 +652,16 @@ for good accuracy, and hence the number of support vectors,
 should be proportional to the approximate volume occupied by the
 training data in the feature space: $\mintrain \propto \featurevolume$ where 
 $\mintrain$ is the minimum number of training vectors and $\featurevolume$ is volume.
-Then the number of border vectors should be proportional to the volume
-taken to the root of one less than the dimension of the feature space:
-$\minborders \propto \featurevolume^\frac{1}{\dimension-1}$.
+{\color{red} Then the number of border vectors should be proportional to the volume
+taken to the root of the dimension of the feature space 
+then raised to the power of one less:
+$\minborders \propto \featurevolume^\frac{\dimension-1}{\dimension}$.
 Putting it together, we can relate the two as follows:
 \begin{eqnnon}
-	\minborders \propto \mintrain^\frac{1}{\dimension-1}
+	\minborders \propto \mintrain^\frac{\dimension-1}{\dimension}
 	\label{scaling_law}
 \end{eqnnon}
+}
 where $\minborders$ is the minimum number of border vectors required for good
 accuracy.
 
@@ -675,7 +677,9 @@ accuracy.
 
 In other words, provided the class borders are not fractal \citep{Ott1993}, 
 mapping only the border between classes should always be
-faster than techniques that map the entirety of the class locations.
+faster than techniques that map the entirety of the class locations,
+{\color{red} although the advantage becomes less the larger the dimension of the 
+feature space.}
 This includes kernel density methods including SVM as well
 as similar methods such as learning vector quantization (LVQ) 
 \citep{Kohonen2000,LVQ_PAK}

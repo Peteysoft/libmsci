@@ -3,12 +3,26 @@ TIME=/usr/bin/time
 
 DATAPATH=../datasets
 
+#dataset:
 VER=sat
+
+#classification method:
+METHOD=lin
 
 #fraction of data to use for training:
 FRAC=0.3
 #number of trials:
 NTRIAL=10
+
+#different flags depending on the binary classifier: linear or SVM
+METHOD_FLAG_svm = -Z
+METHOD_FLAG_lin = -G
+METHOD_FLAG = $(METHOD_FLAG_$(METHOD))
+
+#different commonds as well:
+METHOD_COMMAND_svm = svm-train -b 1
+METHOD_COMMAND_lin = lin-train -B 1 -s 0
+METHOD_COMMAND = $(METHOD_COMMAND_$(METHOD))
 
 #number of classes in each dataset:
 NCLS_shuttle=7
@@ -42,7 +56,7 @@ NCLS=$(NCLS_$(VER))
 #SOL=rec		#recursive
 
 #WORKDIR=/home/petey/work/multiclass/$(VER)
-WORKDIR=$(VER)
+WORKDIR=$(VER)_$(METHOD)
 BASE=$(WORKDIR)/$(VER)
 
 KEY = $(TYPE)_$(SOL)
@@ -94,6 +108,12 @@ REVISE_CONTROL_emp_iter = print_control -Q 9 $(BASE)_emp.mbc > $(CLASSCONTROL).m
 
 REVISE_CONTROL = $(REVISE_CONTROL_$(KEY))
 
+#command to collate support vectors:
+COLLATE_COMMAND_svm = mbh2mbm -Z $(CLASSCONTROL).mbc $(CLASSCONTROL).mbaio
+COLLATE_COMMAND_lin = cp $(CLASSCONTROL).mbc $(CLASSCONTROL).mbaio
+
+COLLATE_COMMAND = $(COLLATE_COMMAND_$(METHOD))
+
 #options for different datasets:
 SVMOPT_sat=-c 50 -g 0.1
 SVMOPT_segment=-c 100 -g 0.1 
@@ -102,28 +122,55 @@ SVMOPT_letter=-c 50 -h 0
 SVMOPT_humidity=-h 0 -c 50
 #SVMOPT_urban=-h 0 -c 10 -g 0.001
 
-OPTIONS=$(SVMOPT_$(VER))
+OPTIONS_svm=$(SVMOPT_$(VER))
+
+#options for linear classifier:
+LINOPT_segment=-c 50
+LINOPT_shuttle=-c 200
+LINOPT_pendigits=-c 200
+LINOPT_sat=-c 200
+LINOPT_usps=-c 50
+LINOPT_vehicle=-c 50
+LINOPT_humidity=-c 20
+LINOPT_urban=-c 0.05
+
+OPTIONS_lin=$(LINOPT_$(VER))
+
+OPTIONS=$(OPTIONS_$(METHOD))
 
 #file extensions for results:
 EXT_agf=.vec
 EXT_svm=.svmout
+EXT_lin=.svmout
 EXT=$(EXT_$(METHOD))
 
 #control file option:
+BRANCH1_letter = letter
+BRANCH1 = $(BRANCH1_$(VER))
+TRAINCODE_ortho_letter = 16
+TRAINCODE_ortho_ = 8
+TRAINCODE_ortho=$(TRAINCODE_ortho_$(BRANCH1))
+
 TRAINCODE_1v1=5
 TRAINCODE_1vR=1
 TRAINCODE_adj=2
-TRAINCODE_ortho=8
 TRAINCODE_hier=0
 TRAINCODE_emp=6
 
 TRAINCODE=$(TRAINCODE_$(TYPE))
 
 #solution option:
+BRANCH2_letter=letter
+BRANCH2=$(BRANCH2_$(VER))
+#if there are too many classes:
+TESTCODE_ortho_letter = 0
+#default:
+TESTCODE_ortho_ = 8
+TESTCODEortho=$(TESTCODE_ortho_$(BRANCH2))
+
 TESTCODEinv=5
-TESTCODEiter=16
+TESTCODEiter=0
 TESTCODErec=0
-TESTCODEortho=8
 
 TESTCODE=$(TESTCODE$(SOL))
 
@@ -152,11 +199,8 @@ SUBSAMPLE=subsample_special
 #doesn't:
 #SUBSAMPLE=agf_preprocess
 
-#FCONV_svm=svmout2agf $(RESULT).svmout $(RESULT) > $(RESULT).txt
-FCONV=$(FCONV_$(METHOD))
-
 #collect statistics:
-STATFILE = $(VER).txt
+STATFILE = $(VER)_$(METHOD).txt
 
 #measure the time:
 TRAINTIME=$(RESULT).traintime
@@ -292,18 +336,16 @@ clean:
 
 #performing classifications:
 $(RESULT).txt: $(TEST).svm $(CLASSCONTROL).mbaio
-	$(TIME) -o $(TESTTIME) classify_m -Z -Q $(TESTCODE) $(CLASSCONTROL).mbaio $(TEST).vec $(RESULT) > $(RESULT).txt
-	$(FCONV)
+	$(TIME) -o $(TESTTIME) classify_m $(METHOD_FLAG) -Q $(TESTCODE) $(CLASSCONTROL).mbaio $(TEST).vec $(RESULT) > $(RESULT).txt
 
 #compiling the "all-in-one" model file:
 $(CLASSCONTROL).mbaio: $(MODEL).mbc
 	$(REVISE_CONTROL)
-	mbh2mbm -Z $(CLASSCONTROL).mbc $(CLASSCONTROL).mbaio
-
+	$(COLLATE_COMMAND)
 
 #training the model:
 $(MODEL).mbc: $(TRAIN).svm $(TRAINCONTROL)
-	$(TIME) -o $(TRAINTIME) multi_borders -M -- svm-train -+ "-b 1 $(OPTIONS)" \
+	$(TIME) -o $(TRAINTIME) multi_borders -M -- "$(METHOD_COMMAND)" -+ "$(OPTIONS)" \
 			$(TRAINCONTROL) $(TRAIN).svm $(MODEL) $(MODEL).mbc
 
 #create control files:

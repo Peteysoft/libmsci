@@ -36,6 +36,7 @@ namespace libagf {
 
       //time to solve multiclass problem, excluding binary classification:
       clock_t sol_time;
+      int ntest;	//number of test classifications
     protected:
       //the partitions:
       binaryclassifier<real, cls_t> **twoclass;

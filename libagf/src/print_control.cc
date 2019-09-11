@@ -265,8 +265,8 @@ int main(int argc, char **argv) {
     } else {
       print_control_nonhier(stdout, coding_matrix, nrow, n, name, label);
     }
-    delete [] coding_matrix[0];
-    delete [] coding_matrix;
+    //delete [] coding_matrix[0];
+    //delete [] coding_matrix;
   }
 
   if (name!=NULL) delete [] name;

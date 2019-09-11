@@ -127,6 +127,8 @@ namespace libagf {
         break;
       }
     } while (feof(fs)==0);
+    if (line!=NULL) delete [] line;
+    delete [] substr;
     header[nhead]=NULL;
     coef=new real[this->D];
     w=new double[this->D];
@@ -140,6 +142,7 @@ namespace libagf {
       for (int i=0; i<this->D; i++) coef[i]=-coef[i];
       offset=-offset;
     }
+    delete [] w;
     return 0;
   }
 
