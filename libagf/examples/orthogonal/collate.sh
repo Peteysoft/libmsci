@@ -3,8 +3,8 @@
 DATASET="pendigits sat segment shuttle urban usps vehicle"
 
 #METHOD=lin
-#METHOD=svm
-METHOD=acc
+METHOD=svm
+#METHOD=acc
 
 #PATH=/cygdrive/f/peteysoft/libmsci/libagf/examples/orthogonal
 PATH=.

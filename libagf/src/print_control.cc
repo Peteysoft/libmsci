@@ -181,6 +181,10 @@ int main(int argc, char **argv) {
       //do {
       //  if (codet!=NULL) delete_matrix(codet);
         codet=orthogonal_coding_matrix<int>(n, nrow, np);
+        if (opt_args.Pflag) {
+          print_matrix(stdout, codet, nrow, n);
+          printf("\n");
+        }
         //pile brute force upon brute force:
         //(making sure there are classes on both sides of the fence...)
         //print_matrix(stdout, coding_matrix, nrow, n);

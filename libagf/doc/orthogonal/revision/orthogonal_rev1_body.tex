@@ -19,15 +19,15 @@ In the latter category,
 two common methods are one versus one and one versus the rest \citep{Hsu_Lin2002}
 These in turn generalize to error-correcting codes (ECC) \citep{Dietterich_Bakiri1995}.
 
-The first application of error-correcting codes used random codes:
-the assumption is that if there are enough codes (binary classifiers)
+The first application of ECCs used random codes:
+the assumption is that if the codes are long enough (there are enough binary classifiers)
 they will adequately span the classes.
 Later work focused on optimizing the design of the codes: what type of
 codes will best span the classes and produce the most accurate results?
-Here we can also distinguish between two type: those that use the data
+Here we can also distinguish between two types: those that use the data
 to help design the codes \citep{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013}
 and those that are independent of the data but use the mathematical 
-properties of the codes to aid in the design \citep{Allwein_etal2000,Windeatt_Ghaderi2002,Zhou_etal2019}.
+properties of the codes to aid in their construction \citep{Allwein_etal2000,Windeatt_Ghaderi2002,Zhou_etal2019}.
 It is these latter type of optimized error-correcting codes we are interested in here.
 
 In error-correcting coding, there is a coding matrix, $A$, that specifies
@@ -45,7 +45,7 @@ a row in the matrix and a vector of binary {\it decision functions}:
 where $\vec a_i\in \lbrace -1,0,+1 \rbrace$ 
 is the $i$th row of the coding matrix and 
 $\vec r$ is a vector of decision functions at {\it test point}, $\vec x$.
-If we take the upright brackets as a Euclidean distance and expand:
+If we take the upright brackets as a Euclidean distance we can expand (\ref{min_dist}) as follows:
 \begin{eqnnon}
 	c = \arg \min_i \sum_j \left ( | \vec a_i | + | \vec r | - 2 \vec a_i  \cdot \vec r_i  \right ) 
 \end{eqnnon}
@@ -81,10 +81,11 @@ There are three reasons to require the conditional probabilities:
 		multi-class probabilities derives uniquely and rigorously from probability theory.
 	\item Binary classifier that do not return calibrated probability estimates, but nonetheless supply a continuous decision function are easy to recalibrate so that the decision function more closely resembles a probability \citep{Jolliffe_Stephenson2003,Platt1999}.
 \end{enumerate}
-Two types of orthogonal ECCs with along three other multi-class 
+Two types of orthogonal ECCs along with three other multi-class 
 methods--1 vs. 1, 1 vs. the rest, and random ECCs--will be tested on seven
-different datasets to see how they compare in terms of classification speed,
-classification accuracy and accuracy of the conditional probabilities.
+different datasets using three 
+different binary classifiers--logistic regression, support vector machines (SVM), and piece-wise linear--to 
+see how they compare in terms of classification speed, classification accuracy and accuracy of the conditional probabilities.
 
 \section{Algorithm}
 
@@ -103,7 +104,8 @@ given test point, $\vec x$:
 \label{multiclass}
 \end{eqnnon}
 where $A=\lbrace a_{ij} \in \lbrace -1, +1 \rbrace  \rbrace$ is a {\it coding
-matrix} and $p_i = p(i | \vec x)$ is the 
+matrix} for which each code partitions all of the classes
+and $p_i = p(i | \vec x)$ is the 
 conditional  probability of the $i$th class.
 In vector notation:
 \begin{equation}
@@ -113,7 +115,7 @@ This result derives from the fact that the class probabilities are
 additive \citep{Kong_Dietterich1997}.
 The more general case where a class can be excluded, that is the coding 
 may include zeroes, $a_{ij} \in \lbrace -1, 0, +1\rbrace$,
-will not be addressed here. 
+will be treated in the next section.
 
 Note that this assumes that the binary decision functions, $\vec r$,
 estimate the conditional probabilities perfectly.
@@ -143,9 +145,6 @@ the inverse solution in (\ref{inverse}).
 This allows us to determine the class easily, but we also wish to solve for
 the probabilities, $\vec p$, so that none of the constraints in 
 (\ref{normalization}) or (\ref{nonnegative}) are violated.
-Probabilities are useful for gauging the accuracy of a classification result
-when its true value is unknown and for recalibrating an image derived from
-statistical classification \citep{Fawcett2006,Mills2009,Mills2011}.
 
 The orthogonality property allows us to reduce the minimization problem 
 in (\ref{minimization}) to something much simpler:
@@ -262,7 +261,8 @@ Such a matrix will include a ``harmonic series'' of the same type as in
 %	\item re-arranging either the rows or columns of $A$ makes an equivalent $A$: $T_{ij} A$ or $A T_{ij}^T$ are both equivalent to $A$ where $T_{ij}$ is the elementary matrix which exchanges rows $i$ and $j$
 %\end{itemize}
 
-To compute the results in this note, orthogonal coding matrices were generated
+Two types of orthogonal coding matrices are tested in this note:
+The first type of orthogonal coding matrix includes no zeros is generated
 using a ``greedy'' algorithm.
 We choose $n$ to be the smallest multiple of $4$ equal to or larger than $m$.
 and start with an empty matrix.
@@ -274,6 +274,64 @@ A full matrix is almost always returned especially if $m<n$.
 The matrix is then checked to ensure that 
 each column contains both positive and negative elements.
 Note that the whole process can be repeated as many times as necessary.
+An eight-class example follows:
+\begin{eqnnon}
+	A = \left [ \begin{array}{rrrrrrrr}
+		1  & -1 & 1 & 1 & -1 & -1 & 1 & -1 \\
+		1 & -1 & -1 & 1 & -1 & 1 & -1 & 1 \\
+		1 & -1 & -1 & -1 & 1 & 1 & 1 & -1 \\
+		1 & 1 & 1 & 1 & 1 & 1 & -1 & -1 \\
+		1 & 1 & 1 & -1 & -1 & 1 & 1 & 1 \\
+		-1 & -1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+		-1 & -1 & 1 & -1 & -1 & 1 & -1 & -1 \\
+		1 & -1 & 1 & -1 & 1 & -1 & -1 & 1 
+	\end{array} \right ]
+\end{eqnnon}
+
+\begin{table}
+	\caption{Table showing parameters chosen for second type of
+	orthogonal coding matrix: for the number of classes, $m$, 
+	the initial length of the code, $n_0$, and number of non-zero
+	values in each code, $|\vec a_i|$ ($i=1..m$). 
+	Note: $n_0 \approx m log_2 m$.}\label{ortho_param}
+	\begin{tabular}{l|ll}
+		$m$ & $n_0$ & $|\vec a_i|$ \\
+		\hline
+		4 & 7 & 4 \\
+		6 & 12 & 6 \\
+		7 & 15 & 7 \\
+		8 & 17 & 8 \\
+		9 & 20 & 9 \\
+		10 & 23 & 10 \\
+	\end{tabular}
+\end{table}
+
+The other type of orthogonal coding matrix to be tested in this note
+includes zeros.
+The construction is similar except now the matrix is allowed to take on values
+of zero while the number of non-zero values (-1 or +1) is kept fixed.
+A size is chosen for the matrix typically much larger than the number of
+classes while the resulting matrix will normally be somewhat smaller since
+degenerate and fixed value columns (a correctly-trained binary classifier would always return the same value) are removed.
+The parameters chosen for each class size are shown in Table
+\ref{ortho_param}.
+
+Coding matrices of this type were generated by pure, brute force with no
+attempt to track previous trials.
+An example coding matrix for six classes is shown below.
+Redundant columns have been greyed out.
+\begin{eqnnon}
+	A = \left [ \begin{array}{rrrrrrrrrrrr}
+		-1  &  0 & -1 &  0 &  1 &  0 &  0 &  1 & \color{gray}-1 & \color{gray}0 & \color{gray}0 & \color{gray}-1 \\
+		 0  &  1 & -1 &  0 & -1 & -1 &  0 & -1 & \color{gray}-1 & \color{gray}0 & \color{gray}0 &  \color{gray}0 \\
+		 -1 &  0 &  1 &  0 &  0 &  0 & -1 & -1 & \color{gray}0 & \color{gray}-1 & \color{gray}0 & \color{gray}-1 \\
+		  1 &  0 &  0 &	-1 &  0 & -1 & -1 &  1 & \color{gray}0 & \color{gray}-1 & \color{gray}0 &  \color{gray}0 \\
+		  0 & -1 & -1 &  0 & -1 &  1 & -1 &  0 & \color{gray}0 &  \color{gray}0 & \color{gray}1 &  \color{gray}0 \\
+		  0 & -1 &  0 &  1 &  0 & -1 &  1 &  0 & \color{gray}0 & \color{gray}-1 & \color{gray}1 &  \color{gray}0 
+	\end{array} \right ]
+\end{eqnnon}
+This type of orthogonal ECC is solved using a general, iterative,
+constrained, linear least-squares solver \citep{Lawson_Hanson1995}.
 
 More work will need to be done to find efficient methods
 of generating these matrices
@@ -283,12 +341,12 @@ if they are to be efficiently applied to problems with a large number of classes
 \section{Results}
 
 \begin{table*}
-\caption{Solution time, uncertainty coefficient and Brier score for six different datasets using five different coding matrices: 1 vs. 1, 1 vs. the rest, random error correcting codes, orthogonal "strict" coding, and orthogonal "non-strict" coding. Logistic regression is used as the base binary classifier.}\label{class_results_lin}
+\caption{Total classification time, solution time, uncertainty coefficient and Brier score for six different datasets using five different coding matrices: 1 vs. 1, 1 vs. the rest, random error correcting codes, orthogonal "strict" coding, and orthogonal "non-strict" coding. Logistic regression is used as the base binary classifier.}\label{class_results_lin}
 \input{results_lin2019_09_06.tex}
 \end{table*}
 
 \begin{table*}
-\caption{Solution time, uncertainty coefficient and Brier score for six different datasets using five different coding matrices: 1 vs. 1, 1 vs. the rest, random error correcting codes, orthogonal "strict" coding, and orthogonal "non-strict" coding. A support vector machine is used as the base binary classifier.}\label{class_results_svm}
+\caption{Total classification time, solution time, uncertainty coefficient and Brier score for six different datasets using five different coding matrices: 1 vs. 1, 1 vs. the rest, random error correcting codes, orthogonal "strict" coding, and orthogonal "non-strict" coding. A support vector machine is used as the base binary classifier.}\label{class_results_svm}
 \input{results_svm2019_09_06.tex}
 \end{table*}
 
@@ -297,32 +355,48 @@ if they are to be efficiently applied to problems with a large number of classes
 \input{results_acc2019_09_09.tex}
 \end{table*}
 
-Orthogonal error-correcting codes were tested on six different datasets:
+Orthogonal error-correcting codes were tested on seven different datasets:
 two for digit recognition--``pendigits'' \citep{Alimoglu1996} and
 ``usps'' \citep{Hull1994}; the space shuttle control dataset--``shuttle''
 \citep{King_etal1995}; a satellite land recognition
-dataset--``sat''; a similar dataset for image recognition--``segment'';
+dataset--``sat''; 
+a similar dataset for urban land classification--``urban'';
+a dataset for image recognition--``segment'';
 and a dataset for vehicle recognition--``vehicle'' \citep{Siebert1987}.
 The last four are borrowed from the ``statlog'' project \citep{King_etal1995,Michie_etal1994}.
 
-The method was compared with random error-correcting codes using the same
-number of codes or matrix rows, $m$.
-Random codes were solved using a constrained linear least squares method based
+Two types of orthogonal coding matrices were tested: the first type described in
+Section \ref{construction}, with no zeros, and the second type which includes
+zeros.
+These were compared with three other methods: one-versus-one, one-versus-the-rest,
+and random error-correcting coding matrices with the same number of rows, $n$,
+as the orthogonal matrices of the first type.
+The 1 vs. rest multi-class as well as the random codes were solved using 
+the same type of constrained linear least squares method based
 on the Karesh-Kuhn-Tucker conditions \citep{Lawson_Hanson1995}.
-Both techniques were applied to support vector machines (SVMs) trained using
+
+Three types of binary classifier were used: logistic regression \citep{Michie_etal1994},
+support vector machines \citep{Mueller_etal2001},
+and a peicewise-linear classifer \citep{Mills2018}.
+Logistic regression classifiers were trained using LIBLINEAR \citep{Fan_etal2008}.
+
+Support vector machines (SVMs) were trained using
 LIBSVM \citep{Chang_Lin2011}.
 Partitions were trained separately then combined by finding the union of
 sets of support vectors for each partition.
 By indexing into the combined list of support vectors, the algorithms are
 optimized in both space and time \citep{Chang_Lin2011}.
-
-The same parameters were used for both the random and orthogonal codes and 
+For SVM, the same parameters were used for both the random and orthogonal codes and 
 for all partitions.
 All datasets were trained using  ``radial basis function'' (Gaussian)
 kernels of differing widths.
 
-Results are shown in Table \ref{class_results}.
-Confidence limits represent standard deviations over 20 trials using
+LIBSVM was also used to train an intermediate model from which a faster,
+piecewise-linear classifier was trained.
+
+Results are shown in Tables \ref{class_results_lin}, \ref{class_results_svm},
+and \ref{class_results_acc}.
+Confidence limits represent standard deviations over 10 trials using
 different, randomly chosen coding matrices.
 For each trial, datasets were randomly separated into 70\% training and 30\%
 test.
