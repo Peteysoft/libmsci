@@ -6,7 +6,8 @@ Examples include lineear classifiers such as perceptrons and logistic regression
 piecewise linear classifiers \citep{Herman_Yeung1992,Mills2018},
 as well as support vector machines \citep{kernel_intro}.
 There are many ways of generalizing binary classification to 
-multi-class.
+multi-class and the number of possibilities increases exponentially with
+the number of classes.
 
 One should distinguish between multi-class methods that only use a subset
 of the binary classifiers, adding more as the algorithm narrows down the
@@ -16,10 +17,10 @@ In the former category, we have hierarchical multi-class classifiers
 such as decision trees \citep{Cheong_etal2004,Lee_Oh2003} and decision
 directed acyclic graphs (DDACs) \citep{Platt_etal2000}.
 In the latter category,
-two common methods are one versus one and one versus the rest \citep{Hsu_Lin2002}
+two common methods are one-versus-one (1 vs. 1) and one-versus-the-rest (1 vs. rest) \citep{Hsu_Lin2002}.
 These in turn generalize to error-correcting codes (ECC) \citep{Dietterich_Bakiri1995}.
 
-The first application of ECCs used random codes:
+Early experiments with ECCs used random codes:
 the assumption is that if the codes are long enough (there are enough binary classifiers)
 they will adequately span the classes.
 Later work focused on optimizing the design of the codes: what type of
@@ -27,13 +28,13 @@ codes will best span the classes and produce the most accurate results?
 Here we can also distinguish between two types: those that use the data
 to help design the codes \citep{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013}
 and those that are independent of the data but use the mathematical 
-properties of the codes to aid in their construction \citep{Allwein_etal2000,Windeatt_Ghaderi2002,Zhou_etal2019}.
-It is these latter type of optimized error-correcting codes we are interested in here.
+properties of the codes themselves to aid in their construction \citep{Allwein_etal2000,Windeatt_Ghaderi2002,Zhou_etal2019}.
+It is these latter type of optimized error-correcting codes we turn to in this note.
 
 In error-correcting coding, there is a coding matrix, $A$, that specifies
 how the set of multiple classes is partitioned for each binary classifier.
 For a given column, 
-if members of the $j$th class are to take on a $-1/+1$ for the
+if members of the $j$th class are to be labeled $-1/+1$ for the
 binary classifier, then the $j$th row is assigned a $-1/+1$.
 If the $j$th class is left out, then the $j$th row is assigned a $0$.
 Typically, the class of the test point is determined by the distance between
@@ -72,14 +73,16 @@ Using the same assumptions, this reduces to:
 Note the absolute value prevents degenerate rows.
 In other words, the coding matrix, $A$, should be orthogonal.
 
-In this note, we describe a fast and simple algorithm that uses orthogonal coding matrices to solve for the conditional probabilites in multi-class
+In this note, we describe a fast and simple algorithm that uses orthogonal ECCs to solve for the conditional probabilites in multi-class
 classification.
 There are three reasons to require the conditional probabilities:
 \begin{enumerate}
 	\item Probabilities provide useful extra information, specifically how accurate a given classification is in absence of knowledge of its true value.
 	\item The relationship between the binary probabilities and the
 		multi-class probabilities derives uniquely and rigorously from probability theory.
-	\item Binary classifier that do not return calibrated probability estimates, but nonetheless supply a continuous decision function are easy to recalibrate so that the decision function more closely resembles a probability \citep{Jolliffe_Stephenson2003,Platt1999}.
+	\item Binary classifiers that do not return calibrated probability estimates, 
+		but nonetheless supply a continuous decision function,
+		are easy to recalibrate so that the decision function more closely resembles a probability \citep{Jolliffe_Stephenson2003,Platt1999}.
 \end{enumerate}
 Two types of orthogonal ECCs along with three other multi-class 
 methods--1 vs. 1, 1 vs. the rest, and random ECCs--will be tested on seven
@@ -88,6 +91,8 @@ different binary classifiers--logistic regression, support vector machines (SVM)
 see how they compare in terms of classification speed, classification accuracy and accuracy of the conditional probabilities.
 
 \section{Algorithm}
+
+\label{algorithm}
 
 We wish to design a set of $n$ binary classifiers, each of which return a 
 decision function:
@@ -213,13 +218,15 @@ is that it is divided into two stages: a solution stage and a normalization stag
 
 Finding an $A$ such that $A A^T = n I$ and $a_{ij} \in \lbrace -1, 1, \rbrace$
 is quite a difficult combinatorial problem.
+When zeros are added in, $a_{ij}\in \lbrace -1, 0, 1\rbrace$,
+it becomes even more difficult.
 Work in signal processing may be of limited applicability because coding
 matrices are typically comprised of $0$'s and $1$'s 
 rather than $-1$'s and $+1$'s \citep{Hedayat_etal1999,Panse_etal2014}.
 A further restriction is that
 columns must have both positive and negative elements, or:
 \begin{equation}
-	\left | \sum_{i=0}^m a_{ij} \right | < m;  ~~~ i=[1..n] \label{restriction}
+	\sum_{i=0}^m a_{ij} \ne \sum_{i=0}^m |a_{ij}|;  ~~~ j=[1..n] \label{restriction}
 \end{equation}
 
 A simple method of designing an orthogonal $A$ is using harmonic series.
@@ -249,8 +256,8 @@ $n=4t$ exist,
 and it is still unproven that examples exist for all values of $t$
 \citep{Hedayat_Wallis1978}.
 A very simple, recursive method exists to generate matrices of size $n=t^2$ 
-\citep{Hedayat_Wallis1978} but cannot be made to have the property in (\ref{restriction}): 
-the matrix includes a both a row and column of only ones.
+\citep{Hedayat_Wallis1978} but cannot be made to have the property in (\ref{restriction})
+since the matrix includes both a row and column of only ones.
 Such a matrix will include a ``harmonic series'' of the same type as in
 (\ref{harmonic}).
 
@@ -262,7 +269,7 @@ Such a matrix will include a ``harmonic series'' of the same type as in
 %\end{itemize}
 
 Two types of orthogonal coding matrices are tested in this note:
-The first type of orthogonal coding matrix includes no zeros is generated
+the first type includes no zeros and is generated
 using a ``greedy'' algorithm.
 We choose $n$ to be the smallest multiple of $4$ equal to or larger than $m$.
 and start with an empty matrix.
@@ -287,6 +294,8 @@ An eight-class example follows:
 		1 & -1 & 1 & -1 & 1 & -1 & -1 & 1 
 	\end{array} \right ]
 \end{eqnnon}
+This type of coding matrix can be solved using the algorithm described
+in Section \ref{algorithm}, above.
 
 \begin{table}
 	\caption{Table showing parameters chosen for second type of
@@ -310,7 +319,7 @@ The other type of orthogonal coding matrix to be tested in this note
 includes zeros.
 The construction is similar except now the matrix is allowed to take on values
 of zero while the number of non-zero values (-1 or +1) is kept fixed.
-A size is chosen for the matrix typically much larger than the number of
+A size is chosen for the matrix typically larger than the number of
 classes while the resulting matrix will normally be somewhat smaller since
 degenerate and fixed value columns (a correctly-trained binary classifier would always return the same value) are removed.
 The parameters chosen for each class size are shown in Table
@@ -341,39 +350,41 @@ if they are to be efficiently applied to problems with a large number of classes
 \section{Results}
 
 \begin{table*}
-\caption{Total classification time, solution time, uncertainty coefficient and Brier score for six different datasets using five different coding matrices: 1 vs. 1, 1 vs. the rest, random error correcting codes, orthogonal "strict" coding, and orthogonal "non-strict" coding. Logistic regression is used as the base binary classifier.}\label{class_results_lin}
+\caption{Total classification time, solution time, uncertainty coefficient and Brier score for seven different datasets using five different coding matrices: 1 vs. 1, 1 vs. the rest, randoms, orthogonal with no zeros, and orthogonal with zeros. Logistic regression is used as the base binary classifier.}\label{class_results_lin}
 \input{results_lin2019_09_06.tex}
 \end{table*}
 
 \begin{table*}
-\caption{Total classification time, solution time, uncertainty coefficient and Brier score for six different datasets using five different coding matrices: 1 vs. 1, 1 vs. the rest, random error correcting codes, orthogonal "strict" coding, and orthogonal "non-strict" coding. A support vector machine is used as the base binary classifier.}\label{class_results_svm}
+\caption{Total classification time, solution time, uncertainty coefficient and Brier score for seven different datasets using five different coding matrices: 1 vs. 1, 1 vs. the rest, random, orthogonal with no zeros, and orthogonal with zeros. A support vector machine is used as the base binary classifier.}\label{class_results_svm}
 \input{results_svm2019_09_06.tex}
 \end{table*}
 
 \begin{table*}
-\caption{Solution time, uncertainty coefficient and Brier score for six different datasets using five different coding matrices: 1 vs. 1, 1 vs. the rest, random error correcting codes, orthogonal "strict" coding, and orthogonal "non-strict" coding. A piecewise linear classifier is used as the base binary classifier.}\label{class_results_acc}
+\caption{Solution time, uncertainty coefficient and Brier score for seven different datasets using five different coding matrices: 1 vs. 1, 1 vs. the rest, random, orthogonal with no zeros, and orthogonal with zeros. A piecewise linear classifier is used as the base binary classifier.}\label{class_results_acc}
 \input{results_acc2019_09_09.tex}
 \end{table*}
 
 Orthogonal error-correcting codes were tested on seven different datasets:
 two for digit recognition--``pendigits'' \citep{Alimoglu1996} and
 ``usps'' \citep{Hull1994}; the space shuttle control dataset--``shuttle''
-\citep{King_etal1995}; a satellite land recognition
-dataset--``sat''; 
-a similar dataset for urban land classification--``urban'';
-a dataset for image recognition--``segment'';
+\citep{King_etal1995}; 
+an urban land classification dataset--``urban'' \citep{Johnson2013};
+a similar one for satellite land classification--``sat''; 
+a dataset for patterned image recognition--``segment'';
 and a dataset for vehicle recognition--``vehicle'' \citep{Siebert1987}.
 The last four are borrowed from the ``statlog'' project \citep{King_etal1995,Michie_etal1994}.
 
-Two types of orthogonal coding matrices were tested: the first type described in
-Section \ref{construction}, with no zeros, and the second type which includes
+Two types of orthogonal ECCs were tested: the first type described in
+Section \ref{construction}, with no zeros in the codes, and the second type which includes
 zeros.
 These were compared with three other methods: one-versus-one, one-versus-the-rest,
-and random error-correcting coding matrices with the same number of rows, $n$,
+and random ECCs with the same length of coding vector (number of columns), $m$,
 as the orthogonal matrices of the first type.
-The 1 vs. rest multi-class as well as the random codes were solved using 
-the same type of constrained linear least squares method based
-on the Karesh-Kuhn-Tucker conditions \citep{Lawson_Hanson1995}.
+The 1 vs. rest multi-class as well as the random ECCs were solved using 
+the same type of constrained linear least squares method as used for the
+second type of orthogonal ECC \citep{Lawson_Hanson1995}.
+By enforcing the normality constraints using a Lagrange multiplier,
+1 vs. 1 may be solved with a simple (unconstrained) linear equation solver \citep{Wu_etal2004}.
 
 Three types of binary classifier were used: logistic regression \citep{Michie_etal1994},
 support vector machines \citep{Mueller_etal2001},
@@ -386,13 +397,23 @@ Partitions were trained separately then combined by finding the union of
 sets of support vectors for each partition.
 By indexing into the combined list of support vectors, the algorithms are
 optimized in both space and time \citep{Chang_Lin2011}.
-For SVM, the same parameters were used for both the random and orthogonal codes and 
-for all partitions.
+For SVM, the same parameters were used for all multi-class methods and
+for all partitions (matrix columns).
 All datasets were trained using  ``radial basis function'' (Gaussian)
 kernels of differing widths.
 
-LIBSVM was also used to train an intermediate model from which a faster,
-piecewise-linear classifier was trained.
+LIBSVM was also used to train an intermediate model from which an often faster 
+piecewise-linear classifier \citep{Mills2018} was trained.
+It was thought that this classifier would provide a better use-case for orthogonal
+ECCs than either of the other two.
+The single parameter for this algorithm--the number of border vectors--was set 
+the same for each dataset as used in \citet{Mills2018} for the 1 vs. 1. 
+For the other multi-class algorithms, the number of border vectors
+was doubled for small values (50 or 100) and increased by fifty percent
+for larger values to account for the more complex decision function
+created by using more classes in each binary classifier.
+Multi-class classifiers were designed, trained and applied using the
+framework provided within libAGF \citep{Mills2011,Mills2018,Mills2018a}
 
 Results are shown in Tables \ref{class_results_lin}, \ref{class_results_svm},
 and \ref{class_results_acc}.
@@ -409,29 +430,143 @@ which is root-mean-square
 error measured against the truth of the class as a 0 or 1 value
 \citep{Brier1950,Jolliffe_Stephenson2003}.
 
-For all of the datasets tested, orthogonal coding matrices provide a small but
-significant improvement over random coding matrices in both classification
+For all of the datasets tested, orthogonal ECCs provide a small but
+significant improvement over random ECCs in both classification
 accuracy and in the accuracy of the conditional probabilities.
 This is in line with the literature as in \citet{Dietterich_Bakiri1995,Windeatt_Ghaderi2002}.
-Results are also more consistent for the orthogonal codes as given by the
+Improvements range from 0.4\% to 17.5\% relative (0.004 to 0.139 absolute) in 
+uncertainty coefficient
+and 0.7\% to 10.7\% in Brier score.
+Results are also more consistent for the orthogonal ECCs as given by the
 calculated error bars.
 
 Also as expected, solution times are
-considerably faster for the orthogonal coding matrices.
+extremely fast for the first type of orthogonal ECC.
+In many cases the times are an order-of-magnitude better than the next
+fastest method.
 Depending on the problem and classification method, this may or may not
 be significant.
 Since SVM is a relatively slow classifier, solution times
 are a minor portion of the total.
-For fast classifiers such as a linear classifier or perceptron,
+For the logistic regression classifier,
 solving the constrained optimization problem for the probabilities
-could easily comprise the bulk of classification times.
-Note that for both methods under examination, time to perform the binary
-classifications should be roughly equivalent.
+typically comprises the bulk of classification times.
+Oddly, the solver for the 1 vs. 1 method is the slowest by a wide margin,
+even though it's a simple (unconstrained) linear solver \citep{Wu_etal2004}.
+This could potentially be improved by using a faster solver or by employing
+the iterative method given in \citet{Wu_etal2004}.
 
-As predicted, solving for multi-class using orthogonal coding matrices 
-is more accurate than the equivalent problem using random coding matrices.
-While the difference is small,
-the method is simple and elegant and
+The two types of orthogonal ECCs did not seem to differ appreciably in accuracy,
+with sometimes one taking the lead and sometimes the other.
+For the linear classifier, the second type was always more accurate while the first
+type was faster.
+Since it admits zeros, the decision boundaries are usually simpler--see below.
+For both the SVM and the piecewise linear classifier, skill scores were very similar,
+differing by at most 2.9\% relative, 0.018 absolute, in U.C. and 17\% in Brier score.
+For the SVM, the second type was faster while for the piecewise linear classifier,
+the first type was faster.
+The explanation for this follows.
+
+Unfortunately, there is one method that is consistently more accurate than the
+orthogonal ECCs and this is 1 vs. 1.
+The orthogonal ECCs only beat 1 vs. 1 three times out of 21 for the
+uncertainty coefficient and one time out of 21 for the Brier score.
+Improvements in uncertainty coefficient range from insignificant
+to 0.6\% relative or 0.004 absolute: in other words, generally insignificant.
+The Brier score improved by 2.6\%.
+Losses using linear classifiers were the worst, peaking at 14.6\% relative,
+0.203 absolute, in uncertainty coefficient and 50\% in Brier score.
+The results for logistic regression provide a vivid demonstration as to
+why 1 vs. 1 works so well: because it partitions the classes into
+``least-divisible units'', there are fewer training samples provided to
+each binary classifier, the decision boundary is simpler and
+a simpler classifier will work better
+
+Nonetheless, there is a potential use case for our method.
+Although orthogonal ECCs are less accurate than 1 vs. 1, they
+don't lose much.
+If they are also faster, then a speed improvement may be worth a small
+hit in accuracy for some applications \citep{Mills2018}.
+While 1 vs. 1 beats orthogonal ECCs by a healthy margin using linear
+classifiers, the biggest loss in U.C. for SVM is only 1.5\% relative, 
+0.011 absolute.
+Losses for Brier score are somewhat worse,
+peaking at 6.5\%.
+Unfortunately, because the speed of a multi-class SVM is proportional
+mainly to the total number of support vectors \citep{Mills2018},
+orthogonal ECCs rarely provide much of a speed advantage.
+What is needed is a constant-time--ideally very fast--non-linear classifier.
+This is where the piecewise-linear classifier comes in.
+
+For uncertainty coefficient, 1 vs. 1 was always better than orthogonal ECCs
+when using the piecewise-linear classifier. 
+Losses peak at 1.9 \% relative, 0.017 absolute.
+For the Brier score, only one of the seven datasets showed an improvement
+over 1 vs. 1 at 4.9 \&.
+The worst loss was 39 \%.
+Improvements in speed range from 1.1 \% to over 100 \%.
+Much of the speed difference is simply the result of using fewer binary
+classifiers.
+The purpose of the piecewise linear classifier is to improve the speed of the
+SVM.
+This speed increase is better with orthogonal ECCs than with 1 vs. 1.
+Orthogonal ECCs applied to piecewise linear classifiers 
+are faster than the the fastest
+SVM for five out of the seven datasets.
+
+Speed often trades off from accuracy.
+\citet{Mills2018} provides a procedure for determining whether it's worth
+switching algorithms or not.
+A similar analysis will not be repeated here due to time and space 
+considerations, however whether any improvement in speed is worth
+the consequent hit in accuracy will depend on the application.
+
+\section{Conclusions}
+
+Orthogonal ECCs were more accurate than random ECCs as predicted by
+recent literature.
+Unfortunately, they were still unable to beat one-versus-one as an
+effective multi-class method.
+There is a potential use case however. 
+If they are used in conjunction with a fast, non-linear binary classifier
+with better than $O(N)$ performance, where $N$ is the number of training
+samples,
+orthogonal ECCs will almost always be faster than 1 vs. 1
+while giving up little in accuracy.
+
+The author's own work suggests that the 1 vs. 1 classification almost always
+works well regardless of the dataset \citep{Mills2018a}.
+\citet{Hsu_Lin2002} find that 1 vs. 1 outperform both 1 vs. rest and random ECCs on a test
+of ten different datasets using SVM.
+One-versus-one is also used, in many cases exclusively, with many statistical classification software packages.
+There may still be room for further work, however, with the most likely fruitful
+future work being, first,
+on adaptive methods that use the data to figure out how best to go
+from binary to multi-class.
+In \citet{Mills2018a}, for instance, even though 1 vs. 1 was almost always
+most accurate, there was one dataset that benefitted from a more
+customized treatment.
+Recent work has focused on both empirically-designed decision trees 
+\citep{Cheong_etal2004,Lee_Oh2003,Benabdeslem_Bennani2006}
+as well as empirically-designed ECCs 
+\citep{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013}.
+Decision trees are the easiest to tackle because there are fewer possibilities
+and because a tree can be built from either the top down or the bottm up.
+
+A second potential line for future work is in multi-class methods integrated
+with the base binary classifier, for instance with all the binary classifiers
+being trained simultaneously \citep{Hsu_Lin2002}.
+It stands to reason that more integrated multi-class methods would tend to
+be more accurate than those, such the ones disussed in this note, that treat the
+binary classifier as a ``black box'' since there can now be sharing of
+information.
+
+As predicted, solving for multi-class using orthogonal ECCs 
+is more accurate than the equivalent problem using random ECCs.
+The method presented here is simple and elegant and
 may suggest new directions in the search for more efficient and
 accurate multi-class classification algorithms.
+Since it is fast it could help provide speed
+improvements for such applications as real-time computer vision
+and image processing.
 

@@ -6,6 +6,7 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
+#include <gsl/gsl_permutation.h>
 
 #include "gsl_util.h"
 #include "constrained.h"
@@ -234,8 +235,10 @@ namespace libagf {
     gsl_vector *b=gsl_vector_alloc(n+1);
     
     for (int i=0; i<n; i++) {
-      for (int j=0; j<n; j++) {
+      gsl_matrix_set(q, i, i, ata[i][i]);
+      for (int j=i+1; j<n; j++) {
         gsl_matrix_set(q, i, j, ata[i][j]);
+        gsl_matrix_set(q, j, i, ata[i][j]);
       }
       gsl_vector_set(b, i, 0);
       gsl_matrix_set(q, i, n, 1);
@@ -245,7 +248,12 @@ namespace libagf {
     gsl_vector_set(b, n, 1);
 
     gsl_vector *p1=gsl_vector_alloc(n+1);
-    gsl_lsq_solver(q, b, p1);
+    //gsl_lsq_solver(q, b, p1);
+    //LU-decomposition is slightly faster:
+    gsl_permutation *perm=gsl_permutation_alloc(n+1);
+    int signum;
+    gsl_linalg_LU_decomp(q, perm, &signum);
+    gsl_linalg_LU_solve(q, perm, b, p1);
 
     for (int i=0; i<n; i++) p[i]=gsl_vector_get(p1, i);
 
@@ -256,6 +264,8 @@ namespace libagf {
     gsl_matrix_free(q);
     gsl_vector_free(b);
     gsl_vector_free(p1);
+
+    gsl_permutation_free(perm);
 
   }
 

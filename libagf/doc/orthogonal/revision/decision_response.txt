@@ -1,0 +1,61 @@
+Dear Mr. Mills,
+
+We have received the reports from our advisors on your manuscript, "Solving for multi-class using orthogonal coding matrices", which you submitted to SN Applied Sciences.
+
+Based on the advice received, I have decided that your manuscript could be reconsidered for publication should you be prepared to incorporate major revisions. When preparing your revised manuscript, you are asked to carefully consider the reviewer comments which can be found below, and submit a list of responses to the comments. You are kindly requested to also check the website for possible reviewer attachment(s).
+
+Please ensure that your revisions are easily visible to the editor by highlighting the revised text in yellow or alternatively showing it in bold.
+
+While submitting, please check the filled in author data carefully and update them if applicable - they need to be complete and correct in order for the revision to be processed further.
+
+In order to submit your revised manuscript, please access the following web site:
+
+https://www.editorialmanager.com/snas/
+
+Your username is: petermills
+If you forgot your password, you can click the 'Send Login Details' link on the EM Login page.
+
+We look forward to receiving your revised manuscript before 16 Sep 2019.
+
+In order to add the due date to your electronic calendar, please open the attached file.
+
+With kind regards,
+Amin Fatemi
+Section Editor
+SN Applied Sciences
+
+Comments to the author (if any):
+Reviewer #2: The paper addresses interesting topic, namely Solving for multi-class using orthogonal coding matrices. It is claimed that authors proposed method with orthogonal coding matrices.
+Abstract does not comprise adequately the content of the manuscript. Obtained numerical results must be given in the abstract. This section must be rewritten by the authors.
+
+R: The abstract has been rewritten. I have tried to include numerical values where such might be useful.
+
+Introduction where theoretical background must be provided is very weak.
+Literature review should significantly be improved.
+
+R: The introduction has been revised and expanded with more detail added to the background and to the description of ECCs.
+
+The level of English is moderate for the academic paper. However, it requires some effort to understand. There are a few minor grammar mistakes. However, the written texture should be improved.
+
+R: I have proofread the manuscript.
+
+Proposed Method and given tables must be explained in detailed ways.
+
+R: Tables have been revised with a longer caption.
+
+Additional Performance Analysis parameters and experimental results must be added the presented paper.
+
+R: A much more detailed comparison has been completed including four more methods and two other binary classifiers.
+
+Conclusion section can be extended by giving additional information regarding the paper.
+Future works regarding the paper can be given in detailed ways.
+
+R: The conclusion has been expanded with future work included.
+
+References section should be revised to comply with the journal format. Additional references can be added.
+
+R: The reference style was that supplied with the Latex package. The other two formats are name-year citation styles.
+
+This paper can be published after major revision.
+
+

@@ -1,0 +1,37 @@
+A common method of generalizing binary to multi-class classification
+is the error correcting code (ECC).
+ECCs may be optimized in a number of ways, for instance by making them
+orthogonal.
+Here we test two types of orthogonal ECCs on seven different datasets using
+three types of binary classifier and compare them with three
+other multi-class methods: 1 vs. 1, one-versus-the-rest and random
+ECCs.
+The first type of orthogonal ECC, in which the codes admit no zeros,
+also admits a very fast and simple method of solving for the probabilities.
+
+Orthogonal ECCs are always more accurate than random ECCs as predicted by
+recent literature.
+Improvments in uncertainty coefficient (U.C.)
+range between 0.4--17.5\% (0.004--0.139, absolute),
+while improvements in Brier score between 0.7--10.7\%.
+Unfortunately, orthogonal ECCs are rarely more accurate than
+1 vs. 1.
+Disparities are worst when the methods are paired with logistic regression,
+with orthogonal ECCs never beating 1 vs. 1.
+When the methods are paired with SVM, the losses are less significant,
+peaking at 1.5\%, relative, 0.011 absolute in uncertainty coefficient
+and 6.5\% in Briers scores.
+
+Orthogonal ECCs are always the fastest of the five multi-class
+methods when paired with linear classifiers,
+suggesting a potential use case.
+When paired with a piecewise linear classifier, whose classification
+speed does not depend on the number of training samples, classifications using
+orthogonal ECCs were always more accurate than the other methods and 
+also faster than 1 vs. 1. 
+Losses against 1 vs. 1 here were higher, peaking at 1.9\%
+(0.017, absolute), in U.C. and 39\% in Brier score.
+Gains in speed ranged between 1.1\% and over 100\%.
+Whether the speed increase is worth the penalty in accuracy
+will depend on the application.
+
