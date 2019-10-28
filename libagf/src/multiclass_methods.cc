@@ -84,6 +84,9 @@ namespace libagf {
     } while (ng!=ng2);
   }
 
+    int glob_n;
+    void *glob_p2;
+
   //another version of the same (didn't realize I'd written it already...):
   template <class real>
   void p_constrain_renorm1a(real *p, int n) {
@@ -126,6 +129,8 @@ namespace libagf {
     for (int i=0; i<n; i++) {
       *p[i]+=(1-pt)/n;
     }
+    for (int i=0; i<glob_n; i++) printf("%g ", ((real *) glob_p2)[i]);
+    printf("\n");
     //check for out-of-range (<0) values:
     //(would be faster if we sorted the probabilities first--rank ordering
     //won't change--but should only make a difference once we are dealing
@@ -143,9 +148,14 @@ namespace libagf {
   template <class real>
   void p_constrain_renorm1b(real *p, int n) {
     real *p2[n];
-    for (int i=0; i<n; i++) p2[i]=p+i;
+    glob_p2=p;
+    glob_n=n;
+    for (int i=0; i<n; i++) {
+      p2[i]=p+i;
+      printf("%g ", p[i]);
+    }
+    printf("\n");
     p_constrain_renorm1b(p2, n);
-    //printf("\n");
   }
 
   //basic least squares solution including "non-strict" cases:

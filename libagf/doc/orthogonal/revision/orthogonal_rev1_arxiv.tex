@@ -1,0 +1,63 @@
+\documentclass{article}
+%
+%
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{natbib}
+
+%don't label equations that aren't referenced in the text:
+\newenvironment{eqnnon}{\begin{equation*}}{\end{equation*}}
+\newenvironment{eqnarraynon}{\begin{eqnarray*}}{\end{eqnarray*}}
+
+%numbered citations: no difference between in-text and out-of-text citations:
+%\newcommand{\citep}[1]{\cite{#1}}
+%\newcommand{\citet}[1]{\cite{#1}}
+
+%\newcommand{\revision}{\color{red}}
+\newcommand{\revision}{}
+
+\pagestyle{myheadings}
+\markright{P. Mills (2019) \textit{SN Applied Sciences} \textbf{1}(11):1451}
+
+\begin{document}
+
+\title{Solving for multi-class using orthogonal coding matrices}
+
+\author{Peter Mills}
+
+\maketitle
+
+\begin{center}
+  %\includegraphics[width=0.6\textwidth]{../../multi2/binary_class_map}
+  \includegraphics[width=0.6\textwidth]{binary_class_map}
+\end{center}
+
+\section*{Abstract}
+
+	\input{orthogonal_rev1_abstract.txt}
+
+\input{orthogonal_rev1_body.tex}
+
+\appendix
+
+\section*{acknowledgements}
+Thanks to Chih-Chung Chan and Chih-Jen Lin of the National Taiwan University
+for data from the LIBSVM archive and also to David Aha and the curators of
+the UCI Machine Learning Repository for statistical classification datasets.
+
+	The LIBSVM software libraries can be found: \url{https://www.csie.ntu.edu.tw/~cjlin/libsvm/}.
+	The LIBLINEAR software libraries can be found: \url{https://www.csie.ntu.edu.tw/~cjlin/liblinear/}.
+	Software for performing multi-class classification using orthogonal error correcting codes, and many others, can be found: \url{https://www.github.com/peteysoft/libmsci}.
+
+\bibliographystyle{apa}
+%\bibliographystyle{unsrt}
+
+%\newpage
+%\addcontentsline{toc}{section}{References}
+
+\bibliography{../../agf_bib,../orthogonal,../../pwl,../../svm_accel/svm_accel,../../datasets}   % name your BibTeX data base
+
+\end{document}
+

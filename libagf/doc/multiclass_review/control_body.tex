@@ -121,7 +121,7 @@ we can write a system of equations relating
 the multi-class conditional probabilities to the decision
 functions:
 \begin{equation}
-	r_i(\vec x) = \frac{\sum_{j \in C_i^+1} P(j|\vec x) - \sum_{j \in C_i^-} P(j|\vec x)}{\sum_{j \in C_i^-} P(j|\vec x) + \sum_{j \in C_i^+} P(j|\vec x)}
+	r_i(\vec x) = \frac{\sum_{j \in C_i^+} P(j|\vec x) - \sum_{j \in C_i^-} P(j|\vec x)}{\sum_{j \in C_i^-} P(j|\vec x) + \sum_{j \in C_i^+} P(j|\vec x)}
 	\label{decision_function}
 \end{equation}
 
@@ -418,7 +418,7 @@ In principle this case covers all the earliers ones, however in practice the
 term can also refer more specifically to a random coding matrix.
 To solve the general case, we use quadratic programming \citet{Boyd_Vandenberghe2004}.
 The literature in the subject can be quite dense and intimidating, so
-no attempt to address the problem will be made here. 
+only the briefest attempt to address the problem will be made here. 
 There do exist, however, standard algorithms
 for versions of the minimization problem in 
 (\ref{minimization_problem})-(\ref{nonnegative})
@@ -429,13 +429,13 @@ is quite straightforward and is essentially geometrical in nature.
 A minimal example is illustrated in Figure \ref{Lawson_Hanson_fig}.
 
 Briefly, the algorithm works by solving a reduced version of Equation
-(\ref{normal_equation}) starting with only one row.
+(\ref{normal_equation}), starting with only one row.
 Rows are added one-by-one with those 
 corresponding to the variables least likely to push the
 solution out-of-bounds being added first.
 If one or more variables is found to be out-of-bounds,
-then the solution is adjusted so that it sits on the furthest constraint
-boundary relative to the variable between the old solution and the new,
+then the solution is adjusted to the nearest point in-bounds
+between the old solution and the new,
 out-of-bounds variables are removed, and the process is repeated.
 
 \subsection{Orthogonal codes}
@@ -606,7 +606,7 @@ As such, it lies beyond the scope of this introductory article while the reader 
 consult recent literature on the subject: 
 \citet{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013,Rocha_Goldenstein2014}.
 
-\section{Recursive control language}
+\section{Control language}
 
 Since there are many ways of solving the multi-class classification problem,
 we present here a descriptive control language that unifies many of the ideas

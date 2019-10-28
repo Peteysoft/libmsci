@@ -37,7 +37,7 @@ R: The introduction has been revised and expanded with more detail added to the 
 
 The level of English is moderate for the academic paper. However, it requires some effort to understand. There are a few minor grammar mistakes. However, the written texture should be improved.
 
-R: I have proofread the manuscript.
+R: I have proofread the manuscript and made changes where necessary to improve clarity, accuracy, and grammar.
 
 Proposed Method and given tables must be explained in detailed ways.
 
@@ -50,11 +50,11 @@ R: A much more detailed comparison has been completed including four more method
 Conclusion section can be extended by giving additional information regarding the paper.
 Future works regarding the paper can be given in detailed ways.
 
-R: The conclusion has been expanded with future work included.
+R: The conclusion section has been expanded with future work included.
 
 References section should be revised to comply with the journal format. Additional references can be added.
 
-R: The reference style was that supplied with the Latex package. The other two formats are name-year citation styles.
+R: The reference style was that supplied with the Latex package. The other two formats are name-year citation styles. I have managed to change it to an unsorted style as required by the journal but the year still appears in the wrong place.
 
 This paper can be published after major revision.
 
