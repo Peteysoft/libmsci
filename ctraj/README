@@ -100,7 +100,7 @@ pc_proxy:	For "principal-component proxy" tracer analysis.
 		reconstruction" (Mills 2018). Please reference this paper if 
 		you use PC-proxy in your work.
 pc_proxy_predict:	PC-proxy reconstruction of multiple fields.
-proxy_tracer:	More traditional proxy tracer reconstruction (doesn't work).
+proxy_tracer:	More traditional proxy tracer reconstruction.
 
 random_global:  Generates a series of random points, evenly distributed around
 		the globe.

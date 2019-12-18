@@ -446,11 +446,7 @@ Classifications are then performed with \verb/classify_m/.
 \begin{table}
   \caption{Summary of datasets used in the numerical trials.}
   \label{summary}
-  \ifsubmit
-    \input{summary.tex}
-  \else
-    \input{../summary.tex}
-  \fi
+  \input{summary.tex}
 \end{table}
 
 The borders classification algorithm was tested on a total of 
@@ -652,11 +648,12 @@ for good accuracy, and hence the number of support vectors,
 should be proportional to the approximate volume occupied by the
 training data in the feature space: $\mintrain \propto \featurevolume$ where 
 $\mintrain$ is the minimum number of training vectors and $\featurevolume$ is volume.
-{\color{red} Then the number of border vectors should be proportional to the volume
+{\correction Then the number of border vectors should be proportional to the volume
 taken to the root of the dimension of the feature space 
 then raised to the power of one less:
 $\minborders \propto \featurevolume^\frac{\dimension-1}{\dimension}$.
 Putting it together, we can relate the two as follows:
+\footnote{This relation has been corrected from its published version.}
 \begin{eqnnon}
 	\minborders \propto \mintrain^\frac{\dimension-1}{\dimension}
 	\label{scaling_law}
@@ -678,7 +675,7 @@ accuracy.
 In other words, provided the class borders are not fractal \citep{Ott1993}, 
 mapping only the border between classes should always be
 faster than techniques that map the entirety of the class locations,
-{\color{red} although the advantage becomes less the larger the dimension of the 
+{\correction although the advantage becomes less the larger the dimension of the 
 feature space.}
 This includes kernel density methods including SVM as well
 as similar methods such as learning vector quantization (LVQ) 
@@ -745,8 +742,11 @@ to fit it.
 \begin{table}
 	\caption{Summary of the parameters used in the numerical trials for each of the three methods: Linear, SVM (support vector machine) and ACC (``accelerated'' SVM).}
 	\label{param}
-	%\input{param.tex}
-	\input{../param.tex}
+	\ifsubmit
+          \input{param.tex}
+	\else
+	  \input{../param.tex}
+	\fi
 	\vspace{1 ex}
 
 	\raggedright 

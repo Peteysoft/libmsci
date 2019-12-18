@@ -11,7 +11,7 @@ with the number of class labels.
 Moreover, the best method may well depend on the type of problem
 \citep{Dietterich_Bakiri1995,Allwein_etal2000}.
 
-In this paper we provide a summary of the most common methods of solving for 
+In this paper we provide a summary of the many of the most common methods of solving for 
 multi-class and show how a descriptive control language can be used to 
 generalize them whereby a multi-class problem
 can be solved using a broad array of configurations for the binary
@@ -178,9 +178,9 @@ Note that $Q$ reduces to $A$ if $A$ contains no zeros \citep{Kong_Dietterich1997
 The case of a coding matrix that contains no zeros, that is all the partitions divide up all the
 classes rather than a subset, will be called the {\it strict} case.
 From a computational perspective,
-in the strict case,
+in the non-strict case,
 $Q$ must be regenerated for every new test point or value of $\vec r$ 
-whereas in the non-strict case, in may be possible to first find an inverse or
+whereas in the strict case, in may be possible to first find an inverse or
 decomposition of $A$ which is subsequently
 applied to every value of $\vec r$.
 
@@ -217,7 +217,7 @@ Therefore, for most applications, either the results will need to be adjusted, l
 
 It is straightforward to incorporate the normalization constraint in (\ref{normalization}) into the problem. 
 There are at several ways of doing this. The most
-obvious is to write one probability in terms of the others:
+straightforward is to write one probability in terms of the others:
 \begin{equation}
 	p_k = 1 - \sum_{i|i \ne k} p_i
 	\label{reduce_dimension1}
@@ -484,7 +484,7 @@ for conditional probabilities when using a ``strict'', orthogonal coding matrix.
 
 \label{hierarchical}
 
-The most obvious method of dividing up a multi-class problem into binary
+The most clear-cut method of dividing up a multi-class problem into binary
 classifiers is hierarchically using a {\it decision tree} 
 \citep{Cheong_etal2004,Lee_Oh2003}.
 In this method, the classes are first divided into two partitions, then
@@ -599,10 +599,11 @@ For training samples from a pair of classes---two finite sets of points---the Ha
 D_{Hij} = \max \left \lbrace \min_k | \vec x_k - \vec x_l|~,~\min_l | \vec x_k - \vec x_l| ~ ;~y_k=i;~y_l=j \right \rbrace
 \end{eqnnon}
 
-It stands to reason that error-correcting codes may also be designed in a data-dependent fashion.
-Since the number of combinations to optimize amongst becomes very large for this problem, there 
-are also a large number of approaches to choose between.
-As such, it lies beyond the scope of this introductory article while the reader is invited to
+Error-correcting codes may also be designed in a data-dependent fashion.
+Since the number of combinations to optimize between scales up very quickly, there 
+are also a large number of approaches to choose from.
+Hence this topic lies beyond the scope of this article,
+however, the reader is invited to
 consult recent literature on the subject: 
 \citet{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013,Rocha_Goldenstein2014}.
 

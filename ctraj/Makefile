@@ -97,7 +97,7 @@ EXE = ctraj_model \
 	contour_dimension contour_length eq_lat
 
 UTIL = zonally_symmetric_tracer lla2aeb extract_field \
-       		nc2ds ecmwf2ds vdata2ds extract_ncep_field \
+       		nc2ds ecmwf2ds vdata2ds extract_ncep_field read_pp \
 		bev2xy xy2bev random_global c0 \
 		select_meas correlate_fields \
 		split_file 

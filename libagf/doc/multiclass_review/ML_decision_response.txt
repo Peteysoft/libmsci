@@ -124,7 +124,7 @@ R: Yeah, this probably isn't explained well enough but in any case, a formal, ma
 
 p.13, l.26: What is this matrix?  How does it relate to the surrounding discussion?
 
-R: I've explained it in Section 6. I've added a paragraph the spells out the equivalent tree using the control language.
+R: I've explained it in Section 6. I've added a paragraph that spells out the equivalent tree using the control language.
 
 Section 5.2: It seems like a lot of assumptions are suddenly being made about what kind of data we are dealing with.  These should be discussed explicitly.
 

@@ -1,8 +1,8 @@
 \documentclass[11pt]{article}
 
 \usepackage{natbib}
-%\bibliographystyle{apa}
-\bibliographystyle{unsrt}
+\bibliographystyle{apa}
+%\bibliographystyle{plain}
 \usepackage{amsmath}
 \usepackage[dvips]{graphicx}
 \usepackage{url}
@@ -10,8 +10,8 @@
 %\usepackage{tablefootnote}
 
 \newif\ifsubmit
-%\submittrue
-\submitfalse
+\submittrue
+%\submitfalse
 
 \pagestyle{myheadings}
 \markright{J. Real-Time Image Processing doi:10.1007/s11554-018-0769-9}
@@ -22,8 +22,12 @@
 \newenvironment{eqnarraynon}{\begin{eqnarray}}{\end{eqnarray}}
 
 %change to numbered citations:
-\renewcommand{\citep}[1]{\cite{#1}}
-\renewcommand{\citet}[1]{\cite{#1}}
+%\newcommand{\citep}[1]{\cite{#1}}
+%\newcommand{\citet}[1]{\cite{#1}}
+
+%since arxiv doesn't allow me to use red highlighting:
+%\newcommand{\correction}{\color{red}}
+\newcommand{\correction}{}
 
 \begin{document}
 
@@ -47,7 +51,7 @@
 \textbf{class borders,
 multi-dimensional root-finding,
 binary classifier,
-multi-class classifier, 
+multi-class classifier,
 kernel methods,
 non-parametric statistics} 
 
