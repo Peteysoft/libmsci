@@ -26,7 +26,6 @@ int main(int argc, char *argv[]) {
 
   float lev;			//sigma level
   time_class date;
-  int32_t dwid=TFIELD_WIDTH;	//width of date field
 
   int yr1, yr2;
   long it1, it2;		//these are long for compatibility with netcdf
@@ -84,10 +83,9 @@ int main(int argc, char *argv[]) {
 
   path=new char [0];
   strcpy(path, "./");
-  optargs[5]=&dwid;
 
   //parse command options:
-  argc=parse_command_opts(argc, argv, "pT?HLt", "%s%%%%%d", 
+  argc=parse_command_opts(argc, argv, "pT?HL", "%s%%%%", 
 		  optargs, flags, OPT_WHITESPACE);
   if (argc < 0) exit(21);
   Lflag=flags[4];
