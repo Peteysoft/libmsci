@@ -21,7 +21,8 @@ namespace ctraj {
 		int32_t N, 			//number of time grids
 		float *v0);			//initial tracer field
 
-  //interpolate a tracer
+  //interpolate a 2-D tracer in azimuthal equidistant coordinates
+  //in a "packed-vector" format:
   //assumes standard side-length of 20000 km
   void tracer_interp(float **qall, 		//proxy
 		time_class *t, 			//time grids
