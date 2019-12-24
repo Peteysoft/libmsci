@@ -360,8 +360,6 @@ namespace ctraj {
       //printf("\n");
     }
 
-    delete [] sind;
-
     return coef;
   }
 
