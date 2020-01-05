@@ -25,6 +25,7 @@ Reviewer #1: The article claims to be a review of linear algebraic analysis appl
 Based on the abstract, introduction, and conclusion, the reader expects a general presentation of transport algorithms and their properties with, presumably, a reliance on the transport equation's linearity to make these methods amenable to tools provided by linear algebra.  However, the article does not achieve its stated goals and has several major flaws, enumerated below. 
 
 1. For a survey or review article --- even one that claims (page 1, line 45) to be more concerned with first principles than recent work --- the list of references is woefully incomplete, especially for a subject as general and widely applicable as numerical transport.
+
 2. Mass conservation is only mentioned near the end of the paper, on page 12, and there only under severe assumptions of incompressible flow and a regular discretization, neither of which are necessary.
 Mass conservation is a fundamental property of the equation itself (and its boundary conditions).  It is independent of the the discretization scheme, and holds even in divergent flow.
 
@@ -36,7 +37,9 @@ R. Mass conservation is easy to enforce: simply renormalize the vector at any po
     (a) In the first paragraph of Section 8, the sentence, ``Assuming we've obeyed the CFL criterion ... von Neumann analysis shows this method to be unconditionally stable," is a contradiction.   In an unconditionally stable scheme, the CFL criterion is satisfied independently of the time step; it need not be obeyed.
     (b) The claim of unconditional stability that begins Section 8 refers to equation (46), which is only semi-discrete --- one cannot claim stability for a PDE solver without defining the time stepping method.
 
-R. Time-stepping is immaterial because it is already accounted for in the solution described in Section 5.1.
+R. The sentence in (a) refers to a centered finite-difference method.
+R. (b) Time-stepping is immaterial because it is already accounted for in the solution described in Section 5.1.
+R. The wording of both has been improved.
 
     (c) Furthermore, equation (46) uses a centered finite difference spatial discretization, a discretization which is well-known to be unconditionally *unstable* when combined with certain time stepping methods (R. J. LeVeque, 2007, Finite Difference Methods for Ordinary and Partial Differential Equations, Chapter 10).
 
@@ -50,6 +53,7 @@ R. Again, this is presented only as an example. Diffusion for a matrix-based adv
 For example, finite difference methods have nicely banded matrices that are useful for analysis and regular grids, but they are less useful for problems that require variable resolution, while finite element methods tend to have sparse matrices even on unstructured grids. Such analysis, while well within the purported scope of the article, is not included.
 
 R. Again, finite difference is only presented as an EXAMPLE because it is easy to relate to the method under discussion. Any other method will be just as amenable to the same treatment so long as it can be converted to a set of linear equations.
+R. Improved wording. Maybe I should choose my words more carefully.
 
 7. One of the article's main points advocates the use of evolution operators to represent advection as a sequence of linear operators, each advancing the solution one time step.  This is indeed a powerful technique. It is a fundamental tool employed in (LeVeque, 2007) to quantify numerical error in ODE solvers. An example specifically related to numerical advection is provided by Morton et al, 1988; Stability of the Lagrange-Galerkin method with non-exact integration, RAIRO 22:4, 625--653.  They show that for their scheme, the matrix representation of the evolution operator is bounded independently of the time step, implying unconditional stability.  The current work merely introduces the concept; it does not show how it can be applied to general schemes.
 
@@ -84,14 +88,13 @@ R. Completeness, maybe?
 
 5. Page 4.  The purpose of section 4 is not clear; an introductory statement about its goal and how it is organized is necessary.  Specifically, it's not clear how equations (27)--(29) relate to this section. Those equations discuss the evolution of a tracer mixing ratio gradient, but the section is focused on the evolution of the volume of a Lagrangian fluid parcel (which is independent of a tracer mixing ratio).
 
-R. Well, if you think that (18)-(26) are relevant, I don't see how the next
-three would not be.
+R. 
 
 6. Page 4, equation (27).  The notation for the evolution equation of a tracer gradient is confusing.  I suggest adding parenthesis to make clear that you are discussing the advection of a vector; $\frac{\partial}{\partial t}(\nabla q) = -(\nabla q)\cdot \nabla\vec{v} - \vec{v}\cdot\nabla(\nabla q).$
 
 7. Page 4, equations (27)--(29).  These equations discuss the evolution of a tracer mixing ratio's gradient, which implies that the mixing ratio is differentiable. One cannot assume such smoothness exists; indeed, discontinuous mixing ratios are so common that standardized test cases including a discontinuous tracer have been used for decades (e.g., Zalesak, 1979, Fully multidimensional flux corrected transport algorithms for fluids, J. Comput. Phys., 31:335-362).
 
-R. With discontinuous tracers, you start getting into shock-wave propagation, something that is quite beyond our scope here. Also, in just about any real-world situation, whether simulated or not, a discontinuous tracer will not stay that way for long because of diffusion and mixing. Finally, many numerical tracer simulations will overflow if the gradients are too steep.
+R. With discontinuous tracers, you start getting into shock-wave propagation, something that is quite beyond our scope here. Also, in just about any real-world situation, whether simulated or not, a discontinuous tracer will not stay that way for long because of diffusion and mixing.
 
 8. Page 4, line 29.  The term ``tangent model'' needs a reference to add context.        For readers not familiar with that term, what is the physical significance of $H$?  I assume $H$ represents the volume of a Lagrangian fluid parcel, but this should be explicitly stated.
 9. Page 4, equation (23). Velocity is a vector.
@@ -132,7 +135,6 @@ From my perspective I must say that the notion matrix methods in this context is
 
 All in all, given the importance of the above points to judge the quality of a survey publication in general, I feel that this manuscript does not meet the standards of an interdisciplinary survey that a broad audience can refer to or use to get an overview.
 
-R. Thank you for this informative and well thought-out critique. I must have taken a lot of effort to write it up.
 __
 
 

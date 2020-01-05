@@ -1,20 +1,22 @@
-EXE_EXT = .exe
+#EXE_EXT = .exe
 
-DATATYPE=ncep
+#DATATYPE=ncep
+DATATYPE=badc
 #DATATYPE=ecmwf
 
 #command-line calculator:
 CCALC = bc
 
 #DATAPATH = /cygdrive/e/data/ncep/sixhour
-DATAPATH = /media/Lexar/ncep_data
+#DATAPATH = /media/Lexar/ncep_data
+DATAPATH = /home/peter/data/$(DATATYPE)_data
 
-BINPATH = /home/lenovo/bin
+BINPATH = /home/peter/bin
 
 # so we can have the files in a different working directory:
 WORKPATH = .
-VFIELD_PATH = /cygdrive/e/tmpdata/vfield/
-#VFIELD_PATH = .
+#VFIELD_PATH = /cygdrive/e/tmpdata/vfield/
+VFIELD_PATH = .
 #VFIELD_PATH = /tmp/vfield/
 #WORKPATH = /work/patmills/ctraj_work
 YEAR = 1999
@@ -183,5 +185,10 @@ $(VFIELD_PATH)/vfield_ncep$(BASE)_N.ds $(VFIELD_PATH)/vfield_ncep$(BASE)_S.ds: $
 $(VFIELD_PATH)/vfield_ecmwf$(BASE)_N.ds $(VFIELD_PATH)/vfield_ecmwf$(BASE)_S.ds: $(DATA_FILES) #ecmwf2ds.sh
 	ecmwf2ds -n $(VGRID) $(TFLAG) -p $(DATAPATH) -O \
 		-i $(LAST_YEAR)/12/31 -f $(NEXT_YEAR)/1/1 $(LEV) \
+		$(VFIELD_S) $(VFIELD_N)
+
+$(VFIELD_PATH)/vfield_badc$(BASE)_N.ds $(VFIELD_PATH)/vfield_badc$(BASE)_S.ds:
+	import_vfield.sh -V 0 -n $(VGRID) $(TFLAG) \
+		-i $(LAST_YEAR)/12/31-12 -f $(NEXT_YEAR)/1/1-12 $(LEV) \
 		$(VFIELD_S) $(VFIELD_N)
 

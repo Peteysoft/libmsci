@@ -5,7 +5,7 @@ A gridded, Eulerian tracer simulation can be approximated
 as a system of linear ordinary differential equations (ODEs).
 The first-order stretching and deformation of Lagrangian space 
 can also be calculated using a system of linear ODEs.
-Solutions to these equations are reviewed
+Matrix-based solutions to these equations are reviewed
 as well as special properties.
 Using matrices to model tracer transport can also help understand and
 improve the stability of numerical solutions.

@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
   sparse_matrix *matall;
   int32_t nall;
 
-  ind_t m, n;	//size of matrix
+  ind_t m, n;	//size of matrix  ****integer types should be fixed...  ****
   int32_t i0, N;		//start point, number of matrices
   int32_t nev, ncv;		//number of eigenvectors, number of Arnoldi vectors
 
@@ -216,11 +216,12 @@ int main(int argc, char **argv) {
     fs=fopen(matfile, "r");
     //scan ahead to the data that we need:
     for (int i=0; i<start; i++) {
-      int32_t nel;
+      long nel;				//integer types should be fixed...
       ncon=fread(&m, sizeof(m), 1, fs);
       ncon+=fread(&n, sizeof(n), 1, fs);
       ncon+=fread(&nel, sizeof(nel), 1, fs);
       err=fseek(fs, nel*sizeof(sparse_el<int32_t, float>), SEEK_CUR);
+      printf("%d %d %d %d %d %d\n", i, m, n, nel, ncon, err);
       if (ncon!=3 || err!=0) {
         fprintf(stderr, "pc_proxy_predict: error reading file, %s\n", matfile);
         exit(FILE_READ_ERROR);

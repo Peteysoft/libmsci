@@ -134,12 +134,12 @@ for ((INDEX=$I0; INDEX<=$IF; INDEX+=$STRIDE)); do
 
   ORIENT=-ZBLx
 
-  extract_field -x $NLON -y $NLAT $EOPTS $TRACER $INDEX | xyz2grd -R$RANGE2 -I$DLON/$DLAT $ORIENT -G$GRDFILE
+  extract_field -x $NLON -y $NLAT $EOPTS $TRACER $INDEX | ${PREFIX}xyz2grd -R$RANGE2 -I$DLON/$DLAT $ORIENT -G$GRDFILE
   ${PREFIX}grdimage $GRDFILE -R$RANGE -J$PROJ -C$PALETTE -O -K >> $FRAME;
 
-  ${PREFIX}bev2xy $CONTOUR $INDEX | psxy -R$RANGE -J$PROJ -W2,black -O -K >> $FRAME;
+  bev2xy $CONTOUR $INDEX | ${PREFIX}psxy -R$RANGE -J$PROJ -W2,black -O -K >> $FRAME;
 
-  ${PREFIX}pscoast -R$RANGE -J$PROJ -Dl -W -O >> $FRAME
+  #${PREFIX}pscoast -R$RANGE -J$PROJ -Dl -W -O >> $FRAME
 
   LIST="$LIST $FRAME1.gif"
   convert -background white $FRAME $FRAME1.gif

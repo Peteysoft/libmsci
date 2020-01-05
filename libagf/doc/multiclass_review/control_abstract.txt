@@ -13,7 +13,7 @@ including those in most common use.
 We use it both to manually construct new partitioning configurations as well 
 as to examine those that have been automatically designed.
 Eight different strategies are tested on eight different datasets using
-support vector machines (SVM)
+support vector machines (SVM).
 Numerical tests suggest that a one-size-fits-all solution consisting of 
 one-versus-one is appropriate for most datasets
 however one dataset benefitted from the techniques applied in this paper.

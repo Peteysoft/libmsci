@@ -1,20 +1,16 @@
 
 \section{Introduction}
 
-In \citet{Mills2018}, a method of dynamical tracer interpolation
-is introduced
-in which the tracer dynamics are represented as a matrix and the largest
-principal components correlated with a series of sparse measurements.
-The method is called ``principal component proxy tracer analysis''.
-
 Because the processes of tracer advection, as well as the related ones
 of local stretching and diffusion, are linear, 
 matrix methods represent a powerful and
 general set of techniques to apply to these problems.
-This review summarizes some of these techniques as well as special properties
-of the matrices as used to represent transport processes.  
-The intention, however, is not to discuss recent work on the subject, but
-rather to derive the mathematics from first principles.
+In \citet{Mills2018}, a method of dynamical tracer interpolation
+is introduced
+in which the tracer dynamics are represented as a matrix and the largest
+principal components correlated with a series of sparse measurements.
+This report outlines the mathematical properties of
+the matrix transport model used in that paper.
 
 In particular, 
 we review methods of solving systems of linear ordinary differential
@@ -49,11 +45,11 @@ The {\it solution matrix}, $R$, can be broken down in a number of useful ways
 and may possess important properties depending upon those of
 the {\it evolution matrix}, $A$.
 
-It is hoped that this compilation
-can help improve understanding of fluid transport and in particular 
+It is hoped that this compilation can be used as a guide in the creation
+of numerical algorithms, but also possibly
+help improve understanding of fluid transport and in particular 
 improve both understanding and implementation of principal component
-proxy and similar techniques as well as guide the creation of efficient
-numerical algorithms.
+proxy and similar inverse techniques.
 
 \section{Fundamentals}
 
@@ -308,9 +304,10 @@ of $R$ is governed by the same mathematics as $H$ and $H^\prime$:
 \frac{\mathrm d R}{\mathrm d t} = A \cdot R
 \label{discrete_tracer_map}
 \end{equation}
-There are a number of ways to calculate $A$, the most obvious being from an 
-Eulerian finite difference scheme, which, in one dimension, would look something
-like this:
+There are a number of ways to calculate $A$. 
+As a simple example, consider an Eulerian finite difference scheme, 
+which, in one dimension, 
+would look something like this:
 \begin{equation}
 \frac{\mathrm d r_{ij}}{\mathrm d t} = \frac{v(x_j,~t)}{\Delta x_{j-1}+\Delta x_j} (r_{i,j+1} - r_{i,j-1})
 \label{simple_finite_difference}
@@ -410,6 +407,10 @@ approaches zero:
 	\lim_{\Delta t \rightarrow 0} \left \lbrace
 R(t, ~ \Delta t) = \exp \left [ A(t) \Delta t \right ]
 \right \rbrace
+\end{equation}
+which we will abbreviate from here on as:
+\begin{equation}
+	R(t, ~\Delta t \rightarrow 0)  = \exp \left [ A(t) \Delta t \right ]
 \end{equation}
 
 \subsection{Negative and left-multiplied cases}
@@ -557,7 +558,6 @@ $A=\nabla \vec v$, while the velocity field, $\vec v$, is frequently non-diverge
 $\nabla \cdot \vec v=0$ or $\mathrm{Tr}(A)=0$.
 It can be shown that 
 if the trace of a matrix is zero, then the eigenvalues sum to zero
-\citep{Anton1987}.
 Here we outline the proof.
 
 Begin by writing the characteristic polynomial as a power series:
@@ -664,10 +664,9 @@ remains constant, thus:
 \sum_i q_i = const.
 \label{mass_conservation}
 \end{equation}
-This will be true only if $q$ is a volume-mixing-ratio
-and
+This will be true if
 the flow is non-divergent or
-$q$ is a density and the total volume of the fluid neither expands
+if $q$ represents a density and the total volume of the fluid neither expands
 nor contracts, otherwise the formula will be more complicated.  
 It also assumes an equal-volume grid.
 Many, if not most, flows in real fluids are approximately 
@@ -907,7 +906,7 @@ calculating the evolution matrix, $A$, for an Eulerian tracer simulation.
 Assuming we've obeyed the Courant-Friedrichs-Lewy (CFL) criterion 
 \citep{Courant_etal1967} for choosing
 the time-step (which itself is derived from von Neumann analysis), von Neumann
-analysis shows this method to be unconditionally stable.
+analysis shows the centered finite-difference method to be unconditionally stable.
 
 In fact the method is quite naive and if applied to any real fluid flow would 
 quickly overflow.
@@ -940,7 +939,7 @@ Generalization to two or more dimensions is straightforward.
 Since the simulation is discrete, the actual order of points in the
 vector or matrix is arbitrary.
 
-Semi-Lagrangian methods perform a back-trajectory from each of the Eulerian
+By contrast, semi-Lagrangian methods perform a back-trajectory from each of the Eulerian
 points in the simulation, then interpolate the new value.  Rather than
 directly integrating the tracer values, 
 the interpolation coefficients are stored immediately

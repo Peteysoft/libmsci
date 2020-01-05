@@ -6,7 +6,7 @@
 WORKPATH=animation_frames
 SKIP=1
 
-while getopts 'aCgHq0:c:F:I:J:N:O:p:r:R:x:y:z:' DUM
+while getopts 'aCgHLq0:c:F:I:J:N:O:p:r:R:x:y:z:' DUM
 do
   case $DUM in
     0) I0=$OPTARG
@@ -25,6 +25,8 @@ do
     I) ZOPTS="$ZOPTS -I $OPTARG"
       ;;
     J) ZOPTS="$OPTS -J $OPTARG"
+      ;;
+    L) ZOPTS="$OPTS -L"
       ;;
     N) N=$OPTARG
       ;;

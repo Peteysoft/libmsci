@@ -49,7 +49,7 @@ namespace ctraj {
 					//(size of pre-allocated return values)
 
   //reads all the headers and data from a file in "pp" format:
-  int pp_read_all(FILE *fs, 			//name of file
+  int pp_read_field(FILE *fs, 			//name of file
 		  int32_t **headers_all,	//header for each field
 		  float ***fields, 		//fields
 		  int nmax,			//maximum number to read in

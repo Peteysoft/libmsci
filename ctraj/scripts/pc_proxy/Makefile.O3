@@ -5,7 +5,8 @@ SHELL=/bin/bash
 VFIELD_TGRID=oneday
 #DATA_PATH = /home/Peter/data/ncep/oneday
 #DATA_PATH = /cygdrive/e/data/ncep/$(VFIELD_TGRID)
-DATA_PATH = /home/peter/data/ncep_data/daily/plev
+#DATA_PATH = /home/peter/data/ncep_data/daily/plev
+DATA_PATH = /home/peter/data/badc_data
 VFIELD_PATH=.
 #to make it easier to clone this directory:
 MASTER=.
@@ -28,7 +29,7 @@ TF=1999/12/31
 #take three years of data for some "spin up" for traditional proxy:
 T0a = 1997/1/1
 #T0a = 1998/6/1
-TFa= 1999/1/1
+TFa= 1999/2/1
 
 #interpolate POAM data between these two dates:
 #T0b= 1998/11/1
@@ -162,8 +163,8 @@ POAM_DATA = $(MASTER)/POAMIII_$(THETA)K.txt
 
 #converted velocity fields:
 VBASE=$(THETA)K$(VFIELD_TGRID)$(shell date_calc -f "%Y.%m.%d" $(T0))-$(shell date_calc -f "%Y.%m.%d" $(TF))
-VFIELD_N=$(VFIELD_PATH)/vfield_ncep_$(VBASE)_N.ds
-VFIELD_S=$(VFIELD_PATH)/vfield_ncep_$(VBASE)_S.ds
+VFIELD_N=$(VFIELD_PATH)/vfield_badc_$(VBASE)_N.ds
+VFIELD_S=$(VFIELD_PATH)/vfield_badc_$(VBASE)_S.ds
 
 #tracer mapping:
 ifeq ($(strip $(DCOEF)),-1)
@@ -300,7 +301,8 @@ $(PROXY_FIELD): $(CVMAT)
 	
 #extract the velocity fields:
 $(VFIELD_N) $(VFIELD_S):
-	nc2ds -i $(T0) -f $(TF) -p $(DATA_PATH) -T $(THETA) $(VFIELD_S) $(VFIELD_N)
+	import_vfield.sh -V 0 -i $(T0)-12 -f $(TF)-12 -p $(DATA_PATH) -T $(THETA) $(VFIELD_S) $(VFIELD_N)
+#	nc2ds -i $(T0) -f $(TF) -p $(DATA_PATH) -T $(THETA) $(VFIELD_S) $(VFIELD_N)
  
 #$(VFIELD_N) $(VFIELD_S):
 #	make -C ../test vfield YEAR=$(YEAR) LEV=$(THETA) \

@@ -877,6 +877,8 @@ namespace libagf {
     fprintf(fs, "}\n");
   }
 
+  template int check_coding_row<int *>(int *&, int);
+
   template int **optimal_coding_matrix<int, float>(int, int, float *);
   template int **optimal_coding_matrix<int, double>(int, int, double *);
   template float **optimal_coding_matrix<float, float>(int, int, float *);

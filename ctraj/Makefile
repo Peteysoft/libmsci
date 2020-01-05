@@ -123,7 +123,7 @@ OBJECTS = 	ctraj_defaults.o \
 		pp_util.o
 
 #scripts:
-SCRIPTS = get_ecmwf.py ecmwf.py ecmwf2ds.sh ncep2ds.sh
+SCRIPTS = get_ecmwf.py ecmwf.py ecmwf2ds.sh ncep2ds.sh import_vfield.sh
 
 # include files:
 INCLUDE = ctraj_boundary_list.h \
