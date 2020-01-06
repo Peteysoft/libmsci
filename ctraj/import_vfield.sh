@@ -131,8 +131,8 @@ esac
 
 OPTS="$OPTS -x $NX -y $NY"
   
-echo "$COMMAND $ZLEV $T0 | vdata2ds -h $DT $OPTS $OPTS2 0 $SFILE $NFILE"
-$COMMAND $ZLEV $T0 | vdata2ds -h $DT $OPTS $OPTS2 0 $SFILE $NFILE
+echo "$COMMAND $ZLEV $T0 | vdata2ds -h 0/0/0-$DT $OPTS $OPTS2 0 $SFILE $NFILE"
+$COMMAND $ZLEV $T0 | vdata2ds -h 0/0/0-$DT $OPTS $OPTS2 0 $SFILE $NFILE
 
 for ((I=1; I<=$N; I++))
 do
