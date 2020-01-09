@@ -30,17 +30,6 @@ namespace ctraj {
   //byte-swaps an array of 4-byte integers:
   void swap_endian (int32_t *data, int n);
 
-  //allocates a 3-D field for holding weather data
-  //formated as an array of individually-allocated 2-D matrices
-  template <typename scalar>
-  scalar ***allocate_3D_field(int nlev, 	//number of levels (matrices)
-		  int ny, 			//number of latitude grids (m)
-		  int nx);			//number of longitude grids (n)
-
-  //deletes the 3-D field allocated above:
-  template <typename scalar>
-  void delete_3D_field(scalar ***field, int nlev);
-
   //reads all the headers and data from a file in "pp" format:
   int pp_read_all(char *fname, 			//name of file
 		  int32_t **headers_all,	//fields headers

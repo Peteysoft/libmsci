@@ -8,9 +8,10 @@
 #include "full_util.h"
 #include "time_class.h"
 
-#include "pp_util.h"
-
 #include "ctraj_defaults.h"
+
+#include "pp_util.h"
+#include "ctraj_3d_fields.h"
 
 using namespace libpetey;
 
@@ -29,21 +30,6 @@ namespace ctraj {
       fourbyte[2]=swp;
     }
   }
-
-  template <typename scalar>
-  scalar ***allocate_3D_field(int nlev, int ny, int nx) {
-    scalar ***field;
-    field=new scalar **[nlev];
-    for (int i=0; i<nlev; i++) field[i]=allocate_matrix<scalar, int32_t>(ny, nx);
-    return field;
-  }
-
-  template <typename scalar>
-  void delete_3D_field(scalar ***field, int nlev) {
-    for (int i=0; i<nlev; i++) delete_matrix(field[i]);
-    delete [] field;
-  }
-
 
   int pp_read_all(char *fname, int32_t **headers_all, float ***fields, int nmax) {
 
@@ -381,11 +367,5 @@ namespace ctraj {
     }
     return fnew;
   }
-
-  template float ***allocate_3D_field<float>(int nlev, int ny, int nx);
-  template double ***allocate_3D_field<double>(int nlev, int ny, int nx);
-
-  template void delete_3D_field<float>(float ***field, int nlev);
-  template void delete_3D_field<double>(double ***field, int nlev);
 
 } //end namespace ctraj

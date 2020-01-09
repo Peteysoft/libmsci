@@ -10,6 +10,7 @@
 
 #include "ctraj_defaults.h"
 #include "pp_util.h"
+#include "ctraj_3d_fields.h"
 
 using namespace ctraj;
 using namespace libpetey;
@@ -18,11 +19,11 @@ using namespace libpetey;
 
 int main(int argc, char **argv) {
   char *fname;
-  float theta;
+  float zlev;		//get 2-D wind fields for this vertical level
   float **data[MAXNREC];
   int32_t *header[MAXNREC];
   int nrec;
-  float *lev;
+  float *zgrid;
   int nlev;
   int nlon, nlat;
   //fields:
@@ -99,9 +100,9 @@ int main(int argc, char **argv) {
     goto finish;
   }
   
-  theta=atof(argv[2]);
-  lev=pp_extract_levels(header, nrec, nlev);
-  //for (int i=0; i<nlev; i++) printf("%g\n", lev[i]);
+  zlev=atof(argv[2]);
+  zgrid=pp_extract_levels(header, nrec, nlev);
+  //for (int i=0; i<nlev; i++) printf("%g\n", zgrid[i]);
 
   //we expect the data in specific format pulled out by this function:
   pp_extract_uvwtz(data, header, nrec, u0, v0, w0, t, z);
@@ -116,22 +117,26 @@ int main(int argc, char **argv) {
 
   if (flags[0]) {
     //interpolated to potential-temperature level:
-    float ***coef;		//interpolation ceofficients
-    coef=pp_interpolate_pt_levels(lev, t, nlev, nlat+1, nlon, &theta, 1);
-    uout=pp_zinterpolate(u, coef, 1, nlat+1, nlon);
-    vout=pp_zinterpolate(v, coef, 1, nlat+1, nlon);
+    float ***theta;		//pot. temp.
+    double ***coef;		//interpolation ceofficients
+    //coef=pp_interpolate_pt_levels(zgrid, t, nlev, nlat+1, nlon, &zlev, 1);
+    theta=calc_pot_temp(t, zgrid, nlev, nlat+1, nlon);
+    coef=calc_zlev_coef(theta, nlev, nlat+1, nlon, &zlev, 1);
+    uout=interpolate_zlev(u, coef, 1, nlat+1, nlon);
+    vout=interpolate_zlev(v, coef, 1, nlat+1, nlon);
     delete_3D_field(coef, 1);
+    delete_3D_field(theta, nlev);
   } else {
     //interpolate to pressure level:
     double coef;
     int ind;
     double frac;
     //in-line interpolation:
-    reverse(lev, nlev);
+    reverse(zgrid, nlev);
     //need single interpolation coef.:
-    coef=interpolate(lev, nlev, theta);
+    coef=interpolate(zgrid, nlev, zlev);
     if (coef>nlev-1 || coef<0) {
-      fprintf(stderr, "Pressure level (%g) out-of-range\n", theta);
+      fprintf(stderr, "Pressure level (%g) out-of-range\n", zlev);
       exit(PARAMETER_OUT_OF_RANGE);
     }
     ind=(int) coef;

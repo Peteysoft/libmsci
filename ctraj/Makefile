@@ -120,7 +120,8 @@ OBJECTS = 	ctraj_defaults.o \
 		global_metric.o \
 		contour_anal.o \
 		tcoord_defs.o \
-		pp_util.o
+		pp_util.o \
+		ctraj_3d_fields.o
 
 #scripts:
 SCRIPTS = get_ecmwf.py ecmwf.py ecmwf2ds.sh ncep2ds.sh import_vfield.sh
@@ -141,7 +142,8 @@ INCLUDE = ctraj_boundary_list.h \
 	meas_data.h \
 	global_metric.h \
 	tcoord_defs.h \
-	pp_util.h
+	pp_util.h \
+	ctraj_3d_fields.h
 
 all:	$(EXE) $(UTIL) $(LIBNAME)
 	make -C scripts/plotting BIN_PATH=$(BIN_PATH)
