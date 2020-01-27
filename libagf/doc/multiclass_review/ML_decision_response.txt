@@ -16,11 +16,15 @@ The paper claims to propose a "unifying framework", which seems to refer to a pr
 
 R: This control language is used liberally in the last three sections to describe the configuration of multi-class classifiers both to specify a new and interesting configuration and to show how the empirical methods designed the classifiers. It is also used, in the latest revision, to explain your question about the conversion of a hierarchical multi-class classifier into an error-correcting code. It seems to me to have a good deal of utility.
 
+If it turns out that the solution I've presented for a discretized conintuum problem is optimal or near optimal, then the work is a lot more significant than even I realized.
+
 I had a great deal of trouble with the paper's presentation.  I found the mathematical content especially lacking in precision and clarity.  Some detailed examples are given below for parts of the paper.
 
 A fair fraction of the paper is focused on optimization methods, such as on page 4 and most of section 4.  I did not see the point of discussing these methods given that the optimization problems being considered are so standard, and could be solved using any number of standard and general techniques.
 
 R: This is why the paper is framed as a "review paper." Much of the literature in this area is quite dense and focuses on much more difficult problems. The purpose is to expound a method that's simple and that works and to make the problem easily comprehensible.
+
+So that the paper is self-standing.
 
 For an overview and unification of approaches, I am not convinced that this paper adds much compared to others that have already been published, such as "On the Decoding Process in Ternary Error-Correcting Output Codes" by Escalera, Pujol, and Radeva (in PAMI).
 

@@ -233,7 +233,7 @@ derived in Section \ref{one_vs_one}.
 \citet{Lawson_Hanson1995} discuss at least two other methods of
 enforcing equality constraints on linear least squares problems.
 Since they are inequality constraints, those in (\ref{nonnegative}) are
-harder to enforce and details  will be left to a later section.
+harder to enforce and the details will be left to a later section.
 
 \subsection{Voting solution}
 
@@ -269,7 +269,7 @@ some datasets, the choice of loss function can make a significant difference.
 Here we are assuming that the decision functions return an approximation of the 
 difference in conditional probabilities of the binary classifier.
 In this case a more natural choice of metric is the Euclidian
-since it reduces to Equation (\ref{matrix_equation2} in the limiting
+since it reduces to Equation (\ref{basic_system}) in the limiting
 case of an orthogonal, strict coding matrix. Expanding:
 \begin{eqnnon}
 	c = \arg \min_i \left \lbrace |\vec a^{(i)}|^2 - 2 \vec a^{(i)} \cdot \vec r + |\vec r|^2 \right \rbrace
@@ -416,7 +416,7 @@ It can be random, but may also be carefully designed
 \citep{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013,Rocha_Goldenstein2014}.
 In principle this case covers all the earliers ones, however in practice the
 term can also refer more specifically to a random coding matrix.
-To solve the general case, we use quadratic programming \citet{Boyd_Vandenberghe2004}.
+To solve the general case, we use quadratic programming \citep{Boyd_Vandenberghe2004}.
 The literature in the subject can be quite dense and intimidating, so
 only the briefest attempt to address the problem will be made here. 
 There do exist, however, standard algorithms
@@ -515,7 +515,7 @@ accurate.
 Interestingly, the same partitions created for a decision tree can also
 be used in a non-hierarchical scheme
 to solve for all of the conditional probabilities. 
-Consider the following coding matrix for instance:
+For instance, consider the following coding matrix:
 \begin{equation}
 A = 
 \begin{bmatrix}
