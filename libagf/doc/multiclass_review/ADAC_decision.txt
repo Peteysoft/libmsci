@@ -24,13 +24,31 @@ In this paper, the authors provide an overview of techniques for reducing multi-
 
 The paper is well organized, clearly written, and easy to follow. That said, the contribution of the paper does not appear to be significant enough to warrant publication in ADAC.
 
+R: The abstract should be enough to tell you that, if the paper is well-written as you claim. Why did it take 4 months to complete this review?
+
 -- The overview of decomposition techniques in Sections 2-4 might be a good introduction to the topic. However, there is nothing new here, and similar overviews can be found in the machine learning literature.
+
+R: I have not found anything in the literature that solves for the probabilities in the general case although there doesn't appear to be much interest in this and for no good reason.
 
 -- Section 4 contributes to a possible notational confusion, because the term "decision tree" has another meaning in the machine learning literature. For the hierarchical decomposition scheme the authors are speaking about here, other names are used, such as "nested dichotomy" [1]. Moreover, this section is not up to date, because recent publications on the topic are missing, for example on the data-driven (empirical) construction of hierarchical decompositions [2,3].
 
+R: I use this term because conceptually, the two are no different.
+It's so much more efficient to build an ensemble of multi-class classifiers rather than examine the data once (in a way that's independent of the binary classifier used) and use that to optimize a single classifier or, better yet, don't examine the data at all but use prior considerations to design one by hand. An ensemble is practically the definition of "brute force."
+
 -- The "control language" introduced in Section 5 is a very simple formal description of a binary decomposition. What is the (scientific) contribution here?
 
+R: The control language doesn't just describe binary decomposition but combines both hierarchical and non-hierarchical methods. Not only do I show why this might be useful but I also cite a paper where it is used. I was scooped because of biased reviewers like you.
+
+
 -- The experiments conducted in Section 6 and discussed in Section 7 do not create any new insights. Many studies of this kind can be found in the machine learning literature, where similar findings have been made (for example, that one-vs-one is robust and performs well on average). Besides, key references on the topic are again missing [4,5]. A thorough statistical analysis of the results is also missing.
+
+R: Except this is not the main finding of the paper. If it can be shown that the adjacent partitioning is optimal or near optimal for classification problems in which the classes have an ordering (which is likely the case) that seems pretty damn significant to me.
+Also, I have found a paper that claims to combine the Hausdorf metric with empirically designed "nested dichotomies" (I haven't read it yet because the authors have failed to leave a free copy online and I don't believe it was availabe at the local university) but the publication date is later than the original one for this paper (again, who's fault is it that they've scooped me?). 
+Finally, show me the reference where empirically designed nested dichotomies (that just rolls off the tongue doesn't it?) are examined using a simple scripting language. No, it's not terribly complicated, but it is very useful, especially if you've got software that parses it.
+
+R: What would comprise a "thorough statistical analysis"? Just having confidence limits on the skill measures seems a reasonable advance over what normally passes for a "thorough statistical analysis." Consider your reference 5, page 15. The first line of the table there shows 78.48 under "C5.0" and 75.08 under "round robin" This certainly seems to be a significant improvement. Then, however, we have 74.67 under "both". This is a much smaller improvement and one struggles to decide whether it's significant or not. Wouldn't it be nice if we had some idea of the spread of the results so that we could tell at a glance (through an approximate z-test, for instance) whether it was significant or not?
+
+R: Again, what is this obsession with recent references? I include recent references if they are relevant, including one that finds 1-vs.-1 is best. That's not the main finding of the paper, so why harp on it?
 
 
 References:
@@ -45,4 +63,6 @@ References:
 
 [5] J. Fürnkranz. Round robin classification. Journal of Machine Learning Research, 2:721-747, 2002.
 
+R: None of these references are particularly relevant to what I've done here. Maybe the one on "round robin" classification, but I've already included a reference that shows the superiority of one-vs.-one that's about the same age. Why do I need another one? There are already over 40 references in this paper.
 
+R: Honestly, this has to be one of the most useless reviews I have ever received because there is absolutely nothing constructive here.
