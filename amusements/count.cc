@@ -14,12 +14,11 @@ void print_number(int **number, int n) {
 }
 
 int main(int argc, char **argv) {
-  int j;
-  int n;
-  int **number;
-  int *prime;
+  int n;		//count up to n
+  int **number;		//factor decomposition indexing into prime
+  int *prime;		//primes indexing into number
   int nprime;
-  int *factor;
+  int *factor;		//list of factors for current number
   int nfactor;
 
   if (argc != 2) {
@@ -47,14 +46,14 @@ int main(int argc, char **argv) {
   factor=new int[n];
 
   for (int i=2; i<n; i++) {
-    int n=i+1;
+    int ncur=i+1;		//number to factor
     nfactor=0;
-    for (j=0; j<nprime && prime[j]<=n; j++) {
+    for (int j=0; j<nprime && prime[j]<=ncur; j++) {
       //printf("%d %d %d\n", i+1, j, n);
-      if (n % prime[j] == 0) {
+      if (ncur % prime[j] == 0) {
         factor[nfactor]=j;
 	nfactor++;
-	n=n/prime[j];
+	ncur=ncur/prime[j];
 	j=-1;
       }
       //printf("%d %d %d\n", i+1, j, n);
@@ -94,6 +93,12 @@ int main(int argc, char **argv) {
     print_number(number, i);
     printf("\n");
   }
+
+  //clean up:
+  for (int i=0; i<n; i++) delete [] number[i];
+  delete [] number;
+  delete [] prime;
+  delete [] factor;
 
 }
 
