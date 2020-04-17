@@ -33,16 +33,16 @@ R: I have not found anything in the literature that solves for the probabilities
 -- Section 4 contributes to a possible notational confusion, because the term "decision tree" has another meaning in the machine learning literature. For the hierarchical decomposition scheme the authors are speaking about here, other names are used, such as "nested dichotomy" [1]. Moreover, this section is not up to date, because recent publications on the topic are missing, for example on the data-driven (empirical) construction of hierarchical decompositions [2,3].
 
 R: I use this term because conceptually, the two are no different.
-It's so much more efficient to build an ensemble of multi-class classifiers rather than examine the data once (in a way that's independent of the binary classifier used) and use that to optimize a single classifier or, better yet, don't examine the data at all but use prior considerations to design one by hand. An ensemble is practically the definition of "brute force."
+It's less efficient to build an ensemble of multi-class classifiers rather than examine the data once (in a way that's independent of the binary classifier used) and use that to optimize a single classifier or, better yet, don't examine the data at all but use prior considerations to design one by hand. An ensemble is practically the definition of "brute force."
 
 -- The "control language" introduced in Section 5 is a very simple formal description of a binary decomposition. What is the (scientific) contribution here?
 
-R: The control language doesn't just describe binary decomposition but combines both hierarchical and non-hierarchical methods. Not only do I show why this might be useful but I also cite a paper where it is used. I was scooped because of biased reviewers like you.
+R: The control language doesn't just describe binary decomposition but combines both hierarchical and non-hierarchical methods. Not only do I show why combining the two might be useful but I also cite a paper where it is used. I was scooped because of biased reviewers like you.
 
 
 -- The experiments conducted in Section 6 and discussed in Section 7 do not create any new insights. Many studies of this kind can be found in the machine learning literature, where similar findings have been made (for example, that one-vs-one is robust and performs well on average). Besides, key references on the topic are again missing [4,5]. A thorough statistical analysis of the results is also missing.
 
-R: Except this is not the main finding of the paper. If it can be shown that the adjacent partitioning is optimal or near optimal for classification problems in which the classes have an ordering (which is likely the case) that seems pretty damn significant to me.
+R: Except this is not the main finding of the paper. If it can be shown that the adjacent partitioning is optimal or near optimal for classification problems in which the classes have an ordering (which is likely the case) that seems pretty significant to me.
 Also, I have found a paper that claims to combine the Hausdorf metric with empirically designed "nested dichotomies" (I haven't read it yet because the authors have failed to leave a free copy online and I don't believe it was availabe at the local university) but the publication date is later than the original one for this paper (again, who's fault is it that they've scooped me?). 
 Finally, show me the reference where empirically designed nested dichotomies (that just rolls off the tongue doesn't it?) are examined using a simple scripting language. No, it's not terribly complicated, but it is very useful, especially if you've got software that parses it.
 
