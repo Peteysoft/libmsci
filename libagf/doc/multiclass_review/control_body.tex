@@ -422,10 +422,10 @@ only the briefest attempt to address the problem will be made here.
 There do exist, however, standard algorithms
 for versions of the minimization problem in 
 (\ref{minimization_problem})-(\ref{nonnegative})
-such as that provided by 
+such as those provided by 
 \citet{Lawson_Hanson1995} for instance. 
-Moreover, the iterative algorithm shown in \citet{Lawson_Hanson1995}
-is quite straightforward and is essentially geometrical in nature.
+The iterative algorithm shown there
+is quite straightforward and essentially geometrical in nature.
 A minimal example is illustrated in Figure \ref{Lawson_Hanson_fig}.
 
 Briefly, the algorithm works by solving a reduced version of Equation
@@ -433,10 +433,18 @@ Briefly, the algorithm works by solving a reduced version of Equation
 Rows are added one-by-one with those 
 corresponding to the variables least likely to push the
 solution out-of-bounds being added first.
-If one or more variables is found to be out-of-bounds,
-then the solution is adjusted to the nearest point in-bounds
-between the old solution and the new,
-out-of-bounds variables are removed, and the process is repeated.
+In the second loop, if it is found that one of the variables has gone out-of-bounds,
+then the solution is adjusted by positioning a selected variable on the
+its constraint border and interpolating between the old and the
+new solutions.
+The variable is chosen as follows
+\begin{equation}
+  arg \min_j \lbrace z_j/z_j-z_j^*: z_j^* \le 0; j \in N \rbrace
+\end{equation}
+where $\vec z$ is the old solution, $\vec z^*$ the new,
+and $N$ are the set of indices of the non-zero variable in the old
+solution.
+Out-of-bounds variables are removed, and the process is repeated.
 
 \subsection{Orthogonal codes}
 
@@ -491,9 +499,9 @@ In this method, the classes are first divided into two partitions, then
 those partitions are each divided into two partitions and so on until only
 one class remains. The classification scheme is hierarchical, with all the
 losing classes being excluded from consideration at each step.
-Only the conditional probability of the winning class is calculated as the
-product of all the returned conditional probabilities of the binary
-classifiers.
+Only the conditional probability of the winning (most likely) class is 
+calculated as the product of all the returned conditional probabilities 
+of the binary classifiers.
 
 Let $1k_1k_2k_3...$ be a binary number enumerating the binary classifier
 where $k_j \in \lbrace 0,~1 \rbrace$ is the returned class at the $j$th level of the tree.
@@ -502,9 +510,10 @@ Then $c_{1k_1k_2k_3...}$ is the final class at the $1k_1k_2k_3...$th terminal
 node.
 Recalling the notation established in Section \ref{description}, 
 the conditional probability is:
-\begin{eqnnon}
-	P(c_{1k_1k_2k_3k_4...}|\vec x) = P_1(k_1|\vec x) P_{1k_1}(k_2|\vec x) P_{1k_1k_2}(k_3|\vec x)P_{1k_1k_2k_3}(k_4|\vec x)...
-\end{eqnnon}
+\begin{eqnarraynon}
+	\max_i P(i | \vec x) = P(c_{1k_1k_2k_3k_4...}|\vec x) \\
+	= P_1(k_1|\vec x) P_{1k_1}(k_2|\vec x) P_{1k_1k_2}(k_3|\vec x)P_{1k_1k_2k_3}(k_4|\vec x)...
+\end{eqnarraynon}
 
 Decision trees have the advantage that they are fast since on average they
 require only $\log_2 n_c$ classifications and there is no need to solve a 
@@ -766,7 +775,7 @@ The control language allows us to represent any type of multi-class
 configuration relatively succinctly, including different parameters
 used for the binary classifiers.
 To illustrate the operation of the empirical partitioning, here are
-control files for the shuttle dataset.
+two control files for the shuttle dataset.
 The arbitrary, balanced tree is as follows:
 \begin{verbatim}
 shuttle_hier {

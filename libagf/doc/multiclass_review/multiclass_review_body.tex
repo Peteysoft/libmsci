@@ -636,9 +636,10 @@ There are two loops to the algorithm. In the first loop, a new index is added
 to the non-zero set in each iteration.
 So long as the solution doesn't go out-of-bounds, this continues until all
 the indices are added to the set $P$.
-In the second loop, if it's found that one of the variables has gone out-of-bounds,
-then the solution is adjusted to the nearest point in-bounds between the old solution
-and the new.
+In the second loop, if it is found that one of the variables has gone out-of-bounds,
+then the solution is adjusted by positioning a selected variable on the
+its constraint border and interpolating between the old and the
+new solutions.
 The process is illustrated in Figure \ref{Lawson_Hanson_fig}.
 
 \citet{Lawson_Hanson1995} describe several methods of combining
