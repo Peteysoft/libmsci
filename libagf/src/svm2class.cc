@@ -13,7 +13,7 @@
 using namespace libpetey;
 
 namespace libagf {
-  //fuck it, this shit is Rube-Goldberg enough, I can't see how a couple globabl 
+  //fuck it, this shit is Rube-Goldberg enough, I can't see how a couple global 
   //variables can make things much worse:
   void * global_svm_helper;
   FILE * global_svm_allinone;

@@ -10,7 +10,7 @@ namespace libpetey {
   void quicksort(type *data, long *ind, long n);
 
   template<class type>
-  void kleast_quick(type *array, long n, long k, long left, long right);
+  void kleast_quick(type *array, long k, long left, long right);
 
   template<class type>
   void kleast_quick(type *data, long n, long k);
@@ -19,7 +19,7 @@ namespace libpetey {
   void kleast_quick(type *data, long n, long k, type *result);
 
   template<class type>
-  void kleast_quick(type *data, long n, long k, long *ind, long left, long right);
+  void kleast_quick(type *data, long k, long *ind, long left, long right);
 
   template<class type>
   void kleast_quick(type *data, long n, long k, long *ind);

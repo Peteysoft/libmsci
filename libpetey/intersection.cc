@@ -15,6 +15,18 @@ namespace libpetey {
     return 0;
   }
 
+  //ugly hack:
+  int global_vector_size;
+
+  template <typename scalar>
+  int compare_vectors2(scalar *v1, scalar *v2) {
+    for (int i=0; i<global_vector_size; i++) {
+      if (v1[i]<v2[i]) return -1;
+      if (v1[i]>v2[i]) return 1;
+    }
+    return 0;
+  }
+
   template <typename scalar>
   int unify_vectors(scalar ***v, 		//list of lists of vectors
 		  int *n, 			//number of elements in each list
@@ -40,7 +52,8 @@ namespace libpetey {
     }
 
     //sort the array:
-    sind=heapsort((void **) all, nt[n0], (void *) &compare_vectors<scalar>);
+    global_vector_size=D;		//ugly hack...
+    sind=heapsort((void **) all, nt[n0], (void *) &compare_vectors2<scalar>);
 
     //fill result array only with non-duplicates;
     //fill index arrays with location of these

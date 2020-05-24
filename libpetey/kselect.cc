@@ -435,7 +435,7 @@ namespace libpetey {
     d2=data->data();
     ind1=ind->data();
     n=data->size();
-    kleast_quick(d2, n, this->k, ind1, 0, n-1);
+    kleast_quick(d2, this->k, ind1, 0, n-1);
     for (long i=0; i<this->k; i++) {
       //kleast[i]=d2[i];
       kleast[i]=d2[ind1[i]];

@@ -30,8 +30,8 @@ namespace libpetey {
       xi=0;
       for (int j=0; j<s->size ; j++) {
         vtb=0;
-	s_j=gsl_vector_get (s, j, s_j);
-	if (s_j <= 0) break;
+	s_j=gsl_vector_get (s, j);
+	if (s_j <= 0) continue;
         for (int k=0; k<vt->size2; k++) {
           vtb+=gsl_matrix_get(vt, j, k)*gsl_vector_get(b, k);
 	}

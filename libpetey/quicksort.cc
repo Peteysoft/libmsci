@@ -120,47 +120,41 @@ long qsgt_partition(type *array, long *ind, long left, long right, long pivotInd
 
 //cribbed straight from Wikipedia:
 template<class type>
-void quicksort(type *array, long n, long left, long right) {
+void quicksort(type *array, long left, long right) {
     long pivotIndex;
     long pivotNewIndex;
-
-    //for (long i=0; i<n; i++) printf("%g ", array[i]);
-    //printf("\n");
 
     if (right > left) {
          pivotIndex = (left+right)/2;
          pivotNewIndex = qslt_partition(array, left, right, pivotIndex);
-         quicksort(array, n, left, pivotNewIndex - 1);
-         quicksort(array, n, pivotNewIndex + 1, right);
+         quicksort(array, left, pivotNewIndex - 1);
+         quicksort(array, pivotNewIndex + 1, right);
     }
 }
 
 //cribbed straight from Wikipedia:
 template<class type>
-void quicksort(type *array, long *ind, long n, long left, long right) {
+void quicksort(type *array, long *ind, long left, long right) {
     long pivotIndex;
     long pivotNewIndex;
-
-    //for (long i=0; i<n; i++) printf("%g ", array[i]);
-    //printf("\n");
 
     if (right > left) {
          pivotIndex = (left+right)/2;
          pivotNewIndex = qslt_partition(array, ind, left, right, pivotIndex);
-         quicksort(array, ind, n, left, pivotNewIndex - 1);
-         quicksort(array, ind, n, pivotNewIndex + 1, right);
+         quicksort(array, ind, left, pivotNewIndex - 1);
+         quicksort(array, ind, pivotNewIndex + 1, right);
     }
 }
 
 template<class type>
 void quicksort(type *data, long n) {
-	quicksort(data, n, 0, n-1);
+	quicksort(data, 0, n-1);
 }
 
 template<class type>
 void quicksort(type *data, long *ind, long n) {
         for (long i=0; i<n; i++) ind[i]=i;
-	quicksort(data, ind, n, 0, n-1);
+	quicksort(data, ind, 0, n-1);
 }
 
 template void quicksort<float>(float *data, long n);
@@ -169,30 +163,27 @@ template void quicksort<float>(float *data, long *ind, long n);
 template void quicksort<double>(double *data, long *ind, long n);
 
 template<class type>
-void kleast_quick(type *array, long n, long k, long left, long right) {
+void kleast_quick(type *array, long k, long left, long right) {
     long pivotIndex;
     long pivotNewIndex;
-
-    //for (long i=0; i<n; i++) printf("%g ", array[i]);
-    //printf("\n");
 
     if (right > left) {
          pivotIndex = (left+right)/2;
          pivotNewIndex = qslt_partition(array, left, right, pivotIndex);
-         if (pivotNewIndex >= k) kleast_quick(array, n, k, left, pivotNewIndex - 1);
+         if (pivotNewIndex >= k) kleast_quick(array, k, left, pivotNewIndex - 1);
          //kleast(array, n, k, left, pivotNewIndex - 1);
-         if (pivotNewIndex+1 < k) kleast_quick(array, n, k, pivotNewIndex + 1, right);
+         if (pivotNewIndex+1 < k) kleast_quick(array, k, pivotNewIndex + 1, right);
     }
 }
 
 template<class type>
 void kleast_quick(type *data, long n, long k) {
-	kleast_quick(data, n, k, 0, n-1);
+	kleast_quick(data, k, 0, n-1);
 }
 
 template<class type>
 void kleast_quick(type *data, long n, long k, type *result) {
-	kleast_quick(data, n, k, 0, n-1);
+	kleast_quick(data, k, 0, n-1);
         for (long i=0; i<k; i++) result[i]=data[i];
 }
 
@@ -202,7 +193,7 @@ template void kleast_quick<float>(float *, long, long, float *);
 template void kleast_quick<double>(double *, long, long, double *);
 
 template<class type>
-void kleast_quick(type *array, long n, long k, long *ind, long left, long right) {
+void kleast_quick(type *array, long k, long *ind, long left, long right) {
     long pivotIndex;
     long pivotNewIndex;
 
@@ -213,9 +204,9 @@ void kleast_quick(type *array, long n, long k, long *ind, long left, long right)
     if (right > left) {
          pivotIndex = (left+right)/2;
          pivotNewIndex = qslt_partition(array, ind, left, right, pivotIndex);
-         if (pivotNewIndex >= k) kleast_quick(array, n, k, ind, left, pivotNewIndex - 1);
+         if (pivotNewIndex >= k) kleast_quick(array, k, ind, left, pivotNewIndex - 1);
          //kleast(array, n, k, left, pivotNewIndex - 1);
-         if (pivotNewIndex+1 < k) kleast_quick(array, n, k, ind, pivotNewIndex + 1, right);
+         if (pivotNewIndex+1 < k) kleast_quick(array, k, ind, pivotNewIndex + 1, right);
     }
 }
 
@@ -224,7 +215,7 @@ void kleast_quick(type *data, long n, long k, long *ind) {
     long *ind2;
     ind2=new long[n];
     for (long i=0; i<n; i++) ind2[i]=i;
-    kleast_quick(data, n, k, ind2, 0, n-1);
+    kleast_quick(data, k, ind2, 0, n-1);
     for (long i=0; i<k; i++) {
       ind[i]=ind2[i];
     }
@@ -238,7 +229,7 @@ void kleast_quick(type *data, long n, long k, type *result, long *ind) {
     long *ind2;
     ind2=new long[n];
     for (long i=0; i<n; i++) ind2[i]=i;
-    kleast_quick(data, n, k, ind2, 0, n-1);
+    kleast_quick(data, k, ind2, 0, n-1);
     for (long i=0; i<k; i++) {
       result[i]=data[ind2[i]];
       ind[i]=ind2[i];
