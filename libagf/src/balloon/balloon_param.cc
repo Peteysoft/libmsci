@@ -1,41 +1,21 @@
+#include <stdint.h>
 #include <math.h>
 
 #include "quicksort.h"
 
+#include "balloon_param.h"
+
+using namespace libpetey;
+
   template <typename real>
-  real agf_kernel(real r2, real *dfdr) {
+  real gaussian_kernel(real r2, real *dfdr) {
     real f;
     f=exp(-r2/2);
     if (dfdr != NULL) dfdr=-f/2;
   }
 
   template <typename real, typename index_t>
-  class agf_param {
-    private:
-      //kernel function:
-      real (* kernel) (real, real *);		//kernel function
-      index_t k;				//number of weight to calc.
-      real var[2];				//variance brackets
-      index_t maxiter;
-      real tol;
-    protected:
-      index_t D;				//number of features
-      real W;					//total weight
-    public:
-      agf_param(real (*) (real), index_t, real, index_t);
-      ~agf_param();
-
-      virtual void n(index_t *);	//max size needed for weights
-      virtual index_t dim();		//number of features
-
-      //compute the weights, not including derivs:
-      virtual index_t operator () (real *d2, index_t n, index_t *ind, real *w,
-		      real *norm=NULL);
-  };
-
-
-  template <typename real, typename index_t>
-  agf_param<real, index_t>::agf_param(
+  balloon_param<real, index_t>::balloon_param(
 		real (*K) (real, real *), 		//kernel function
 		index_t nvar, 				//number of features
 		real total_weight,			//total of weights
@@ -57,16 +37,16 @@
   }
 
   template <typename real, typename index_t>
-  agf_param<real, index_t>::~agf_param() {
+  balloon_param<real, index_t>::~balloon_param() {
   }
 
   template <typename real, typename index_t>
-  void agf_param<real, index_t>::maxn(index_t *mn) {
+  void balloon_param<real, index_t>::maxn(index_t *mn) {
     if (k > 0) *mn=k;
   }
 
   template <typename real, typename index_t>
-  void agf_param<real, index_t>::dim() {
+  void balloon_param<real, index_t>::dim() {
     return D;
   }
 
@@ -101,7 +81,7 @@
 
 
   template <typename real, typename index_t>
-  index_t agf_param<real, index_t>::operator () (
+  index_t balloon_param<real, index_t>::operator () (
 		real *d2, 				//distances
 		index_t n,				//number of distances
 		index_t *ind,				//returned indices
@@ -123,12 +103,14 @@
       kleast_quick(d2, n, k, kleast, ind);
       d2=kleast;
       n=k;
+    } else {
+      for (index_t i=0; i<n; i++) ind[i]=i;
     }
 
     param[0]=&W;
     param[1]=&n;
     param[2]=d2;
-    param[3]=weight;
+    param[3]=w;
     param[4]=kernel;
 
     for (nmov=0; nmov < maxiter; nmov++) {
@@ -175,119 +157,18 @@
     //set error handler back to previous one:
     gsl_set_error_handler(old_handler);
 
-    //calculate final weights:
-    for (index_t i=0; i<n; i++) w[i]=(* kernel) (d2[i]/var_f, NULL);
-
     //if required, calculate normalization coefficient:
     if (norm != NULL) *norm=pow(sqrt(var_f*M_PI*2), D);
 
-    delete [] ind;
-    delete [] w;
     delete [] kleast;
 
     if (k>0 && k<n) return k; else return n;
 
   }
 
-  template <typename real, typename cls_t, typename index_t>
-  cls_t agf_classify(agf_param *wt_calc,
-		  index_t n,
-		  real **x,
-		  cls_t *cls,
-		  cls_t ncls,
-		  real *test,
-		  real *p) {
-    index_t D=wt_calc->dim();
-    real d2[n];
-    index_t maxn=n;
+  template class balloon_param<float, int32_t>;
+  template class balloon_param<double, int32_t>;
 
-    index_t *ind;
-    real *w;
-    index_t k;
-    real tw;
 
-    for (index_t i=0; i<n; i++) {
-      d2[i]=0;
-      for (index_t j=0; j<D; j++) {
-        real diff=x[i][j]-test[j];
-	d2[i]+=diff*diff;
-      }
-    }
-
-    wt_calc->maxn(&maxn);
-    ind=new index_t[maxn];
-    w=new index_t[maxn];
-
-    k=wt_calc(d2, n, ind, w);
-
-    for (index_t i=0; i<ncls; i++) p[i]=0;
-    tw=0;
-    for (index_t i=0; i<k; i++) {
-      tw+=w[i];
-      p[cls[ind[i]]]+=w[i];
-    }
-
-    for (index_t i=0; i<ncls; i++) p[i]/=tw;
-
-    delete [] ind;
-    delete [] wt;
-
-    return choose_class(pdf, ncls);
-  }
-
-  template <typename real, typename index_t>
-  class knn_param {
-    private:
-      index_t k;				//number of weight to calc.
-    public:
-      knn_param(real (*) (real), index_t, real, index_t);
-      ~knn_param();
-
-      virtual void n(index_t *);	//max size needed for weights
-
-      //compute the weights, not including derivs:
-      virtual index_t operator () (real *d2, index_t n, index_t *ind, real *w,
-		      real *norm=NULL);
-  };
-
-  template <typename real, typename index_t>
-  knn_param<real, index_t>::knn_param(index_t kay, index_t nvar) {
-    k=kay;
-    this->W=kay;
-    this->D=nvar;
-  }
-
-  template <typename real, typename index_t>
-  knn_param<real, index_t>::~knn_param() {
-  }
-
-  template <typename real, typename index_t>
-  void knn_param<real, index_t>::maxn(index_t *mn) {
-    *mn=k+1;
-  }
-
-  template <typename real, typename index_t>
-  index_t knn_param<real, index_t>::operator () (
-		real *d2, 				//distances
-		index_t n,				//number of distances
-		index_t *ind,				//returned indices
-		real *w,				//returned weights
-		real *norm) {				//returned norm. coef.
-    real kleast[k+1];
-    index_t D=this->D;
-    real V;
-    index_t extra=0;
-
-    if (norm != NULL) extra=1;
-
-    kleast_quick(d2, n, k+extra, kleast, ind);
-    for (index_t i=0; i<k+extra; i++) w[i]=1;
-    if (norm != NULL) {
-      real sqrtpir=sqrt(M_PI)*(kleast[k-1]+kleast[k])/2;
-      V=1.
-      for (index_t i=0; i<D; i++) V*=sqrtpir;
-      *norm=V/gsl_sf_gamma(D/2.+1);
-    }
-    return k;
-  }
+} //end namespace libagf
 
