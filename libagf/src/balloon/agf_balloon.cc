@@ -1,33 +1,33 @@
 #include <math.h>
 
-#include "balloon_param.h"
+#include "agf_balloon.h"
 
 namespace libagf {
   //classify a test point using a variable bandwidth kernel density
   //estimator with constant weight:
-  template <typename real, typename cls_t, typename index_t>
+  template <typename real, typename cls_t>
   cls_t balloon_classify(
-		  balloon_param *wt_calc,	//classifier parameters
-		  index_t n,			//number of training samples
+		  balloon_param<real, long> *wt_calc,//classifier parameters
+		  nel_ta n,			//number of training samples
 		  real **x,			//coordinates
 		  cls_t ncls,			//number of classes
 		  cls_t *cls,			//discrete ordinates [0-ncls]
 		  real *test,			//test point
 		  real *p) {			//returned cond. prob.
 
-    index_t D=wt_calc->dim();		//number of dim.
+    dim_ta D=wt_calc->dim();		//number of dim.
     real d2[n];				//squared distances
-    index_t maxn=n;			//maximum number of weights
+    long maxn=n;			//maximum number of weights
 
-    index_t *ind;			//indices of samples in calc.
+    long *ind;				//indices of samples in calc.
     real *w;				//weights
-    index_t k;				//number of samples in calc.
+    nel_ta k;				//number of samples in calc.
     real tw;				//total of weights
 
     //calculate distances:
-    for (index_t i=0; i<n; i++) {
+    for (nel_ta i=0; i<n; i++) {
       d2[i]=0;
-      for (index_t j=0; j<D; j++) {
+      for (dim_ta j=0; j<D; j++) {
         real diff=x[i][j]-test[j];
 	d2[i]+=diff*diff;
       }
@@ -35,108 +35,107 @@ namespace libagf {
 
     //allocated space for indices and weights:
     wt_calc->maxn(&maxn);
-    ind=new index_t[maxn];
-    w=new index_t[maxn];
+    ind=new long[maxn];
+    w=new real[maxn];
 
     //use parameter object to calculate weights:
-    k=wt_calc(d2, n, ind, w);
+    k=(* wt_calc)(d2, n, ind, w);
 
     //sum weights to find probabilities:
-    for (index_t i=0; i<ncls; i++) p[i]=0;
+    for (cls_t i=0; i<ncls; i++) p[i]=0;
     tw=0;
-    for (index_t i=0; i<k; i++) {
+    for (nel_ta i=0; i<k; i++) {
       tw+=w[i];
       p[cls[ind[i]]]+=w[i];
     }
     //normalize probabilities:
-    for (index_t i=0; i<ncls; i++) p[i]/=tw;
+    for (cls_t i=0; i<ncls; i++) p[i]/=tw;
 
     //clean up:
     delete [] ind;
     delete [] w;
 
     //choose best class:
-    return choose_class(pdf, ncls);
+    return choose_class(p, ncls);
   }
 
-  template <typename real, typename cls_t, typename index_t>
-  cls_t balloon_classify_joint(balloon_param *wt_calc,
-		  index_t n,
+  template <typename real, typename cls_t>
+  cls_t balloon_classify_joint(balloon_param<real, long> *wt_calc,
+		  nel_ta n,
 		  real **x,
-		  cls_t *cls,
 		  cls_t ncls,
+		  cls_t *cls,
 		  real *test,
 		  real *p) {		//returned joint probabilities
 
-    index_t D=wt_calc->dim();		//number of dimensions
+    dim_ta D=wt_calc->dim();		//number of dimensions
     real d2[n];				//squared distances
-    index_t maxn=n;			//maximum number of weights
+    long maxn=n;			//maximum number of weights
     real norm;				//normalization coef.
 
-    index_t *ind;			//index of points corr. to wts.
+    long *ind;			//index of points corr. to wts.
     real *w;				//weights
-    index_t k;				//number of weights
+    nel_ta k;				//number of weights
 
-    for (index_t i=0; i<n; i++) {
+    for (nel_ta i=0; i<n; i++) {
       d2[i]=0;
-      for (index_t j=0; j<D; j++) {
+      for (nel_ta j=0; j<D; j++) {
         real diff=x[i][j]-test[j];
 	d2[i]+=diff*diff;
       }
     }
 
     wt_calc->maxn(&maxn);
-    ind=new index_t[maxn];
-    w=new index_t[maxn];
+    ind=new long[maxn];
+    w=new real[maxn];
 
-    k=wt_calc(d2, n, ind, w, &norm);
+    k=(*wt_calc)(d2, n, ind, w, &norm);
 
-    for (index_t i=0; i<ncls; i++) p[i]=0;
-    tw=0;
-    for (index_t i=0; i<k; i++) {
+    for (cls_t i=0; i<ncls; i++) p[i]=0;
+    for (nel_ta i=0; i<k; i++) {
       p[cls[ind[i]]]+=w[i];
     }
 
-    for (index_t i=0; i<ncls; i++) p[i]/=norm/n;
+    for (cls_t i=0; i<ncls; i++) p[i]/=norm/n;
 
     delete [] ind;
     delete [] w;
 
-    return choose_class(pdf, ncls);
+    return choose_class(p, ncls);
   }
 
   //variable bandwidth kernel density estimator with constant weight:
-  template <typename real, typename index_t>
-  real balloon_density(balloon_param *wt_calc,
-		  index_t n,
+  template <typename real>
+  real balloon_density(balloon_param<real, long> *wt_calc,
+		  nel_ta n,
 		  real **x,
 		  real *test) {
-    index_t D=wt_calc->dim();
+    dim_ta D=wt_calc->dim();
     real d2[n];
     real norm;
-    index_t maxn=n;
+    long maxn=n;
 
-    index_t *ind;
+    long *ind;
     real *w;
-    index_t k;
+    nel_ta k;
     real tw;
 
-    for (index_t i=0; i<n; i++) {
+    for (nel_ta i=0; i<n; i++) {
       d2[i]=0;
-      for (index_t j=0; j<D; j++) {
+      for (dim_ta j=0; j<D; j++) {
         real diff=x[i][j]-test[j];
 	d2[i]+=diff*diff;
       }
     }
 
     wt_calc->maxn(&maxn);
-    ind=new index_t[maxn];
-    w=new index_t[maxn];
+    ind=new long[maxn];
+    w=new real[maxn];
 
-    k=wt_calc(d2, n, ind, w, &norm);
+    k=(*wt_calc)(d2, n, ind, w, &norm);
 
     tw=0;
-    for (index_t i=0; i<k; i++) tw+=w[i];
+    for (nel_ta i=0; i<k; i++) tw+=w[i];
 
     delete [] ind;
     delete [] w;
@@ -144,40 +143,40 @@ namespace libagf {
     return tw/norm/n;
   }
 
-  template <typename real, typename index_t>
-  real balloon_interpol(balloon_param *wt_calc,
-		  index_t n,
+  template <typename real>
+  real balloon_interpol(balloon_param<real, long> *wt_calc,
+		  nel_ta n,
 		  real **x,
 		  real *y,
 		  real *test,
 		  real *e2) {
-    index_t D=wt_calc->dim();
+    dim_ta D=wt_calc->dim();
     real d2[n];
-    index_t maxn=n;
+    long maxn=n;
 
-    index_t *ind;
+    long *ind;
     real *w;
-    index_t k;
+    nel_ta k;
     real tw;
     real result;
 
-    for (index_t i=0; i<n; i++) {
+    for (nel_ta i=0; i<n; i++) {
       d2[i]=0;
-      for (index_t j=0; j<D; j++) {
+      for (dim_ta j=0; j<D; j++) {
         real diff=x[i][j]-test[j];
 	d2[i]+=diff*diff;
       }
     }
 
     wt_calc->maxn(&maxn);
-    ind=new index_t[maxn];
-    w=new index_t[maxn];
+    ind=new long[maxn];
+    w=new real[maxn];
 
-    k=wt_calc(d2, n, ind, w);
+    k=(*wt_calc)(d2, n, ind, w);
 
     result=0;
     tw=0;
-    for (index_t i=0; i<k; i++) {
+    for (nel_ta i=0; i<k; i++) {
       result+=w[i]*y[i];
       tw+=w[i];
     }
@@ -185,7 +184,7 @@ namespace libagf {
 
     if (e2 != NULL) {
       *e2=0;
-      for (index_t i=0; i<k; i++) {
+      for (nel_ta i=0; i<k; i++) {
         real diff=w[i]*(y[i]-result);
         *e2+=diff*diff;
       }
@@ -196,6 +195,34 @@ namespace libagf {
 
     return result;
   }
+
+  template cls_ta balloon_classify<float, cls_ta>(
+		  balloon_param<float, long> *,
+		  nel_ta, float **, cls_ta, cls_ta *, float *, float *);
+  template cls_ta balloon_classify<double, cls_ta>(
+		  balloon_param<double, long> *,
+		  nel_ta, double **, cls_ta, cls_ta *, double *, double *);
+
+  template cls_ta balloon_classify_joint<float, cls_ta>(
+		  balloon_param<float, long> *,
+		  nel_ta, float **, cls_ta, cls_ta *, float *, float *);
+  template cls_ta balloon_classify_joint<double, cls_ta>(
+		  balloon_param<double, long> *,
+		  nel_ta, double **, cls_ta, cls_ta *, double *, double *);
+
+  template float balloon_density<float>(
+		  balloon_param<float, long> *,
+		  nel_ta, float **, float *);
+  template double balloon_density<double>(
+		  balloon_param<double, long> *,
+		  nel_ta, double **, double *);
+
+  template float balloon_interpol<float>(
+		  balloon_param<float, long> *,
+		  nel_ta, float **, float *, float *, float *);
+  template double balloon_interpol<double>(
+		  balloon_param<double, long> *,
+		  nel_ta, double **, double *, double *, double *);
 
 } //end namespace libagf
 

@@ -10,7 +10,7 @@ namespace libagf {
     private:
       index_t k;				//number of weight to calc.
     public:
-      knn_param(real (*) (real), index_t, real, index_t);
+      knn_param(index_t, index_t);
       ~knn_param();
 
       virtual void n(index_t *);	//max size needed for weights
@@ -18,6 +18,8 @@ namespace libagf {
       //compute the weights, not including derivs:
       virtual index_t operator () (real *d2, index_t n, index_t *ind, real *w,
 		      real *norm=NULL);
+
+      virtual void maxn(index_t *n);
   };
 
 } //end namespace libagf

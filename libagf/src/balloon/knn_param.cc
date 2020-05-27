@@ -44,14 +44,14 @@ namespace libagf {
     for (index_t i=0; i<k+extra; i++) w[i]=1;
     if (norm != NULL) {
       real sqrtpir=sqrt(M_PI)*(kleast[k-1]+kleast[k])/2;
-      V=1.
+      V=1.;
       for (index_t i=0; i<D; i++) V*=sqrtpir;
       *norm=V/gsl_sf_gamma(D/2.+1);
     }
     return k;
   }
 
-  template class knn_param<float, int32_t>
-  template class knn_param<double, int32_t>
+  template class knn_param<float, long>;
+  template class knn_param<double, long>;
 } //end namespace libagf
 
