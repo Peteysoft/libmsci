@@ -15,6 +15,8 @@
 #include "full_util.h"
 #include "multiclass_methods.h"
 
+#include "av.h"
+
 #include "agf_lib.h"
 
 using namespace libpetey;
@@ -939,7 +941,7 @@ namespace libagf {
   //(Hanson and Lawson)
   //doesn't solve the exact problem, but should confirm at least that the
   //Fortran codes work:
-  extern "C" {void nnls_(double *, int32_t *, int32_t *, int32_t *, double *,
+  extern "C" {void FORTRAN_FUNC(nnls)(double *, int32_t *, int32_t *, int32_t *, double *,
                 double *, double *, double *, double *, int32_t *, int32_t *);}
 
   template <typename code_t, typename real>
@@ -982,7 +984,7 @@ namespace libagf {
 
     n++;
 
-    nnls_(ata[0], &n, &n, &n, b, x, &rnorm, w, zz, index, &mode);
+    FORTRAN_FUNC(nnls)(ata[0], &n, &n, &n, b, x, &rnorm, w, zz, index, &mode);
 
     printf("exit code=%d\n", mode);
 
@@ -1041,7 +1043,7 @@ namespace libagf {
       }
       for (int j=0; j<m; j++) bp[j]=b[j]-at[sub][j];
 
-      nnls_(atp[0], &m, &m, &nm1, bp, x, &rnorm, w, zz, index, &mode);
+      FORTRAN_FUNC(nnls)(atp[0], &m, &m, &nm1, bp, x, &rnorm, w, zz, index, &mode);
 
       if (mode!=1) {
         fprintf(stderr, "solve_class_nnls3: warning, nnls routine failed to converge\n");
@@ -1079,20 +1081,22 @@ namespace libagf {
   template <typename code_t, typename real>
   void solve_class_nnls4(code_t **a0, int m, int n, real *r, real *p) {
     double **at;		//full problem matrix row major ordering
-    double **atp;   	//equality constrained problem matrix row major
-    double b[m];        //solution vector
-    double bp[m];       //solution vector for equality constrained problem
-    double x[n-1];        //variables
-    double rnorm;       //Euclidean norm of residual vector
-    double w[n-1];        //slack variables
-    double zz[m];       //working space
-    int32_t index[n-1];   //more working space
-    long sind[n-1];	//indices to sorted slack variables
-    long sub;		//variable to exclude
-    tree_lg<long> tried;            //previously excluded variables
-    int32_t mode;       //error code: 1=success; 2=bad dimensions; 3=max iter exceeded
-    int32_t nm1=n-1;    //rows in equality constrained problem
-    int failflag=1;	//make sure everything worked OK
+    double **atp;		//equality constrained problem matrix row major
+    double bp[m];	//solution vector for equality constrained problem
+    double x[n-1];		//variables
+    double rnorm;		//Euclidean norm of residual vector
+    double w[n-1];		//slack variables
+    double zz[m];		//working space
+    int32_t index[n-1];		//more working space
+    long sind[n-1];		//indices to sorted slack variables
+    long sub;			//variable to exclude
+    tree_lg<long> tried;	//previously excluded variables
+    int32_t mode;		//error code: 	1=success; 
+    				//		2=bad dimensions;
+				//		3=max iter exceeded
+
+    int32_t nm1=n-1;		//rows in equality constrained problem
+    int failflag=1;		//make sure everything worked OK
 
     //set the problem matrix:
     at=allocate_matrix<double>(n, m);
@@ -1104,7 +1108,6 @@ namespace libagf {
           at[j][i]=a0[i][j];
         }
       }
-      b[i]=r[i];
     }
     //print_matrix(stdout, ata, n, n);
     atp=allocate_matrix<double>(n-1, m);
@@ -1113,7 +1116,7 @@ namespace libagf {
     //(ought to check which, if any, probability set to 0 is furthest
     //out-of-bounds and use that...)
     sub=ranu()*n;
-    tried.add_member(sub);
+    tried.add_member(sub);	//stupid way to do it--should just use bit array
     for (int i=0; i<n; i++) {
       double x_i;
       for (int j=0; j<sub; j++) {
@@ -1122,13 +1125,12 @@ namespace libagf {
       for (int j=sub+1; j<n; j++) {
         for (int k=0; k<m; k++) atp[j-1][k]=at[j][k]-at[sub][k];
       }
-      for (int j=0; j<m; j++) bp[j]=b[j]-at[sub][j];
+      for (int j=0; j<m; j++) bp[j]=r[j]-at[sub][j];
 
-      nnls_(atp[0], &m, &m, &nm1, bp, x, &rnorm, w, zz, index, &mode);
+      FORTRAN_FUNC(nnls)(atp[0], &m, &m, &nm1, bp, x, &rnorm, w, zz, index, &mode);
 
       x_i=1;
-      for (int j=0; j<sub; j++) x_i-=x[j];
-      for (int j=sub+1; j<n; j++) x_i-=x[j-1];
+      for (int j=0; j<n-1; j++) x_i-=x[j];
       //if the excluded variable obeys the inequality constraint,
       //set probabily results and exit:
       if (x_i >= 0) {
@@ -1139,14 +1141,14 @@ namespace libagf {
         break;
       }
 
-      //either should work:
-      //heapsort(x, sind, n-1);
-      heapsort(w, sind, n-1);
+      //x works better than w:
+      heapsort(x, sind, n-1);
       //correct indices:
       for (int j=0; j<n-1; j++) if (sind[j]>sub) sind[j]++;
       failflag=1;
       for (int j=0; j<n-1; j++) {
         sub=sind[n-j-2];
+	//note: order is important here (prob. not the best way of doing things)
         if (tried.nel() != tried.add_member(sub)) {
           failflag=0;
           break;
@@ -1155,7 +1157,7 @@ namespace libagf {
       if (failflag) break;
 
       if (mode!=1) {
-        fprintf(stderr, "solve_class_nnls3: warning, nnls routine failed to converge\n");
+        fprintf(stderr, "solve_class_nnls4: warning, nnls routine failed to converge\n");
         continue;
       }
       //printf("exit code=%d\n", mode);
@@ -1165,7 +1167,7 @@ namespace libagf {
     delete_matrix(at);
 
     if (failflag) {
-      fprintf(stderr, "solve_class_nnls3: failed to find solution\n");
+      fprintf(stderr, "solve_class_nnls4: failed to find solution\n");
       assert(failflag==0);
     }
 

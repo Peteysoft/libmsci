@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 
   opt_args.Qtype=-1;
   opt_args.algtype=0;
-  errcode=agf_parse_command_opts(argc, argv, "O:a:Q:w:c:nuMCHE:Ky:ZG", &opt_args);
+  errcode=agf_parse_command_opts(argc, argv, "O:a:Q:w:c:nuMCHE:Ky:ZG0", &opt_args);
   if (errcode==FATAL_COMMAND_OPTION_PARSE_ERROR) return errcode;
 
   //parse the command line arguments:
@@ -68,6 +68,7 @@ int main(int argc, char *argv[]) {
     fprintf(helpfs, "                  must always be specified explicitly)\n");
     fprintf(helpfs, "  -u          model (borders) data is not normalized\n");
     fprintf(helpfs, "  -Q          how to solve for probabilities in non-hierarchical scheme: [0]\n");
+    fprintf(helpfs, "                -1= output binary probabilities\n");
     fprintf(helpfs, "                0 = Lawson and Hanson solution [default]\n");
     fprintf(helpfs, "                1 = basic linear least squares\n");
     fprintf(helpfs, "                2 = voting from probabilities\n");
@@ -84,6 +85,7 @@ int main(int argc, char *argv[]) {
     fprintf(helpfs, "                10= iterative method by Zadrozny\n");
     fprintf(helpfs, "                11 = constrained inverse 2\n");
     fprintf(helpfs, "                      (may be extremely inefficient (NP) for some cases)\n");
+    fprintf(helpfs, "  -0          print out raw decision functions\n");
     fprintf(helpfs, "  -C          no class data\n");
     fprintf(helpfs, "  -E missing  (in combination with -M) value for missing data\n");
     fprintf(helpfs, "  -H          no header\n");
@@ -221,44 +223,98 @@ int main(int argc, char *argv[]) {
 
   //begin the classification scheme:
   result=new cls_ta[ntest];
+  con=new real_a[ntest];
 
   //ncls : number of class labels
   ncls=classifier->n_class();
 
+  //non-hierarchical multi-class:
+  cls_ta ncls1=0;			//largest class label-1
   if (classifier->max_depth() == 1 && ncls>2) {
-    cls_ta ncls1=0;			//largest class label-1
     //in case there are missing classes:
     //(ncls1 : maximum value for class label plus 1)
     clist=new cls_ta[ncls];
     classifier->class_list(clist);
     for (cls_ta i=0; i<ncls; i++) if (clist[i]>=ncls1) ncls1=clist[i]+1;
+  }
 
-    if (opt_args.multicommand==NULL) {
-      real_a *pdf=NULL;			//conditional probabilities (if applicable)
-      real_a *pdf1=NULL;		//pdfs before mapping
-
-      //allocate space for probabilities:
-      con=new real_a[ntest];
-      pdf1=new real_a[ncls];
-      pdf=new real_a[ncls1];
-      for (cls_ta i=0; i<ncls1; i++) pdf[i]=0;
-
-      //perform the classifications:
+  //"in-house" classifiers only:
+  if (opt_args.multicommand==NULL) {
+    //output raw decision functions:
+    if (opt_args.stdinflag) {
+      cls_ta nid=0;
+      real_a pdf;
+      real_a *praw;
+      classifier->set_id(&nid);
+      praw=new real_a[nid];
       for (nel_ta i=0; i<ntest; i++) {
-        result[i]=classifier->classify_t(test[i], pdf1);
-        for (cls_ta j=0; j<ncls; j++) pdf[clist[j]]=pdf1[j];
-        //result[i]=clist[result[i]];
-
-        con[i]=(ncls*pdf[result[i]]-1)/(ncls-1);
-
-        //print results to standard out:
-        for (cls_ta j=0; j<ncls; j++) printf(" %9.6f", pdf[j]);
-        printf("% 4d", result[i]);
+        //binary probalities that haven't been calculated are given as nan:
+        for (cls_ta j=0; j<nid; j++) praw[j]=NAN;
+        result[i]=classifier->classify_t(test[i], con[i], praw);
+        con[i]=(ncls*con[i]-1)/(ncls-1);
+        for (cls_ta j=0; j<nid; j++) printf(" %9.6f", praw[j]);
         printf("\n");
       }
+      delete [] praw;
+    //non-hierarchical multi-class:
+    } else if (classifier->max_depth() == 1 && ncls>2) {
+      cls_ta nid=0;
+      real_a *pdf=NULL;			//conditional probabilities
+      classifier->set_id(&nid);
+      //just want raw binary probabilities:
+      if (opt_args.Qtype < 0) {
+        //allocate space for probabilities:
+        pdf=new real_a[nid];
+        for (cls_ta i=0; i<nid; i++) pdf[i]=NAN;
+
+        //perform the classifications:
+        for (nel_ta i=0; i<ntest; i++) {
+          result[i]=classifier->classify_t(test[i], pdf);
+          //result[i]=clist[result[i]];
+
+          con[i]=0;
+
+          //print results to standard out:
+          for (cls_ta j=0; j<nid; j++) printf(" %9.6f", pdf[j]);
+          printf("\n");
+        }
+      } else {
+        real_a *pdf1=NULL;		//pdfs before mapping
+
+        //allocate space for probabilities:
+        pdf1=new real_a[ncls];
+        pdf=new real_a[ncls1];
+        for (cls_ta i=0; i<ncls1; i++) pdf[i]=0;
+
+        //perform the classifications:
+        for (nel_ta i=0; i<ntest; i++) {
+          result[i]=classifier->classify_t(test[i], pdf1);
+          for (cls_ta j=0; j<ncls; j++) pdf[clist[j]]=pdf1[j];
+          //result[i]=clist[result[i]];
+
+          con[i]=(ncls*pdf[result[i]]-1)/(ncls-1);
+
+          //print results to standard out:
+          for (cls_ta j=0; j<ncls; j++) printf(" %9.6f", pdf[j]);
+          printf("% 4d", result[i]);
+          printf("\n");
+	}
+        delete [] pdf1;
+      }
       delete [] pdf;
-      delete [] pdf1;
+      delete [] clist;
+
+    //hierarchical "decision tree" multi-class classification:
     } else {
+      for (nel_ta i=0; i<ntest; i++) {
+        result[i]=classifier->classify_t(test[i], con[i]);
+        con[i]=(ncls*con[i]-1)/(ncls-1);
+      }
+    }
+  //external binary classifiers:
+  } else {
+    //non-hierarchical multi-class:
+    if (classifier->max_depth() == 1 && ncls>2) {
       real_a **p;
 
       //allocate space for probabilities:
@@ -284,7 +340,6 @@ int main(int argc, char *argv[]) {
       //calculate "confidence ratings" for class evaluation:
       //inverse mapping from class label to class number:
       cls_ta *clisti=new cls_ta[ncls1];
-      con=new real_a[ntest];
       for (cls_ta j=0; j<ncls; j++) {
         clisti[clist[j]]=j;
       }
@@ -295,15 +350,9 @@ int main(int argc, char *argv[]) {
 
       delete [] p[0];
       delete [] p;
-    }
-    delete [] clist;
-  } else {
-    con=new real_a[ntest];
-    if (opt_args.multicommand==NULL) {
-      for (nel_ta i=0; i<ntest; i++) {
-        result[i]=classifier->classify_t(test[i], con[i]);
-        con[i]=(ncls*con[i]-1)/(ncls-1);
-      }
+      delete [] clist;
+
+    //hierarchical "decision tree" multi-class classification:
     } else {
       classifier->batch_classify_t(test, result, con, ntest, nvar);
       fs=fopen(outfile, "w");
@@ -318,8 +367,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  //printf("\n");
-
+  //in-house classifiers are written in standard, binary AGF format:
   if (opt_args.multicommand==NULL) {
     //write the results to a file:
     fs=fopen(outfile, "w");
@@ -340,7 +388,9 @@ int main(int argc, char *argv[]) {
     fclose(fs);
 
     delete [] confile;
+  //external classifiers written only to standard out:
   } else {
+    //if test classes have been supplied, write validation scores:
     if (cls0!=NULL && opt_args.Cflag==0) {
       real_a **actab;
       class_eval(cls0, result, ntest);
@@ -365,6 +415,8 @@ int main(int argc, char *argv[]) {
     delete_matrix(mat);
     delete [] ave;
   }
+
+  delete [] opt_args.path;
 
   ran_end();
 

@@ -143,7 +143,7 @@ namespace libagf {
     //allocate space for kernel values, etc:
     printf("Allocating space in helper\n");
     helper->kval=new real[nsv_total];
-    helper->test=new real[D];
+    helper->test=NULL;
     helper->flag=new int[nsv_total];
 
     //clean up:
@@ -224,7 +224,7 @@ namespace libagf {
 
     //allocate space for kernel values:
     kval=new real[nsv];
-    test=new real[D];
+    test=NULL;
     flag=new int[nsv];
     for (nel_ta i=0; i<nsv; i++) flag[i]=0;
   }
@@ -268,10 +268,14 @@ namespace libagf {
 
   template <typename real>
   void svm_helper<real>::register_point(real *x) {
-    if (compare_vectors(x, test, D)!=0) {
-      for (int i=0; i<D; i++) test[i]=x[i];
-      for (int i=0; i<nsv; i++) flag[i]=0;
+    if (test==NULL) {
+      test=new real[D];
+    } else if (compare_vectors(x, test, D)==0) {
+      return;
     }
+
+    for (int i=0; i<D; i++) test[i]=x[i];
+    for (int i=0; i<nsv; i++) flag[i]=0;
   }
 
   template <typename real>

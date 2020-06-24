@@ -245,7 +245,7 @@ Option & Function \\
 -- & External command to train a binary classifier.\\
 -+ & Extra options to pass to binary training command.\\
 -\^ & External command to convert data formats for above.\\
--0 & Read from stdin.\\
+-0 & Read from stdin/trial run/output raw data/omit final processing.\\
 -1 & Write to stdout.\\
 -a & Name of file containing normalization data.\\
 -A & Use ASCII files instead of binary.\\
@@ -299,16 +299,18 @@ Option & Function \\
   & \verb/    /1=filter variance min and max;\\
   & \verb/    /2=total weight min and max\\
   & \verb/  /non-hierarchical multi-class classification:\\
-  & \verb/    /0=constrained inverse (not always optimal)\\
-  & \verb/    /1=linear least squares, no constraints or re-normalization\\
-  & \verb/    /2=voting from pdf, no re-normalization\\
-  & \verb/    /3=voting from class label, no re-normalization\\
-  & \verb/    /4=voting from pdf overrides least squares, conditional\\
-  & \verb/      /probabilities are adjusted and re-normalized\\
-  & \verb/    /5=voting from class overrides least squares, conditional\\
-  & \verb/      /probabilities are adjusted and re-normalized\\
-  & \verb/    /6=experimental\\
-  & \verb/    /7=constrained inverse (may be extremely inefficient)
+	& \verb/    / 0=Lawson \& Hanson constrained least squares (default);\\
+  & \verb/    / 1=linear least squares, no constraints or re-normalization;\\
+  & \verb/    / 2=voting from pdf, no re-normalization;\\
+  & \verb/    / 3=voting from class label, no re-normalization;\\
+  & \verb/    / 4=least squares with normalization constraint 1;\\
+  & \verb/    / 5=least squares with normalization constraint 2;\\
+  & \verb/    / 6=least squares with renormalization;\\
+  & \verb/    / 7=constrained inverse (may not be optimal);\\
+  & \verb/    / 8=voting from pdf with renormalization;\\
+  & \verb/    / 9=one versus the rest;\\
+	& \verb/    /10=iterative method by Zadrozny;\\
+  & \verb/    /11=constrained inverse 2 (may be extremely inefficient);\\
 \end{tabular}
 
 \begin{tabular}{ll}

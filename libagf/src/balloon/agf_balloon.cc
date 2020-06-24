@@ -79,7 +79,7 @@ namespace libagf {
 
     for (nel_ta i=0; i<n; i++) {
       d2[i]=0;
-      for (nel_ta j=0; j<D; j++) {
+      for (dim_ta j=0; j<D; j++) {
         real diff=x[i][j]-test[j];
 	d2[i]+=diff*diff;
       }

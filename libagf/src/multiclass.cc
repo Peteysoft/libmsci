@@ -130,7 +130,7 @@ namespace libagf {
       for (int i=0; i<nmodel; i++) {
         fname1=new char[strlen(prefix)+strlen(fname[i])+1];
 	sprintf(fname1, "%s%s", prefix, fname[i]);
-	delete fname[i];
+	delete [] fname[i];
 	fname[i]=fname1;
       }
     }
@@ -204,6 +204,9 @@ namespace libagf {
   template <typename real, typename cls_t>
   void multiclass<real, cls_t>::set_solve_type(int ct) {
     switch (ct) {
+      case (-1):
+        solve_class=NULL;
+        break;
       case (0):
         solve_class=&solve_class_nnls4<real, real>;
         break;
@@ -295,15 +298,21 @@ namespace libagf {
     real r[nmodel];
     //real pt=0;
 
-    ntest++;
     for (int i=0; i<nmodel; i++) {
       r[i]=twoclass[i]->R(x, praw);
       //printf("%12.6g", r[i]);
     }
     //printf("\n");
+    
+    if (solve_class==NULL) {
+      for (int i=0; i<nmodel; i++) p[i]=r[i];
+      return 0;
+    }
+
     sol_time-=clock();
     (*solve_class)(code, nmodel, this->ncls, r, p);
     sol_time+=clock();
+    ntest++;
     //for (cls_t i=0; i<this->ncls; i++) pt+=p[i];
     //printf("pt=%g\n", pt);
     return choose_class(p, this->ncls);

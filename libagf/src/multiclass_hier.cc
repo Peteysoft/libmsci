@@ -161,7 +161,7 @@ namespace libagf {
       //should really start using some better string libraries...
       fname=new char[strlen(param.prefix)+strlen(fname0)+1];
       sprintf(fname, "%s%s", param.prefix, fname0);
-      delete fname0;
+      delete [] fname0;
     } else {
       fname=fname0;
     }

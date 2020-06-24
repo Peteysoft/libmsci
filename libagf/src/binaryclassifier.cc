@@ -58,12 +58,16 @@ namespace libagf {
     id=-1;
     this->ncls=2;
     //xtran=NULL;
+    order=1;
+    calcoef=new real[order+1];
+    calcoef[0]=0;
+    calcoef[1]=1;
   }
 
   template <class real, class cls_t>
   binaryclassifier<real, cls_t>::~binaryclassifier() {
     //memory error somewhere:
-    //delete [] calcoef;
+    delete [] calcoef;
   }
 
   template <class real, class cls_t>

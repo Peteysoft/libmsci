@@ -47,6 +47,7 @@ namespace libagf {
       fprintf(stderr, "linearclassifier: File read error: %s\n", fname);
       throw FILE_READ_ERROR;
     }
+    fclose(fs);
   }
 
   template <typename real, typename cls_t>
@@ -55,7 +56,6 @@ namespace libagf {
       for (int i=0; header[i]!=NULL; i++) delete [] header[i];
       delete [] header;
     }
-    delete [] this->calcoef;
     delete [] coef;
   }
 
