@@ -48,15 +48,15 @@ real nearest_of_three(real value,
 
 template <class real>
 real supernewton(void (*funcd) (real, void *, real *, real *),
-		void *params,	//fucntion parameters
-		real x1,	//first bracket
-		real x2,	//second bracket
-		real xtol,	//desired tolerance in x direction
-		real ytol,	//desired tolerance in y direction
-		long maxiter,	//maximum number of iterations
+		void *params,		//function parameters
+		real x1,		//first bracket
+		real x2,		//second bracket
+		real xtol,		//desired tolerance in x direction
+		real ytol,		//desired tolerance in y direction
+		long maxiter,		//maximum number of iterations
 		supernewton_stat *err,	//error code and number of iterations
-		real &y1,	//to avoid re-calculating
-		real &dydx1,	//these items
+		real &y1,		//to avoid re-calculating
+		real &dydx1,		//these items
 		real y2,
 		real dydx2)
 {
@@ -147,6 +147,7 @@ real supernewton(void (*funcd) (real, void *, real *, real *),
 
           //use the root that's closest to the centre and still inside the brackets:
           //(what about evaluating each of them and seeing which is closest to 0?)
+	  //(or using the new roots to completely re-bracket the solution?)
           x0=x0_4;
           xdiffmin=fabs((x1-x2)/2);
           if (isfinite(dx0_1)) {

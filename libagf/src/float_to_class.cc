@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "peteys_tmpl_lib.h"
 #include "error_codes.h"
 #include "parse_command_opts.h"
 #include "agf_defs.h"
@@ -37,7 +38,7 @@ int main(int argc, char ** argv) {
   nel_ta n;			//number of ordinates
   real_a * data;		//floating point data
   real_a *thresh;		//list of threshold values ("bins")
-  cls_ta maxcls;		//maximum value for class label
+  cls_ta ncls;		//maximum value for class label
   cls_ta * cls;			//transformed discrete data
 
   void *optarg[20];
@@ -49,40 +50,40 @@ int main(int argc, char ** argv) {
   real_a min1, max1;
   real_a tmiss;			//"out-of-bounds"
   int Tflag;
+  int openflag;
 
   cls_ta *bin;			//histogram of classes
 
   int nread;
 
-  optarg[0]=&maxcls;
+  optarg[0]=&ncls;
   optarg[3]=&tmiss;
-  argc=parse_command_opts(argc, argv, "qgMTQ", "%d%%%%", optarg, flag, 5);
+  argc=parse_command_opts(argc, argv, "qgMTQo", "%d%%%%%", optarg, flag, 5);
   if (argc<0) {
     fprintf(stderr, "float_to_class: command option parse error\n");
     exit(FATAL_COMMAND_OPTION_PARSE_ERROR);
   }
-  //-q option specifies number of classes, not divisions:
-  if (flag[0]) maxcls--;
 
   gflag=flag[1];
   Mflag=flag[2];
   Tflag=flag[3];
   Qflag=flag[4];
+  openflag=flag[5];
 
   if (argc < 2) {
     printf("Usage:  float_to_class [-M] [-q nz] [-g] float_file [class_file \n");
     printf("              {[min max] | thresh1 [thresh2 [ thresh3... ]]]}\n");
     printf("	where:\n");
-    printf("float_file	file containing floating-point data\n");
-    printf("class_file	output file containing class data\n");
-    printf("threshN	threshold value(s) defining classes\n");
-    printf("min		minimum value in divison scheme\n");
-    printf("max		maximum value in division scheme\n");
-    printf("-M          print out min and max values\n");
-    printf("-q		number of classes/(divisions-1) to use\n");
-    printf("-g		use geometric progression\n");
-    printf("-T		threshold for missing data or outliers\n");
-    printf("-Q		print class break-down; otherwise, print bin thresholds\n");
+    printf("float_file    file containing floating-point data\n");
+    printf("class_file    output file containing class data\n");
+    printf("threshN       threshold value(s) defining classes\n");
+    printf("min	          minimum value in divison scheme\n");
+    printf("max	          maximum value in division scheme\n");
+    printf("-M            print out min and max values\n");
+    printf("-q	          number of classes/(divisions-1) to use\n");
+    printf("-g	          use geometric progression\n");
+    printf("-T	          threshold for missing data or outliers\n");
+    printf("-Q	          print class break-down; otherwise, print bin thresholds\n");
     exit(1);
   }
 
@@ -118,7 +119,7 @@ int main(int argc, char ** argv) {
     nread=sscanf(argv[3], "%g", &min);
     if (nread != 1) fprintf(stderr, "float_to_class: error parsing third command line argument.\n");
     if (argc>4) {
-      sscanf(argv[4], "%g", &max);
+      nread=sscanf(argv[4], "%g", &max);
       if (nread != 1) {
         real_a dum;
         fprintf(stderr, "float_to_class: error parsing fourth command line argument.\n");
@@ -128,20 +129,41 @@ int main(int argc, char ** argv) {
     }
   }
 
+  cls_ta nthresh;
+  cls_ta nbin;
+
   if (flag[0]) {
     real_a dthresh;
-    thresh=new real_a[maxcls];
-    if (gflag) {
-      dthresh=pow(max/min, 1./(maxcls-1));
-      thresh[0]=min;
-      for (cls_ta i=1; i<maxcls; i++) thresh[i]=thresh[i-1]*dthresh;
+
+    if (openflag) {
+      nthresh=ncls+1;
+      nbin=nthresh;
     } else {
-      dthresh=(max-min)/(maxcls-1);
-      for (cls_ta i=0; i<maxcls; i++) thresh[i]=min+dthresh*i;
+      nthresh=ncls-1;
+      nbin=ncls;
     }
+
+    thresh=new real_a[nthresh+1];
+    thresh[nthresh]=-1;
+    if (gflag) {
+      dthresh=pow(max/min, 1./(nthresh-1));
+      thresh[0]=min;
+      for (cls_ta i=1; i<nthresh; i++) thresh[i]=thresh[i-1]*dthresh;
+    } else {
+      dthresh=(max-min)/(nthresh-1);
+      for (cls_ta i=0; i<nthresh; i++) thresh[i]=min+dthresh*i;
+    }
+    thresh[nthresh-1]=max;
   } else {
-    maxcls=argc-3;
-    thresh=new real_a[maxcls];
+    nthresh=argc-3;
+    if (openflag) {
+      ncls=nthresh;
+      nbin=nthresh;
+    } else {
+      ncls=nthresh+1;
+      nbin=ncls;
+    }
+    thresh=new real_a[ncls];
     for (int i=3; i<argc; i++) {
       nread=sscanf(argv[i], "%g", thresh+i-3);
       if (nread!=1) {
@@ -153,34 +175,50 @@ int main(int argc, char ** argv) {
 
   if (Mflag) printf("%g\n%g\n", min1, max1);
 
-  bin=new nel_ta[maxcls+1];
-  for (cls_ta i=0; i<=maxcls; i++) bin[i]=0;
+  bin=new nel_ta[nbin];
+  for (cls_ta i=0; i<nbin; i++) bin[i]=0;
   for (nel_ta i=0; i<n; i++) {
-    if (data[i]<=thresh[0]) {
-      cls[i]=0;
-      bin[0]++;
-    } else if (data[i]>thresh[maxcls-1]) {
-      cls[i]=maxcls;
-      bin[maxcls]++;
+    cls[i]=bin_search(thresh, nthresh, data[i], -1)+1;
+    if (openflag) {
+      if (cls[i]==nthresh) cls[i]=0;
+      bin[cls[i]]++;
+      cls[i]--;
     } else {
-      for (cls_ta j=1; j<maxcls; j++) {
-        if (data[i]>thresh[j-1] && data[i]<=thresh[j]) {
-          cls[i]=j;
-          bin[j]++;
-          break;
-        }
+      bin[cls[i]]++;
+    }
+    /*
+    printf("%g: %d; ", data[i], cls[i]);
+    if (openflag) {
+      if (cls[i]!=-1) printf("%g - %g", thresh[cls[i]], thresh[cls[i]+1]);
+      printf("\n");
+    } else {
+      if (cls[i]==0) {
+        printf(" < %g\n", thresh[cls[i]]);
+      } else if (cls[i]>=nthresh) {
+        printf(" > %g\n", thresh[nthresh-1]);
+      } else {
+        printf("%g - %g\n", thresh[cls[i]-1], thresh[cls[i]]);
       }
     }
-    //printf("%g: %d\n", data[i], cls[i]);
+    */
   }
 
   if (Qflag) {
     printf("Class break-down:\n");
-    for (cls_ta i=0; i<=maxcls; i++) {
-      printf("%2d:  %d\n", i, bin[i]);
+    if (openflag) {
+      printf("%2d (< %g %g <):  %d\n", -1, thresh[0], thresh[nthresh-1], bin[0]);
+      for (cls_ta i=1; i<nbin; i++) {
+        printf("%2d (%g - %g):  %d\n", i-1, thresh[i-1], thresh[i], bin[i]);
+      }
+    } else {
+      printf("%2d (< %g):  %d\n", 0, thresh[0], bin[0]);
+      for (cls_ta i=1; i<nbin-1; i++) {
+        printf("%2d (%g - %g):  %d\n", i, thresh[i-1], thresh[i], bin[i]);
+      }
+      printf("%2d (> %g):  %d\n", nbin-1, thresh[nthresh-1], bin[nbin-1]);
     }
   } else {
-    for (cls_ta i=0; i<maxcls; i++) printf("%g\n", thresh[i]);
+    for (cls_ta i=0; i<nthresh; i++) printf("%g\n", thresh[i]);
   }
     
 

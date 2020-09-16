@@ -1,7 +1,7 @@
 #EXE_EXT = .exe
 
-#DATATYPE=ncep
-DATATYPE=badc
+DATATYPE=ncep
+#DATATYPE=badc
 #DATATYPE=ecmwf
 
 #command-line calculator:
@@ -9,7 +9,7 @@ CCALC = bc
 
 #DATAPATH = /cygdrive/e/data/ncep/sixhour
 #DATAPATH = /media/Lexar/ncep_data
-DATAPATH = /home/peter/data/$(DATATYPE)_data
+DATAPATH = /home/peter/data/$(DATATYPE)_data/daily/plev
 
 BINPATH = /home/peter/bin
 

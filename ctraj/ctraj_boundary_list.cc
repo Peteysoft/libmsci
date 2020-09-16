@@ -76,11 +76,11 @@ long ctraj_boundary_list<real, vreal>::init_circle(real x0, real y0, real r) {
   real ang;
 
   n=(long) (2*M_PI/thresh_arc);
-  x=new real[n+1*wrap_flag];
-  y=new real[n+1*wrap_flag];
-  domain=new int[n+1*wrap_flag];
+  x=new real[n+wrap_flag];
+  y=new real[n+wrap_flag];
+  domain=new int[n+wrap_flag];
 
-  for (long i=0; i<n; i++) {
+  for (long i=0; i<n+wrap_flag; i++) {
     ang=i*thresh_arc;
     //no attempt to apply metric corrections:
     x[i]=x0+r*cos(ang);
@@ -103,11 +103,14 @@ void ctraj_boundary_list<real, vreal>::wrap_on() {
       xnew=new real[n+1];
       ynew=new real[n+1];
       hnew=new int[n+1];
-      for (long i=1; i<=n; i++) {
+      for (long i=0; i<n; i++) {
         xnew[i]=x[i];
         ynew[i]=y[i];
 	hnew[i]=domain[i];
       }
+      xnew[n]=x[0];
+      ynew[n]=y[0];
+      hnew[n]=domain[0];
       delete [] x;
       delete [] y;
       delete [] domain;

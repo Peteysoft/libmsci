@@ -80,6 +80,7 @@ namespace libpetey {
     long n1;
     int i, j;
     int finish=0;
+    int *result;
 
     i=0; 
     do {
@@ -99,8 +100,10 @@ namespace libpetey {
       }
     } while (finish==0);
 
-    return loc.make_array(n1);
+    result=loc.make_array(n1);
     n=n1;
+
+    return result;
   }
 
   //find the beginnings of all whitespace-separated sub-strings:

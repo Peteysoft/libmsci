@@ -11,6 +11,7 @@
 #include "error_codes.h"
     
 #include "../libpetey/heapsort_tmpl.cc"
+#include "../libpetey/tree_lg.cc"
 #include "../libpetey/bin_search.cc"
     
 #include "sparse_array.h"
@@ -423,6 +424,8 @@ namespace libpetey {
     //-last point has been fixed
     template <class index_t, class data_t>
     void sparse<index_t, data_t>::update() {
+      tree_lg< sparse_el<index_t, data_t> > tree;
+      long check;
       long ndup;	//number of insignificant and duplicate elements
     
       if (update_flag==2) remove_zeros();
@@ -433,7 +436,10 @@ namespace libpetey {
       }
     
       //sort the elements:
-      heapsort_inplace(matrix, nel);
+      //heapsort_inplace(matrix, nel);		//shit! heapsort isn't stable...
+      for (index_t i=0; i<nel; i++) tree.add(matrix[i]);
+      tree.decompose(matrix, check);
+      assert(check==nel);
       //stable_sort(matrix[0], matrix[nel-1]);
 
       //remove insignificant and duplicate elements:

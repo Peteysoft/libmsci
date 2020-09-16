@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
 
   dim_ta nvar;
   long n;
+  int dum;
   real_a **vec;			//feature data
   cls_ta *cls;			//class data
 
@@ -30,11 +31,15 @@ int main(int argc, char **argv) {
   char c;
   int hflag=0;
   int Uflag=0;
+  int Lflag=0;
 
   int errcode=0;
 
-  while ((c = getopt(argc, argv, "UHE:")) != -1) {
+  while ((c = getopt(argc, argv, "LUHE:")) != -1) {
     switch (c) {
+      case ('L'):
+             Lflag=1;
+	     break;
       case ('U'):
              Uflag=1;
 	     break;
@@ -71,6 +76,7 @@ int main(int argc, char **argv) {
     printf("           .vec for vector data, .cls for class data\n");
     printf("missing  = value for missing feature data\n");
     printf("-H       = omit header in output vector file\n");
+    printf("-L       = input file contains floating point ordinates.\n");
     printf("-U       = re-label classes so that they go from [0-nc).\n");
     exit(0);
   }
@@ -83,7 +89,26 @@ int main(int argc, char **argv) {
     outfile=argv[1];
   }
 
-  n=read_svm(ifs, vec, cls, nvar, missing, Uflag);
+  n=fscanf(ifs, "%d", &dum);
+  rewind(ifs);
+  if (Lflag) {
+    real_a *ord;
+    n=read_svm(ifs, vec, ord, nvar, missing);
+    clsfile=new char[strlen(outfile)+5];
+    sprintf(clsfile, "%s.dat", outfile);
+    ofs2=fopen(clsfile, "w");
+    fwrite(ord, sizeof(real_a), n, ofs2);
+    fclose(ofs2);
+    delete [] ord;
+  } else {
+    n=read_svm(ifs, vec, cls, nvar, missing, Uflag);
+    clsfile=new char[strlen(outfile)+5];
+    sprintf(clsfile, "%s.cls", outfile);
+    ofs2=fopen(clsfile, "w");
+    fwrite(cls, sizeof(cls_ta), n, ofs2);
+    fclose(ofs2);
+    delete [] cls;
+  }
 
   if (n<1) {
     fprintf(stderr, "svm2agf: an error occurred\n");
@@ -93,22 +118,14 @@ int main(int argc, char **argv) {
   vecfile=new char[strlen(outfile)+5];
   sprintf(vecfile, "%s.vec", outfile);
 
-  clsfile=new char[strlen(outfile)+5];
-  sprintf(clsfile, "%s.cls", outfile);
-
   ofs1=fopen(vecfile, "w");
   if (hflag==0) fwrite(&nvar, sizeof(nvar), 1, ofs1);
   fwrite(vec[0], sizeof(real_a), nvar*n, ofs1);
   fclose(ofs1);
 
-  ofs2=fopen(clsfile, "w");
-  fwrite(cls, sizeof(cls_ta), n, ofs2);
-  fclose(ofs2);
-
   delete [] vecfile;
   delete [] clsfile;
 
-  delete [] cls;
   delete [] vec[0];
   delete [] vec;
 

@@ -37,7 +37,7 @@ int sparse_svd_solver(sparse_t &A, real *b, real *x, int32_t nev, int32_t ncv,
   v=cc_arsvd(n, nev, ncv, eval1, A2, "LM", maxiter, tol);
 
   // x = V S^-2 V^T A^T b
-  xp=A.vect_mult(b);
+  xp=AT->vect_mult(b);
   y=vector_mult(v, xp, nev, n);
   for (index_t i=0; i<nev; i++) {
     printf("%g\n", eval1[i]);
