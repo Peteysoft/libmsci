@@ -42,14 +42,6 @@ namespace libagf {
   }
 
   //various lame-ass methods of re-normalizing conditional probabilities to
-  //remove values less than 0 and ensure they sum to 1:
-  //
-  //zero negative values, sum and normalize:
-  template <class real>
-  void p_renorm(real *p, int ncls) {
-    real pt=0;
-    for (int i=0; i<ncls; i++) p[i]/=pt;
-  }
 
   //zero negative values; additive normalization constant; repeat until
   //no negatives are left:
@@ -131,8 +123,8 @@ namespace libagf {
     for (int i=0; i<n; i++) {
       *p[i]+=(1-pt)/n;
     }
-    for (int i=0; i<glob_n; i++) printf("%g ", ((real *) glob_p2)[i]);
-    printf("\n");
+    //for (int i=0; i<glob_n; i++) printf("%g ", ((real *) glob_p2)[i]);
+    //printf("\n");
     //check for out-of-range (<0) values:
     //(would be faster if we sorted the probabilities first--rank ordering
     //won't change--but should only make a difference once we are dealing
@@ -154,9 +146,9 @@ namespace libagf {
     glob_n=n;
     for (int i=0; i<n; i++) {
       p2[i]=p+i;
-      printf("%g ", p[i]);
+      //printf("%g ", p[i]);
     }
-    printf("\n");
+    //printf("\n");
     p_constrain_renorm1b(p2, n);
   }
 
@@ -480,10 +472,30 @@ namespace libagf {
       
   template <typename code_t, typename real>
   void solve_class_1vR(code_t **a, int m, int n, real *r, real *p) {
-    printf("%d %d\n", m, n);
+    real lambda=0;
+    long *sind;
+    int tind;
+    //printf("%d %d\n", m, n);
     assert(m==n);
     for (int i=0; i<m; i++) p[i]=(1+r[i])/2;
-    p_constrain_renorm1b(p, n);
+    //p_constrain_renorm1b(p, m);
+
+    //return;
+
+    sind=heapsort(p, m);
+    tind=-1;
+    for (int i=m-1; i>=0; i--) {
+      lambda+=p[sind[i]];
+      if (p[sind[i]]+(1-lambda)/m < 0) {
+        lambda+=p[sind[i]];
+	for (int j=i; j>=0; j--) p[sind[i]]=0;
+	tind=i;
+	break;
+      }
+    }
+    lambda=(1-lambda)/m;
+    for (int i=m-1; i>tind; i--) p[sind[i]]+=lambda;
+    delete [] sind;
   }
 
   template <typename code_t, typename real>
@@ -1172,9 +1184,6 @@ namespace libagf {
     }
 
   }
-
-  template void p_renorm<float>(float *, int);
-  template void p_renorm<double>(double *, int);
 
   //template void p_constrain_renorm1<float>(float *, int);
   //template void p_constrain_renorm1<double>(double *, int);

@@ -497,7 +497,6 @@ $(TEST).svm: $(TEST).cls $(TEST).vec
 #     - normalization (optional)
 #     - SVD (optional)
 #     - make class labels go from 0 to Nc-1
-#list of datasets from LIBSVM website with test and training:
 
 #list of datasets from LIBSVM website with test and training:
 SVMTTDATA=madelon \

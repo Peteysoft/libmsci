@@ -3,20 +3,25 @@
 Many statistical classifiers can only discriminate between two classes.
 Common examples include linear classifiers such as perceptrons and
 logistic regression classifiers \citep{Michie_etal1994} as well as extensions
-to these methods such as support vector machines (SVM) \citep{Mueller_etal2001} and 
+of them such as support vector machines (SVM) \citep{Mueller_etal2001} and 
 piecewise linear classifiers \citep{Bagirov2005,Mills2018}.
 There are many possible ways of extending a binary classifier to deal
 with multi-class classification and the options increase exponentially
 with the number of class labels.
-Moreover, the best method may well depend on the type of problem
+Moreover, the best method may depend on the type of problem
 \citep{Dietterich_Bakiri1995,Allwein_etal2000}.
 
-In this paper we provide a summary of the many of the most common methods of solving for 
-multi-class and show how a descriptive control language can be used to 
-generalize them whereby a multi-class problem
-can be solved using a broad array of configurations for the binary
-classifiers. 
-In addition, we require that any algorithm solve 
+This paper summarizes some common methods of solving for 
+multi-class and shows how a simple control language generalizes them.
+In converting a multi-class classification problem into binary,
+the class labels must be partitioned
+and the class values appropriately reassigned
+so as to train the binary classifiers.
+The language provides a method for describing this partitioning process
+as well as the steps to decoding the results.
+
+In converting the binary output to multi-class,
+we require that any algorithm solve 
 for the multi-class conditional probabilities.
 There are three reasons for this.
 First, they provide useful information
@@ -30,7 +35,7 @@ shape of the distribution.
 Second, the mathematical relationship between binary class
 probabilities and multi-class probabilities is unique and
 derives rigorously from probability theory.
-And finally, many binary classifiers that return continuous decision functions
+Finally, many binary classifiers that return continuous decision functions
 are easy to re-calibrate so that they more closely resemble probabilities.
 
 \subsection{Definition of the problem}
@@ -49,8 +54,8 @@ $P(c | \vec x)$ with $c \in [1..n_c]$ the {\it class label} and $\vec x$ the loc
 in feature space.
 
 Given an arbitrary {\it test point}, $\vec x$, 
-we wish to estimate $P(c | \vec x)$, however we only have
-the means to estimate some binary component of it, that is we have a 
+we wish to estimate $P(c | \vec x)$, but we have only 
+the means of estimating some binary component of it, that is we have a 
 set of binary classifiers, 
 each returning a {\it decision function}, $r_i(\vec x)$.
 In this paper we assume that the decision function 
@@ -71,11 +76,6 @@ so that it more closely resembles a probability
 \citep{Zadrozny_Elkan2002,Jolliffe_Stephenson2003,Niculescu_Caruana2005}.
 A common, simple, and effective method is logistic regression \citep{Platt1999}.
 
-The binary classifier is trained using the same type of ordered pairs as
-above except that the classes can only take on one of two values,
-which for convenience are chosen as either $-1$ or $+1$, 
-that is, $y_{ij} \in \lbrace -1, +1 \rbrace$.
-
 The problem under consideration is, first,
 how to partition the class labels used in each binary classifier?
 That is we want to create a mapping of the form:
@@ -86,11 +86,12 @@ That is we want to create a mapping of the form:
 \end{array}
 	\right . \label{mapping}
 \end{equation}
-where $y_{ij}$ is the class value of $j$th sample of the transformed data 
+where $y_{ij} \in \lbrace -1, +1 \rbrace$ is the class value of $j$th sample of the transformed data 
 for trainng the $i$th binary classifier and 
 $C_i^+ \subset \lbrace 1..n_c \rbrace$ is the set of class labels from the original set,
 $\lbrace 1..n_c \rbrace$, that map to $+1$ while
 $C_i^- \subset \lbrace 1..n_c \rbrace$ is the set of classes that map to $-1$.
+Note that $C_i^- \cap C_i^+ = \emptyset$.
 
 And second, once we have partitioned the classes
 and trained the binary classifers,
@@ -115,7 +116,7 @@ In {\it non-hierarchical} multi-class classification, we solve for the
 classes or probabilities of the multi-class problem all at once:
 all the binary classifiers are used in the solution and the result of
 one binary classifier does not determine the use of any of the others.
-Using the notation provided in Section \ref{description},
+Using the notation from Section \ref{description},
 and the laws of probability,
 we can write a system of equations relating
 the multi-class conditional probabilities to the decision
@@ -125,11 +126,11 @@ functions:
 	\label{decision_function}
 \end{equation}
 
-It's simpler and more natural to describe the problem using a
-{\it coding matrix}, $A$, 
+It's simpler and more natural, however,
+to describe the problem using a {\it coding matrix}, $A$, 
 which is structured such that each element,
-$a_{ij} \in \lbrace -1, 0, 1 \rbrace$, 
-where $i$ once again enumerates the binary classifier while
+$a_{ij} \in \lbrace -1, 0, 1 \rbrace$, can take on one of three values.
+Once again, $i$ enumerates the binary classifier, while
 $j$ now enumerates the class of the multi-class problem
 \citep{Dietterich_Bakiri1995,Windeatt_Ghaderi2002}.
 If $a_{ij}$ is $-1$/$+1$, we would assign each of the $j$th class
@@ -177,12 +178,6 @@ shows that we can solve for the probabilities, $\vec p$, via matrix inversion:
 Note that $Q$ reduces to $A$ if $A$ contains no zeros \citep{Kong_Dietterich1997}.
 The case of a coding matrix that contains no zeros, that is all the partitions divide up all the
 classes rather than a subset, will be called the {\it strict} case.
-From a computational perspective,
-in the non-strict case,
-$Q$ must be regenerated for every new test point or value of $\vec r$ 
-whereas in the strict case, in may be possible to first find an inverse or
-decomposition of $A$ which is subsequently
-applied to every value of $\vec r$.
 
 Because the decision functions, $\vec r$, are not estimated perfectly, however,
 the final probabilities may need to be constrained and the inverse
@@ -202,39 +197,6 @@ and the straight brackets, $||$, denote a vector norm which
 in this case is the Euclidian or $L^2$ norm.
 Other cost functions can of course be substituted \citep{Zadrozny2001}.
 
-\subsection{Basic inverse solution}
-
-Equation (\ref{minimization_problem}) can be solved via the normal
-equation:
-\begin{equation}
-	Q^T Q \vec p = Q^T \vec r
-	\label{normal_equation}
-\end{equation}
-This also takes care of the over-determined case, $n_b > n_c$.
-Because the binary probability estimates in $\vec r$ are rarely perfect, however,
-in many cases the constraints in (\ref{normalization}) and (\ref{nonnegative}) will be violated. 
-Therefore, for most applications, either the results will need to be adjusted, likely reducing accuracy, or the problem constrained.
-
-It is straightforward to incorporate the normalization constraint in (\ref{normalization}) into the problem. 
-There are at several ways of doing this. The most
-straightforward is to write one probability in terms of the others:
-\begin{equation}
-	p_k = 1 - \sum_{i|i \ne k} p_i
-	\label{reduce_dimension1}
-\end{equation}
-where $k$ is an index between $1$ and $n_c$,
-and solve the following, reduced-dimensional linear system:
-\begin{equation}
-	\sum_j (q_{ij} - q_{ik} ) p_j = r_i - q_{ik}
-	\label{reduce_dimension2}
-\end{equation}
-A more symmetric method is the Lagrange multiplier which will be
-derived in Section \ref{one_vs_one}.
-\citet{Lawson_Hanson1995} discuss at least two other methods of
-enforcing equality constraints on linear least squares problems.
-Since they are inequality constraints, those in (\ref{nonnegative}) are
-harder to enforce and the details will be left to a later section.
-
 \subsection{Voting solution}
 
 In many other texts \citep{Allwein_etal2000,Hsu_Lin2002,Dietterich_Bakiri1995},
@@ -250,19 +212,14 @@ frequently used, which is the number of bits that must be changed
 in a binary number in order for it to match another binary number.
 This assumes that each decision function returns only one of two values: 
 $r_i \in \lbrace -1, +1 \rbrace$.
-If the coding matrix is strict, then:
-\begin{eqnnon}
-	|\vec a^{(j)} - \vec r| = \sum_i \delta_{a_{ij} r_i}
-\end{eqnnon}
-where $\delta$ is the Kronecker delta.
 
+Many other loss functions besides Hamming distance,
+Euclidean distance or a dot product (see below) can be used in place of the 
+norm in Equation (\ref{distance_based_decoding}).
 \citet{Allwein_etal2000} 
 tailor the matric on the basis of the binary classifier used, each of which
 will return a different type of continuous decision function 
-(that doesn't represent the difference in conditional probabilities).
-Note that there are numerous other functions besides Hamming distance,
-Euclidean distance or a dot product (see below) that can be used in place of the 
-norm in Equation (\ref{distance_based_decoding}).
+(none of which represent the difference in conditional probabilities).
 \citet{Escalera_etal2010} explore thirteen different ones and find that on
 some datasets, the choice of loss function can make a significant difference.
 
@@ -294,19 +251,20 @@ that, except in special circumstances such as an orthogonal coding matrix
 (see Section \ref{orthogonal}, below), it does not return calibrated
 estimates of the probabilities.
 
-\section{Common coding matrices}
+\subsection{Common coding matrices}
 
-There are a number of standard, symmetric coding matrices that are commonly used
+There are a number of standard, patterned coding matrices that are commonly used
 to solve for multi-class.
 These include ``one-versus-the-rest'', ``one-versus-one'',
 as well as error-correcting coding matrices such as orthogonal and
 random.
 We discuss each of these in turn and
 use them to demonstrate how to solve for the
-conditional probabilities while enforcing the constraints,
-expanding out to the general solution for ``error-correcting-codes.''
+conditional probabilities while enforcing the constraints.
+General, iterative solutions also exist for any type of coding matrix:
+this is covered in Section \ref{error}.
 
-\subsection{One-versus-the-rest}
+\subsubsection{One-versus-the-rest}
 
 \label{one_vs_rest}
 
@@ -331,12 +289,35 @@ or in the general case:
 Probabilities for the one-versus-the-rest can be solved for directly by
 simply writing out one side of the equation:
 \begin{eqnnon}
-	p_i = (r_i + 1)/2
+	p_i  =  \frac{r_i + 1}{2}
 \end{eqnnon}
-The normalization constraint, (\ref{normalization}), can be enforced 
-through the use of a Lagrange multiplier. See next section.
+This does not enforce any of the constraints, however.
+See Section \ref{error}.
 
-\subsection{One-versus-one}
+\subsubsection{Exhaustive codes}
+
+An {\it exhaustive} coding matrix is a strict coding matrix in which
+every possible permutation is listed.
+Again for $n_c=4$:
+\begin{eqnnon}
+A = 
+\begin{bmatrix}
+-1 & 1 & 1 & 1 \\
+1 & -1 & 1 & 1 \\
+-1 & -1 & 1 & 1 \\
+1 & 1 & -1 & 1 \\
+-1 & 1 & -1 & 1 \\
+1 & -1 & -1 & 1 \\
+-1 & -1 & -1 & 1 \\
+\end{bmatrix}
+\end{eqnnon}
+This is like counting in binary except zero is ommitted and
+we only count half way so as to eliminate degenerate partitions.
+A disadvantage of exhaustive codes is that they become exponentially larger 
+for more classes, making them slow moreover intractable for very large
+numbers of classes.
+
+\subsubsection{One-versus-one}
 
 \label{one_vs_one}
 
@@ -363,11 +344,11 @@ Consider the following rearrangement of (\ref{non_hier}):
 We can include the normalization constraint, (\ref{normalization}), via
 a Lagrange multiplier:
 \begin{eqnnon}
-	\min_{\vec p, \lambda} \left \lbrace | Q \vec p |^2 + \lambda(\vec 1 \cdot \vec p - 1) \right \rbrace
+	\min_{\vec p, \lambda} \left \lbrace \frac{1}{2} \left | Q \vec p \right |^2 + \lambda(\vec 1 \cdot \vec p - 1) \right \rbrace
 \end{eqnnon}
 which produces the following linear system:
 \begin{eqnarraynon}
-	2 \sum_k q_{ki} \sum_j q_{kj} p_j + \lambda & = & 0 \\
+	\sum_k q_{ki} \sum_j q_{kj} p_j + \lambda & = & 0 \\
 	\sum_j p_j & = & 1
 \end{eqnarraynon}
 It can be shown that with this solution for a 1-vs-1 coding matrix,
@@ -380,30 +361,31 @@ without any need of complex, quadratic programming algorithms.
 for support vector machines (SVM) than either
 error-correcting codes or one-vs.-the-rest.
 
-\subsection{Exhaustive codes}
+\subsubsection{Orthogonal codes}
 
-An {\it exhaustive} coding matrix is a strict coding matrix in which
-every possible permutation is listed.
-Again for $n_c=4$:
-\begin{eqnnon}
-A = 
-\begin{bmatrix}
--1 & 1 & 1 & 1 \\
-1 & -1 & 1 & 1 \\
--1 & -1 & 1 & 1 \\
-1 & 1 & -1 & 1 \\
--1 & 1 & -1 & 1 \\
-1 & -1 & -1 & 1 \\
--1 & -1 & -1 & 1 \\
-\end{bmatrix}
-\end{eqnnon}
-This is like counting in binary except zero is ommitted and
-we only count half way so as to eliminate degenerate partitions.
-A disadvantage of exhaustive codes is that they become exponentially larger 
-for more classes, making them slow moreover intractable for very large
-numbers of classes.
+\label{orthogonal}
 
-\subsection{Error correcting codes}
+To maximize the accuracy of an error-correcting coding matrix, 
+\citet{Allwein_etal2000} and \citet{Windeatt_Ghaderi2002} show that
+the distance between each of the columns, $| \vec a^{(i)} - \vec a^{(j)} |$, 
+should be as large as possible,
+where $\vec a^{(i)}$ is the $i$th column of the matrix $A$ and $i \ne j$. 
+If we take the upright brackets once again to be a
+Euclidian metric and assume that $A$ is ``strict'' (that is with no zeros) 
+then this 
+reduces to minimizing the absolute value of the dot product,
+$|\vec a^{(i)} \cdot \vec a^{(j)}|$.
+In other words, 
+the optimal coding matrix will be orthogonal, $A^T A = n_p I$, where $I$ is
+the $[n_c\times n_c]$ identity matrix and $n_p \ge n_c$.
+For an orthogonal coding matrix, the voting solution will be equivalent to the
+unconstrained least-squares solution.
+Using this property, \citet{Mills2017} provides a simple, iterative algorithm
+to solve for the probabilities when using an orthogonal, strict coding matrix.
+
+\subsubsection{Error correcting codes}
+
+\label{error}
 
 \begin{figure}
   \includegraphics[width=1\textwidth]{Lawson_Hanson}
@@ -414,8 +396,9 @@ Another common coding matrix is an arbitrary one: this is commonly
 known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
 It can be random, but may also be carefully designed 
 \citep{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013,Rocha_Goldenstein2014}.
-In principle this case covers all the earliers ones, however in practice the
+In principle this case covers all the earlier ones, while in practice the
 term can also refer more specifically to a random coding matrix.
+
 To solve the general case, we use quadratic programming \citep{Boyd_Vandenberghe2004}.
 The literature in the subject can be quite dense and intimidating, so
 only the briefest attempt to address the problem will be made here. 
@@ -428,64 +411,18 @@ The iterative algorithm shown there
 is quite straightforward and essentially geometrical in nature.
 A minimal example is illustrated in Figure \ref{Lawson_Hanson_fig}.
 
-Briefly, the algorithm works by solving a reduced version of Equation
-(\ref{normal_equation}), starting with only one row.
+Briefly, the algorithm works by solving 
+the normal equation, but with rows eliminated, 
+starting with only one row.
 Rows are added one-by-one with those 
 corresponding to the variables least likely to push the
 solution out-of-bounds being added first.
-In the second loop, if it is found that one of the variables has gone out-of-bounds,
-then the solution is adjusted by positioning a selected variable on the
+In the inner loop, if it is found that one of the variables has gone out-of-bounds,
+then the solution is adjusted by positioning a selected variable on
 its constraint border and interpolating between the old and the
 new solutions.
-The variable is chosen as follows
-\begin{equation}
-  arg \min_j \lbrace z_j/z_j-z_j^*: z_j^* \le 0; j \in N \rbrace
-\end{equation}
-where $\vec z$ is the old solution, $\vec z^*$ the new,
-and $N$ are the set of indices of the non-zero variable in the old
-solution.
-Out-of-bounds variables are removed, and the process is repeated.
-
-\subsection{Orthogonal codes}
-
-\label{orthogonal}
-
-To maximize the accuracy of an error-correcting coding matrix, 
-\citet{Allwein_etal2000} and \citet{Windeatt_Ghaderi2002} show that
-the distance between each of the columns, $| \vec a^{(i)} - \vec a^{(j)} |$, 
-should be as large as possible,
-where $\vec a^{(i)}$ is the $i$th column of the matrix $A$ and $i \ne j$. 
-If we take the upright brackets once again to be a
-Euclidian metric and assume that $A$ is ``strict'' (that is with no zeros) then this 
-reduces to minimizing the absolute value of the dot product,
-$|\vec a^{(i)} \cdot \vec a^{(j)}|$.
-The absolute value is used because a pair of columns that are the same except 
-for a factor of -1 are degenerate.
-
-In other words, 
-%if the number of rows is equal to the number of classes, 
-the optimal coding matrix will be orthogonal, $A^T A = n_p I$, where $I$ is
-the $[n_c\times n_c]$ identity matrix and $n_p \ge n_c$. 
-Orthogonal coding matrices 
-are not hard to construct for certain numbers of rows, for instance:
-\begin{eqnnon}
-A = 
-\begin{bmatrix}
-	-1 & -1 & -1 & 1 & 1 & -1 & -1 & -1 \\
-	-1 & -1 & 1 & -1 & -1 & -1 & 1 & -1 \\
-	1 & -1 & -1 & -1 & -1 & 1 & -1 & -1 \\
-	-1 & -1 & 1 & -1 & 1 & 1 & -1 & 1 \\
-	1 & -1 & 1 & 1 & -1 & -1 & -1 & 1 \\
-	1 & 1 & 1 & -1 & 1 & -1 & -1 & -1 \\
-	-1 & 1 & 1 & 1 & -1 & 1 & -1 & -1 \\
-	-1 & 1 & -1 & -1 & -1 & -1 & -1 & 1 
-\end{bmatrix}
-\end{eqnnon}
-For an orthogonal coding matrix, the voting solution will be equivalent to the
-unconstrained least-squares solution.
-Using this property,
-\citet{Mills2017} provides a simple iterative solution for solving
-for conditional probabilities when using a ``strict'', orthogonal coding matrix.
+The variable is chosen in a similar fashion as before,
+out-of-bounds variables are removed, and the process is repeated.
 
 
 \section{Decision-trees}
@@ -505,7 +442,7 @@ of the binary classifiers.
 
 Let $1k_1k_2k_3...$ be a binary number enumerating the binary classifier
 where $k_j \in \lbrace 0,~1 \rbrace$ is the returned class at the $j$th level of the tree.
-Note that here we assume that the returned class is either zero or one.
+Here we assume that the returned class is either zero or one.
 Then $c_{1k_1k_2k_3...}$ is the final class at the $1k_1k_2k_3...$th terminal
 node.
 Recalling the notation established in Section \ref{description}, 
@@ -599,7 +536,7 @@ Then let the distance between the two classes be:
 That is, the closer the centers of the two classes, the shorter the distance, while the wider each class is, the farther the distance.
 	
 This would work well if each of the classes is quite distinct and clustered around a strong center.
-But for more diffuse classes, especially those with multiple centers, it would make more sense to use a metric designed specifically for sets of points rather than this somewhat crude adaptation of a vector metric.
+For more diffuse classes, however, especially those with multiple centers, it would make more sense to use a metric designed specifically for sets of points rather than this somewhat crude adaptation of a vector metric.
 In this regard, the Hausdorff metric seems tailor-made for the application.
 The Hausdorff metric measures the distance between two subsets in a metric space, which is one way to conceptualize the training data.
 
@@ -612,7 +549,7 @@ Error-correcting codes may also be designed in a data-dependent fashion.
 Since the number of combinations to optimize between scales up very quickly, there 
 are also a large number of approaches to choose from.
 Hence this topic lies beyond the scope of this article,
-however, the reader is invited to
+although the reader is invited to
 consult recent literature on the subject: 
 \citet{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013,Rocha_Goldenstein2014}.
 
@@ -629,14 +566,7 @@ by simply exhaustively testing different configurations.
 
 In Backus-Naur form (BNF) the control language looks like this:
 
-\begin{tabular}{lcl}
-$<$branch$>$ & ::= & $<$model$>$ ``\{'' $<$branch-list$>$ ``\}'' $|$ $<$CLASS$>$\\
-$<$model$>$  & ::= & $<$TWOCLASS$>$ $|$ $<$partition-list$>$\\
-$<$branch-list$>$ & ::= & $<$branch$>$ $|$ $<$branch-list$>$ $<$branch$>$\\
-$<$partition-list$>$ & ::= & $<$partition$>$ $|$ $<$partition-list$>$ $<$partition$>$\\
-$<$partition$>$ & ::= & $<$TWOCLASS$>$ $<$class-list$>$ `` / '' $<$class-list$>$ ``;''\\
-$<$class-list$>$ & ::= & $<$CLASS$>$ $|$ $<$class-list$>$ `` '' $<$CLASS$>$
-\end{tabular}.
+\input{control_language_bnf_verbatim.tex}
 
 where $<$CLASS$>$ is a class value between 0 and $n_c-1$.  It is used in two senses.
 It may be one of the class values in a partition in a non-hierarchical model.
@@ -763,8 +693,10 @@ on some real datasets.
 To this end, we will test eight different datasets using six configurations 
 solved using four different methods.
 The configurations are: one-vs-one, one-vs.-rest, orthogonal partioning,
-``adjacent'' partitioning (see below), an arbitray tree, and a tree generated
+an arbitray tree, and a tree generated
 from a bottom-up dendrogram using the Hausdorf metric.
+We also introduce a new type of error-correcting code which we refer to as
+{\it adjacent} partitioning--see below.
 The solution methods are: constrained least squares \citep{Lawson_Hanson1995},
 matrix inverse which is specific to one-vs.-one,
 the iterative method designed for orthogonal partitioning,
@@ -1123,18 +1055,10 @@ gives up relatively little accuracy to more sensible methods on most datasets.
 For the urban dataset it is actually superior, suggesting that there is
 some kind of ordering to the classes which are: trees, grass, soil, concrete,
 asphalt, buildings, cars, pools, shadows.
-If classification speed is critical, a hierarchical approach will trade 
-off accuracy to save some compute cycles with 
-$~O(n_c)$ performance (for SVM) instead of $O(n_c^2)$.
+If classification speed is critical, a hierarchical approach will  
+also trade off accuracy but save some compute cycles with 
+$~O(n_c)$ performance instead of $O(n_c^2)$ for SVM.
 Accuracy lost is again quite dependent on the dataset.
-
-Not only can sub-optimal partitionings produce reasonable results, 
-but approximate solution methods can also be used without much penalty.
-For instance, the iterative method for orthogonal coding matrices
-outlined in \citet{Mills2017}, when applied as a general method
-actually gives up very little in accuracy,
-even though it is not optimal in the least-squares sense.
-(These results are not shown.)
 
 A data-dependent decision tree design can provide a small but significant
 increase in accuracy over a more arbitrary tree.

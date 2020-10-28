@@ -44,11 +44,14 @@ void ffromk(real_a k, void *param, real_a *f) {
 int main(int argc, char *argv[]) {
   char *vecfile=NULL;		//training data
   char *clsfile=NULL;		//class data
+  char *datfile=NULL;
   char *outbase;
   char *outvec=NULL;			//output file
   char *outcls=NULL;
+  char *outdat=NULL;
   char *testvec=NULL;
   char *testcls=NULL;
+  char *testdat=NULL;
   FILE *fs;
   FILE *diagfs;			//print diagnostics to this file stream
 
@@ -59,7 +62,8 @@ int main(int argc, char *argv[]) {
 
   real_a **train;	//training data vectors
   real_a *all;		//train[0] to this for deletion
-  cls_ta *ord=NULL;
+  cls_ta *ord=NULL;	//discrete ordinates
+  real_a *dat=NULL;	//continuous ordinates
   size_t ordsize;	//size of ordinates
 
   int exit_value;
@@ -70,7 +74,7 @@ int main(int argc, char *argv[]) {
 
   //parse the command line arguments:
   //exit_value=agf_parse_command_opts(argc, argv, "c:d:f:AMRz", &opt_args);
-  exit_value=agf_parse_command_opts(argc, argv, "d:f:CRz", &opt_args);
+  exit_value=agf_parse_command_opts(argc, argv, "d:f:CLRz", &opt_args);
   if (exit_value==FATAL_COMMAND_OPTION_PARSE_ERROR) return exit_value;
 
   //print help page if there are not enough mandatory arguments:
@@ -144,18 +148,10 @@ int main(int argc, char *argv[]) {
     sprintf(outvec, "%s.vec", outbase);
 
     clsfile=new char[strlen(argv[0])+5];
-    if (opt_args.Lflag) {
-      sprintf(clsfile, "%s.dat", argv[0]);
-    } else {
-      sprintf(clsfile, "%s.cls", argv[0]);
-    }
+    sprintf(clsfile, "%s.cls", argv[0]);
 
     outcls=new char[strlen(outbase)+5];
-    if (opt_args.Lflag) {
-      sprintf(outcls, "%s.dat", outbase);
-    } else {
-      sprintf(outcls, "%s.cls", outbase);
-    }
+    sprintf(outcls, "%s.cls", outbase);
 
     ord=read_clsfile<cls_ta>(clsfile, ntrain2);
     if (ntrain2 == -1) {
@@ -171,15 +167,39 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "agf_preprocess: Sample count mismatch\n");
       exit(SAMPLE_COUNT_MISMATCH);
     }
+
+    if (opt_args.Lflag) {
+      datfile=new char[strlen(argv[0])+5];
+      sprintf(datfile, "%s.dat", argv[0]);
+      dat=read_datfile<real_a>(datfile, ntrain2);
+      if (ntrain2 == -1) {
+        fprintf(stderr, "agf_preprocess: Error reading file: %s\n", datfile);
+        exit(FILE_READ_ERROR);
+      }
+      if (ord==NULL) {
+        fprintf(stderr, "agf_preprocess: Unable to open file for reading: %s\n", datfile);
+        exit(UNABLE_TO_OPEN_FILE_FOR_READING);
+      }
+      fprintf(diagfs, "%d class labels found in file: %s\n", ntrain2, datfile);
+      if (ntrain2!=ntrain) {
+        fprintf(stderr, "agf_preprocess: Sample count mismatch\n");
+        exit(SAMPLE_COUNT_MISMATCH);
+      }
+
+      outdat=new char[strlen(outbase)+5];
+      sprintf(outdat, "%s.dat", outbase);
+    }
+
   }
 
   testvec=new char[strlen(argv[2])+5];
   sprintf(testvec, "%s.vec", argv[2]);
   testcls=new char[strlen(argv[2])+5];
+  sprintf(testcls, "%s.cls", argv[2]);
+
   if (opt_args.Lflag) {
-    sprintf(testcls, "%s.dat", argv[2]);
-  } else {
-    sprintf(testcls, "%s.cls", argv[2]);
+    testdat=new char[sizeof(argv[2])+5];
+    sprintf(testdat, "%s.dat", argv[2]);
   }
 
   all=train[0];		//need this when it's time to clean up
@@ -187,8 +207,8 @@ int main(int argc, char *argv[]) {
   //randomly permute the data:
   if (opt_args.zflag) {
     //fprintf(stderr, "agf_preprocess: randomizing data\n");
-    real_a **tnew=new real_a *[ntrain];
     long *rind=randomize(ntrain);
+    real_a **tnew=new real_a *[ntrain];
     for (nel_ta i=0; i<ntrain; i++) {
       tnew[i]=train[rind[i]];
     }
@@ -200,14 +220,61 @@ int main(int argc, char *argv[]) {
     }
     delete [] ord;
     ord=cnew;
+
+    if (opt_args.Lflag) {
+      real_a *dnew=new real_a[ntrain];
+      for (nel_ta i=0; i<ntrain; i++) {
+        cnew[i]=dat[rind[i]];
+      }
+      delete [] dat;
+      dat=dnew;
+    }
     delete [] rind;
-    //randomize_vec(train, nvar, ntrain, cls);
   }
 
   //fprintf(stderr, "agf_preprocess: sorting ordinates\n");
+  //sort by classes:
+  //count the number of class labels:
   ncls=1;
   for (int i=0; i<ntrain; i++) if (ord[i]>=ncls) ncls=ord[i]+1;
-  nel_ta *cind=sort_classes(train, ntrain, ord, ncls);
+  //sort by class label:
+  long *sind = heapsort(ord, ntrain);
+
+  //rearrange the samples based on the sorting indices:
+  real_a **tnew=new real_a *[ntrain];
+  for (nel_ta i=0; i<ntrain; i++) {
+    tnew[i]=train[sind[i]];
+  }
+  delete [] train;
+  train=tnew;
+  cls_ta *cnew=new cls_ta[ntrain];
+  for (nel_ta i=0; i<ntrain; i++) {
+    cnew[i]=ord[sind[i]];
+  }
+  delete [] ord;
+  ord=cnew;
+
+  if (opt_args.Lflag) {
+    real_a *dnew=new real_a[ntrain];
+    for (nel_ta i=0; i<ntrain; i++) {
+      dnew[i]=dat[sind[i]];
+    }
+    delete [] dat;
+    dat=dnew;
+  }
+  delete [] sind;
+
+  nel_ta *cind=new nel_ta[ncls];
+  cind[0]=0;
+  for (cls_ta i=-1; i<=ord[0]; i++) cind[i]=0;
+  cind[ord[0]+1]=1;
+  for (nel_ta i=1; i<ntrain; i++) {
+    cls_ta c1=ord[i-1];
+    cls_ta c2=ord[i];
+    for (cls_ta j=c1+1; j<=c2+1; j++) cind[j+1]=cind[c1+1];
+    cind[c2+1]++;
+  }
+
   fprintf(diagfs, "Class locations:\n");
   nel_ta n0=ntrain;
   nel_ta sumnc2=0;		//sum of class numbers squared
@@ -223,14 +290,22 @@ int main(int argc, char *argv[]) {
 
   FILE *trainvecfs;
   FILE *trainclsfs;
+  FILE *traindatfs;
   FILE *testvecfs;
   FILE *testclsfs;
+  FILE *testdatfs;
+
   trainvecfs=fopen(outvec, "w");
   testvecfs=fopen(testvec, "w");
   fwrite(&nvar, sizeof(nvar), 1, trainvecfs);
   fwrite(&nvar, sizeof(nvar), 1, testvecfs);
   trainclsfs=fopen(outcls, "w");
   testclsfs=fopen(testcls, "w");
+
+  if (opt_args.Lflag) {
+    traindatfs=fopen(outdat, "w");
+    testdatfs=fopen(testdat, "w");
+  }
 
   //find the parameter to get the desired fraction:
   real_a C;
@@ -264,12 +339,21 @@ int main(int argc, char *argv[]) {
     }
     fwrite(ord+cind[i], sizeof(cls_ta), l1, trainclsfs);
     fwrite(ord+cind[i]+l1, sizeof(cls_ta), l2, testclsfs);
+    if (opt_args.Lflag) {
+      fwrite(dat+cind[i], sizeof(real_a), l1, traindatfs);
+      fwrite(dat+cind[i]+l1, sizeof(real_a), l2, testdatfs);
+    }
   }
 
   fclose(trainvecfs);
   fclose(testvecfs);
   fclose(trainclsfs);
   fclose(testclsfs);
+
+  if (opt_args.Lflag) {
+    fclose(traindatfs);
+    fclose(testdatfs);
+  }
 
   delete [] cind;
 

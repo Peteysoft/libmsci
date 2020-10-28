@@ -1,0 +1,9 @@
+\begin{verbatim}
+<branch>          ::= <model> "{" <branch-list> "}" | <CLASS>
+<branch-list>     ::= <branch> | <branch-list> <branch>
+<model>           ::= <TWOCLASS> | <partition-list>
+<partition-list>  ::= <partition> | <partition-list> <partition>
+<partition>       ::= <TWOCLASS> <class-list> " / " <class-list> ";"
+<class-list>      ::= <CLASS> | <class-list> " " <CLASS>
+\end{verbatim}
+

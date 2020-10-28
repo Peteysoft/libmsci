@@ -33,15 +33,15 @@ int main(int argc, char **argv) {
   if (argc<1) {
     fprintf(docfs, "syntax: print_control [-Q type] [-G] [-n] [-S nSV] {n | file} [nrow]\n");
     fprintf(docfs, "where:\n");
-    fprintf(docfs, "  type   = 0 hierarchical (default)\n");
-    fprintf(docfs, "           1 one against all\n");
-    fprintf(docfs, "           2 partition adjacent classes\n");
-    fprintf(docfs, "           3 random coding matrix (n<65)\n");
-    fprintf(docfs, "           4 \"exhaustive\" coding matrix (n<34)\n");
-    fprintf(docfs, "           5 one against one\n");
-    fprintf(docfs, "           6 design hierarchical scheme based on training data\n");
-    fprintf(docfs, "           7 hierarchical non-hierarchical\n");
-    fprintf(docfs, "           8 orthogonal coding matrix (completely brute force: n<25; n%%4==0)\n");
+    fprintf(docfs, "  type   = 0 one against the rest (default)\n");
+    fprintf(docfs, "           1 one against one\n");
+    fprintf(docfs, "           2 hierarchical\n");
+    fprintf(docfs, "           3 design hierarchical scheme based on training data\n");
+    fprintf(docfs, "           4 orthogonal coding matrix (n<25; n%%4==0)\n");
+    fprintf(docfs, "           5 partition adjacent classes\n");
+    fprintf(docfs, "           6 hierarchical non-hierarchical\n");
+    fprintf(docfs, "           7 random coding matrix (n<65)\n");
+    fprintf(docfs, "           8 \"exhaustive\" coding matrix (n<34)\n");
     fprintf(docfs, "           9 convert hierarchical to non-hierarchical\n");
     fprintf(docfs, "  n      = number of classes\n");
     fprintf(docfs, "  file   = base name of data files (if applicable):\n");
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
     exit(0);
   }
 
-  if (opt_args.Qtype!=6 && opt_args.Qtype!=9 && opt_args.Qtype!=12) {
+  if (opt_args.Qtype!=3 && opt_args.Qtype!=9 && opt_args.Qtype!=12) {
     err=sscanf(argv[0], "%d", &n);
     if (err!=1) {
       fprintf(stderr, "print_control: error parsing command line first argument\n");
@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
   }
 
   //read in training data for designing multi-class model:
-  if (opt_args.Qtype==6 || opt_args.Qtype==12) {
+  if (opt_args.Qtype==3 || opt_args.Qtype==12) {
     char *fname;		//filename
     nel_ta n1;			//number of samples in class data
     int rmflag=0;		//remove normalization file?
@@ -99,29 +99,17 @@ int main(int argc, char **argv) {
 
   switch(opt_args.Qtype) {
     case(0):
-      print_control_hier(stdout, n);
-      break;
-    case(1):
       coding_matrix=one_against_all<int>(n);
       nrow=n;
       break;
-    case(2):
-      coding_matrix=partition_adjacent<int>(n);
-      nrow=n-1;
-      break;
-    case(3):
-      nrow=atoi(argv[1]);
-      coding_matrix=random_coding_matrix<int>(n, nrow, opt_args.Gflag);
-      break;
-    case(4):
-      coding_matrix=exhaustive_coding_matrix<int>(n);
-      nrow=pow(2, n-1)-1;
-      break;
-    case(5):
+    case(1):
       coding_matrix=one_against_one<int>(n);
       nrow=(n-1)*n/2;
       break;
-    case(6): {
+    case(2):
+      print_control_hier(stdout, n);
+      break;
+    case(3): {
         //dendrogram based on distance between classes:
         cluster_tree<real_a, cls_ta> dg;
         char options[3]="\"\"";
@@ -130,11 +118,7 @@ int main(int argc, char **argv) {
         dg.print(stdout, options);
       }
       break;
-    case(7):
-      coding_matrix=hierarchical_nonhierarchical<int>(n);
-      nrow=n-1;
-      break;
-    case(8):
+    case(4):
       int sum;
       int **codet;
       //int **cm;
@@ -154,6 +138,22 @@ int main(int argc, char **argv) {
 	}
       } while (abs(sum)==n);
       coding_matrix=matrix_transpose(codet, n, nrow);
+      break;
+    case(5):
+      coding_matrix=partition_adjacent<int>(n);
+      nrow=n-1;
+      break;
+    case(6):
+      coding_matrix=hierarchical_nonhierarchical<int>(n);
+      nrow=n-1;
+      break;
+    case(7):
+      nrow=atoi(argv[1]);
+      coding_matrix=random_coding_matrix<int>(n, nrow, opt_args.Gflag);
+      break;
+    case(8):
+      coding_matrix=exhaustive_coding_matrix<int>(n);
+      nrow=pow(2, n-1)-1;
       break;
     case(9):
       multiclass_hier<real_a, cls_ta> *dum;
@@ -258,7 +258,7 @@ int main(int argc, char **argv) {
       print_control_hier(stdout, n);
   }
 
-  if (opt_args.Qtype > 0 && opt_args.Qtype!=6) {
+  if (opt_args.Qtype != 1 && opt_args.Qtype!=2) {
     //if (opt_args.Qtype==5 || (opt_args.Qtype==8 && opt_args.Yflag)) {
     if (opt_args.Pflag) {
       print_matrix(stdout, coding_matrix, nrow, n);
