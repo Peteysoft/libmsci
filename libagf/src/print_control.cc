@@ -33,16 +33,17 @@ int main(int argc, char **argv) {
   if (argc<1) {
     fprintf(docfs, "syntax: print_control [-Q type] [-G] [-n] [-S nSV] {n | file} [nrow]\n");
     fprintf(docfs, "where:\n");
-    fprintf(docfs, "  type   = 0 one against the rest (default)\n");
-    fprintf(docfs, "           1 one against one\n");
-    fprintf(docfs, "           2 hierarchical\n");
-    fprintf(docfs, "           3 design hierarchical scheme based on training data\n");
-    fprintf(docfs, "           4 orthogonal coding matrix (n<25; n%%4==0)\n");
-    fprintf(docfs, "           5 partition adjacent classes\n");
-    fprintf(docfs, "           6 hierarchical non-hierarchical\n");
-    fprintf(docfs, "           7 random coding matrix (n<65)\n");
-    fprintf(docfs, "           8 \"exhaustive\" coding matrix (n<34)\n");
-    fprintf(docfs, "           9 convert hierarchical to non-hierarchical\n");
+    fprintf(docfs, "  type   =  0 one against the rest (default)\n");
+    fprintf(docfs, "            1 one against one\n");
+    fprintf(docfs, "            2 hierarchical\n");
+    fprintf(docfs, "            3 design hierarchical scheme based on training data\n");
+    fprintf(docfs, "            4 orthogonal coding matrix (n<25; n%%4==0)\n");
+    fprintf(docfs, "            5 partition adjacent classes\n");
+    fprintf(docfs, "            6 hierarchical non-hierarchical\n");
+    fprintf(docfs, "            7 random coding matrix (n<65)\n");
+    fprintf(docfs, "            8 \"exhaustive\" coding matrix (n<34)\n");
+    fprintf(docfs, "            9 convert hierarchical to non-hierarchical\n");
+    fprintf(docfs, "           10 orthogonal special\n");
     fprintf(docfs, "  n      = number of classes\n");
     fprintf(docfs, "  file   = base name of data files (if applicable):\n");
     fprintf(docfs, "             .vec for vector data\n");
@@ -124,20 +125,7 @@ int main(int argc, char **argv) {
       //int **cm;
       //int **product;
       nrow=4*((n-1)/4+1);
-      codet=NULL;
-      do {
-        if (codet!=NULL) delete_matrix(codet);
-        codet=ortho_coding_matrix_greedy<int>(n, nrow, opt_args.Yflag);
-	//pile brute force upon brute force:
-	//(making sure there are classes on both sides of the fence...)
-	//print_matrix(stdout, coding_matrix, nrow, n);
-	for (int i=0; i<nrow; i++) {
-	  sum=0;
-          for (int j=0; j<n; j++) sum+=codet[j][i];
-	  if (abs(sum)==n) break;
-	}
-      } while (abs(sum)==n);
-      coding_matrix=matrix_transpose(codet, n, nrow);
+      coding_matrix=ortho_coding_matrix_greedy<int>(nrow, n, opt_args.Yflag);
       break;
     case(5):
       coding_matrix=partition_adjacent<int>(n);
@@ -166,10 +154,10 @@ int main(int argc, char **argv) {
       dum->get_code(coding_matrix, name, nrow, n);
       label=new cls_ta[n];
       dum->class_list(label);
+      delete dum;
       break;
     case(10):
       //should move this mess into the function...
-      int bflag;
       int np;
       if (argc>1) {
         nrow=atoi(argv[1]);
@@ -177,65 +165,16 @@ int main(int argc, char **argv) {
       } else {
         nrow=4*((n-1)/4+1);
       }
-      codet=NULL;
-      //do {
-      //  if (codet!=NULL) delete_matrix(codet);
-        codet=orthogonal_coding_matrix<int>(n, nrow, np);
-        if (opt_args.Pflag) {
-          print_matrix(stdout, codet, nrow, n);
-          printf("\n");
-        }
-        //pile brute force upon brute force:
-        //(making sure there are classes on both sides of the fence...)
-        //print_matrix(stdout, coding_matrix, nrow, n);
-	//*** doesn't check for repeats ...
-        for (int i=0; i<nrow; i++) {
-          for (int j=0; j<i; j++) {
-            bflag=1;
-            for (int k=0; k<n; k++) {
-              if (codet[i][k] != codet[j][k]) {
-                bflag=0;
-	        break;
-	      }
-              if (bflag) break;
-            }
-            if (bflag) break;
-          }
-          for (int j=0; j<i; j++) {
-            bflag=1;
-            for (int k=0; k<n; k++) {
-              if (codet[i][k] !=  - codet[j][k]) {
-                bflag=0;
-	        break;
-              }
-              if (bflag) break;
-            }
-	    if (bflag) break;
-	  }
-	/* dumb idea: destroys orthogonality property...
-	  if (bflag=0 || check_coding_row(codet[i], n)==0) {
-            bflag=0;
-	    break;
-	  }
-        }
-      } while (bflag==0);
-	*/
-	//remove bad rows:
-        if (bflag=0 || check_coding_row(codet[i], n)==0) {
-          nrow--;
-	  //delete [] codet[i];
-	  for (int j=i; j<nrow; j++) codet[j]=codet[j+1];
-	  i--;
-	}
-      }
-      coding_matrix=codet;
+
+      coding_matrix=orthogonal_coding_matrix<int>(n, nrow, np);
+
       break;
     case(11):
       nrow=4*((n-1)/4+1);
-      coding_matrix=orthogonal_coding_matrix<int>(n, nrow);
+      coding_matrix=orthogonal_coding_matrix_with_degenerates<int>(n, nrow);
       nrow=n;
       break;
-    case(12): {
+    /*case(12): {
         real_a *dtriangle;
         nel_ta k;
         nrow=atoi(argv[1]);
@@ -249,7 +188,7 @@ int main(int argc, char **argv) {
         coding_matrix=optimal_coding_matrix<int>(dtriangle, cls, ntrain, nrow);
 	delete [] dtriangle;
       }
-      break;
+      break;*/
     case(16):
       nrow=4*((n-1)/4+1);
       coding_matrix=random_coding_matrix<int>(n, nrow, 1);
@@ -258,7 +197,7 @@ int main(int argc, char **argv) {
       print_control_hier(stdout, n);
   }
 
-  if (opt_args.Qtype != 1 && opt_args.Qtype!=2) {
+  if (opt_args.Qtype != 2 && opt_args.Qtype!=3) {
     //if (opt_args.Qtype==5 || (opt_args.Qtype==8 && opt_args.Yflag)) {
     if (opt_args.Pflag) {
       print_matrix(stdout, coding_matrix, nrow, n);

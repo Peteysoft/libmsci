@@ -148,14 +148,14 @@ EXT=$(EXT_$(METHOD))
 BRANCH1_letter = letter
 BRANCH1 = $(BRANCH1_$(VER))
 TRAINCODE_ortho_letter = 16
-TRAINCODE_ortho_ = 8
+TRAINCODE_ortho_ = 4
 TRAINCODE_ortho=$(TRAINCODE_ortho_$(BRANCH1))
 
-TRAINCODE_1v1=5
-TRAINCODE_1vR=1
-TRAINCODE_adj=2
-TRAINCODE_hier=0
-TRAINCODE_emp=6
+TRAINCODE_1v1=1
+TRAINCODE_1vR=0
+TRAINCODE_adj=5
+TRAINCODE_hier=2
+TRAINCODE_emp=3
 
 TRAINCODE=$(TRAINCODE_$(TYPE))
 
@@ -165,10 +165,10 @@ BRANCH2=$(BRANCH2_$(VER))
 #if there are too many classes:
 TESTCODE_ortho_letter = 0
 #default:
-TESTCODE_ortho_ = 8
+TESTCODE_ortho_ = 4
 TESTCODEortho=$(TESTCODE_ortho_$(BRANCH2))
 
-TESTCODEinv=5
+TESTCODEinv=1
 TESTCODEiter=0
 TESTCODErec=0
 

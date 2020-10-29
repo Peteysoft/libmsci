@@ -478,6 +478,10 @@ template void delete_matrix<double>(double **);
 template void delete_matrix<int32_t>(int32_t **);
 template void delete_matrix<int64_t>(int64_t **);
 
+template int ** copy_matrix<int, int16_t>(int **, int16_t, int16_t);
+template int ** copy_matrix<int, int32_t>(int **, int32_t, int32_t);
+template int ** copy_matrix<int, int64_t>(int **, int64_t, int64_t);
+
 template float ** copy_matrix<float, int16_t>(float **, int16_t, int16_t);
 template float ** copy_matrix<float, int32_t>(float **, int32_t, int32_t);
 template float ** copy_matrix<float, int64_t>(float **, int64_t, int64_t);
