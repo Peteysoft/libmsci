@@ -396,7 +396,7 @@ Another common coding matrix is an arbitrary one: this is commonly
 known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
 It can be random, but may also be carefully designed 
 \citep{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013,Rocha_Goldenstein2014}.
-In principle this case covers all the earlier ones, while in practice the
+In principle this case covers all the other cases, while in practice the
 term can also refer more specifically to a random coding matrix.
 
 To solve the general case, we use quadratic programming \citep{Boyd_Vandenberghe2004}.
@@ -417,13 +417,12 @@ starting with only one row.
 Rows are added one-by-one with those 
 corresponding to the variables least likely to push the
 solution out-of-bounds being added first.
-In the inner loop, if it is found that one of the variables has gone out-of-bounds,
+In the outer loop, if it is found that one of the variables has gone out-of-bounds,
 then the solution is adjusted by positioning a selected variable on
 its constraint border and interpolating between the old and the
 new solutions.
 The variable is chosen in a similar fashion as before,
-out-of-bounds variables are removed, and the process is repeated.
-
+out-of-bounds variables are removed, and we start back at the first step.
 
 \section{Decision-trees}
 

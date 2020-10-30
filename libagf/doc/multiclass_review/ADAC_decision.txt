@@ -1,23 +1,6 @@
 [Manuscript was received on Sept. 21, 2019, review was sent Jan 25, 2020.]
 
 
-Dear Mr. Mills,
-
-An Associate Editor and I have read your manuscript, ADAC-D-19-00298 "Optimizing class partitioning in multi-class classification using a descriptive control language"
-
-With regret, I must inform you that I have decided that your paper cannot be accepted for publication in
-Advances in Data Analysis and Classification.
-
-Below, please find the comments for your perusal.
-
-I would like to thank you very much for forwarding your manuscript to us for consideration and wish you every success in finding an alternative place of publication.
-
-With kind regards,
-Maurizio Vichi
-Coordinating Editor
-Advances in Data Analysis and Classification
-
-
 Associate Editor
 
 In this paper, the authors provide an overview of techniques for reducing multi-class to binary classification problems. Moreover, they propose a "control language" for specifying corresponding reductions. Finally, they compare several binary decompositions schemes on a few benchmark data sets from the UCI library.
