@@ -12,8 +12,8 @@ using namespace libagf;
 using namespace libpetey;
 
 int main(int argc, char *argv[]) {
-  char *outfile;		//output classes
-  char *confile;		//output confidences
+  char *outfile=NULL;		//output classes
+  char *confile=NULL;		//output confidences
   FILE *fs;
 
   binaryclassifier<real_a, cls_ta> *classifier;
@@ -37,11 +37,11 @@ int main(int argc, char *argv[]) {
   agf_command_opts opt_args;
 
   opt_args.algtype=0;
-  errcode=agf_parse_command_opts(argc, argv, "a:c:nuAEMUZ", &opt_args);
+  errcode=agf_parse_command_opts(argc, argv, "a:c:01nuAEMUZ", &opt_args);
   if (errcode==FATAL_COMMAND_OPTION_PARSE_ERROR) return errcode;
 
   //parse the command line arguments:
-  if (argc != 3) {
+  if ((argc != 3 && opt_args.stdoutflag==0 && opt_args.asciiflag==0) || argc < 2) {
     printf("\n");
     printf("purpose:  performs statistical classification with a borders binary model\n");
     printf("\n");
@@ -60,17 +60,20 @@ int main(int argc, char *argv[]) {
     printf("                .cls for classes, .con for confidence ratings\n");
     printf("\n");
     printf("options:\n");
-    printf("  -n          option to normalise the data\n");
-    printf("  -u          normalize borders data (stored in un-normalized coords)\n");
-    printf("  -a normfile file containing normalization data\n");
-    printf("  -Z          \"in-house\" LIBSVM predictor\n");
+    printf("  -0          return raw decision values\n");
+    printf("  -1          print to stdout\n");
     printf("  -A          ASCII format for test data and output\n");
     printf("  -M          LIBSVM format for test data and output\n");
-    printf("  -E missing  missing value for LIBSVM features data\n");
+    printf("  -n          option to normalise the data\n");
+    printf("  -u          normalize borders data (stored in un-normalized coords)\n");
+    printf("  -Z          \"in-house\" LIBSVM predictor\n");
+    printf("\n");
+    printf("  -a normfile file containing normalization data\n");
     printf("  -c funcode  sigmoid function for transforming decision values:\n");
     printf("  	            0 = tanh\n");
     printf("  	            1 = erf\n");
     printf("  	            2 = logistic function [f(x)=2/(1+exp(x))]\n");
+    printf("  -E missing  missing value for LIBSVM features data\n");
     printf("\n");
     return INSUFFICIENT_COMMAND_ARGS;
   }
@@ -137,65 +140,148 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  outfile=new char[strlen(argv[2])+5];
-  strcpy(outfile, argv[2]);
-  strcat(outfile, ".cls");
+  if (argc > 2) {
+    outfile=new char[strlen(argv[2])+5];
+    strcpy(outfile, argv[2]);
+    strcat(outfile, ".cls");
 
-  confile=new char[strlen(argv[2])+5];
-  strcpy(confile, argv[2]);
-  strcat(confile, ".con");
+    confile=new char[strlen(argv[2])+5];
+    strcpy(confile, argv[2]);
+    strcat(confile, ".con");
+  }
 
   //begin the classification scheme:
   result=new cls_ta[ntest];
   con=new real_a[ntest];
   nclass=classifier->n_class();
 
-  for (nel_ta i=0; i<ntest; i++) {
-    result[i]=classifier->classify_t(test[i], con[i]);
-    con[i]=(nclass*con[i]-1)/(nclass-1);
-  }
-
-  //printf("\n");
-
-  //write the results to a file:
-  if (opt_args.asciiflag) {
-    cls_ta clist[2];
-    cls_ta ncls;
-    fs=fopen(argv[2], "w");
-    if (fs == NULL) {
-      fprintf(stderr, "Unable to open file, %s, for writing\n", outfile);
-      return UNABLE_TO_OPEN_FILE_FOR_WRITING;
+  if (opt_args.stdinflag) {
+    //return raw decision functions only:
+    for (nel_ta i=0; i<ntest; i++) {
+      con[i]=classifier->decision(test[i]);
+      if (con[i] < 0) result[i]=0; else result[i]=1;
     }
-    if (opt_args.Mflag) {
-      ncls=classifier->class_list(clist);
-      assert(ncls==2);
-      fprintf(fs, "labels %d %d\n", clist[0], clist[1]);
+
+    //print out decision values to standard out:
+    //use this format if:
+    //  - binary agf and no output file (flag must be present)
+    //  - in addition to output file
+    if (opt_args.stdoutflag && (opt_args.asciiflag==0 || argc>2)) {
       for (nel_ta i=0; i<ntest; i++) {
-        fprintf(fs, "%d %g %g\n", clist[result[i]], (1-con[i])/2, (1+con[i])/2);
-      }
-    } else {
-      for (nel_ta i=0; i<ntest; i++) {
-        fprintf(fs, "%d %g %g\n", result[i], (1-con[i])/2, (1+con[i])/2);
+        printf("%g\n", con[i]);
       }
     }
-    fclose(fs);
-  } else {
-    fs=fopen(outfile, "w");
-    if (fs == NULL) {
-      fprintf(stderr, "Unable to open file, %s, for writing\n", outfile);
-      return UNABLE_TO_OPEN_FILE_FOR_WRITING;
+
+    if (opt_args.asciiflag) {
+      if (argc > 2) {
+        fs=fopen(argv[2], "w");
+        if (fs == NULL) {
+          fprintf(stderr, "Unable to open file, %s, for writing\n", outfile);
+          return UNABLE_TO_OPEN_FILE_FOR_WRITING;
+        }
+      } else {
+        //if output file is missing, send to stdout:
+        fs=stdout;
+      }
     }
-    fwrite(result, sizeof(cls_ta), ntest, fs);
-    fclose(fs);
 
     //write the results to a file:
-    fs=fopen(confile, "w");
-    if (fs == NULL) {
-      fprintf(stderr, "Unable to open file, %s, for writing\n", confile);
-      return UNABLE_TO_OPEN_FILE_FOR_WRITING;
+    if (opt_args.asciiflag) {
+      if (opt_args.Mflag) {
+        for (nel_ta i=0; i<ntest; i++) {
+          fprintf(fs, "%d\n", result[i]);
+        }
+      } else {
+        for (nel_ta i=0; i<ntest; i++) {
+          fprintf(fs, "%g\n", con[i]);
+        }
+      }
+      fclose(fs);
+    } else if (argc > 2) {
+      fs=fopen(outfile, "w");
+      if (fs == NULL) {
+        fprintf(stderr, "Unable to open file, %s, for writing\n", outfile);
+        return UNABLE_TO_OPEN_FILE_FOR_WRITING;
+      }
+      fwrite(result, sizeof(cls_ta), ntest, fs);
+      fclose(fs);
+
+      //write the results to a file:
+      fs=fopen(confile, "w");
+      if (fs == NULL) {
+        fprintf(stderr, "Unable to open file, %s, for writing\n", confile);
+        return UNABLE_TO_OPEN_FILE_FOR_WRITING;
+      }
+      fwrite(con, sizeof(real_a), ntest, fs);
+      fclose(fs);
     }
-    fwrite(con, sizeof(real_a), ntest, fs);
-    fclose(fs);
+  } else {
+    cls_ta clist[2];
+    cls_ta ncls;
+    cls_ta sgn;
+    //useless book-keeping:
+    ncls=classifier->class_list(clist);
+
+    //return probability estimates (default):
+    for (nel_ta i=0; i<ntest; i++) {
+      result[i]=classifier->classify_t(test[i], con[i]);
+      con[i]=(nclass*con[i]-1)/(nclass-1);
+    }
+
+    if (opt_args.stdoutflag && (opt_args.asciiflag==0 || argc>2)) {
+      for (nel_ta i=0; i<ntest; i++) {
+        //fruits of trying to be so damn clever...
+        if (result[i]==clist[0]) sgn=-1; else sgn=1;
+        printf("%g\n", sgn*con[i]);
+      }
+    }
+
+    if (opt_args.asciiflag) {
+      if (argc > 2) {
+        fs=fopen(argv[2], "w");
+        if (fs == NULL) {
+          fprintf(stderr, "Unable to open file, %s, for writing\n", outfile);
+          return UNABLE_TO_OPEN_FILE_FOR_WRITING;
+        }
+      } else {
+        fs=stdout;
+      }
+    }
+
+    //write the results to a file:
+    if (opt_args.asciiflag) {
+      if (opt_args.Mflag) {
+        fprintf(fs, "labels %d %d\n", clist[0], clist[1]);
+        for (nel_ta i=0; i<ntest; i++) {
+          //fruits of trying to be so damn clever...
+          if (result[i]==clist[0]) sgn=-1; else sgn=1;
+          fprintf(fs, "%d %g %g\n", result[i], (1-sgn*con[i])/2, (1+sgn*con[i])/2);
+        }
+      } else {
+        for (nel_ta i=0; i<ntest; i++) {
+          if (result[i]==clist[0]) sgn=-1; else sgn=1;
+          fprintf(fs, "%d %g %g\n", result[i], (1-sgn*con[i])/2, (1+sgn*con[i])/2);
+        }
+      }
+      fclose(fs);
+    } else if (argc > 2) {
+      fs=fopen(outfile, "w");
+      if (fs == NULL) {
+        fprintf(stderr, "Unable to open file, %s, for writing\n", outfile);
+        return UNABLE_TO_OPEN_FILE_FOR_WRITING;
+      }
+      fwrite(result, sizeof(cls_ta), ntest, fs);
+      fclose(fs);
+
+      //write the results to a file:
+      fs=fopen(confile, "w");
+      if (fs == NULL) {
+        fprintf(stderr, "Unable to open file, %s, for writing\n", confile);
+        return UNABLE_TO_OPEN_FILE_FOR_WRITING;
+      }
+      fwrite(con, sizeof(real_a), ntest, fs);
+      fclose(fs);
+    }
   }
   
   //clean up:

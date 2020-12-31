@@ -93,6 +93,7 @@ namespace libagf {
 		      int cflag=0);		//copy the multi-class classifier?
       virtual ~svm2class();
 
+      virtual real decision(real *x);
       virtual real R(real *x, real *praw=NULL);
       virtual cls_t class_list(cls_t *cls);
 

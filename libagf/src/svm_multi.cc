@@ -146,6 +146,7 @@ namespace libagf {
     probA=NULL;
     probB=NULL;
     this->label=NULL;
+    this->voteflag=0;
   }
 
   //initialize from LIBSVM model file:
@@ -467,8 +468,8 @@ namespace libagf {
     real kv;
     int si, sj;
     cls_t swp;
-    int sgn=1;		//sign is reversed relative to LIBSVM implementation
     int p=0;
+    int sgn=1;
 
     if (i==j) throw PARAMETER_OUT_OF_RANGE;
 
@@ -497,10 +498,12 @@ namespace libagf {
     p=i*(2*this->ncls-i-1)/2+j-i-1;
     //printf("%d %d %d\n", i, j, p);
     result -= rho[p];
-    if (praw!=NULL) praw[0]=result;
-    if (this->voteflag==0) result=1./(1+exp(probA[p]*result+probB[p]));
+    if (praw!=NULL) praw[0]=sgn*result;
+    if (this->voteflag==0) {
+      result=2./(1+exp(probA[p]*result+probB[p]))-1;
+    }
 
-    return sgn*(2*result-1);
+    return sgn*result;
   }
 
   //raw decision value for a given pair of classes:

@@ -67,7 +67,7 @@ namespace libagf {
   template <class real, class cls_t>
   binaryclassifier<real, cls_t>::~binaryclassifier() {
     //memory error somewhere:
-    delete [] calcoef;
+    if (calcoef!=NULL) delete [] calcoef;
   }
 
   template <class real, class cls_t>

@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include "agf_defs.h"
+#include "agf_util.h"
 
 namespace libagf {
 

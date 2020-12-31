@@ -518,11 +518,15 @@ namespace libagf {
   svm2class<real, cls_t>::svm2class() {
     classifier=NULL;
     dflag=0;
+    this->calcoef=NULL;
   }
 
   template <class real, class cls_t>
   svm2class<real, cls_t>::svm2class(char *modfile) {
     cls_t *clist;
+    
+    this->calcoef=NULL;
+
     this->name=new char[strlen(modfile)+1];
     strcpy(this->name, modfile);
     classifier=new svm_multi<real, cls_t>(modfile);
@@ -588,6 +592,14 @@ namespace libagf {
   }
 
   template <class real, class cls_t>
+  real svm2class<real, cls_t>::decision(real *x) {
+    real result;
+    real decision;
+    result=classifier->R(x, ind1, ind2, &decision);
+    return decision;
+  }
+
+  template <class real, class cls_t>
   real svm2class<real, cls_t>::R(real *x, real *praw) {
     return classifier->R(x, ind1, ind2, praw);
   }
@@ -596,14 +608,16 @@ namespace libagf {
   real svm2class<real, cls_t>::R_deriv(real *x, real *drdx) {
     real r=classifier->R_deriv(x, ind1, ind2, drdx);
     return r;
-    real drdx2[this->D1];
-    real r2=R(x);
-    this->R_deriv_num(x, 0.005, drdx2);
-    printf("%g %g\n", r, r2);
-    for (int i=0; i<this->D1; i++) {
-      printf("%g %g\n", drdx[i], drdx2[i]);
-    }
-    printf("\n");
+
+     //debug code:
+     real drdx2[this->D1];
+     real r2=R(x);
+     this->R_deriv_num(x, 0.005, drdx2);
+     printf("%g %g\n", r, r2);
+     for (int i=0; i<this->D1; i++) {
+       printf("%g %g\n", drdx[i], drdx2[i]);
+     }
+     printf("\n");
   }
 
   template <class real, class cls_t>

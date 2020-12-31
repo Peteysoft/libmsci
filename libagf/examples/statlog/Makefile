@@ -577,7 +577,7 @@ $(WORKDIR)/mnist.tst.raw.cls: $(DATADIR)/mnist.t $(WORKDIR)/$(VER).timestamp
 	agf_preprocess -F $(TEST).raw $(TEST).raw $(MNIST_INDICES)
 
 #my own dataset:
-$(WORKDIR)/humidity.cls: ../humidity_data/train_SQ36s.dat ../humidity_data/est_bt_cld_land_z0.00.vec
+$(WORKDIR)/humidity.cls: ../humidity_data/train_SQ36s.dat ../humidity_data/est_bt_cld_land_z0.00.vec $(WORKDIR)/$(VER).timestamp
 	cp ../humidity_data/est_bt_cld_land_z0.00.vec $(WORKDIR)/humidity.vec
 	float_to_class -q $(NCLS_humidity) -g ../humidity_data/train_SQ36s.dat $(WORKDIR)/humidity.cls 0.00007 0.001
 

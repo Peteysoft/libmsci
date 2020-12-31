@@ -5,7 +5,7 @@
 #include "av.h"
 
 extern "C" {
-	void FORTRAN_FUNC(ldp)(double **g, 
+	void FORTRAN_FUNC(ldp)(double *g, 
 			int32_t *mdg, 
 			int32_t *m, 
 			double *h,
@@ -15,7 +15,7 @@ extern "C" {
 			int32_t *index,
 			int32_t *mode);
 
-	void FORTRAN_FUNC(nnls)(double **a,
+	void FORTRAN_FUNC(nnls)(double *a,
 			int32_t *mda,
 			int32_t *m,
 			int32_t *n,
@@ -24,9 +24,10 @@ extern "C" {
 			double *rnorm,
 			double *w,
 			double *zz,
+			int32_t *index,
 			int32_t *mode);
 
-	void FORTRAN_FUNC(svdrs)(double **a, 
+	void FORTRAN_FUNC(svdrs)(double *a, 
 			int32_t *mda, 
 			int32_t *M1, 
 			int32_t *N1, 
