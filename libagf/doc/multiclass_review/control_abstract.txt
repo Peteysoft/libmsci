@@ -2,7 +2,7 @@ Many of the best statistical classification algorithms are binary classifiers
 that can only distinguish between one of two classes.
 The number of possible ways of generalizing binary classification to
 multi-class increases exponentially with the number of classes.
-There is some indication that the best method so will depend on the dataset. 
+There is some indication that the best method will depend on the dataset. 
 Hence, we are particularly interested in data-driven solution design, 
 whether based on
 prior considerations or on empirical examination of the data.

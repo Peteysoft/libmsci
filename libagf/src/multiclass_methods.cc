@@ -235,6 +235,9 @@ namespace libagf {
     at=matrix_transpose(a, m, n);
     ata=matrix_mult(at, a, n, m, n);
 
+    delete_matrix(a);
+    delete_matrix(at);
+
     gsl_matrix *q=gsl_matrix_alloc(n+1, n+1);
     gsl_vector *b=gsl_vector_alloc(n+1);
     
@@ -251,6 +254,8 @@ namespace libagf {
     gsl_matrix_set(q, n, n, 0);
     gsl_vector_set(b, n, 1);
 
+    delete_matrix(ata);
+
     gsl_vector *p1=gsl_vector_alloc(n+1);
     //gsl_lsq_solver(q, b, p1);
     //LU-decomposition is slightly faster:
@@ -260,10 +265,6 @@ namespace libagf {
     gsl_linalg_LU_solve(q, perm, b, p1);
 
     for (int i=0; i<n; i++) p[i]=gsl_vector_get(p1, i);
-
-    delete_matrix(a);
-    delete_matrix(at);
-    delete_matrix(ata);
 
     gsl_matrix_free(q);
     gsl_vector_free(b);

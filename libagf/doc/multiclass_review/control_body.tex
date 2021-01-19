@@ -81,16 +81,16 @@ how to partition the class labels used in each binary classifier?
 That is we want to create a mapping of the form:
 \begin{equation}
 	y_{ij} (y_j) = \left \lbrace  \begin{array}{lr}
--1, & ~ y_j \in C_i^+ \\
-+1, & ~ y_j \in C_i^-
+-1, & ~ y_j \in C_i^- \\
++1, & ~ y_j \in C_i^+
 \end{array}
 	\right . \label{mapping}
 \end{equation}
 where $y_{ij} \in \lbrace -1, +1 \rbrace$ is the class value of $j$th sample of the transformed data 
 for trainng the $i$th binary classifier and 
-$C_i^+ \subset \lbrace 1..n_c \rbrace$ is the set of class labels from the original set,
-$\lbrace 1..n_c \rbrace$, that map to $+1$ while
-$C_i^- \subset \lbrace 1..n_c \rbrace$ is the set of classes that map to $-1$.
+$C_i^- \subset \lbrace 1..n_c \rbrace$ is the set of class labels from the original set,
+$\lbrace 1..n_c \rbrace$, that map to $-1$ while
+$C_i^+ \subset \lbrace 1..n_c \rbrace$ is the set of classes that map to $+1$.
 Note that $C_i^- \cap C_i^+ = \emptyset$.
 
 And second, once we have partitioned the classes
@@ -179,7 +179,7 @@ Note that $Q$ reduces to $A$ if $A$ contains no zeros \citep{Kong_Dietterich1997
 The case of a coding matrix that contains no zeros, that is all the partitions divide up all the
 classes rather than a subset, will be called the {\it strict} case.
 
-Because the decision functions, $\vec r$, are not estimated perfectly, however,
+Because the decision functions, $\vec r$, are not estimated perfectly,
 the final probabilities may need to be constrained and the inverse
 problem solved via minimization:
 \begin{equation}
@@ -227,7 +227,7 @@ Here we are assuming that the decision functions return an approximation of the
 difference in conditional probabilities of the binary classifier.
 In this case a more natural choice of metric is the Euclidian
 since it reduces to Equation (\ref{basic_system}) in the limiting
-case of an orthogonal, strict coding matrix. Expanding:
+case of an orthogonal, strict coding matrix \citep{Mills2019}. Expanding:
 \begin{eqnnon}
 	c = \arg \min_i \left \lbrace |\vec a^{(i)}|^2 - 2 \vec a^{(i)} \cdot \vec r + |\vec r|^2 \right \rbrace
 \end{eqnnon}
@@ -243,12 +243,13 @@ That is, if the sign of $r_i$ matches the $i$th element of the column, then a vo
 in proportion to the size of $r_i$ for the class label corresponding to the column number.
 
 A voting solution can be used for any coding matrix and 
-is especially appropriate if each $r_i$ returns only $-1$ or $+1$.  
+is especially appropriate if each $r_i$ returns one of only two values
+(e.g. $r_i \in \lbrace -1, ~+1. \rbrace$).
 The LIBSVM libary, for instance, uses a one-versus-one arrangement with a voting
 solution if probabilities are not required \citep{Chang_Lin2011}.
 The disadvantage of a voting solution is
 that, except in special circumstances such as an orthogonal coding matrix
-(see Section \ref{orthogonal}, below), it does not return calibrated
+\citep{Mills2019}, it does not return calibrated
 estimates of the probabilities.
 
 \subsection{Common coding matrices}
@@ -256,10 +257,14 @@ estimates of the probabilities.
 There are a number of standard, patterned coding matrices that are commonly used
 to solve for multi-class.
 These include ``one-versus-the-rest'', ``one-versus-one'',
-as well as error-correcting coding matrices such as orthogonal and
-random.
+as well as more general error-correcting codes such as 
+random and optimized.
+Optimized codes fall into two categories: 
+those optimized in the absence of any training data 
+and those optimized for a specific problem 
+by empirically examining the training data.
 We discuss each of these in turn and
-use them to demonstrate how to solve for the
+demonstrate how to solve for the
 conditional probabilities while enforcing the constraints.
 General, iterative solutions also exist for any type of coding matrix:
 this is covered in Section \ref{error}.
@@ -356,16 +361,16 @@ inequality constraints in (\ref{nonnegative}) are always satisfied
 \citep{Wu_etal2004}.
 This means that it can be solved with any standard matrix solver,
 without any need of complex, quadratic programming algorithms.
-
 \citet{Hsu_Lin2002} find that the one-vs.-one method is more accurate
 for support vector machines (SVM) than either
 error-correcting codes or one-vs.-the-rest.
 
-\subsubsection{Orthogonal codes}
+\subsubsection{Optimized and orthogonal codes}
 
 \label{orthogonal}
 
-To maximize the accuracy of an error-correcting coding matrix, 
+To maximize the accuracy of an error-correcting coding matrix
+in the absence of training data, 
 \citet{Allwein_etal2000} and \citet{Windeatt_Ghaderi2002} show that
 the distance between each of the columns, $| \vec a^{(i)} - \vec a^{(j)} |$, 
 should be as large as possible,
@@ -380,8 +385,18 @@ the optimal coding matrix will be orthogonal, $A^T A = n_p I$, where $I$ is
 the $[n_c\times n_c]$ identity matrix and $n_p \ge n_c$.
 For an orthogonal coding matrix, the voting solution will be equivalent to the
 unconstrained least-squares solution.
-Using this property, \citet{Mills2017} provides a simple, iterative algorithm
+Using this property, \citet{Mills2019} provides a simple, iterative algorithm
 to solve for the probabilities when using an orthogonal, strict coding matrix.
+
+Coding matrices may also be optimized for the data the binary classifiers
+are being trained for.
+Since the number of combinations to optimize between scales up very quickly, there 
+are also a large number of approaches to choose from.
+As such this topic lies beyond the scope of this article
+and the reader is invited to
+consult recent literature on the subject: 
+\citet{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013,Rocha_Goldenstein2014}.
+
 
 \subsubsection{Error correcting codes}
 
@@ -395,7 +410,7 @@ to solve for the probabilities when using an orthogonal, strict coding matrix.
 Another common coding matrix is an arbitrary one: this is commonly
 known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
 It can be random, but may also be carefully designed 
-\citep{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013,Rocha_Goldenstein2014}.
+such as described in Section \ref{orthogonal}, above.
 In principle this case covers all the other cases, while in practice the
 term can also refer more specifically to a random coding matrix.
 
@@ -404,25 +419,61 @@ The literature in the subject can be quite dense and intimidating, so
 only the briefest attempt to address the problem will be made here. 
 There do exist, however, standard algorithms
 for versions of the minimization problem in 
-(\ref{minimization_problem})-(\ref{nonnegative})
-such as those provided by 
-\citet{Lawson_Hanson1995} for instance. 
+(\ref{minimization_problem})-(\ref{nonnegative}),
+such as that provided by \citet{Lawson_Hanson1995}. 
 The iterative algorithm shown there
 is quite straightforward and essentially geometrical in nature.
 A minimal example is illustrated in Figure \ref{Lawson_Hanson_fig}.
 
+The first line of attack in solving inequality constrained minimization problems 
+is usually the Karesh-Kuhn-Tucker (KKT) conditions
+which generalize Lagrange multipliers to inequality constraints. For the
+minimization problem in (\ref{minimization_problem})-(\ref{nonnegative}), the KKT conditions work out to:
+\begin{eqnnon}
+	Q^TQ \vec p - Q^T \vec r + \lambda = \vec \mu
+\end{eqnnon}
+where:
+\begin{eqnnon}
+	\vec \mu \ge \vec 0
+\end{eqnnon}
+and:
+\begin{eqnarraynon}
+	\mu_i = 0 & \iff & p_i > 0 \\
+	\mu_i > 0 & \iff & p_i = 0 
+\end{eqnarraynon}
+
+Another important property of the problem is that it is completely {\it convex}.
+A {\it convex function}, $c$, has the following property:
+\begin{eqnnon}
+	c \lbrace \gamma \vec z_1 + (1 - \gamma) \vec z_2 \rbrace \le 
+	\gamma c (\vec z_1) + ( 1- \gamma) c(\vec z_2)
+\end{eqnnon}
+where $0 \le \gamma \le 1$ is a coefficient.
+Meanwhile, in a {\it convex set}, $C$:
+\begin{eqnnon}
+	\vec z_1 \in C \land \vec z_2 \in C 
+	\rightarrow \lbrace \gamma \vec z_1 + (1 - \gamma) \vec z_2 \rbrace 
+	\in C
+\end{eqnnon}
+The convexity property means that any local minima is also a global minimum,
+moreover, simple, gradient descent algorithms should always eventually
+reach it.
+
+Both the convexity property and the KKT conditions are used in the
+\citet{Lawson_Hanson1995} solution.
 Briefly, the algorithm works by solving 
-the normal equation, but with rows eliminated, 
-starting with only one row.
-Rows are added one-by-one with those 
+the normal equation, but with rows eliminated.
+The algorithm has two loops.
+In the first loop, rows are added one-by-one with those 
 corresponding to the variables least likely to push the
 solution out-of-bounds being added first.
-In the outer loop, if it is found that one of the variables has gone out-of-bounds,
-then the solution is adjusted by positioning a selected variable on
+In the second loop, if one of the variables has gone out-of-bounds,
+then the solution is adjusted by positioning the ``most out-of-bounds'' 
+variable on
 its constraint border and interpolating between the old and the
 new solutions.
-The variable is chosen in a similar fashion as before,
-out-of-bounds variables are removed, and we start back at the first step.
+Variables equal to zero are removed and the least squares solution repeated.
+
 
 \section{Decision-trees}
 
@@ -497,7 +548,9 @@ This is illustrated in Figure \ref{landclasstree}.
 
 In this case we have prior knowledge of how the classes are related to one another.
 On the other hand the classes may be too abstract to have any knowledge without examining the actual training data.
-Many different methods of empirically designing both decision trees and coding matrices have been shown in the literature.
+The problem is somewhat more tractable than the equivalent for
+error-correcting codes and
+many methods of empirically designing decision trees have been shown in the literature.
 \citet{Cheong_etal2004}, for instance, use a self-organizing-map (SOM)
 \citep{Kohonen2000} to visualize the relationship between the classes while
 \citet{Lee_Oh2003} use a genetic algorithm to optimize the decision tree.
@@ -505,7 +558,8 @@ Many different methods of empirically designing both decision trees and coding m
 \citet{Benabdeslem_Bennani2006} design the tree by measuring the distance between
 the classes and building a dendrogram.
 %\citet{Zhou_etal2008} use a similar method to design a coding matrix.
-This seems the most straightforward approach and is interesting in that it reduces a very large problem involving probabilities into a much smaller one.
+This seems the most straightforward approach and as it reduces a very large problem involving probabilities into a much smaller one
+involving distances.
 Consider the problem above: it stands to reason that the field and forest classes would be much more strongly separated than either of the sub-classes within.
 That is the {\it interclass distance} between field and forest is larger.
 
@@ -519,7 +573,10 @@ We could notate this as follows:
 \end{eqnarraynon}
 where $\mathfrak D$ is a distance operator between two distributions and $D$ is a distance operator between two sets of points.
 
-Consider the square of the distance between the means of the two classes divided by their standard deviations. Let:
+Consider the dimensionless quantity given by the 
+distance between the means of the two classes 
+divided by the root of the product between their standard deviations. 
+Let:
 \begin{eqnnon}
 	\vec \mu_i = \frac{1}{n_i} \sum_{k|y_k=i} \vec x_k
 \end{eqnnon}
@@ -528,14 +585,18 @@ be the mean of the $i$th class distribution where $n_i$ is the number of instanc
 	\sigma_i = \frac{1}{n_i-1}\sqrt{\sum_{k|y_k=i}|\vec x_k - \vec \mu_i|^2}
 \end{eqnnon}
 is the standard deviation.
-Then let the distance between the two classes be:
+Then let the distance between the $i$th and $j$th classes be:
 \begin{eqnnon}
-	D_{ij}=\frac{|\vec \mu_j - \vec \mu_i |^2}{\sqrt{\sigma_i \sigma_j}}
+	D_{ij}=\frac{|\vec \mu_j - \vec \mu_i |}{\sqrt{\sigma_i \sigma_j}}
 \end{eqnnon}
-That is, the closer the centers of the two classes, the shorter the distance, while the wider each class is, the farther the distance.
+That is, the more diffuse each is and the closer the centres, 
+the smaller the interclass distance.
+Pairs of classes that are both compact and with distant centres,
+by contrast,
+are well separated so have a higher interclass distance.
 	
 This would work well if each of the classes is quite distinct and clustered around a strong center.
-For more diffuse classes, however, especially those with multiple centers, it would make more sense to use a metric designed specifically for sets of points rather than this somewhat crude adaptation of a vector metric.
+For more diffuse classes, however, especially those with multiple centers, it would make more sense to use a metric designed specifically for sets of points rather than the above adaptation of a vector metric.
 In this regard, the Hausdorff metric seems tailor-made for the application.
 The Hausdorff metric measures the distance between two subsets in a metric space, which is one way to conceptualize the training data.
 
@@ -543,14 +604,6 @@ For training samples from a pair of classes---two finite sets of points---the Ha
 \begin{eqnnon}
 D_{Hij} = \max \left \lbrace \min_k | \vec x_k - \vec x_l|~,~\min_l | \vec x_k - \vec x_l| ~ ;~y_k=i;~y_l=j \right \rbrace
 \end{eqnnon}
-
-Error-correcting codes may also be designed in a data-dependent fashion.
-Since the number of combinations to optimize between scales up very quickly, there 
-are also a large number of approaches to choose from.
-Hence this topic lies beyond the scope of this article,
-although the reader is invited to
-consult recent literature on the subject: 
-\citet{Crammer_Singer2002,Zhou_etal2008,Zhong_Cheriet2013,Rocha_Goldenstein2014}.
 
 \section{Control language}
 
@@ -632,7 +685,7 @@ like this:
 
 A hierarchical specification
 equivalent to the configuration represented in Figure \ref{landclasstree}
-might be represented as follows:
+can be represented as follows:
 
 \begin{verbatim}
   TreeVsField {
@@ -666,7 +719,7 @@ as in the following, nine-class example:
   }
 \end{verbatim}
 
-The above demonstrates how the feature might be useful
+The above demonstrates how the feature could be useful
 on a hypothetical surface-classification problem with the key as follows:
 
 \begin{tabular}{ll}
@@ -797,7 +850,7 @@ shuttle_emp.00.00.00.00.00 0 / 1;
 { 2 1 6 5 3 4 0}
 \end{verbatim}
 
-The ``adjacent'' partitioning is as follows:
+``Adjacent'' partitioning for seven classes is as follows:
 \begin{verbatim}
 shuttle_adj-00 0 / 1 2 3 4 5 6;
 shuttle_adj-00 0 1 / 2 3 4 5 6;
@@ -808,7 +861,7 @@ shuttle_adj-00 0 1 2 3 4 5 / 6;
 {0 1 2 3 4 5 6}
 \end{verbatim}
 with corresponding coding matrix:
-\begin{equation}
+\begin{eqnnon}
 A = 
 \begin{bmatrix}
 -1 & 1 & 1 & 1 & 1 & 1 & 1 \\
@@ -818,9 +871,17 @@ A =
 -1 & -1 & -1 & -1 & -1 & 1 & 1 \\
 -1 & -1 & -1 & -1 & -1 & -1 & 1 \\
 \end{bmatrix}
+\end{eqnnon}
+or more generally:
+\begin{equation}
+	a_{ij} = \left \lbrace  \begin{array}{rr}
+-1, & j \le i \\
++1, & j > i 
+	\end{array} \right .
 	\label{adjacent}
 \end{equation}
-The rational for using it will be explained in Section \ref{results}, below.
+(Note that the number of rows or binary classifiers is one less than the number of columns or classes.) 
+The rational for using this code will be explained in Section \ref{results}, below.
 
 \subsection{Data and software}
 
@@ -917,7 +978,7 @@ entropy per symbol.
 		hier. & ``hierarchical'' or decision tree partitioning & Section \ref{hierarchical} \\
 		emp. & empirically-designed decision tree & Section \ref{empirical} \\
 		\hline
-		lsq. & Lawson and Hanson constrained least-squares & \citep{Lawson_Hanson1995} \\
+		lsq. & Lawson and Hanson constrained least-squares & Section \ref{error} \\
 		inv. & matrix inverse solution & Section \ref{one_vs_one} \\
 		iter. & iterative solution for orthogonal codes & Section \ref{orthogonal} \\
 		rec. & recursive ascent of decision tree & Section \ref{hierarchical} \\
