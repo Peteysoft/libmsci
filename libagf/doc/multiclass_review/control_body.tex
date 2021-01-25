@@ -174,7 +174,6 @@ shows that we can solve for the probabilities, $\vec p$, via matrix inversion:
 	q_{ij} & = & a_{ij} + (1-|a_{ij}|) r_i 
 	\label{matrix_equation2}
 \end{eqnarray}
-%and $\delta$ is the Kronecker delta.
 Note that $Q$ reduces to $A$ if $A$ contains no zeros \citep{Kong_Dietterich1997}.
 The case of a coding matrix that contains no zeros, that is all the partitions divide up all the
 classes rather than a subset, will be called the {\it strict} case.
@@ -217,13 +216,13 @@ Many other loss functions besides Hamming distance,
 Euclidean distance or a dot product (see below) can be used in place of the 
 norm in Equation (\ref{distance_based_decoding}).
 \citet{Allwein_etal2000} 
-tailor the matric on the basis of the binary classifier used, each of which
+tailor the metric on the basis of the binary classifier used, each of which
 will return a different type of continuous decision function 
 (none of which represent the difference in conditional probabilities).
 \citet{Escalera_etal2010} explore thirteen different ones and find that on
 some datasets, the choice of loss function can make a significant difference.
 
-Here we are assuming that the decision functions return an approximation of the 
+Here we are assuming that a decision functions returns an approximation of the 
 difference in conditional probabilities of the binary classifier.
 In this case a more natural choice of metric is the Euclidian
 since it reduces to Equation (\ref{basic_system}) in the limiting
@@ -290,6 +289,7 @@ or in the general case:
 \begin{eqnnon}
 	a_{ij}=2 \delta_{ij}-1
 \end{eqnnon}
+where $\delta$ is the Kronecker delta.
 
 Probabilities for the one-versus-the-rest can be solved for directly by
 simply writing out one side of the equation:
@@ -374,9 +374,9 @@ in the absence of training data,
 \citet{Allwein_etal2000} and \citet{Windeatt_Ghaderi2002} show that
 the distance between each of the columns, $| \vec a^{(i)} - \vec a^{(j)} |$, 
 should be as large as possible,
-where $\vec a^{(i)}$ is the $i$th column of the matrix $A$ and $i \ne j$. 
+where $i \ne j$. 
 If we take the upright brackets once again to be a
-Euclidian metric and assume that $A$ is ``strict'' (that is with no zeros) 
+Euclidian metric and assume that $A$ is strict
 then this 
 reduces to minimizing the absolute value of the dot product,
 $|\vec a^{(i)} \cdot \vec a^{(j)}|$.
@@ -411,8 +411,8 @@ Another common coding matrix is an arbitrary one: this is commonly
 known as an ``error-correcting'' code \citep{Dietterich_Bakiri1995}.
 It can be random, but may also be carefully designed 
 such as described in Section \ref{orthogonal}, above.
-In principle this case covers all the other cases, while in practice the
-term can also refer more specifically to a random coding matrix.
+In principle this case covers all the other ones, while in practice the
+term can also refer specifically to a random coding matrix.
 
 To solve the general case, we use quadratic programming \citep{Boyd_Vandenberghe2004}.
 The literature in the subject can be quite dense and intimidating, so
@@ -508,7 +508,7 @@ constrained matrix inverse. On the other hand, because there is less
 information being taken into consideration, they may be less
 accurate.
 
-Interestingly, the same partitions created for a decision tree can also
+The same partitions created for a decision tree can also
 be used in a non-hierarchical scheme
 to solve for all of the conditional probabilities. 
 For instance, consider the following coding matrix:
@@ -558,14 +558,13 @@ many methods of empirically designing decision trees have been shown in the lite
 \citet{Benabdeslem_Bennani2006} design the tree by measuring the distance between
 the classes and building a dendrogram.
 %\citet{Zhou_etal2008} use a similar method to design a coding matrix.
-This seems the most straightforward approach and as it reduces a very large problem involving probabilities into a much smaller one
-involving distances.
-Consider the problem above: it stands to reason that the field and forest classes would be much more strongly separated than either of the sub-classes within.
-That is the {\it interclass distance} between field and forest is larger.
+This seems the most straightforward approach as it reduces a very large problem involving probabilities into a much smaller one involving distances.
+Consider the problem above: it stands to reason that the field and forest classes would be more strongly separated than either of the sub-classes within.
+That is the {\it interclass distance} between a field and forest is larger.
 
-How does one measure the interclass distance? 
+How would one measure the interclass distance? 
 This is a metric applied to a pair of distributions in the feature space
-and there are many possible methods of constructing it.
+and there are many potential methods of constructing it.
 We could notate this as follows:
 \begin{eqnarraynon}
 	D_{ij} & = & \mathfrak D \left \lbrace P(\vec x|i),~P(\vec x|j) \right \rbrace \\
@@ -613,8 +612,8 @@ presented in the previous sections.
 This is not a ``one-size-fits-all'' solution, but rather a means of specifying
 a particular partitioning that best suits the problem at hand.
 This partitioning could be arrived at either through prior knowledge, 
-or empirically by measuring the distance between the classes, for instance--or
-by simply exhaustively testing different configurations.
+empirically--for instance by measuring the distances between all the classes--
+or by simply exhaustively testing different configurations.
 
 In Backus-Naur form (BNF) the control language looks like this:
 
@@ -749,7 +748,7 @@ an arbitray tree, and a tree generated
 from a bottom-up dendrogram using the Hausdorf metric.
 We also introduce a new type of error-correcting code which we refer to as
 {\it adjacent} partitioning--see below.
-The solution methods are: constrained least squares \citep{Lawson_Hanson1995},
+The solution methods are: constrained least squares,
 matrix inverse which is specific to one-vs.-one,
 the iterative method designed for orthogonal partitioning,
 and recursively which is appropriate
@@ -850,7 +849,7 @@ shuttle_emp.00.00.00.00.00 0 / 1;
 { 2 1 6 5 3 4 0}
 \end{verbatim}
 
-``Adjacent'' partitioning for seven classes is as follows:
+Adjacent partitioning for seven classes is as follows:
 \begin{verbatim}
 shuttle_adj-00 0 / 1 2 3 4 5 6;
 shuttle_adj-00 0 1 / 2 3 4 5 6;
@@ -1109,7 +1108,7 @@ as opposed to a complex, iterative scheme.
 
 Further, the partitioning used does not even appear all that
 critical in most cases.
-Even a sub-optimal method, such as the ``adjacent'' partioning, which makes
+Even a sub-optimal method, such as the adjacent partioning, which makes
 little sense for datasets in which the classes have no ordering,
 gives up relatively little accuracy to more sensible methods on most datasets.
 For the urban dataset it is actually superior, suggesting that there is
@@ -1134,7 +1133,7 @@ the segment dataset, Figure \ref{segment}.
 For another example, the control file for the pendigits dataset is shown in Figure \ref{pendigits}.
 We can see how `8' and `5' might be related, but it is harder to
 understand how `3' and `1' are related to '7' and 2.
-On the other hand, the arrangement might turn out very much as
+On the other hand, the arrangement might turn out much as
 expected as in the sat dataset, Figure \ref{sat}.
 This is also the only pattern-recognition dataset for which the method 
 worked as intended.
@@ -1160,7 +1159,7 @@ only one example was found in this group of eight datasets:
 the humidity dataset.
 Because the classes are a discretized continuous variable, they have an
 ordering. As such, it is detrimental to split up consecutive classes more
-than absolutely necessary and the ``adjacent'' partitioning is the most
+than absolutely necessary and the adjacent partitioning is the most
 accurate. Meanwhile, the one-vs.-rest configuration performs poorly while
 the one-vs.-one performs well enough, but worse than all the other methods
 save one.
